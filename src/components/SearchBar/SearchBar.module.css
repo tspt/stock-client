@@ -1,0 +1,23 @@
+.searchBar {
+  padding: 10px 12px;
+  background: var(--ant-color-bg-container);
+  border-bottom: 1px solid var(--ant-color-border);
+}
+
+.searchBarContent {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.searchInput {
+  flex: 1;
+}
+
+.sortBtn {
+  flex-shrink: 0;
+}
+
+.ant-select-selection-placeholder {
+  padding-left: 40px;
+}

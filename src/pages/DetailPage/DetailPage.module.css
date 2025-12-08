@@ -1,0 +1,55 @@
+.detailPage {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.emptyDetail {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ant-color-text-secondary);
+  font-size: 16px;
+}
+
+.header {
+  background: var(--ant-color-bg-container);
+  border-bottom: 1px solid var(--ant-color-border);
+  padding: 0 16px;
+}
+
+.headerContent {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 100%;
+}
+
+.title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  overflow: hidden;
+}
+
+.quoteCard {
+  margin-bottom: 16px;
+}
+
+.periodSelector {
+  margin-bottom: 16px;
+}
+
+.chartContainer {
+  flex: 1;
+  min-height: 0;
+}
+

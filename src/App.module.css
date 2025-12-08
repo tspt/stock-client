@@ -1,0 +1,48 @@
+.app {
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.mainLayout {
+  display: flex;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.leftPanel {
+  width: 360px;
+  min-width: 300px;
+  max-width: 500px;
+  border-right: 1px solid var(--ant-color-border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.rightPanel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+}
+
+/* 主题变量 */
+.app[data-theme='light'] {
+  --ant-color-bg-container: #ffffff;
+  --ant-color-border: #d9d9d9;
+  --ant-color-text-secondary: rgba(0, 0, 0, 0.45);
+  --ant-color-fill-tertiary: rgba(0, 0, 0, 0.04);
+  --ant-color-primary-bg: #e6f7ff;
+}
+
+.app[data-theme='dark'] {
+  --ant-color-bg-container: #141414;
+  --ant-color-border: #434343;
+  --ant-color-text-secondary: rgba(255, 255, 255, 0.45);
+  --ant-color-fill-tertiary: rgba(255, 255, 255, 0.08);
+  --ant-color-primary-bg: #111b26;
+}
+
