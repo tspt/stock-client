@@ -3,12 +3,14 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Layout, Space, Card, Statistic, message, Table } from 'antd';
+import { Layout, Space, Card, Statistic, message, Table, Button } from 'antd';
+import { BellOutlined } from '@ant-design/icons';
 import { useStockStore } from '@/stores/stockStore';
 import { useKLineData } from '@/hooks/useKLineData';
 import { useStockDetail } from '@/hooks/useStockDetail';
 import { KLineChart } from '@/components/KLineChart/KLineChart';
 import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
+import { AlertSettingModal } from '@/components/PriceAlert/AlertSettingModal';
 import {
   formatPrice,
   formatChangePercent,
@@ -32,8 +34,9 @@ const PERIODS: { label: string; value: KLinePeriod }[] = [
 ];
 
 export function DetailPage() {
-  const { selectedStock, quotes, setSelectedStock } = useStockStore();
+  const { selectedStock, quotes, setSelectedStock, watchList } = useStockStore();
   const [period, setPeriod] = useState<KLinePeriod>('day');
+  const [alertModalVisible, setAlertModalVisible] = useState(false);
   const { data: klineData, loading, error } = useKLineData({
     code: selectedStock,
     period,
@@ -42,6 +45,7 @@ export function DetailPage() {
   const { detail, loading: detailLoading } = useStockDetail(selectedStock, true);
 
   const quote = selectedStock ? quotes[selectedStock] : null;
+  const stock = selectedStock ? watchList.find((s) => s.code === selectedStock) : null;
 
   const handleBack = () => {
     setSelectedStock(null);
@@ -68,7 +72,16 @@ export function DetailPage() {
           <h2 className={styles.title}>
             {quote?.name || selectedStock}
           </h2>
-          <ThemeToggle />
+          <Space>
+            <Button
+              type="primary"
+              icon={<BellOutlined />}
+              onClick={() => setAlertModalVisible(true)}
+            >
+              设置提醒
+            </Button>
+            <ThemeToggle />
+          </Space>
         </div>
       </Header>
       <Content className={styles.content}>
@@ -255,6 +268,15 @@ export function DetailPage() {
           />
         </div> */}
       </Content>
+      {selectedStock && stock && (
+        <AlertSettingModal
+          visible={alertModalVisible}
+          code={selectedStock}
+          name={stock.name}
+          basePrice={quote?.prevClose || quote?.price || 0}
+          onCancel={() => setAlertModalVisible(false)}
+        />
+      )}
     </Layout>
   );
 }

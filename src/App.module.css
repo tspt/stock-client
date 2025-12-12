@@ -5,9 +5,73 @@
 }
 
 .mainLayout {
-  display: flex;
   width: 100%;
   height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.header {
+  background: var(--ant-color-bg-container);
+  border-bottom: 1px solid var(--ant-color-border);
+  padding: 0 16px;
+  flex-shrink: 0;
+}
+
+.headerContent {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 100%;
+}
+
+.title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.mainTabs {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 使用直接子元素选择器，确保只作用于 mainTabs 的直接子元素 ant-tabs-nav */
+/* 这样不会影响嵌套在子组件中的 tabs（如 GroupTabs） */
+.mainTabs > :global(.ant-tabs-nav) {
+  background: var(--ant-color-bg-container);
+  margin: 0;
+  padding: 0 20px;
+}
+
+.mainTabs :global(.ant-tabs-content-holder) {
+  flex: 1;
+  overflow: hidden;
+}
+
+.mainTabs :global(.ant-tabs-content) {
+  height: 100%;
+}
+
+.mainTabs :global(.ant-tabs-tabpane) {
+  height: 100%;
+  overflow: hidden;
+}
+
+.stocksLayout {
+  display: flex;
+  width: 100%;
+  height: 100%;
   overflow: hidden;
 }
 
@@ -27,6 +91,12 @@
   flex-direction: column;
   overflow: hidden;
   min-width: 0;
+}
+
+.alertsLayout {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
 }
 
 /* 主题变量 */

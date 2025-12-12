@@ -4,6 +4,7 @@
 
 import { useEffect, useMemo } from 'react';
 import { useStockStore } from '@/stores/stockStore';
+import { useAlertStore } from '@/stores/alertStore';
 import { getStockQuotes } from '@/services/stockApi';
 import { usePolling } from './usePolling';
 import type { SortType } from '@/types/stock';
@@ -16,14 +17,17 @@ export function useStockList() {
     watchList,
     quotes,
     sortType,
+    selectedGroupId,
     loadWatchList,
     updateQuotes,
     setSortType,
   } = useStockStore();
+  const { checkAlerts, loadAlerts } = useAlertStore();
 
-  // 加载自选股列表
+  // 加载自选股列表和提醒列表
   useEffect(() => {
     loadWatchList();
+    loadAlerts();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -35,6 +39,14 @@ export function useStockList() {
     const codes = watchList.map((s) => s.code);
     const newQuotes = await getStockQuotes(codes);
     updateQuotes(newQuotes);
+    
+    // 行情更新后检查提醒（使用最新的quotes）
+    const currentQuotes = useStockStore.getState().quotes;
+    const updatedQuotes = { ...currentQuotes };
+    newQuotes.forEach((quote) => {
+      updatedQuotes[quote.code] = quote;
+    });
+    checkAlerts(updatedQuotes);
   };
 
   // 轮询更新行情
@@ -43,16 +55,23 @@ export function useStockList() {
     immediate: true,
   });
 
-  // 排序后的列表
+  // 筛选和排序后的列表
   const sortedList = useMemo(() => {
     const { isManualSort } = useStockStore.getState();
-    const list = [...watchList];
-    
-    // 如果是手动排序，直接返回原列表
+    let list = [...watchList];
+
+    // 先按分组筛选
+    if (selectedGroupId !== null) {
+      list = list.filter(
+        (stock) => stock.groupIds && stock.groupIds.includes(selectedGroupId)
+      );
+    }
+
+    // 如果是手动排序，直接返回筛选后的列表
     if (isManualSort) {
       return list;
     }
-    
+
     // 否则应用自动排序
     if (sortType === 'default') {
       return list;
@@ -74,7 +93,7 @@ export function useStockList() {
 
       return 0;
     });
-  }, [watchList, quotes, sortType]);
+  }, [watchList, quotes, sortType, selectedGroupId]);
 
   return {
     watchList: sortedList,

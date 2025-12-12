@@ -93,7 +93,7 @@ const server = http.createServer((req, res) => {
   delete options.headers['host'];
   delete options.headers['connection'];
 
-  console.log(`[代理] ${req.method} ${req.url} -> ${options.hostname}${options.path}`);
+  // console.log(`[代理] ${req.method} ${req.url} -> ${options.hostname}${options.path}`);
 
   // 选择HTTP或HTTPS模块
   const httpModule = url.protocol === 'https:' ? https : http;

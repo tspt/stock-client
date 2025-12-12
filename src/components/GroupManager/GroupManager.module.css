@@ -1,0 +1,193 @@
+.groupManager :global(.ant-modal-body) {
+  padding: 16px;
+}
+
+.content {
+  display: flex;
+  gap: 16px;
+  min-height: 500px;
+}
+
+.groupList {
+  flex: 1;
+  border-right: 1px solid var(--ant-color-border);
+  padding-right: 16px;
+}
+
+.listHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  font-weight: 500;
+}
+
+.groupItem {
+  padding: 8px 12px !important;
+  border: 1px solid var(--ant-color-border);
+  border-radius: 4px;
+  margin-bottom: 8px;
+  transition: all 0.2s;
+}
+
+.groupItem:hover {
+  border-color: var(--ant-color-primary);
+  background-color: var(--ant-color-primary-bg);
+}
+
+.groupItem.editing {
+  border-color: var(--ant-color-primary);
+  background-color: var(--ant-color-primary-bg);
+}
+
+.groupItem.dragging {
+  opacity: 0.5;
+  cursor: grabbing;
+}
+
+.groupItem.dragOver {
+  border-color: var(--ant-color-primary);
+  background-color: var(--ant-color-primary-bg-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.groupItemContent {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  gap: 8px;
+}
+
+.dragHandle {
+  cursor: grab;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  opacity: 0.5;
+  transition: opacity 0.2s;
+}
+
+.dragHandle:hover {
+  opacity: 1;
+}
+
+.dragHandle:active {
+  cursor: grabbing;
+}
+
+.groupInfo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.colorDot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.groupName {
+  font-weight: 500;
+}
+
+.defaultTag {
+  margin: 0;
+}
+
+.stockCount {
+  color: var(--ant-color-text-secondary);
+  font-size: 12px;
+}
+
+.rightPanel {
+  flex: 1;
+  padding-left: 16px;
+}
+
+.editForm {
+  height: 100%;
+}
+
+.formHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  font-weight: 500;
+}
+
+.form {
+  margin-top: 16px;
+}
+
+.colorPicker {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.colorOption {
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: all 0.2s;
+}
+
+.colorOption:hover {
+  transform: scale(1.1);
+}
+
+.colorOption.selected {
+  border-color: var(--ant-color-primary);
+  box-shadow: 0 0 0 2px var(--ant-color-primary-bg);
+}
+
+.groupDetail {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.detailHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  font-weight: 500;
+}
+
+.stockList {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.stockGroup {
+  margin-bottom: 16px;
+}
+
+.stockGroupHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--ant-color-border);
+}
+
+.checkboxGroup {
+  width: 100%;
+}
+
+.emptyStocks {
+  color: var(--ant-color-text-secondary);
+  text-align: center;
+  padding: 40px 0;
+}
+

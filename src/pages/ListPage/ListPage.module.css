@@ -2,25 +2,7 @@
   height: 100%;
   display: flex;
   flex-direction: column;
-}
-
-.header {
-  background: var(--ant-color-bg-container);
-  border-bottom: 1px solid var(--ant-color-border);
-  padding: 0 16px;
-}
-
-.headerContent {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  height: 100%;
-}
-
-.title {
-  margin: 0;
-  font-size: 20px;
-  font-weight: 600;
+  overflow: hidden;
 }
 
 .content {
@@ -28,5 +10,6 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  min-height: 0;
 }
 

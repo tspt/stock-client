@@ -156,3 +156,21 @@
   padding: 40px;
 }
 
+.contextMenu {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05);
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--ant-color-bg-container);
+}
+
+.contextMenu :global(.ant-dropdown-menu) {
+  box-shadow: none;
+  border-radius: 6px;
+  padding: 4px 0;
+}
+
+.contextMenu :global(.ant-menu-item) {
+  height: 30px;
+  line-height: 30px;
+  font-size: 12px;
+}

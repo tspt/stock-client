@@ -2,31 +2,53 @@
  * 列表页
  */
 
+import { useEffect } from 'react';
 import { Layout } from 'antd';
 import { SearchBar } from '@/components/SearchBar/SearchBar';
 import { StockList } from '@/components/StockList/StockList';
-import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
+import { GroupTabs } from '@/components/GroupTabs/GroupTabs';
+import { GroupManager } from '@/components/GroupManager/GroupManager';
 import { useAllStocks } from '@/hooks/useAllStocks';
+import { useStockStore } from '@/stores/stockStore';
 import styles from './ListPage.module.css';
 
-const { Header, Content } = Layout;
+const { Content } = Layout;
 
 export function ListPage() {
   // 加载所有股票列表
   useAllStocks();
 
+  const {
+    groups,
+    selectedGroupId,
+    groupManagerVisible,
+    setSelectedGroupId,
+    setGroupManagerVisible,
+    loadGroups,
+  } = useStockStore();
+
+  // 加载分组数据
+  useEffect(() => {
+    loadGroups();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <Layout className={styles.listPage}>
-      <Header className={styles.header}>
-        <div className={styles.headerContent}>
-          <h1 className={styles.title}>破忒头工具</h1>
-          <ThemeToggle />
-        </div>
-      </Header>
       <Content className={styles.content}>
         <SearchBar />
+        <GroupTabs
+          groups={groups}
+          selectedGroupId={selectedGroupId}
+          onSelect={setSelectedGroupId}
+          onManageClick={() => setGroupManagerVisible(true)}
+        />
         <StockList />
       </Content>
+      <GroupManager
+        visible={groupManagerVisible}
+        onClose={() => setGroupManagerVisible(false)}
+      />
     </Layout>
   );
 }

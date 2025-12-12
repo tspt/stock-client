@@ -8,6 +8,8 @@ export interface StockInfo {
   name: string;
   /** 市场标识（SH: 上海, SZ: 深圳） */
   market: 'SH' | 'SZ';
+  /** 所属分组ID列表（支持多标签） */
+  groupIds?: string[];
 }
 
 /**
@@ -147,3 +149,84 @@ export interface TechnicalIndicator {
  * 排序方式
  */
 export type SortType = 'default' | 'rise' | 'fall';
+
+/**
+ * 股票分组
+ */
+export interface Group {
+  /** 分组ID（唯一标识） */
+  id: string;
+  /** 分组名称（最多10个字符） */
+  name: string;
+  /** 分组颜色（hex颜色值） */
+  color: string;
+  /** 排序序号 */
+  order: number;
+}
+
+/**
+ * 自选股统一存储数据结构
+ */
+export interface StockWatchListData {
+  /** 分组列表 */
+  groups: Group[];
+  /** 自选股列表 */
+  watchList: StockInfo[];
+}
+
+/**
+ * 价格提醒类型
+ */
+export type AlertType = 'price' | 'percent';
+
+/**
+ * 提醒触发条件
+ */
+export type AlertCondition = 'above' | 'below';
+
+/**
+ * 提醒时间周期
+ */
+export type AlertTimePeriod = 'day' | 'week' | 'month' | 'permanent';
+
+/**
+ * 通知方式配置
+ */
+export interface NotificationConfig {
+  /** 系统托盘通知 */
+  tray: boolean;
+  /** 桌面通知 */
+  desktop: boolean;
+}
+
+/**
+ * 价格提醒规则
+ */
+export interface PriceAlert {
+  /** 提醒ID（唯一标识） */
+  id: string;
+  /** 股票代码 */
+  code: string;
+  /** 股票名称 */
+  name: string;
+  /** 提醒类型 */
+  type: AlertType;
+  /** 触发条件 */
+  condition: AlertCondition;
+  /** 目标值（价格或百分比） */
+  targetValue: number;
+  /** 基准价格（设置时的开盘价/prevClose） */
+  basePrice: number;
+  /** 时间周期 */
+  timePeriod: AlertTimePeriod;
+  /** 通知方式配置 */
+  notifications: NotificationConfig;
+  /** 是否已触发 */
+  triggered: boolean;
+  /** 上次触发时的价格 */
+  lastTriggerPrice?: number;
+  /** 创建时间戳 */
+  createdAt: number;
+  /** 是否启用 */
+  enabled: boolean;
+}

@@ -1,7 +1,17 @@
-import { app, BrowserWindow, Tray, Menu, nativeImage, session } from 'electron';
-import { join } from 'path';
+import {
+  app,
+  BrowserWindow,
+  Tray,
+  Menu,
+  nativeImage,
+  session,
+  ipcMain,
+  Notification,
+} from 'electron';
+import { join, resolve } from 'path';
 import { fileURLToPath } from 'url';
 import { spawn } from 'child_process';
+import { existsSync } from 'fs';
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 
@@ -126,13 +136,57 @@ function setupRequestInterceptor() {
 }
 
 function createWindow() {
+  // 使用绝对路径确保 preload 脚本能正确加载
+  let preloadPath: string;
+  if (isDev) {
+    // 开发环境：preload.js 在 dist-electron 目录
+    preloadPath = resolve(__dirname, 'preload.js');
+  } else {
+    // 生产环境：preload.js 在打包后的目录
+    preloadPath = join(__dirname, 'preload.js');
+  }
+
+  // 转换为绝对路径
+  preloadPath = resolve(preloadPath);
+
+  console.log('[主进程] Preload 脚本路径:', preloadPath);
+  console.log('[主进程] __dirname:', __dirname);
+  console.log('[主进程] isDev:', isDev);
+  console.log('[主进程] app.getAppPath():', app.getAppPath());
+
+  // 检查 preload 文件是否存在
+  const preloadExists = existsSync(preloadPath);
+  console.log('[主进程] Preload 文件是否存在:', preloadExists);
+
+  if (!preloadExists) {
+    console.error('[主进程] 错误：Preload 文件不存在！路径:', preloadPath);
+    console.error('[主进程] 请确保已运行 npm run build:electron');
+    // 尝试查找其他可能的位置
+    const alternativePaths = [
+      join(app.getAppPath(), 'dist-electron', 'preload.js'),
+      join(process.cwd(), 'dist-electron', 'preload.js'),
+      resolve(process.cwd(), 'dist-electron', 'preload.js'),
+    ];
+    console.error('[主进程] 尝试查找其他位置:');
+    alternativePaths.forEach((altPath) => {
+      const exists = existsSync(altPath);
+      console.error(`  ${altPath}: ${exists ? '存在' : '不存在'}`);
+      if (exists && !preloadExists) {
+        console.warn(`[主进程] 找到 preload 文件在: ${altPath}`);
+        preloadPath = altPath;
+      }
+    });
+  }
+
+  console.log('[主进程] 最终使用的 Preload 路径:', preloadPath);
+
   mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
     minWidth: 800,
     minHeight: 600,
     webPreferences: {
-      preload: join(__dirname, 'preload.js'),
+      preload: preloadPath,
       nodeIntegration: false,
       contextIsolation: true,
       // 开发环境可以禁用webSecurity以解决CORS问题
@@ -152,9 +206,39 @@ function createWindow() {
     mainWindow.loadFile(join(__dirname, '../dist/index.html'));
   }
 
+  // 监听 preload 脚本加载错误
+  mainWindow.webContents.on('preload-error', (_event, _preloadPath, error) => {
+    console.error('[主进程] Preload 脚本加载错误:', error);
+    console.error('[主进程] Preload 路径:', _preloadPath);
+  });
+
   // 确保在窗口加载完成后拦截器已设置
   mainWindow.webContents.on('did-finish-load', () => {
     console.log('[主进程] 窗口加载完成，拦截器已设置');
+    // 检查 preload 脚本是否成功加载
+    if (mainWindow) {
+      // 延迟一下，确保 preload 脚本已执行
+      setTimeout(() => {
+        if (mainWindow) {
+          mainWindow.webContents
+            .executeJavaScript(
+              `
+            console.log('[渲染进程检查] window.electronAPI:', typeof window.electronAPI !== 'undefined' ? '已加载' : '未找到');
+            console.log('[渲染进程检查] window keys:', Object.keys(window).filter(k => k.includes('electron') || k.includes('Electron')));
+            if (typeof window.electronAPI !== 'undefined') {
+              console.log('[渲染进程检查] electronAPI 方法:', Object.keys(window.electronAPI));
+            }
+          `
+            )
+            .then((result) => {
+              console.log('[主进程] 渲染进程检查结果:', result);
+            })
+            .catch((err) => {
+              console.error('[主进程] 执行检查脚本失败:', err);
+            });
+        }
+      }, 1000);
+    }
   });
 
   // 添加右键菜单
@@ -363,9 +447,109 @@ function startProxyServer() {
   });
 }
 
+// 设置IPC处理器
+function setupIpcHandlers() {
+  console.log('[主进程] 设置 IPC 处理器');
+
+  // 显示系统托盘通知（Windows）
+  ipcMain.handle(
+    'show-tray-notification',
+    (_event, options: { title: string; body: string; code?: string }) => {
+      console.log('[主进程] 收到系统托盘通知请求:', options);
+
+      if (!tray) {
+        console.warn('[主进程] 系统托盘不存在，无法发送托盘通知');
+        return;
+      }
+
+      // Windows系统托盘通知 - 统一使用系统通知API
+      if (Notification.isSupported()) {
+        console.log('[主进程] 创建系统通知');
+        const notification = new Notification({
+          title: options.title,
+          body: options.body,
+          silent: false,
+        });
+
+        notification.on('click', () => {
+          console.log('[主进程] 通知被点击');
+          if (mainWindow && options.code) {
+            mainWindow.show();
+            mainWindow.focus();
+            // 发送消息到渲染进程，跳转到股票详情
+            mainWindow.webContents.send('navigate-to-stock', options.code);
+          }
+        });
+
+        notification.on('show', () => {
+          console.log('[主进程] 系统通知已显示');
+        });
+
+        notification.show();
+        console.log('[主进程] 已调用 notification.show()');
+      } else {
+        console.warn('[主进程] 系统不支持通知 API');
+        // 降级方案：使用托盘工具提示（仅Windows）
+        if (process.platform === 'win32' && tray) {
+          try {
+            tray.displayBalloon({
+              title: options.title,
+              content: options.body,
+              icon: nativeImage.createEmpty(),
+            });
+            console.log('[主进程] 已使用托盘工具提示');
+          } catch (error) {
+            console.error('[主进程] 托盘工具提示失败:', error);
+          }
+        }
+      }
+    }
+  );
+
+  // 显示桌面通知
+  ipcMain.handle(
+    'show-desktop-notification',
+    (_event, options: { title: string; body: string; code?: string }) => {
+      console.log('[主进程] 收到桌面通知请求:', options);
+
+      if (!Notification.isSupported()) {
+        console.warn('[主进程] 系统不支持桌面通知');
+        return;
+      }
+
+      console.log('[主进程] 创建桌面通知');
+      const notification = new Notification({
+        title: options.title,
+        body: options.body,
+        silent: false,
+      });
+
+      notification.on('click', () => {
+        console.log('[主进程] 桌面通知被点击');
+        if (mainWindow && options.code) {
+          mainWindow.show();
+          mainWindow.focus();
+          // 发送消息到渲染进程，跳转到股票详情
+          mainWindow.webContents.send('navigate-to-stock', options.code);
+        }
+      });
+
+      notification.on('show', () => {
+        console.log('[主进程] 桌面通知已显示');
+      });
+
+      notification.show();
+      console.log('[主进程] 已调用桌面通知 notification.show()');
+    }
+  );
+}
+
 // 应用准备就绪
 app.whenReady().then(() => {
   console.log('[主进程] 应用准备就绪');
+
+  // 设置IPC处理器
+  setupIpcHandlers();
 
   // 开发环境启动代理服务器
   if (isDev) {
