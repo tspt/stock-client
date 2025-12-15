@@ -23,9 +23,7 @@ export function useAllStocks() {
       try {
         const stocks = await getAllStocks();
         setAllStocks(stocks);
-        console.log(`[股票列表] 已加载 ${stocks.length} 只股票`);
       } catch (error) {
-        console.error('[股票列表] 加载失败:', error);
       } finally {
         setLoadingAllStocks(false);
       }

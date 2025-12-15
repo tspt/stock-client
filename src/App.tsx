@@ -48,22 +48,8 @@ function AppContent() {
       }
     }, 500);
 
-    // 10秒后停止检查
-    const timeout = setTimeout(() => {
-      clearInterval(checkInterval);
-      const api = checkElectronAPI();
-      if (!api) {
-        console.error('[App] 警告：10秒后 electronAPI 仍然不可用！');
-        console.error('[App] 请检查：');
-        console.error('  1. preload 脚本是否正确编译（npm run build:electron）');
-        console.error('  2. 主进程是否正确加载了 preload 脚本');
-        console.error('  3. 控制台是否有 [Preload] 相关的日志');
-      }
-    }, 10000);
-
     return () => {
       clearInterval(checkInterval);
-      clearTimeout(timeout);
     };
   }, []);
 

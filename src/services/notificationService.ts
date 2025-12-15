@@ -12,25 +12,18 @@ import { formatPrice, formatChangePercent } from '@/utils/format';
  * @param quote 股票行情数据
  */
 export async function sendAlertNotification(alert: PriceAlert, quote: StockQuote): Promise<void> {
-  console.log('[通知服务] 准备发送通知', {
-    hasElectronAPI: typeof window !== 'undefined' && !!window.electronAPI,
-    notifications: alert.notifications,
-  });
 
   if (!window.electronAPI) {
-    console.warn('[通知服务] Electron API 不可用');
     return;
   }
 
   // 构建通知标题和内容
   const { title, body } = buildNotificationContent(alert, quote);
-  console.log('[通知服务] 通知内容:', { title, body });
 
   // 根据用户配置发送通知
   const promises: Promise<void>[] = [];
 
   if (alert.notifications.tray) {
-    console.log('[通知服务] 发送系统托盘通知');
     promises.push(
       window.electronAPI
         .showTrayNotification({
@@ -39,16 +32,13 @@ export async function sendAlertNotification(alert: PriceAlert, quote: StockQuote
           code: alert.code,
         })
         .then(() => {
-          console.log('[通知服务] 系统托盘通知发送成功');
         })
         .catch((error) => {
-          console.error('[通知服务] 系统托盘通知发送失败:', error);
         })
     );
   }
 
   if (alert.notifications.desktop) {
-    console.log('[通知服务] 发送桌面通知');
     promises.push(
       window.electronAPI
         .showDesktopNotification({
@@ -57,22 +47,18 @@ export async function sendAlertNotification(alert: PriceAlert, quote: StockQuote
           code: alert.code,
         })
         .then(() => {
-          console.log('[通知服务] 桌面通知发送成功');
         })
         .catch((error) => {
-          console.error('[通知服务] 桌面通知发送失败:', error);
         })
     );
   }
 
   if (promises.length === 0) {
-    console.warn('[通知服务] 没有启用任何通知方式');
     return;
   }
 
   // 并行发送所有通知
   await Promise.allSettled(promises);
-  console.log('[通知服务] 所有通知发送完成');
 }
 
 /**

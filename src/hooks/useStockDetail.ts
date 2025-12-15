@@ -35,7 +35,6 @@ export function useStockDetail(
     } catch (err) {
       const error = err instanceof Error ? err : new Error('获取股票详情失败');
       setError(error);
-      console.error('[股票详情] 获取失败:', error);
     } finally {
       setLoading(false);
     }

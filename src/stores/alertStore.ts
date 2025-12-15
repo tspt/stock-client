@@ -240,16 +240,6 @@ export const useAlertStore = create<AlertState>((set, get) => ({
       }
 
       if (shouldTrigger) {
-        console.log('[提醒触发] 触发提醒:', {
-          code: alert.code,
-          name: alert.name,
-          type: alert.type,
-          condition: alert.condition,
-          targetValue: alert.targetValue,
-          currentPrice,
-          notifications: alert.notifications,
-        });
-
         // 触发提醒
         get().updateAlert(alert.id, {
           triggered: true,
@@ -259,15 +249,10 @@ export const useAlertStore = create<AlertState>((set, get) => ({
         // 发送通知
         import('@/services/notificationService')
           .then(({ sendAlertNotification }) => {
-            console.log('[提醒触发] 开始发送通知');
             return sendAlertNotification(alert, quote);
           })
-          .then(() => {
-            console.log('[提醒触发] 通知发送成功');
-          })
-          .catch((error) => {
-            console.error('[提醒触发] 发送通知失败:', error);
-          });
+          .then(() => {})
+          .catch((error) => {});
       } else {
         // 更新 lastTriggerPrice（用于回退机制判断）
         // 只有当价格回退到目标价格另一侧时才更新

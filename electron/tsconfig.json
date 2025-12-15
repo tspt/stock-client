@@ -10,6 +10,6 @@
     "skipLibCheck": true,
     "allowImportingTsExtensions": false
   },
-  "include": ["**/*.ts"]
+  "include": ["main.ts"],
+  "exclude": ["preload.ts"]
 }
-

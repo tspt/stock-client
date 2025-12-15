@@ -1,5 +1,5 @@
 import { app, BrowserWindow, Tray, Menu, nativeImage, session, ipcMain, Notification, } from 'electron';
-import { join } from 'path';
+import { join, resolve } from 'path';
 import { fileURLToPath } from 'url';
 import { spawn } from 'child_process';
 import { existsSync } from 'fs';
@@ -95,15 +95,39 @@ function setupRequestInterceptor() {
     console.log('[主进程] defaultSession拦截器设置完成');
 }
 function createWindow() {
-    const preloadPath = join(__dirname, 'preload.js');
-    console.log('[主进程] Preload 脚本路径:', preloadPath);
-    console.log('[主进程] __dirname:', __dirname);
-    // 检查 preload 文件是否存在
-    const preloadExists = existsSync(preloadPath);
-    console.log('[主进程] Preload 文件是否存在:', preloadExists);
-    if (!preloadExists) {
-        console.error('[主进程] 错误：Preload 文件不存在！路径:', preloadPath);
-        console.error('[主进程] 请确保已运行 npm run build:electron');
+    // preload 脚本路径配置
+    // 源代码：electron/preload.ts
+    // 编译后：dist-electron/preload.js
+    // 运行时：main.js 在 dist-electron 目录，所以 __dirname 指向 dist-electron
+    // 因此 preload.js 应该在同一个目录（__dirname）
+    const preloadPath = resolve(__dirname, 'preload.js');
+    console.log('[主进程] ========== Preload 脚本配置 ==========');
+    console.log('[主进程] 源代码位置: electron/preload.ts');
+    console.log('[主进程] 编译后位置: dist-electron/preload.js');
+    console.log('[主进程] 运行时 __dirname:', __dirname);
+    console.log('[主进程] 计算的 preload 路径:', preloadPath);
+    console.log('[主进程] 文件是否存在:', existsSync(preloadPath));
+    console.log('[主进程] ======================================');
+    // 验证文件是否存在
+    if (!existsSync(preloadPath)) {
+        console.error('[主进程] ❌ 错误：Preload 文件不存在！');
+        console.error('[主进程] 期望路径:', preloadPath);
+        console.error('[主进程] 请确保已运行: npm run build:electron');
+        console.error('[主进程] 编译后文件应该在: dist-electron/preload.js');
+        // 尝试查找其他可能的位置（用于调试）
+        const debugPaths = [
+            resolve(process.cwd(), 'dist-electron', 'preload.js'),
+            join(process.cwd(), 'dist-electron', 'preload.js'),
+            join(app.getAppPath(), 'dist-electron', 'preload.js'),
+        ];
+        console.error('[主进程] 调试：尝试查找其他位置:');
+        debugPaths.forEach((path) => {
+            const exists = existsSync(path);
+            console.error(`  ${path}: ${exists ? '✓ 存在' : '✗ 不存在'}`);
+        });
+    }
+    else {
+        console.log('[主进程] ✓ Preload 文件找到，路径正确');
     }
     mainWindow = new BrowserWindow({
         width: 1200,
@@ -129,19 +153,35 @@ function createWindow() {
     else {
         mainWindow.loadFile(join(__dirname, '../dist/index.html'));
     }
+    // 监听 preload 脚本加载错误
+    mainWindow.webContents.on('preload-error', (_event, _preloadPath, error) => {
+        console.error('[主进程] Preload 脚本加载错误:', error);
+        console.error('[主进程] Preload 路径:', _preloadPath);
+    });
     // 确保在窗口加载完成后拦截器已设置
     mainWindow.webContents.on('did-finish-load', () => {
         console.log('[主进程] 窗口加载完成，拦截器已设置');
         // 检查 preload 脚本是否成功加载
         if (mainWindow) {
-            mainWindow.webContents
-                .executeJavaScript(`
-        console.log('[渲染进程] window.electronAPI:', typeof window.electronAPI !== 'undefined' ? '已加载' : '未找到');
-        console.log('[渲染进程] window keys:', Object.keys(window).filter(k => k.includes('electron') || k.includes('Electron')));
-      `)
-                .catch((err) => {
-                console.error('[主进程] 执行检查脚本失败:', err);
-            });
+            // 延迟一下，确保 preload 脚本已执行
+            setTimeout(() => {
+                if (mainWindow) {
+                    mainWindow.webContents
+                        .executeJavaScript(`
+            console.log('[渲染进程检查] window.electronAPI:', typeof window.electronAPI !== 'undefined' ? '已加载' : '未找到');
+            console.log('[渲染进程检查] window keys:', Object.keys(window).filter(k => k.includes('electron') || k.includes('Electron')));
+            if (typeof window.electronAPI !== 'undefined') {
+              console.log('[渲染进程检查] electronAPI 方法:', Object.keys(window.electronAPI));
+            }
+          `)
+                        .then((result) => {
+                        console.log('[主进程] 渲染进程检查结果:', result);
+                    })
+                        .catch((err) => {
+                        console.error('[主进程] 执行检查脚本失败:', err);
+                    });
+                }
+            }, 1000);
         }
     });
     // 添加右键菜单
@@ -313,7 +353,9 @@ function startProxyServer() {
 // 设置IPC处理器
 function setupIpcHandlers() {
     console.log('[主进程] 设置 IPC 处理器');
-    // 显示系统托盘通知（Windows）
+    // 显示系统托盘通知
+    // 注意：Windows 10/11 已不再支持传统的托盘气泡通知（tray.displayBalloon）
+    // 因此使用系统通知，但可以通过图标或标识来区分
     ipcMain.handle('show-tray-notification', (_event, options) => {
         console.log('[主进程] 收到系统托盘通知请求:', options);
         if (!tray) {

@@ -41,7 +41,6 @@ export async function getAllStocks(): Promise<StockInfo[]> {
 
     return [];
   } catch (error) {
-    console.error('获取股票列表失败:', error);
     return [];
   }
 }
@@ -127,18 +126,6 @@ export async function getStockQuotes(codes: string[]): Promise<StockQuote[]> {
                 amount: parseFloat(fields[9]) || 0,
                 timestamp: Date.now(),
               });
-
-              // 调试：输出所有字段，用于确认字段索引
-              if (index === 0 && codes.length > 0) {
-                console.log(`[股票行情] 字段总数: ${fields.length}`);
-                console.log(
-                  `[股票行情] 字段列表（前50个）:`,
-                  fields
-                    .slice(0, 50)
-                    .map((f, i) => `${i}:${f}`)
-                    .join(', ')
-                );
-              }
             }
           }
         }
@@ -147,7 +134,6 @@ export async function getStockQuotes(codes: string[]): Promise<StockQuote[]> {
 
     return quotes;
   } catch (error) {
-    console.error('获取股票行情失败:', error);
     return [];
   }
 }
@@ -167,11 +153,8 @@ export async function getStockDetail(code: string): Promise<StockDetail | null> 
     const market = getMarketFromCode(code);
     const tencentCode = market === 'SH' ? `sh${pureCode}` : `sz${pureCode}`;
 
-    console.log(`[股票详情] 获取详情: ${code} -> ${tencentCode}`);
-
     // 直接使用腾讯财经接口获取详情数据（list=接口不包含这些数据）
     const tencentUrl = `${API_BASE.TENCENT}/q=${tencentCode}`;
-    console.log(`[股票详情] 请求腾讯接口: ${tencentUrl}`);
 
     const tencentResponse = await axios.get(tencentUrl, {
       timeout: 10000,
@@ -186,7 +169,6 @@ export async function getStockDetail(code: string): Promise<StockDetail | null> 
       const tencentMatch = tencentResponse.data.match(/v_\w+="([^"]+)"/);
       if (tencentMatch) {
         const tencentFields = tencentMatch[1].split('~');
-        console.log(`[股票详情] 腾讯接口字段总数: `, tencentFields);
 
         const extractTencentField = (index: number): number | undefined => {
           if (index >= tencentFields.length || index < 0) return undefined;
@@ -239,19 +221,12 @@ export async function getStockDetail(code: string): Promise<StockDetail | null> 
           detail.sellOrders = sellOrders;
         }
       } else {
-        console.warn(`[股票详情] 无法解析腾讯接口响应数据`);
       }
     } else {
-      console.warn(`[股票详情] 腾讯接口返回非字符串数据:`, typeof tencentResponse.data);
     }
 
-    console.log(`[股票详情] 成功获取详情数据:`, detail);
     return detail;
   } catch (error: any) {
-    console.error(`[股票详情] 获取失败: ${code}`, error);
-    if (error.response) {
-      console.error(`[股票详情] 响应状态: ${error.response.status}`);
-    }
     return null;
   }
 }
@@ -301,11 +276,6 @@ export async function getKLineData(
       param
     )}&r=${Math.random()}`;
 
-    console.log(`[K线数据] 请求URL: ${url}`);
-    console.log(
-      `[K线数据] 参数: code=${code}, period=${period}, type=${apiType}, marketCode=${marketCode}`
-    );
-
     const response = await axios.get(url, {
       // 代理服务器会处理Referer头
     });
@@ -317,7 +287,6 @@ export async function getKLineData(
 
     // 如果是字符串，提取JSON数据
     if (typeof data === 'string') {
-      console.log('[K线数据] 返回数据是字符串，长度:', data.length);
 
       // 匹配 kline_xxx = {...} 格式（可能没有var关键字）
       const varName = `kline_${apiType}`;
@@ -328,13 +297,10 @@ export async function getKLineData(
       if (match && match[1]) {
         try {
           data = JSON.parse(match[1]);
-          console.log('[K线数据] 成功解析JavaScript变量');
         } catch (e) {
-          console.error('[K线数据] 解析JavaScript变量失败:', e);
           return [];
         }
       } else {
-        console.error('[K线数据] 未找到匹配的变量格式');
         return [];
       }
     }
@@ -344,14 +310,12 @@ export async function getKLineData(
     if (data && typeof data === 'object') {
       // 检查返回码
       if (data.code !== 0) {
-        console.error('[K线数据] API返回错误:', data.msg || '未知错误');
         return [];
       }
 
       // 从 data[股票代码][周期] 路径获取K线数组
       const responseData = data.data;
       if (!responseData || typeof responseData !== 'object') {
-        console.error('[K线数据] 数据格式错误：缺少data字段');
         return [];
       }
 
@@ -361,24 +325,20 @@ export async function getKLineData(
       );
 
       if (!stockCodeKey) {
-        console.error('[K线数据] 未找到股票代码');
         return [];
       }
 
       const stockData = responseData[stockCodeKey];
       if (!stockData || typeof stockData !== 'object') {
-        console.error('[K线数据] 股票数据格式错误');
         return [];
       }
 
       // 获取对应周期的K线数据
       const klines = stockData[apiType];
       if (!Array.isArray(klines)) {
-        console.error(`[K线数据] 未找到${apiType}周期的数据`);
         return [];
       }
 
-      console.log(`[K线数据] 找到${klines.length}条K线数据`);
 
       // 解析K线数组
       // 格式：[日期, 开盘, 收盘, 最高, 最低, 成交量, {}, 涨跌幅, 成交额, ...]
@@ -421,7 +381,6 @@ export async function getKLineData(
 
           // 如果日期解析失败，跳过这条数据
           if (timestamp === null || isNaN(timestamp)) {
-            console.warn(`[K线数据] 日期解析失败: ${dateStr}`);
             continue;
           }
 
@@ -442,14 +401,11 @@ export async function getKLineData(
 
     // 如果解析到数据，返回解析的数据；否则返回空数组
     if (klineData.length > 0) {
-      console.log(`[K线数据] 成功解析 ${klineData.length} 条数据`);
       return klineData;
     } else {
-      console.warn('[K线数据] 未能解析数据');
       return [];
     }
   } catch (error) {
-    console.error('获取K线数据失败:', error);
     return [];
   }
 }

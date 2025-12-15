@@ -136,49 +136,42 @@ function setupRequestInterceptor() {
 }
 
 function createWindow() {
-  // 使用绝对路径确保 preload 脚本能正确加载
-  let preloadPath: string;
-  if (isDev) {
-    // 开发环境：preload.js 在 dist-electron 目录
-    preloadPath = resolve(__dirname, 'preload.js');
-  } else {
-    // 生产环境：preload.js 在打包后的目录
-    preloadPath = join(__dirname, 'preload.js');
-  }
+  // preload 脚本路径配置
+  // 源代码：electron/preload.ts
+  // 编译后：dist-electron/preload.js
+  // 运行时：main.js 在 dist-electron 目录，所以 __dirname 指向 dist-electron
+  // 因此 preload.js 应该在同一个目录（__dirname）
+  const preloadPath = resolve(__dirname, 'preload.js');
 
-  // 转换为绝对路径
-  preloadPath = resolve(preloadPath);
+  console.log('[主进程] ========== Preload 脚本配置 ==========');
+  console.log('[主进程] 源代码位置: electron/preload.ts');
+  console.log('[主进程] 编译后位置: dist-electron/preload.js');
+  console.log('[主进程] 运行时 __dirname:', __dirname);
+  console.log('[主进程] 计算的 preload 路径:', preloadPath);
+  console.log('[主进程] 文件是否存在:', existsSync(preloadPath));
+  console.log('[主进程] ======================================');
 
-  console.log('[主进程] Preload 脚本路径:', preloadPath);
-  console.log('[主进程] __dirname:', __dirname);
-  console.log('[主进程] isDev:', isDev);
-  console.log('[主进程] app.getAppPath():', app.getAppPath());
+  // 验证文件是否存在
+  if (!existsSync(preloadPath)) {
+    console.error('[主进程] ❌ 错误：Preload 文件不存在！');
+    console.error('[主进程] 期望路径:', preloadPath);
+    console.error('[主进程] 请确保已运行: npm run build:electron');
+    console.error('[主进程] 编译后文件应该在: dist-electron/preload.js');
 
-  // 检查 preload 文件是否存在
-  const preloadExists = existsSync(preloadPath);
-  console.log('[主进程] Preload 文件是否存在:', preloadExists);
-
-  if (!preloadExists) {
-    console.error('[主进程] 错误：Preload 文件不存在！路径:', preloadPath);
-    console.error('[主进程] 请确保已运行 npm run build:electron');
-    // 尝试查找其他可能的位置
-    const alternativePaths = [
-      join(app.getAppPath(), 'dist-electron', 'preload.js'),
-      join(process.cwd(), 'dist-electron', 'preload.js'),
+    // 尝试查找其他可能的位置（用于调试）
+    const debugPaths = [
       resolve(process.cwd(), 'dist-electron', 'preload.js'),
+      join(process.cwd(), 'dist-electron', 'preload.js'),
+      join(app.getAppPath(), 'dist-electron', 'preload.js'),
     ];
-    console.error('[主进程] 尝试查找其他位置:');
-    alternativePaths.forEach((altPath) => {
-      const exists = existsSync(altPath);
-      console.error(`  ${altPath}: ${exists ? '存在' : '不存在'}`);
-      if (exists && !preloadExists) {
-        console.warn(`[主进程] 找到 preload 文件在: ${altPath}`);
-        preloadPath = altPath;
-      }
+    console.error('[主进程] 调试：尝试查找其他位置:');
+    debugPaths.forEach((path) => {
+      const exists = existsSync(path);
+      console.error(`  ${path}: ${exists ? '✓ 存在' : '✗ 不存在'}`);
     });
+  } else {
+    console.log('[主进程] ✓ Preload 文件找到，路径正确');
   }
-
-  console.log('[主进程] 最终使用的 Preload 路径:', preloadPath);
 
   mainWindow = new BrowserWindow({
     width: 1200,
@@ -451,7 +444,9 @@ function startProxyServer() {
 function setupIpcHandlers() {
   console.log('[主进程] 设置 IPC 处理器');
 
-  // 显示系统托盘通知（Windows）
+  // 显示系统托盘通知
+  // 注意：Windows 10/11 已不再支持传统的托盘气泡通知（tray.displayBalloon）
+  // 因此使用系统通知，但可以通过图标或标识来区分
   ipcMain.handle(
     'show-tray-notification',
     (_event, options: { title: string; body: string; code?: string }) => {

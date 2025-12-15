@@ -137,7 +137,6 @@ export function AlertSettingModal({
       onSuccess?.();
       onCancel();
     } catch (error) {
-      console.error('表单验证失败:', error);
     }
   };
 

@@ -84,7 +84,6 @@ export function useKLineData(options: UseKLineDataOptions) {
           });
         }
       } catch (err) {
-        console.error('轮询更新K线数据失败:', err);
       }
     },
     {
