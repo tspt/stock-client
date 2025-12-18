@@ -6,6 +6,7 @@ import { useEffect, useMemo } from 'react';
 import { useStockStore } from '@/stores/stockStore';
 import { useAlertStore } from '@/stores/alertStore';
 import { getStockQuotes } from '@/services/stockApi';
+import { BUILTIN_GROUP_SELF_ID } from '@/utils/constants';
 import { usePolling } from './usePolling';
 import type { SortType } from '@/types/stock';
 
@@ -60,12 +61,9 @@ export function useStockList() {
     const { isManualSort } = useStockStore.getState();
     let list = [...watchList];
 
-    // 先按分组筛选
-    if (selectedGroupId !== null) {
-      list = list.filter(
-        (stock) => stock.groupIds && stock.groupIds.includes(selectedGroupId)
-      );
-    }
+    // 按分组筛选（无“全部”视图；永远需要一个分组ID）
+    const groupId = selectedGroupId || BUILTIN_GROUP_SELF_ID;
+    list = list.filter((stock) => stock.groupIds && stock.groupIds.includes(groupId));
 
     // 如果是手动排序，直接返回筛选后的列表
     if (isManualSort) {

@@ -67,6 +67,11 @@ export const PRESET_COLORS = [
   '#a0d911', // 浅绿色
 ] as const;
 
+/** 内置分组：自选（不在分组管理中展示） */
+export const BUILTIN_GROUP_SELF_ID = '__self__';
+export const BUILTIN_GROUP_SELF_NAME = '自选';
+export const BUILTIN_GROUP_SELF_COLOR = '#1890ff';
+
 /** 提醒时间周期选项 */
 export const ALERT_TIME_PERIODS = [
   { label: '当天', value: 'day' as const },

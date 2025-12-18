@@ -4,11 +4,9 @@
 
 import type { Group, StockInfo, StockWatchListData } from '@/types/stock';
 import {
-  DEFAULT_GROUP_ID,
-  DEFAULT_GROUP_NAME,
-  DEFAULT_GROUP_COLOR,
   MAX_GROUP_NAME_LENGTH,
 } from './constants';
+import { BUILTIN_GROUP_SELF_ID } from './constants';
 
 /**
  * 验证分组名称
@@ -36,23 +34,14 @@ export function generateGroupId(): string {
 /**
  * 获取默认分组对象
  */
-export function getDefaultGroup(): Group {
-  return {
-    id: DEFAULT_GROUP_ID,
-    name: DEFAULT_GROUP_NAME,
-    color: DEFAULT_GROUP_COLOR,
-    order: 0,
-  };
-}
-
 /**
  * 数据迁移：将旧格式（StockInfo[]）转换为新格式（StockWatchListData）
  */
 export function migrateOldWatchList(oldList: StockInfo[]): StockWatchListData {
-  // 旧数据迁移时，不创建默认分组，股票也不添加到任何分组
+  // 旧数据迁移：统一归到内置分组“自选”，避免无分组导致列表不可见
   const migratedList = oldList.map((stock) => ({
     ...stock,
-    groupIds: undefined,
+    groupIds: [BUILTIN_GROUP_SELF_ID],
   }));
 
   return {

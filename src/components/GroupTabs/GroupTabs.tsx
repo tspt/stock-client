@@ -5,15 +5,16 @@
 import { Tabs, Button } from 'antd';
 import { SettingOutlined } from '@ant-design/icons';
 import type { Group } from '@/types/stock';
+import { BUILTIN_GROUP_SELF_COLOR, BUILTIN_GROUP_SELF_ID, BUILTIN_GROUP_SELF_NAME } from '@/utils/constants';
 import styles from './GroupTabs.module.css';
 
 interface GroupTabsProps {
   /** 分组列表 */
   groups: Group[];
-  /** 当前选中的分组ID（null表示"全部"） */
-  selectedGroupId: string | null;
+  /** 当前选中的分组ID */
+  selectedGroupId: string;
   /** 选择分组回调 */
-  onSelect: (groupId: string | null) => void;
+  onSelect: (groupId: string) => void;
   /** 打开分组管理弹窗回调 */
   onManageClick: () => void;
 }
@@ -35,8 +36,13 @@ export function GroupTabs({
   // 构建标签项
   const tabItems = [
     {
-      key: 'all',
-      label: '全部',
+      key: BUILTIN_GROUP_SELF_ID,
+      label: (
+        <span className={styles.tabLabel}>
+          <span className={styles.colorDot} style={{ backgroundColor: BUILTIN_GROUP_SELF_COLOR }} />
+          {BUILTIN_GROUP_SELF_NAME}
+        </span>
+      ),
       children: null,
     },
     ...visibleGroups.map((group) => ({
@@ -58,17 +64,15 @@ export function GroupTabs({
   if (hasMore) {
     tabItems.push({
       key: 'more',
-      label: '更多',
+      label: <span>更多</span>,
       children: null,
     });
   }
 
-  const activeKey = selectedGroupId || 'all';
+  const activeKey = selectedGroupId;
 
   const handleTabChange = (key: string) => {
-    if (key === 'all') {
-      onSelect(null);
-    } else if (key === 'more') {
+    if (key === 'more') {
       onManageClick();
     } else {
       onSelect(key);

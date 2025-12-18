@@ -5,12 +5,11 @@
 import { create } from 'zustand';
 import type { StockInfo, StockQuote, SortType, Group, StockWatchListData } from '@/types/stock';
 import { getStorage, setStorage } from '@/utils/storage';
-import { STORAGE_KEYS, DEFAULT_GROUP_ID, MAX_GROUP_COUNT } from '@/utils/constants';
+import { STORAGE_KEYS, MAX_GROUP_COUNT, BUILTIN_GROUP_SELF_ID, BUILTIN_GROUP_SELF_NAME } from '@/utils/constants';
 import {
   migrateOldWatchList,
   isOldFormat,
   generateGroupId,
-  getDefaultGroup,
   validateGroupName,
 } from '@/utils/groupUtils';
 import { message, Modal } from 'antd';
@@ -20,8 +19,8 @@ interface StockState {
   watchList: StockInfo[];
   // 分组列表
   groups: Group[];
-  // 当前选中的分组ID（null表示"全部"）
-  selectedGroupId: string | null;
+  // 当前选中的分组ID（没有“全部”视图）
+  selectedGroupId: string;
   // 分组管理弹窗显示状态
   groupManagerVisible: boolean;
   // 股票行情数据
@@ -59,7 +58,7 @@ interface StockState {
   addGroup: (group: Omit<Group, 'id' | 'order'>) => void;
   updateGroup: (id: string, updates: Partial<Group>) => void;
   deleteGroup: (id: string) => Promise<void>;
-  setSelectedGroupId: (id: string | null) => void;
+  setSelectedGroupId: (id: string) => void;
   setGroupManagerVisible: (visible: boolean) => void;
   addStockToGroups: (stockCode: string, groupIds: string[]) => void;
   removeStockFromGroup: (stockCode: string, groupId: string) => void;
@@ -73,7 +72,7 @@ interface StockState {
 export const useStockStore = create<StockState>((set, get) => ({
   watchList: [],
   groups: [],
-  selectedGroupId: null,
+  selectedGroupId: BUILTIN_GROUP_SELF_ID,
   groupManagerVisible: false,
   quotes: {},
   sortType: 'default',
@@ -91,10 +90,15 @@ export const useStockStore = create<StockState>((set, get) => ({
     const { watchList } = get();
     // 检查是否已存在
     if (!watchList.find((s) => s.code === stock.code)) {
-      // 如果未指定分组，不添加到任何分组（groupIds为空数组或undefined）
+      // 必须选择至少一个分组才能加入自选列表
+      if (!groupIds || groupIds.length === 0) {
+        message.warning('请至少选择一个分组');
+        return;
+      }
+
       const newStock: StockInfo = {
         ...stock,
-        groupIds: groupIds && groupIds.length > 0 ? groupIds : undefined,
+        groupIds: [...new Set(groupIds)],
       };
       const newList = [...watchList, newStock];
       set({ watchList: newList });
@@ -157,14 +161,22 @@ export const useStockStore = create<StockState>((set, get) => ({
     if (isOldFormat(saved)) {
       // 如果还是旧格式，再次迁移
       const migrated = migrateOldWatchList(saved);
-      set({ groups: migrated.groups, watchList: migrated.watchList });
+      const normalizedWatchList = migrated.watchList.map((s) => ({
+        ...s,
+        groupIds: s.groupIds && s.groupIds.length > 0 ? s.groupIds : [BUILTIN_GROUP_SELF_ID],
+      }));
+      set({ groups: migrated.groups, watchList: normalizedWatchList });
       get().saveWatchList();
     } else {
       // 新格式
       const data = saved as StockWatchListData;
-      set({ 
-        groups: data.groups || [], 
-        watchList: data.watchList || [] 
+      const normalizedWatchList = (data.watchList || []).map((s) => ({
+        ...s,
+        groupIds: s.groupIds && s.groupIds.length > 0 ? s.groupIds : [BUILTIN_GROUP_SELF_ID],
+      }));
+      set({
+        groups: data.groups || [],
+        watchList: normalizedWatchList,
       });
     }
 
@@ -261,6 +273,12 @@ export const useStockStore = create<StockState>((set, get) => ({
       return;
     }
 
+    // 内置分组名称保留
+    if (group.name === BUILTIN_GROUP_SELF_NAME) {
+      message.error(`“${BUILTIN_GROUP_SELF_NAME}”是内置分组名称，请换一个名称`);
+      return;
+    }
+
     // 检查名称重复
     if (groups.some((g) => g.name === group.name)) {
       message.error('分组名称已存在');
@@ -286,6 +304,10 @@ export const useStockStore = create<StockState>((set, get) => ({
     if (updates.name) {
       if (!validateGroupName(updates.name)) {
         message.error('分组名称只能包含中文、英文、数字，且长度不超过10个字符');
+        return;
+      }
+      if (updates.name === BUILTIN_GROUP_SELF_NAME) {
+        message.error(`“${BUILTIN_GROUP_SELF_NAME}”是内置分组名称，请换一个名称`);
         return;
       }
       if (groups.some((g) => g.id !== id && g.name === updates.name)) {
@@ -374,6 +396,10 @@ export const useStockStore = create<StockState>((set, get) => ({
   },
 
   addStockToGroups: (stockCode, groupIds) => {
+    if (!groupIds || groupIds.length === 0) {
+      message.warning('请至少选择一个分组');
+      return;
+    }
     const { watchList } = get();
     const newWatchList = watchList.map((stock) =>
       stock.code === stockCode
@@ -386,17 +412,19 @@ export const useStockStore = create<StockState>((set, get) => ({
 
   removeStockFromGroup: (stockCode, groupId) => {
     const { watchList } = get();
-    const newWatchList = watchList.map((stock) => {
-      if (stock.code === stockCode && stock.groupIds) {
-        const newGroupIds = stock.groupIds.filter((id) => id !== groupId);
-        // 如果移除后没有分组了，groupIds设为undefined（表示不属于任何分组）
-        return {
-          ...stock,
-          groupIds: newGroupIds.length > 0 ? newGroupIds : undefined,
-        };
-      }
-      return stock;
-    });
+    const target = watchList.find((s) => s.code === stockCode);
+    if (!target?.groupIds) return;
+
+    const newGroupIds = target.groupIds.filter((id) => id !== groupId);
+    // 必须至少属于一个分组：如果移除后为空，则从自选列表中删除该股票
+    if (newGroupIds.length === 0) {
+      get().removeStock(stockCode);
+      return;
+    }
+
+    const newWatchList = watchList.map((stock) =>
+      stock.code === stockCode ? { ...stock, groupIds: newGroupIds } : stock
+    );
     set({ watchList: newWatchList });
     get().saveWatchList();
   },
@@ -445,7 +473,7 @@ export const useStockStore = create<StockState>((set, get) => ({
 
     if (!saved) {
       // 如果没有数据，初始化为空
-      set({ groups: [], watchList: [] });
+      set({ groups: [], watchList: [], selectedGroupId: BUILTIN_GROUP_SELF_ID });
       get().saveWatchList();
       return;
     }
@@ -453,7 +481,11 @@ export const useStockStore = create<StockState>((set, get) => ({
     // 如果是旧格式，进行迁移
     if (isOldFormat(saved)) {
       const migrated = migrateOldWatchList(saved);
-      set({ groups: migrated.groups, watchList: migrated.watchList });
+      const normalizedWatchList = migrated.watchList.map((s) => ({
+        ...s,
+        groupIds: s.groupIds && s.groupIds.length > 0 ? s.groupIds : [BUILTIN_GROUP_SELF_ID],
+      }));
+      set({ groups: migrated.groups, watchList: normalizedWatchList, selectedGroupId: BUILTIN_GROUP_SELF_ID });
       get().saveWatchList();
     }
   },

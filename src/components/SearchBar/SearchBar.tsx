@@ -9,7 +9,8 @@ import { searchStockLocal } from '@/services/stockApi';
 import { useStockStore } from '@/stores/stockStore';
 import { useStockList } from '@/hooks/useStockList';
 import { StockGroupSelector } from '@/components/StockGroupSelector/StockGroupSelector';
-import type { StockInfo, SortType } from '@/types/stock';
+import type { StockInfo, SortType, Group } from '@/types/stock';
+import { BUILTIN_GROUP_SELF_COLOR, BUILTIN_GROUP_SELF_ID, BUILTIN_GROUP_SELF_NAME } from '@/utils/constants';
 import styles from './SearchBar.module.css';
 
 export function SearchBar() {
@@ -20,6 +21,12 @@ export function SearchBar() {
   const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>([]);
   const { addStock, allStocks, groups } = useStockStore();
   const { sortType, setSortType } = useStockList();
+
+  // 分组选择列表：内置“自选” + 用户分组（自选不出现在分组管理，但可用于选择）
+  const groupOptions: Group[] = [
+    { id: BUILTIN_GROUP_SELF_ID, name: BUILTIN_GROUP_SELF_NAME, color: BUILTIN_GROUP_SELF_COLOR, order: -999 },
+    ...groups,
+  ];
 
   const handleSearch = (value: string) => {
     setSearchValue(value);
@@ -39,16 +46,7 @@ export function SearchBar() {
   };
 
   const handleSelect = (_value: string, option: { value: string; stock: StockInfo }) => {
-    // 如果没有分组，直接添加（不添加到任何分组）
-    if (groups.length === 0) {
-      addStock(option.stock);
-      message.success(`已添加 ${option.stock.name}`);
-      setOptions([]);
-      setSearchValue('');
-      return;
-    }
-
-    // 有分组时，弹出选择器
+    // 添加股票：必须选择至少一个分组
     setPendingStock(option.stock);
     setSelectedGroupIds([]);
     setGroupSelectorVisible(true);
@@ -57,11 +55,14 @@ export function SearchBar() {
   const handleGroupSelectConfirm = () => {
     if (!pendingStock) return;
 
-    // 如果未选择分组，不添加到任何分组（groupIds为undefined）
-    const finalGroupIds = selectedGroupIds.length > 0 ? selectedGroupIds : undefined;
+    // 必须至少选择一个分组
+    if (selectedGroupIds.length === 0) {
+      message.warning('请至少选择一个分组');
+      return;
+    }
 
-    addStock(pendingStock, finalGroupIds);
-    message.success(`已添加 ${pendingStock.name}`);
+    addStock(pendingStock, selectedGroupIds);
+    message.success(`已添加：${pendingStock.name}`);
     setOptions([]);
     setSearchValue('');
     setGroupSelectorVisible(false);
@@ -99,7 +100,7 @@ export function SearchBar() {
         >
           <Input
             prefix={<SearchOutlined style={{ marginRight: 8 }} />}
-            size="default"
+            size="middle"
             allowClear
             value={searchValue}
             onChange={(e) => handleSearch(e.target.value)}
@@ -113,7 +114,7 @@ export function SearchBar() {
           }}
           trigger={['click']}
         >
-          <Button type="text" icon={<MoreOutlined />} size="default" className={styles.sortBtn}>
+          <Button type="text" icon={<MoreOutlined />} size="middle" className={styles.sortBtn}>
             排序
           </Button>
         </Dropdown>
@@ -127,18 +128,13 @@ export function SearchBar() {
         cancelText="取消"
         width={400}
       >
-        {pendingStock && (
-          <div style={{ marginBottom: 16 }}>
-            <span>将股票 "{pendingStock.name}" 添加到以下分组：</span>
-          </div>
-        )}
         <StockGroupSelector
-          groups={groups}
+          groups={groupOptions}
           selectedGroupIds={selectedGroupIds}
           onChange={setSelectedGroupIds}
         />
         <div style={{ marginTop: 8, fontSize: 12, color: 'var(--ant-color-text-secondary)' }}>
-          提示：未选择分组时，股票将显示在"全部"列表中
+          提示：必须至少选择一个分组（可多选）
         </div>
       </Modal>
     </div>

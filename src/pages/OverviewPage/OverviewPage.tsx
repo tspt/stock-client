@@ -17,6 +17,7 @@ import { OverviewTable } from '@/components/OverviewTable/OverviewTable';
 import { OverviewColumnSettings } from '@/components/OverviewColumnSettings/OverviewColumnSettings';
 import { exportToCSV, exportToExcel } from '@/utils/exportUtils';
 import type { KLinePeriod } from '@/types/stock';
+import { BUILTIN_GROUP_SELF_ID, BUILTIN_GROUP_SELF_NAME } from '@/utils/constants';
 import styles from './OverviewPage.module.css';
 
 const { Header, Content } = Layout;
@@ -28,6 +29,8 @@ const PERIOD_OPTIONS: { label: string; value: KLinePeriod }[] = [
   { label: '月', value: 'month' },
   { label: '年', value: 'year' },
 ];
+
+const GROUP_ALL_ID = '__all__';
 
 export function OverviewPage() {
   const {
@@ -46,13 +49,20 @@ export function OverviewPage() {
     resetColumnConfig,
   } = useOverviewStore();
 
-  const { watchList } = useStockStore();
+  const { watchList, groups, loadWatchList } = useStockStore();
   const [columnSettingsVisible, setColumnSettingsVisible] = useState(false);
+  const [selectedGroupId, setSelectedGroupId] = useState<string>(GROUP_ALL_ID);
 
   // 加载缓存数据
   useEffect(() => {
     loadCachedData();
   }, [loadCachedData]);
+
+  // 确保自选股/分组已加载（避免用户直接打开概况页时为空）
+  useEffect(() => {
+    loadWatchList();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // 处理一键分析
   const handleAnalyze = async () => {
@@ -60,7 +70,19 @@ export function OverviewPage() {
       message.warning('请先添加股票到自选列表');
       return;
     }
-    await startAnalysis(currentPeriod);
+
+    // 如果选择了具体分组，但该分组没有股票，提前提示
+    if (selectedGroupId !== GROUP_ALL_ID) {
+      const hasStocksInGroup = watchList.some(
+        (s) => s.groupIds && s.groupIds.includes(selectedGroupId)
+      );
+      if (!hasStocksInGroup) {
+        message.warning('该分组暂无股票');
+        return;
+      }
+    }
+
+    await startAnalysis(currentPeriod, selectedGroupId);
   };
 
   // 处理取消
@@ -103,6 +125,24 @@ export function OverviewPage() {
         <div className={styles.headerContent}>
           <h2 className={styles.title}>列表数据概况</h2>
           <Space>
+            <Select
+              value={selectedGroupId}
+              onChange={(value: string) => {
+                setSelectedGroupId(value);
+                if (analysisData.length > 0) {
+                  message.info('分组已更改，请重新分析');
+                }
+              }}
+              options={[
+                { label: '全部', value: GROUP_ALL_ID },
+                { label: BUILTIN_GROUP_SELF_NAME, value: BUILTIN_GROUP_SELF_ID },
+                ...[...groups]
+                  .sort((a, b) => a.order - b.order)
+                  .map((g) => ({ label: g.name, value: g.id })),
+              ]}
+              style={{ width: 160 }}
+              disabled={loading}
+            />
             <Select
               value={currentPeriod}
               onChange={(value: KLinePeriod) => {

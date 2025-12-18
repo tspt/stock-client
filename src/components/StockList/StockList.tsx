@@ -2,7 +2,7 @@
  * 股票列表组件（垂直布局）
  */
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { List, Button, Empty, Tooltip, Menu, Modal } from 'antd';
 import {
   UpOutlined,
@@ -24,6 +24,7 @@ import { StockGroupSelector } from '@/components/StockGroupSelector/StockGroupSe
 import { formatPrice, formatChangePercent, formatVolume } from '@/utils/format';
 import { AlertSettingModal } from '@/components/PriceAlert/AlertSettingModal';
 import { message } from 'antd';
+import { BUILTIN_GROUP_SELF_COLOR, BUILTIN_GROUP_SELF_ID, BUILTIN_GROUP_SELF_NAME } from '@/utils/constants';
 import styles from './StockList.module.css';
 
 export function StockList() {
@@ -39,6 +40,14 @@ export function StockList() {
     groups,
     addStockToGroups,
   } = useStockStore();
+
+  const groupOptions = useMemo(
+    () => [
+      { id: BUILTIN_GROUP_SELF_ID, name: BUILTIN_GROUP_SELF_NAME, color: BUILTIN_GROUP_SELF_COLOR, order: -999 },
+      ...groups,
+    ],
+    [groups]
+  );
   const [contextMenu, setContextMenu] = useState<{
     visible: boolean;
     x: number;
@@ -125,12 +134,6 @@ export function StockList() {
 
   // 处理添加到分组
   const handleAddToGroups = (code: string) => {
-    if (groups.length === 0) {
-      message.info('请先创建分组');
-      handleContextMenuClose();
-      return;
-    }
-
     const stock = watchList.find((s) => s.code === code);
     if (!stock) return;
 
@@ -371,7 +374,7 @@ export function StockList() {
                 key: 'addToGroup',
                 label: '添加到分组',
                 icon: <FolderAddOutlined />,
-                disabled: groups.length === 0,
+                disabled: false,
                 onClick: () => {
                   handleAddToGroups(contextMenu.code);
                 },
@@ -435,7 +438,7 @@ export function StockList() {
           </div>
         )}
         <StockGroupSelector
-          groups={groups}
+          groups={groupOptions}
           selectedGroupIds={selectedGroupIds}
           onChange={setSelectedGroupIds}
         />
