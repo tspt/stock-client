@@ -17,6 +17,7 @@
   border-bottom: 1px solid var(--ant-color-border);
   padding: 0 16px;
   flex-shrink: 0;
+  height: 44px;
 }
 
 .headerContent {
@@ -28,7 +29,7 @@
 
 .title {
   margin: 0;
-  font-size: 20px;
+  font-size: 16px;
   font-weight: 600;
 }
 
@@ -94,6 +95,12 @@
 }
 
 .alertsLayout {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.overviewLayout {
   width: 100%;
   height: 100%;
   overflow: hidden;

@@ -1,0 +1,91 @@
+.overviewPage {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  background: var(--ant-color-bg-container);
+  border-bottom: 1px solid var(--ant-color-border);
+  padding: 0 24px;
+  height: 64px;
+  line-height: 64px;
+}
+
+.headerContent {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 100%;
+}
+
+.title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.content {
+  flex: 1;
+}
+
+.progressCard {
+  margin-bottom: 16px;
+}
+
+.progressInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.progressText {
+  font-size: 14px;
+  color: var(--ant-color-text-secondary);
+}
+
+.errorCard {
+  margin-bottom: 16px;
+}
+
+.errorList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.errorItem {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px;
+  background: var(--ant-color-fill-tertiary);
+  border-radius: 4px;
+}
+
+.errorStock {
+  font-weight: 500;
+  color: var(--ant-color-text);
+}
+
+.errorMessage {
+  color: var(--ant-color-error);
+  font-size: 12px;
+}
+
+.tableCard {
+  height: 100%;
+  overflow: hidden;
+}
+
+.emptyCard {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+}
+
+.emptyText {
+  font-size: 16px;
+  color: var(--ant-color-text-secondary);
+}
+

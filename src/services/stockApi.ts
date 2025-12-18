@@ -73,6 +73,10 @@ export function searchStockLocal(keyword: string, allStocks: StockInfo[]): Stock
     .slice(0, 50); // 限制返回最多50条结果
 }
 
+// 请求缓存 Map，用于防止相同参数的重复请求
+// key: 排序后的股票代码字符串（逗号分隔），value: 正在进行的 Promise
+const quotesRequestCache = new Map<string, Promise<StockQuote[]>>();
+
 /**
  * 获取股票实时行情（批量查询）
  * @param codes 股票代码数组（统一格式：SH600000, SZ000001）
@@ -82,60 +86,81 @@ export async function getStockQuotes(codes: string[]): Promise<StockQuote[]> {
     return [];
   }
 
-  try {
-    // 转换为新浪财经格式（sh600000,sz000001）
-    const sinaCodes = codes.map((code) => {
-      const pureCode = getPureCode(code);
-      const market = getMarketFromCode(code);
-      return market === 'SH' ? `sh${pureCode}` : `sz${pureCode}`;
-    });
+  // 生成缓存 key：排序后的代码数组（确保相同代码列表的请求被去重）
+  const sortedCodes = [...codes].sort();
+  const cacheKey = sortedCodes.join(',');
 
-    const codeStr = sinaCodes.join(',');
-    const response = await axios.get(`${API_BASE.SINA}/list=${codeStr}`, {
-      // Referer头由Electron主进程统一处理，这里不需要设置
-    });
+  // 如果相同的请求正在进行，返回同一个 Promise
+  if (quotesRequestCache.has(cacheKey)) {
+    return quotesRequestCache.get(cacheKey)!;
+  }
 
-    const quotes: StockQuote[] = [];
-    const data = response.data;
+  // 创建新的请求 Promise
+  // 使用排序后的代码列表，确保相同代码列表的请求使用相同的顺序
+  const requestPromise = (async (): Promise<StockQuote[]> => {
+    try {
+      // 转换为新浪财经格式（sh600000,sz000001）
+      const sinaCodes = sortedCodes.map((code) => {
+        const pureCode = getPureCode(code);
+        const market = getMarketFromCode(code);
+        return market === 'SH' ? `sh${pureCode}` : `sz${pureCode}`;
+      });
 
-    if (typeof data === 'string') {
-      const lines = data.split('\n');
-      lines.forEach((line: string, index: number) => {
-        if (line.trim() && index < codes.length) {
-          const match = line.match(/var hq_str_\w+="([^"]+)"/);
-          if (match) {
-            const fields = match[1].split(',');
-            if (fields.length >= 32) {
-              const code = codes[index];
-              const price = parseFloat(fields[3]) || 0;
-              const prevClose = parseFloat(fields[2]) || 0;
-              const change = price - prevClose;
-              const changePercent = prevClose !== 0 ? (change / prevClose) * 100 : 0;
+      const codeStr = sinaCodes.join(',');
+      const response = await axios.get(`${API_BASE.SINA}/list=${codeStr}`, {
+        // Referer头由Electron主进程统一处理，这里不需要设置
+      });
 
-              quotes.push({
-                code,
-                name: fields[0],
-                price,
-                change,
-                changePercent,
-                open: parseFloat(fields[1]) || 0,
-                prevClose,
-                high: parseFloat(fields[4]) || 0,
-                low: parseFloat(fields[5]) || 0,
-                volume: parseInt(fields[8]) || 0,
-                amount: parseFloat(fields[9]) || 0,
-                timestamp: Date.now(),
-              });
+      const quotes: StockQuote[] = [];
+      const data = response.data;
+
+      if (typeof data === 'string') {
+        const lines = data.split('\n');
+        lines.forEach((line: string, index: number) => {
+          if (line.trim() && index < sortedCodes.length) {
+            const match = line.match(/var hq_str_\w+="([^"]+)"/);
+            if (match) {
+              const fields = match[1].split(',');
+              if (fields.length >= 32) {
+                const code = sortedCodes[index];
+                const price = parseFloat(fields[3]) || 0;
+                const prevClose = parseFloat(fields[2]) || 0;
+                const change = price - prevClose;
+                const changePercent = prevClose !== 0 ? (change / prevClose) * 100 : 0;
+
+                quotes.push({
+                  code,
+                  name: fields[0],
+                  price,
+                  change,
+                  changePercent,
+                  open: parseFloat(fields[1]) || 0,
+                  prevClose,
+                  high: parseFloat(fields[4]) || 0,
+                  low: parseFloat(fields[5]) || 0,
+                  volume: parseInt(fields[8]) || 0,
+                  amount: parseFloat(fields[9]) || 0,
+                  timestamp: Date.now(),
+                });
+              }
             }
           }
-        }
-      });
-    }
+        });
+      }
 
-    return quotes;
-  } catch (error) {
-    return [];
-  }
+      return quotes;
+    } catch (error) {
+      return [];
+    } finally {
+      // 请求完成后清除缓存
+      quotesRequestCache.delete(cacheKey);
+    }
+  })();
+
+  // 将 Promise 存入缓存
+  quotesRequestCache.set(cacheKey, requestPromise);
+
+  return requestPromise;
 }
 
 /**

@@ -4,7 +4,7 @@
 
 import { useEffect, useState } from 'react';
 import { ConfigProvider, App as AntdApp, theme, Layout, Tabs } from 'antd';
-import { StockOutlined, BellOutlined } from '@ant-design/icons';
+import { StockOutlined, BellOutlined, BarChartOutlined } from '@ant-design/icons';
 import zhCN from 'antd/locale/zh_CN';
 import { useTheme } from '@/hooks/useTheme';
 import { useStockStore } from '@/stores/stockStore';
@@ -13,6 +13,7 @@ import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { ListPage } from '@/pages/ListPage/ListPage';
 import { DetailPage } from '@/pages/DetailPage/DetailPage';
 import { AlertPage } from '@/pages/AlertPage/AlertPage';
+import { OverviewPage } from '@/pages/OverviewPage/OverviewPage';
 import styles from './App.module.css';
 
 const { Header, Content } = Layout;
@@ -68,9 +69,9 @@ function AppContent() {
     return cleanup;
   }, [setSelectedStock]);
 
-  // 当切换到提醒管理tab时，清除选中的股票
+  // 当切换到提醒管理或数据概况tab时，清除选中的股票
   useEffect(() => {
-    if (activeTab === 'alerts') {
+    if (activeTab === 'alerts' || activeTab === 'overview') {
       setSelectedStock(null);
     }
   }, [activeTab, setSelectedStock]);
@@ -130,6 +131,20 @@ function AppContent() {
                     children: (
                       <div className={styles.alertsLayout}>
                         <AlertPage />
+                      </div>
+                    ),
+                  },
+                  {
+                    key: 'overview',
+                    label: (
+                      <span>
+                        <BarChartOutlined />
+                        列表数据概况
+                      </span>
+                    ),
+                    children: (
+                      <div className={styles.overviewLayout}>
+                        <OverviewPage />
                       </div>
                     ),
                   },

@@ -1,0 +1,22 @@
+.columnList {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.columnItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--ant-color-border-secondary);
+}
+
+.columnItem:last-child {
+  border-bottom: none;
+}
+
+.columnTitle {
+  min-width: 120px;
+  font-size: 14px;
+}
+

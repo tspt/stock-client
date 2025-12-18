@@ -43,6 +43,7 @@ interface StockState {
   removeStock: (code: string) => void;
   updateQuotes: (quotes: StockQuote[]) => void;
   setSortType: (type: SortType) => void;
+  loadSortType: () => void;
   setSelectedStock: (code: string | null) => void;
   loadWatchList: () => void;
   saveWatchList: () => void;
@@ -126,10 +127,20 @@ export const useStockStore = create<StockState>((set, get) => ({
     } else {
       set({ sortType: type });
     }
+    // 保存排序类型到 localStorage
+    setStorage(STORAGE_KEYS.SORT_TYPE, type);
   },
 
   setSelectedStock: (code) => {
     set({ selectedStock: code });
+  },
+
+  loadSortType: () => {
+    const savedSortType = getStorage<SortType>(STORAGE_KEYS.SORT_TYPE, 'default');
+    // 验证排序类型是否有效
+    if (savedSortType === 'default' || savedSortType === 'rise' || savedSortType === 'fall') {
+      set({ sortType: savedSortType });
+    }
   },
 
   loadWatchList: () => {
@@ -156,6 +167,9 @@ export const useStockStore = create<StockState>((set, get) => ({
         watchList: data.watchList || [] 
       });
     }
+
+    // 加载排序类型
+    get().loadSortType();
   },
 
   saveWatchList: () => {

@@ -230,3 +230,85 @@ export interface PriceAlert {
   /** 是否启用 */
   enabled: boolean;
 }
+
+/**
+ * 股票数据概况 - 单只股票的分析数据
+ */
+export interface StockOverviewData {
+  /** 股票代码 */
+  code: string;
+  /** 股票名称 */
+  name: string;
+  /** 当前价 */
+  price: number;
+  /** 涨跌额 */
+  change: number;
+  /** 涨跌幅（百分比） */
+  changePercent: number;
+  /** 成交量（手） */
+  volume: number;
+  /** 成交额（元） */
+  amount: number;
+  /** 总市值（元） */
+  marketCap?: number;
+  /** 流通市值（元） */
+  circulatingMarketCap?: number;
+  /** 市盈率(PE) */
+  peRatio?: number;
+  /** 换手率（百分比） */
+  turnoverRate?: number;
+  /** KDJ K值 */
+  kdjK?: number;
+  /** KDJ D值 */
+  kdjD?: number;
+  /** KDJ J值 */
+  kdjJ?: number;
+  /** 分析时间戳 */
+  analyzedAt: number;
+  /** 错误信息（如果获取失败） */
+  error?: string;
+}
+
+/**
+ * 数据概况分析结果
+ */
+export interface OverviewAnalysisResult {
+  /** 数据列表 */
+  data: StockOverviewData[];
+  /** 分析时间戳 */
+  timestamp: number;
+  /** K线周期 */
+  period: KLinePeriod;
+  /** 总数量 */
+  total: number;
+  /** 成功数量 */
+  success: number;
+  /** 失败数量 */
+  failed: number;
+}
+
+/**
+ * 列配置项
+ */
+export interface OverviewColumnConfig {
+  /** 列key */
+  key: string;
+  /** 显示名称 */
+  title: string;
+  /** 是否可见 */
+  visible: boolean;
+  /** 顺序 */
+  order: number;
+  /** 宽度（可选） */
+  width?: number;
+}
+
+/**
+ * 排序配置
+ */
+export interface OverviewSortConfig {
+  /** 排序列key */
+  key: string | null;
+  /** 排序方向 */
+  direction: 'asc' | 'desc' | null;
+}

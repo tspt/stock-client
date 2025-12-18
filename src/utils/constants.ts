@@ -13,6 +13,8 @@ export const STORAGE_KEYS = {
   THEME: 'stock_theme',
   /** 价格提醒列表 */
   PRICE_ALERTS: 'stock_price_alerts',
+  /** 排序类型 */
+  SORT_TYPE: 'stock_sort_type',
 } as const;
 
 /** MA周期配置 */
@@ -73,3 +75,32 @@ export const ALERT_TIME_PERIODS = [
   { label: '永久', value: 'permanent' as const },
 ] as const;
 
+/** 数据概况相关常量 */
+/** IndexedDB 数据库名 */
+export const OVERVIEW_DB_NAME = 'StockOverviewDB';
+/** IndexedDB 版本 */
+export const OVERVIEW_DB_VERSION = 1;
+/** 对象存储名称 */
+export const OVERVIEW_STORE_NAME = 'overviewData';
+/** 历史存储名称 */
+export const OVERVIEW_HISTORY_STORE_NAME = 'overviewHistory';
+/** 默认并发数 */
+export const OVERVIEW_CONCURRENT_LIMIT = 5;
+/** 批次间延迟（毫秒） */
+export const OVERVIEW_BATCH_DELAY = 100;
+/** 默认列配置 */
+export const OVERVIEW_DEFAULT_COLUMNS = [
+  { key: 'name', title: '股票名称', visible: true },
+  { key: 'price', title: '当前价', visible: true },
+  { key: 'change', title: '涨跌额', visible: true },
+  { key: 'changePercent', title: '涨跌幅', visible: true },
+  { key: 'volume', title: '成交量（亿）', visible: true },
+  { key: 'amount', title: '成交额（亿）', visible: true },
+  { key: 'marketCap', title: '总市值', visible: true },
+  { key: 'circulatingMarketCap', title: '流通市值', visible: true },
+  { key: 'peRatio', title: '市盈率(PE)', visible: true },
+  { key: 'turnoverRate', title: '换手率', visible: true },
+  { key: 'kdjK', title: 'KDJ-K', visible: true },
+  { key: 'kdjD', title: 'KDJ-D', visible: true },
+  { key: 'kdjJ', title: 'KDJ-J', visible: true },
+] as const;

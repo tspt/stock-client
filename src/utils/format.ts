@@ -32,6 +32,18 @@ export function formatVolume(volume: number): string {
 }
 
 /**
+ * 格式化成交量（亿单位，保留2位小数）
+ * 用于数据概况页面，数据已经是亿单位（在overviewService中已转换）
+ */
+export function formatVolumeInBillion(volume: number): string {
+  if (volume === null || volume === undefined || volume === 0) {
+    return '-';
+  }
+  // volume已经是亿单位，直接格式化
+  return `${volume.toFixed(2)}`;
+}
+
+/**
  * 格式化成交额（转换为万或亿）
  */
 export function formatAmount(amount: number): string {
@@ -42,6 +54,18 @@ export function formatAmount(amount: number): string {
     return `${(amount / 10000).toFixed(2)}万`;
   }
   return amount.toFixed(2);
+}
+
+/**
+ * 格式化成交额（亿单位，保留2位小数）
+ * 用于数据概况页面，数据已经是亿单位（在overviewService中已转换）
+ */
+export function formatAmountInBillion(amount: number): string {
+  if (amount === null || amount === undefined || amount === 0) {
+    return '-';
+  }
+  // amount已经是亿单位，直接格式化
+  return `${amount.toFixed(2)}`;
 }
 
 /**
