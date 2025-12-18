@@ -109,3 +109,43 @@ export const OVERVIEW_DEFAULT_COLUMNS = [
   { key: 'kdjD', title: 'KDJ-D', visible: true },
   { key: 'kdjJ', title: 'KDJ-J', visible: true },
 ] as const;
+
+/** 机会分析相关常量 */
+/** IndexedDB 数据库名 */
+export const OPPORTUNITY_DB_NAME = 'StockOpportunityDB';
+/** IndexedDB 版本 */
+export const OPPORTUNITY_DB_VERSION = 1;
+/** 对象存储名称 */
+export const OPPORTUNITY_STORE_NAME = 'opportunityData';
+/** 历史存储名称 */
+export const OPPORTUNITY_HISTORY_STORE_NAME = 'opportunityHistory';
+/** 默认并发数（每批3只股票） */
+export const OPPORTUNITY_CONCURRENT_LIMIT = 3;
+/** 批次间延迟（毫秒） */
+export const OPPORTUNITY_BATCH_DELAY = 1200;
+/** 默认列配置 */
+export const OPPORTUNITY_DEFAULT_COLUMNS = [
+  { key: 'name', title: '股票名称', visible: true },
+  { key: 'price', title: '当前价', visible: true },
+  { key: 'opportunityChangePercent', title: '涨跌幅', visible: true },
+  { key: 'avgPrice', title: '平均价', visible: true },
+  { key: 'highPrice', title: '最高价', visible: true },
+  { key: 'lowPrice', title: '最低价', visible: true },
+  { key: 'volume', title: '成交量（亿）', visible: true },
+  { key: 'amount', title: '成交额（亿）', visible: true },
+  { key: 'marketCap', title: '总市值', visible: true },
+  { key: 'circulatingMarketCap', title: '流通市值', visible: true },
+  { key: 'peRatio', title: '市盈率(PE)', visible: true },
+  { key: 'turnoverRate', title: '换手率', visible: true },
+  { key: 'kdjK', title: 'KDJ-k', visible: true },
+  { key: 'kdjD', title: 'KDJ-D', visible: true },
+  { key: 'kdjJ', title: 'KDJ-J', visible: true },
+  { key: 'ma5', title: 'MA-5', visible: true },
+  { key: 'ma10', title: 'MA-10', visible: true },
+  { key: 'ma20', title: 'MA-20', visible: true },
+  { key: 'ma30', title: 'MA-30', visible: true },
+  { key: 'ma60', title: 'MA-60', visible: true },
+  { key: 'ma120', title: 'MA-120', visible: true },
+  { key: 'ma240', title: 'MA-240', visible: true },
+  { key: 'ma360', title: 'MA-360', visible: true },
+] as const;

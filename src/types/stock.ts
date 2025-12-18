@@ -288,6 +288,89 @@ export interface OverviewAnalysisResult {
 }
 
 /**
+ * 机会分析 - 单只股票的分析数据
+ */
+export interface StockOpportunityData {
+  /** 股票代码 */
+  code: string;
+  /** 股票名称 */
+  name: string;
+  /** 当前价 */
+  price: number;
+  /**
+   * 涨跌幅（机会分析口径，百分比）：(当前价-最高价)/最高价*100
+   * 允许为负
+   */
+  opportunityChangePercent?: number;
+  /** 平均价（区间内平均收盘价） */
+  avgPrice?: number;
+  /** 最高价（区间K线 + 当日行情） */
+  highPrice?: number;
+  /** 最低价（区间K线 + 当日行情） */
+  lowPrice?: number;
+  /** 成交量（亿，保持与数据概况页一致的转换逻辑） */
+  volume: number;
+  /** 成交额（亿，保持与数据概况页一致的转换逻辑） */
+  amount: number;
+  /** 总市值（元） */
+  marketCap?: number;
+  /** 流通市值（元） */
+  circulatingMarketCap?: number;
+  /** 市盈率(PE) */
+  peRatio?: number;
+  /** 换手率（百分比） */
+  turnoverRate?: number;
+  /** KDJ K值 */
+  kdjK?: number;
+  /** KDJ D值 */
+  kdjD?: number;
+  /** KDJ J值 */
+  kdjJ?: number;
+  /** MA-5 */
+  ma5?: number;
+  /** MA-10 */
+  ma10?: number;
+  /** MA-20 */
+  ma20?: number;
+  /** MA-30 */
+  ma30?: number;
+  /** MA-60 */
+  ma60?: number;
+  /** MA-120 */
+  ma120?: number;
+  /** MA-240 */
+  ma240?: number;
+  /** MA-360 */
+  ma360?: number;
+  /** 分析时间戳 */
+  analyzedAt: number;
+  /** 错误信息（如果获取失败） */
+  error?: string;
+}
+
+/**
+ * 机会分析结果
+ */
+export interface OpportunityAnalysisResult {
+  /** 数据列表 */
+  data: StockOpportunityData[];
+  /** 分析时间戳 */
+  timestamp: number;
+  /** K线周期 */
+  period: KLinePeriod;
+  /** K线条数 */
+  count: number;
+  /** 分组ID（__all__/__self__/自定义分组） */
+  groupId: string;
+  /** 总数量 */
+  total: number;
+  /** 成功数量 */
+  success: number;
+  /** 失败数量 */
+  failed: number;
+}
+
+/**
  * 列配置项
  */
 export interface OverviewColumnConfig {

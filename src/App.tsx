@@ -14,6 +14,7 @@ import { ListPage } from '@/pages/ListPage/ListPage';
 import { DetailPage } from '@/pages/DetailPage/DetailPage';
 import { AlertPage } from '@/pages/AlertPage/AlertPage';
 import { OverviewPage } from '@/pages/OverviewPage/OverviewPage';
+import { OpportunityPage } from '@/pages/OpportunityPage/OpportunityPage';
 import styles from './App.module.css';
 
 const { Header, Content } = Layout;
@@ -69,9 +70,9 @@ function AppContent() {
     return cleanup;
   }, [setSelectedStock]);
 
-  // 当切换到提醒管理或数据概况tab时，清除选中的股票
+  // 当切换到提醒管理/数据概况/机会分析 tab 时，清除选中的股票
   useEffect(() => {
-    if (activeTab === 'alerts' || activeTab === 'overview') {
+    if (activeTab === 'alerts' || activeTab === 'overview' || activeTab === 'opportunity') {
       setSelectedStock(null);
     }
   }, [activeTab, setSelectedStock]);
@@ -145,6 +146,20 @@ function AppContent() {
                     children: (
                       <div className={styles.overviewLayout}>
                         <OverviewPage />
+                      </div>
+                    ),
+                  },
+                  {
+                    key: 'opportunity',
+                    label: (
+                      <span>
+                        <BarChartOutlined />
+                        机会分析
+                      </span>
+                    ),
+                    children: (
+                      <div className={styles.opportunityLayout}>
+                        <OpportunityPage />
                       </div>
                     ),
                   },

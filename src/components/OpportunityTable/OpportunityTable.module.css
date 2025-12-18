@@ -1,0 +1,23 @@
+.tableContainer {
+  width: 100%;
+  height: 100%;
+}
+
+.stockName {
+  font-weight: 500;
+}
+
+.positiveValue {
+  color: #ff4d4f;
+}
+
+.negativeValue {
+  color: #52c41a;
+}
+
+.errorText {
+  color: #ff4d4f;
+  font-size: 12px;
+}
+
+
