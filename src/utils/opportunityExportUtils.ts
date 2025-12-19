@@ -25,6 +25,12 @@ function formatValue(value: any, key: string): string {
       return formatPrice(Number(value));
     case 'opportunityChangePercent':
       return `${Number(value).toFixed(2)}%`;
+    case 'change1w':
+    case 'change1m':
+    case 'change1q':
+    case 'change6m':
+    case 'change1y':
+      return `${Number(value).toFixed(2)}%`;
     case 'volume':
       return formatVolumeInBillion(Number(value));
     case 'amount':
@@ -53,7 +59,10 @@ function formatValue(value: any, key: string): string {
   }
 }
 
-export function exportOpportunityToCSV(data: StockOpportunityData[], columns: OverviewColumnConfig[]): void {
+export function exportOpportunityToCSV(
+  data: StockOpportunityData[],
+  columns: OverviewColumnConfig[]
+): void {
   const visibleColumns = columns.filter((c) => c.visible).sort((a, b) => a.order - b.order);
 
   const headers = visibleColumns.map((col) => col.title).join(',');
@@ -142,5 +151,3 @@ export async function exportOpportunityToExcel(
     throw new Error('Excel导出失败，请确保已安装xlsx库。已回退到CSV格式。');
   }
 }
-
-

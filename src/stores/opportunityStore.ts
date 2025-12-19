@@ -11,7 +11,11 @@ import type {
   KLinePeriod,
 } from '@/types/stock';
 import { analyzeAllStocksOpportunity } from '@/services/opportunityService';
-import { saveOpportunityData, getOpportunityData, saveOpportunityHistory } from '@/utils/opportunityIndexedDB';
+import {
+  saveOpportunityData,
+  getOpportunityData,
+  saveOpportunityHistory,
+} from '@/utils/opportunityIndexedDB';
 import { OPPORTUNITY_DEFAULT_COLUMNS } from '@/utils/constants';
 import { useStockStore } from './stockStore';
 
@@ -47,6 +51,37 @@ function initColumnConfig(): OverviewColumnConfig[] {
     ...col,
     order: index,
   }));
+}
+
+/**
+ * 向后兼容：当新增列时，将默认列合并到已保存的列配置中（保持用户原有顺序，并把新列追加到末尾）
+ */
+function mergeSavedColumns(saved: OverviewColumnConfig[]): OverviewColumnConfig[] {
+  const defaults = initColumnConfig();
+  const defaultMap = new Map(defaults.map((c) => [c.key, c]));
+
+  const sortedSaved = [...saved].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  const merged: OverviewColumnConfig[] = [];
+
+  // 先按用户保存的顺序写入（仅保留仍存在于默认列的key）
+  sortedSaved.forEach((col) => {
+    const def = defaultMap.get(col.key);
+    if (!def) return;
+    merged.push({
+      ...def,
+      ...col,
+      order: merged.length,
+    });
+  });
+
+  const existingKeys = new Set(merged.map((c) => c.key));
+  // 再把新增的默认列追加
+  defaults.forEach((def) => {
+    if (existingKeys.has(def.key)) return;
+    merged.push({ ...def, order: merged.length });
+  });
+
+  return merged;
 }
 
 export const useOpportunityStore = create<OpportunityState>((set, get) => ({
@@ -195,10 +230,8 @@ try {
   const saved = localStorage.getItem(OPPORTUNITY_COLUMN_CONFIG_KEY);
   if (saved) {
     const config = JSON.parse(saved) as OverviewColumnConfig[];
-    useOpportunityStore.setState({ columnConfig: config });
+    useOpportunityStore.setState({ columnConfig: mergeSavedColumns(config) });
   }
 } catch (error) {
   console.error('加载机会分析列配置失败:', error);
 }
-
-

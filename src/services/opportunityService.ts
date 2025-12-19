@@ -11,6 +11,13 @@ import { ConcurrencyManager } from '@/utils/concurrencyManager';
 import { OPPORTUNITY_BATCH_DELAY, OPPORTUNITY_CONCURRENT_LIMIT } from '@/utils/constants';
 
 const MA_PERIODS = [5, 10, 20, 30, 60, 120, 240, 360] as const;
+const RECENT_WINDOWS = {
+  change1w: 5,
+  change1m: 20,
+  change1q: 60,
+  change6m: 120,
+  change1y: 250,
+} as const;
 
 function isFinitePositive(n: unknown): n is number {
   return typeof n === 'number' && isFinite(n) && n > 0;
@@ -26,7 +33,10 @@ function lastFinite(arr: number[]): number | undefined {
   return undefined;
 }
 
-function calcHighLowAvg(klineData: KLineData[], quote: { price: number; high: number; low: number }) {
+function calcHighLowAvg(
+  klineData: KLineData[],
+  quote: { price: number; high: number; low: number }
+) {
   if (!klineData || klineData.length === 0) {
     return { avgPrice: undefined, highPrice: undefined, lowPrice: undefined };
   }
@@ -66,6 +76,43 @@ function calcOpportunityChangePercent(price: number, highPrice?: number): number
   return ((price - highPrice) / highPrice) * 100;
 }
 
+function calcPercentAgainstCurrent(price: number, baseClose?: number): number | undefined {
+  if (!isFinitePositive(price) || !isFinitePositive(baseClose)) return undefined;
+  return ((price - baseClose) / baseClose) * 100;
+}
+
+function getCloseNPeriodsAgo(klineData: KLineData[], n: number): number | undefined {
+  const idx = klineData.length - 1 - n;
+  if (idx < 0) return undefined;
+  const close = klineData[idx]?.close;
+  return typeof close === 'number' && isFinite(close) && close > 0 ? close : undefined;
+}
+
+function calcRecentChangePercents(price: number, dailyKlines: KLineData[]) {
+  const change1w = calcPercentAgainstCurrent(
+    price,
+    getCloseNPeriodsAgo(dailyKlines, RECENT_WINDOWS.change1w)
+  );
+  const change1m = calcPercentAgainstCurrent(
+    price,
+    getCloseNPeriodsAgo(dailyKlines, RECENT_WINDOWS.change1m)
+  );
+  const change1q = calcPercentAgainstCurrent(
+    price,
+    getCloseNPeriodsAgo(dailyKlines, RECENT_WINDOWS.change1q)
+  );
+  const change6m = calcPercentAgainstCurrent(
+    price,
+    getCloseNPeriodsAgo(dailyKlines, RECENT_WINDOWS.change6m)
+  );
+  const change1y = calcPercentAgainstCurrent(
+    price,
+    getCloseNPeriodsAgo(dailyKlines, RECENT_WINDOWS.change1y)
+  );
+
+  return { change1w, change1m, change1q, change6m, change1y };
+}
+
 function calcLatestKDJ(klineData: KLineData[]) {
   try {
     const kdj = calculateKDJ(klineData);
@@ -80,10 +127,12 @@ function calcLatestKDJ(klineData: KLineData[]) {
 }
 
 function calcLatestMAs(klineData: KLineData[]) {
-  const result: Partial<Pick<
-    StockOpportunityData,
-    'ma5' | 'ma10' | 'ma20' | 'ma30' | 'ma60' | 'ma120' | 'ma240' | 'ma360'
-  >> = {};
+  const result: Partial<
+    Pick<
+      StockOpportunityData,
+      'ma5' | 'ma10' | 'ma20' | 'ma30' | 'ma60' | 'ma120' | 'ma240' | 'ma360'
+    >
+  > = {};
 
   for (const p of MA_PERIODS) {
     const ma = calculateMA(klineData, p);
@@ -96,7 +145,15 @@ function calcLatestMAs(klineData: KLineData[]) {
 
 async function analyzeOneStock(
   stock: StockInfo,
-  quote: { code: string; name: string; price: number; high: number; low: number; volume: number; amount: number },
+  quote: {
+    code: string;
+    name: string;
+    price: number;
+    high: number;
+    low: number;
+    volume: number;
+    amount: number;
+  },
   period: KLinePeriod,
   count: number,
   cancelledRef: { cancelled: boolean }
@@ -119,6 +176,16 @@ async function analyzeOneStock(
     throw new Error('获取K线数据失败');
   }
 
+  // 近一周/近一月/近一季/近半年/近一年：统一按“日线”计算（与当前价对比）
+  // - 当period=day时复用本次K线
+  // - 否则额外拉取日线（至少260条，覆盖近一年窗口）
+  let dailyKlines: KLineData[] = klineData;
+  if (period !== 'day') {
+    dailyKlines = await getKLineData(code, 'day', Math.max(260, count)).catch(() => []);
+  }
+  const recentChange =
+    dailyKlines && dailyKlines.length > 0 ? calcRecentChangePercents(quote.price, dailyKlines) : {};
+
   const { avgPrice, highPrice, lowPrice } = calcHighLowAvg(klineData, {
     price: quote.price,
     high: quote.high,
@@ -138,6 +205,7 @@ async function analyzeOneStock(
     name: quote.name || stock.name,
     price: quote.price,
     opportunityChangePercent,
+    ...(recentChange as any),
     avgPrice,
     highPrice,
     lowPrice,
@@ -169,7 +237,12 @@ export function analyzeAllStocksOpportunity(
   stocks: StockInfo[],
   period: KLinePeriod,
   count: number,
-  onProgress?: (progress: { total: number; completed: number; failed: number; percent: number }) => void
+  onProgress?: (progress: {
+    total: number;
+    completed: number;
+    failed: number;
+    percent: number;
+  }) => void
 ): {
   promise: Promise<{
     results: StockOpportunityData[];
@@ -296,11 +369,12 @@ export function analyzeAllStocksOpportunity(
     return { results, errors };
   })().catch((e) => {
     const err = e instanceof Error ? e : new Error(String(e));
-    const errors: Array<{ stock: StockInfo; error: Error }> = stocks.map((s) => ({ stock: s, error: err }));
+    const errors: Array<{ stock: StockInfo; error: Error }> = stocks.map((s) => ({
+      stock: s,
+      error: err,
+    }));
     return { results: [], errors };
   });
 
   return { promise, cancel };
 }
-
-

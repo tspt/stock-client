@@ -45,6 +45,12 @@ export function OpportunityTable({ data, columns, sortConfig, onSortChange }: Op
         return formatPrice(Number(value));
       case 'opportunityChangePercent':
         return `${Number(value).toFixed(2)}%`;
+      case 'change1w':
+      case 'change1m':
+      case 'change1q':
+      case 'change6m':
+      case 'change1y':
+        return `${Number(value).toFixed(2)}%`;
       case 'volume':
         return formatVolumeInBillion(Number(value));
       case 'amount':
@@ -87,6 +93,20 @@ export function OpportunityTable({ data, columns, sortConfig, onSortChange }: Op
             return <span className={styles.stockName}>{value}</span>;
           }
           if (col.key === 'opportunityChangePercent') {
+            const isPositive = typeof value === 'number' ? value >= 0 : false;
+            return (
+              <span className={isPositive ? styles.positiveValue : styles.negativeValue}>
+                {formatValue(value, col.key)}
+              </span>
+            );
+          }
+          if (
+            col.key === 'change1w' ||
+            col.key === 'change1m' ||
+            col.key === 'change1q' ||
+            col.key === 'change6m' ||
+            col.key === 'change1y'
+          ) {
             const isPositive = typeof value === 'number' ? value >= 0 : false;
             return (
               <span className={isPositive ? styles.positiveValue : styles.negativeValue}>

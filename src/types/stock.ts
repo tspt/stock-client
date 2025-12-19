@@ -302,6 +302,16 @@ export interface StockOpportunityData {
    * 允许为负
    */
   opportunityChangePercent?: number;
+  /** 近一周涨跌幅（与当前价对比，百分比） */
+  change1w?: number;
+  /** 近一月涨跌幅（与当前价对比，百分比） */
+  change1m?: number;
+  /** 近一季涨跌幅（与当前价对比，百分比） */
+  change1q?: number;
+  /** 近半年涨跌幅（与当前价对比，百分比） */
+  change6m?: number;
+  /** 近一年涨跌幅（与当前价对比，百分比） */
+  change1y?: number;
   /** 平均价（区间内平均收盘价） */
   avgPrice?: number;
   /** 最高价（区间K线 + 当日行情） */
