@@ -25,12 +25,6 @@ function formatValue(value: any, key: string): string {
       return formatPrice(Number(value));
     case 'opportunityChangePercent':
       return `${Number(value).toFixed(2)}%`;
-    case 'change1w':
-    case 'change1m':
-    case 'change1q':
-    case 'change6m':
-    case 'change1y':
-      return `${Number(value).toFixed(2)}%`;
     case 'volume':
       return formatVolumeInBillion(Number(value));
     case 'amount':
@@ -45,6 +39,7 @@ function formatValue(value: any, key: string): string {
     case 'kdjK':
     case 'kdjD':
     case 'kdjJ':
+      return Number(value).toFixed(2);
     case 'ma5':
     case 'ma10':
     case 'ma20':
@@ -53,45 +48,10 @@ function formatValue(value: any, key: string): string {
     case 'ma120':
     case 'ma240':
     case 'ma360':
-      return Number(value).toFixed(2);
+      return `${Number(value).toFixed(2)}%`;
     default:
       return String(value);
   }
-}
-
-export function exportOpportunityToCSV(
-  data: StockOpportunityData[],
-  columns: OverviewColumnConfig[]
-): void {
-  const visibleColumns = columns.filter((c) => c.visible).sort((a, b) => a.order - b.order);
-
-  const headers = visibleColumns.map((col) => col.title).join(',');
-  const rows = data.map((item) => {
-    return visibleColumns
-      .map((col) => {
-        const value = (item as any)[col.key];
-        const formatted = formatValue(value, col.key);
-        if (formatted.includes(',') || formatted.includes('"') || formatted.includes('\n')) {
-          return `"${formatted.replace(/"/g, '""')}"`;
-        }
-        return formatted;
-      })
-      .join(',');
-  });
-
-  const csvContent = [headers, ...rows].join('\n');
-
-  const BOM = '\uFEFF';
-  const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
-
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = `机会分析_${new Date().toISOString().slice(0, 10)}.csv`;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
 }
 
 export async function exportOpportunityToExcel(
@@ -146,8 +106,7 @@ export async function exportOpportunityToExcel(
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
   } catch (error) {
-    console.error('Excel导出失败，回退到CSV格式:', error);
-    exportOpportunityToCSV(data, columns);
-    throw new Error('Excel导出失败，请确保已安装xlsx库。已回退到CSV格式。');
+    console.error('Excel导出失败：', error);
+    throw new Error('Excel导出失败。');
   }
 }

@@ -39,7 +39,7 @@ interface OverviewState {
   cancelFn: (() => void) | null;
 
   // Actions
-  startAnalysis: (period: KLinePeriod, groupId?: string) => Promise<void>;
+  startAnalysis: (period: KLinePeriod, groupId?: string, count?: number) => Promise<void>;
   cancelAnalysis: () => void;
   loadCachedData: () => Promise<void>;
   updateColumnConfig: (config: OverviewColumnConfig[]) => void;
@@ -74,7 +74,7 @@ export const useOverviewStore = create<OverviewState>((set, get) => ({
   errors: [],
   cancelFn: null,
 
-  startAnalysis: async (period: KLinePeriod, groupId?: string) => {
+  startAnalysis: async (period: KLinePeriod, groupId?: string, count: number = 300) => {
     const { watchList } = useStockStore.getState();
     const targetList =
       groupId && groupId !== '__all__'
@@ -98,6 +98,7 @@ export const useOverviewStore = create<OverviewState>((set, get) => ({
       const { promise, cancel } = analyzeAllStocks(
         targetList,
         period,
+        count,
         (progress) => {
           if (!cancelled) {
             set({ progress });

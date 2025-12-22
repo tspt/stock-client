@@ -95,19 +95,31 @@ export const OVERVIEW_CONCURRENT_LIMIT = 5;
 export const OVERVIEW_BATCH_DELAY = 100;
 /** 默认列配置 */
 export const OVERVIEW_DEFAULT_COLUMNS = [
-  { key: 'name', title: '股票名称', visible: true },
-  { key: 'price', title: '当前价', visible: true },
-  { key: 'change', title: '涨跌额', visible: true },
-  { key: 'changePercent', title: '涨跌幅', visible: true },
-  { key: 'volume', title: '成交量(亿)', visible: true },
-  { key: 'amount', title: '成交额(亿)', visible: true },
-  { key: 'marketCap', title: '总市值', visible: true },
-  { key: 'circulatingMarketCap', title: '流通市值', visible: true },
-  { key: 'peRatio', title: '市盈率(PE)', visible: true },
-  { key: 'turnoverRate', title: '换手率', visible: true },
-  { key: 'kdjK', title: 'KDJ-K', visible: true },
-  { key: 'kdjD', title: 'KDJ-D', visible: true },
-  { key: 'kdjJ', title: 'KDJ-J', visible: true },
+  { key: 'name', title: '股票名称', visible: true, width: 88 },
+  { key: 'price', title: '当前价', visible: true, width: 88 },
+  { key: 'change', title: '当日涨跌额', visible: false, width: 110 },
+  { key: 'changePercent', title: '当日涨跌幅', visible: true, width: 110 },
+  { key: 'turnoverRate', title: '换手率', visible: true, width: 88 },
+  { key: 'volume', title: '成交量(亿)', visible: false, width: 100 },
+  { key: 'amount', title: '成交额(亿)', visible: true, width: 100 },
+  { key: 'marketCap', title: '总市值', visible: true, width: 100 },
+  { key: 'circulatingMarketCap', title: '流通市值', visible: true, width: 100 },
+  { key: 'peRatio', title: '市盈率(PE)', visible: true, width: 100 },
+  { key: 'kdjK', title: 'KDJ-K', visible: false, width: 88 },
+  { key: 'kdjD', title: 'KDJ-D', visible: false, width: 88 },
+  { key: 'kdjJ', title: 'KDJ-J', visible: true, width: 88 },
+  { key: 'avgPrice', title: '区间平均价', visible: false, width: 110 },
+  { key: 'highPrice', title: '区间最高价', visible: false, width: 110 },
+  { key: 'lowPrice', title: '区间最低价', visible: true, width: 110 },
+  { key: 'opportunityChangePercent', title: '区间最大值回撤比', visible: true, width: 150 },
+  { key: 'ma5', title: 'MA-5涨跌幅', visible: true },
+  { key: 'ma10', title: 'MA-10涨跌幅', visible: true },
+  { key: 'ma20', title: 'MA-20涨跌幅', visible: true },
+  { key: 'ma30', title: 'MA-30涨跌幅', visible: true },
+  { key: 'ma60', title: 'MA-60涨跌幅', visible: true },
+  { key: 'ma120', title: 'MA-120涨跌幅', visible: true, width: 130 },
+  { key: 'ma240', title: 'MA-240涨跌幅', visible: false, width: 130 },
+  { key: 'ma360', title: 'MA-360涨跌幅', visible: false, width: 130 },
 ] as const;
 
 /** 机会分析相关常量 */
@@ -119,38 +131,41 @@ export const OPPORTUNITY_DB_VERSION = 1;
 export const OPPORTUNITY_STORE_NAME = 'opportunityData';
 /** 历史存储名称 */
 export const OPPORTUNITY_HISTORY_STORE_NAME = 'opportunityHistory';
-/** 默认并发数（每批3只股票） */
-export const OPPORTUNITY_CONCURRENT_LIMIT = 3;
+/** 默认并发数（每批5只股票） */
+export const OPPORTUNITY_CONCURRENT_LIMIT = 5;
 /** 批次间延迟（毫秒） */
-export const OPPORTUNITY_BATCH_DELAY = 1200;
+export const OPPORTUNITY_BATCH_DELAY = 1000;
+/** 行情批次间延迟（毫秒） */
+export const QUOTES_BATCH_DELAY = 200;
+/** 行情并发数 */
+export const QUOTES_CONCURRENT_LIMIT = 5;
+/** 行情批次大小 */
+export const QUOTES_BATCH_SIZE = 100;
 /** 默认列配置 */
 export const OPPORTUNITY_DEFAULT_COLUMNS = [
-  { key: 'name', title: '股票名称', visible: true },
-  { key: 'price', title: '当前价', visible: true },
-  { key: 'opportunityChangePercent', title: '涨跌幅', visible: true },
-  { key: 'change1w', title: '近一周', visible: true },
-  { key: 'change1m', title: '近一月', visible: true },
-  { key: 'change1q', title: '近一季', visible: true },
-  { key: 'change6m', title: '近半年', visible: true },
-  { key: 'change1y', title: '近一年', visible: true },
-  { key: 'avgPrice', title: '平均价', visible: true },
-  { key: 'highPrice', title: '最高价', visible: true },
-  { key: 'lowPrice', title: '最低价', visible: true },
-  { key: 'volume', title: '成交量(亿)', visible: true },
-  { key: 'amount', title: '成交额(亿)', visible: true },
-  { key: 'marketCap', title: '总市值', visible: true },
-  { key: 'circulatingMarketCap', title: '流通市值', visible: true },
-  { key: 'peRatio', title: '市盈率(PE)', visible: true },
-  { key: 'turnoverRate', title: '换手率', visible: true },
-  { key: 'kdjK', title: 'KDJ-k', visible: true },
-  { key: 'kdjD', title: 'KDJ-D', visible: true },
-  { key: 'kdjJ', title: 'KDJ-J', visible: true },
-  { key: 'ma5', title: 'MA-5', visible: true },
-  { key: 'ma10', title: 'MA-10', visible: true },
-  { key: 'ma20', title: 'MA-20', visible: true },
-  { key: 'ma30', title: 'MA-30', visible: true },
-  { key: 'ma60', title: 'MA-60', visible: true },
-  { key: 'ma120', title: 'MA-120', visible: true },
-  { key: 'ma240', title: 'MA-240', visible: true },
-  { key: 'ma360', title: 'MA-360', visible: true },
+  { key: 'name', title: '股票名称', visible: true, width: 88 },
+  { key: 'price', title: '当前价', visible: true, width: 88 },
+  { key: 'change', title: '当日涨跌额', visible: false, width: 110 },
+  { key: 'changePercent', title: '当日涨跌幅', visible: true, width: 110 },
+  { key: 'turnoverRate', title: '换手率', visible: true, width: 88 },
+  { key: 'volume', title: '成交量(亿)', visible: false, width: 100 },
+  { key: 'amount', title: '成交额(亿)', visible: true, width: 100 },
+  { key: 'marketCap', title: '总市值', visible: true, width: 100 },
+  { key: 'circulatingMarketCap', title: '流通市值', visible: true, width: 100 },
+  { key: 'peRatio', title: '市盈率(PE)', visible: true, width: 100 },
+  { key: 'kdjK', title: 'KDJ-K', visible: false, width: 88 },
+  { key: 'kdjD', title: 'KDJ-D', visible: false, width: 88 },
+  { key: 'kdjJ', title: 'KDJ-J', visible: true, width: 88 },
+  { key: 'avgPrice', title: '区间平均价', visible: false, width: 110 },
+  { key: 'highPrice', title: '区间最高价', visible: false, width: 110 },
+  { key: 'lowPrice', title: '区间最低价', visible: true, width: 110 },
+  { key: 'opportunityChangePercent', title: '区间最大值回撤比', visible: true, width: 150 },
+  { key: 'ma5', title: 'MA-5涨跌幅', visible: true },
+  { key: 'ma10', title: 'MA-10涨跌幅', visible: true },
+  { key: 'ma20', title: 'MA-20涨跌幅', visible: true },
+  { key: 'ma30', title: 'MA-30涨跌幅', visible: true },
+  { key: 'ma60', title: 'MA-60涨跌幅', visible: true },
+  { key: 'ma120', title: 'MA-120涨跌幅', visible: true, width: 130 },
+  { key: 'ma240', title: 'MA-240涨跌幅', visible: false, width: 130 },
+  { key: 'ma360', title: 'MA-360涨跌幅', visible: false, width: 130 },
 ] as const;

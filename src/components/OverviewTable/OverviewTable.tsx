@@ -33,7 +33,7 @@ export function OverviewTable({
   // 分页状态管理
   const [pagination, setPagination] = useState<TablePaginationConfig>({
     current: 1,
-    pageSize: 20,
+    pageSize: 50,
     showSizeChanger: true,
     showTotal: (total) => `共 ${total} 条`,
     pageSizeOptions: ['20', '50', '100', '200'],
@@ -68,6 +68,17 @@ export function OverviewTable({
       case 'kdjD':
       case 'kdjJ':
         return value !== undefined && value !== null ? value.toFixed(2) : '-';
+      case 'opportunityChangePercent':
+        return value !== undefined && value !== null ? `${Number(value).toFixed(2)}%` : '-';
+      case 'ma5':
+      case 'ma10':
+      case 'ma20':
+      case 'ma30':
+      case 'ma60':
+      case 'ma120':
+      case 'ma240':
+      case 'ma360':
+        return value !== undefined && value !== null ? `${Number(value).toFixed(2)}%` : '-';
       default:
         return String(value);
     }
@@ -100,6 +111,31 @@ export function OverviewTable({
               </span>
             );
           }
+          if (col.key === 'opportunityChangePercent') {
+            const isPositive = typeof value === 'number' ? value >= 0 : false;
+            return (
+              <span className={isPositive ? styles.positiveValue : styles.negativeValue}>
+                {formatValue(value, col.key)}
+              </span>
+            );
+          }
+          if (
+            col.key === 'ma5' ||
+            col.key === 'ma10' ||
+            col.key === 'ma20' ||
+            col.key === 'ma30' ||
+            col.key === 'ma60' ||
+            col.key === 'ma120' ||
+            col.key === 'ma240' ||
+            col.key === 'ma360'
+          ) {
+            const isPositive = typeof value === 'number' ? value >= 0 : false;
+            return (
+              <span className={isPositive ? styles.positiveValue : styles.negativeValue}>
+                {formatValue(value, col.key)}
+              </span>
+            );
+          }
           if (col.key === 'error') {
             return <span className={styles.errorText}>{value}</span>;
           }
@@ -126,8 +162,8 @@ export function OverviewTable({
             ? sortConfig.direction === 'asc'
               ? 'ascend'
               : sortConfig.direction === 'desc'
-              ? 'descend'
-              : null
+                ? 'descend'
+                : null
             : null;
       }
 

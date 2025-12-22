@@ -50,51 +50,6 @@ function formatValue(value: any, key: string): string {
 }
 
 /**
- * 导出为CSV
- */
-export function exportToCSV(
-  data: StockOverviewData[],
-  columns: OverviewColumnConfig[]
-): void {
-  // 过滤可见列并按顺序排序
-  const visibleColumns = columns
-    .filter((col) => col.visible)
-    .sort((a, b) => a.order - b.order);
-
-  // 构建CSV内容
-  const headers = visibleColumns.map((col) => col.title).join(',');
-  const rows = data.map((item) => {
-    return visibleColumns
-      .map((col) => {
-        const value = (item as any)[col.key];
-        const formatted = formatValue(value, col.key);
-        // CSV格式：如果包含逗号、引号或换行符，需要用引号包裹，并转义引号
-        if (formatted.includes(',') || formatted.includes('"') || formatted.includes('\n')) {
-          return `"${formatted.replace(/"/g, '""')}"`;
-        }
-        return formatted;
-      })
-      .join(',');
-  });
-
-  const csvContent = [headers, ...rows].join('\n');
-
-  // 添加BOM以支持中文
-  const BOM = '\uFEFF';
-  const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
-
-  // 下载文件
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = `股票数据概况_${new Date().toISOString().slice(0, 10)}.csv`;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
-}
-
-/**
  * 导出为Excel
  */
 export async function exportToExcel(
@@ -108,9 +63,7 @@ export async function exportToExcel(
     });
 
     // 过滤可见列并按顺序排序
-    const visibleColumns = columns
-      .filter((col) => col.visible)
-      .sort((a, b) => a.order - b.order);
+    const visibleColumns = columns.filter((col) => col.visible).sort((a, b) => a.order - b.order);
 
     // 准备数据
     const worksheetData: any[][] = [];
@@ -172,10 +125,7 @@ export async function exportToExcel(
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
   } catch (error) {
-    console.error('Excel导出失败，回退到CSV格式:', error);
-    // 如果xlsx库未安装或出错，回退到CSV格式
-    exportToCSV(data, columns);
-    throw new Error('Excel导出失败，请确保已安装xlsx库。已回退到CSV格式。');
+    console.error('Excel导出失败：', error);
+    throw new Error('Excel导出失败。');
   }
 }
-

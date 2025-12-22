@@ -43,16 +43,18 @@
 
 .mainTabs {
   height: 100%;
-  display: flex;
-  flex-direction: column;
 }
 
 /* 使用直接子元素选择器，确保只作用于 mainTabs 的直接子元素 ant-tabs-nav */
 /* 这样不会影响嵌套在子组件中的 tabs（如 GroupTabs） */
 .mainTabs > :global(.ant-tabs-nav) {
   background: var(--ant-color-bg-container);
-  margin: 0;
-  padding: 0 20px;
+  border-right: 1px solid var(--ant-color-border);
+}
+
+.mainTabs :global(.ant-tabs-nav .ant-tabs-tab) {
+  padding: 8px 12px;
+  margin: 0 !important;
 }
 
 .mainTabs :global(.ant-tabs-content-holder) {
@@ -67,6 +69,7 @@
 .mainTabs :global(.ant-tabs-tabpane) {
   height: 100%;
   overflow: hidden;
+  padding: 0 !important;
 }
 
 .stocksLayout {

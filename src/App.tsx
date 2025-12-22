@@ -98,6 +98,7 @@ function AppContent() {
             </Header>
             <Content className={styles.content}>
               <Tabs
+                tabPosition={"left"}
                 activeKey={activeTab}
                 onChange={setActiveTab}
                 className={styles.mainTabs}

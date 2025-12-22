@@ -263,6 +263,30 @@ export interface StockOverviewData {
   kdjD?: number;
   /** KDJ J值 */
   kdjJ?: number;
+  /** 区间平均价 */
+  avgPrice?: number;
+  /** 区间最高价 */
+  highPrice?: number;
+  /** 区间最低价 */
+  lowPrice?: number;
+  /** 区间最大值回撤比（百分比） */
+  opportunityChangePercent?: number;
+  /** MA-5涨跌幅（百分比） */
+  ma5?: number;
+  /** MA-10涨跌幅（百分比） */
+  ma10?: number;
+  /** MA-20涨跌幅（百分比） */
+  ma20?: number;
+  /** MA-30涨跌幅（百分比） */
+  ma30?: number;
+  /** MA-60涨跌幅（百分比） */
+  ma60?: number;
+  /** MA-120涨跌幅（百分比） */
+  ma120?: number;
+  /** MA-240涨跌幅（百分比） */
+  ma240?: number;
+  /** MA-360涨跌幅（百分比） */
+  ma360?: number;
   /** 分析时间戳 */
   analyzedAt: number;
   /** 错误信息（如果获取失败） */
@@ -297,21 +321,15 @@ export interface StockOpportunityData {
   name: string;
   /** 当前价 */
   price: number;
+  /** 涨跌额 */
+  change: number;
+  /** 涨跌幅（百分比） */
+  changePercent: number;
   /**
    * 涨跌幅（机会分析口径，百分比）：(当前价-最高价)/最高价*100
    * 允许为负
    */
   opportunityChangePercent?: number;
-  /** 近一周涨跌幅（与当前价对比，百分比） */
-  change1w?: number;
-  /** 近一月涨跌幅（与当前价对比，百分比） */
-  change1m?: number;
-  /** 近一季涨跌幅（与当前价对比，百分比） */
-  change1q?: number;
-  /** 近半年涨跌幅（与当前价对比，百分比） */
-  change6m?: number;
-  /** 近一年涨跌幅（与当前价对比，百分比） */
-  change1y?: number;
   /** 平均价（区间内平均收盘价） */
   avgPrice?: number;
   /** 最高价（区间K线 + 当日行情） */

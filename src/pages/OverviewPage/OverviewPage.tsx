@@ -3,7 +3,7 @@
  */
 
 import { useEffect, useState } from 'react';
-import { Layout, Card, Button, Space, Progress, Select, Collapse, message } from 'antd';
+import { Layout, Card, Button, Space, Progress, Select, Collapse, message, InputNumber } from 'antd';
 import {
   PlayCircleOutlined,
   StopOutlined,
@@ -15,7 +15,7 @@ import { useOverviewStore } from '@/stores/overviewStore';
 import { useStockStore } from '@/stores/stockStore';
 import { OverviewTable } from '@/components/OverviewTable/OverviewTable';
 import { OverviewColumnSettings } from '@/components/OverviewColumnSettings/OverviewColumnSettings';
-import { exportToCSV, exportToExcel } from '@/utils/exportUtils';
+import { exportToExcel } from '@/utils/exportUtils';
 import type { KLinePeriod } from '@/types/stock';
 import { BUILTIN_GROUP_SELF_ID, BUILTIN_GROUP_SELF_NAME } from '@/utils/constants';
 import styles from './OverviewPage.module.css';
@@ -52,6 +52,7 @@ export function OverviewPage() {
   const { watchList, groups, loadWatchList } = useStockStore();
   const [columnSettingsVisible, setColumnSettingsVisible] = useState(false);
   const [selectedGroupId, setSelectedGroupId] = useState<string>(GROUP_ALL_ID);
+  const [klineCount, setKlineCount] = useState<number>(300);
 
   // 加载缓存数据
   useEffect(() => {
@@ -82,7 +83,7 @@ export function OverviewPage() {
       }
     }
 
-    await startAnalysis(currentPeriod, selectedGroupId);
+    await startAnalysis(currentPeriod, selectedGroupId, klineCount);
   };
 
   // 处理取消
@@ -92,17 +93,14 @@ export function OverviewPage() {
   };
 
   // 处理导出
-  const handleExport = async (format: 'csv' | 'excel') => {
+  const handleExport = async (format: 'excel') => {
     if (analysisData.length === 0) {
       message.warning('没有数据可导出');
       return;
     }
 
     try {
-      if (format === 'csv') {
-        exportToCSV(analysisData, columnConfig);
-        message.success('CSV导出成功');
-      } else {
+      if (format === 'excel') {
         await exportToExcel(analysisData, columnConfig);
         message.success('Excel导出成功');
       }
@@ -123,40 +121,65 @@ export function OverviewPage() {
     <Layout className={styles.overviewPage}>
       <Header className={styles.header}>
         <div className={styles.headerContent}>
-          <h2 className={styles.title}>列表数据概况</h2>
           <Space>
-            <Select
-              value={selectedGroupId}
-              onChange={(value: string) => {
-                setSelectedGroupId(value);
-                if (analysisData.length > 0) {
-                  message.info('分组已更改，请重新分析');
-                }
-              }}
-              options={[
-                { label: '全部', value: GROUP_ALL_ID },
-                { label: BUILTIN_GROUP_SELF_NAME, value: BUILTIN_GROUP_SELF_ID },
-                ...[...groups]
-                  .sort((a, b) => a.order - b.order)
-                  .map((g) => ({ label: g.name, value: g.id })),
-              ]}
-              style={{ width: 160 }}
-              disabled={loading}
-            />
-            <Select
-              value={currentPeriod}
-              onChange={(value: KLinePeriod) => {
-                // 更新周期（store中会自动更新）
-                useOverviewStore.setState({ currentPeriod: value });
-                // 如果已有数据，提示用户需要重新分析
-                if (analysisData.length > 0) {
-                  message.info('周期已更改，请重新分析');
-                }
-              }}
-              options={PERIOD_OPTIONS}
-              style={{ width: 100 }}
-              disabled={loading}
-            />
+            <Space.Compact className={styles.spaceCompact}>
+              <span className={styles.label}>分组：</span>
+              <Select
+                value={selectedGroupId}
+                onChange={(value: string) => {
+                  setSelectedGroupId(value);
+                  if (analysisData.length > 0) {
+                    message.info('分组已更改，请重新分析');
+                  }
+                }}
+                options={[
+                  { label: '全部', value: GROUP_ALL_ID },
+                  { label: BUILTIN_GROUP_SELF_NAME, value: BUILTIN_GROUP_SELF_ID },
+                  ...[...groups]
+                    .sort((a, b) => a.order - b.order)
+                    .map((g) => ({ label: g.name, value: g.id })),
+                ]}
+                style={{ width: 160 }}
+                disabled={loading}
+              />
+            </Space.Compact>
+            <Space.Compact className={styles.spaceCompact}>
+              <span className={styles.label}>周期：</span>
+              <Select
+                value={currentPeriod}
+                onChange={(value: KLinePeriod) => {
+                  // 更新周期（store中会自动更新）
+                  useOverviewStore.setState({ currentPeriod: value });
+                  // 如果已有数据，提示用户需要重新分析
+                  if (analysisData.length > 0) {
+                    message.info('周期已更改，请重新分析');
+                  }
+                }}
+                options={PERIOD_OPTIONS}
+                style={{ width: 100 }}
+                disabled={loading}
+              />
+            </Space.Compact>
+            <Space.Compact className={styles.spaceCompact}>
+              <span className={styles.label}>K线数量：</span>
+              <InputNumber
+                value={klineCount}
+                onChange={(value) => {
+                  if (value !== null && value !== undefined) {
+                    setKlineCount(value);
+                    if (analysisData.length > 0) {
+                      message.info('K线数量已更改，请重新分析');
+                    }
+                  }
+                }}
+                min={50}
+                max={1000}
+                step={10}
+                style={{ width: 120 }}
+                disabled={loading}
+                placeholder="K线数量"
+              />
+            </Space.Compact>
             <Button
               type="primary"
               icon={<PlayCircleOutlined />}
@@ -171,13 +194,6 @@ export function OverviewPage() {
                 取消
               </Button>
             )}
-            <Button
-              icon={<ExportOutlined />}
-              onClick={() => handleExport('csv')}
-              disabled={analysisData.length === 0}
-            >
-              导出CSV
-            </Button>
             <Button
               icon={<ExportOutlined />}
               onClick={() => handleExport('excel')}

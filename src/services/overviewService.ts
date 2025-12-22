@@ -4,16 +4,17 @@
 
 import type { StockInfo, StockOverviewData, KLinePeriod } from '@/types/stock';
 import { getStockQuotes, getStockDetail, getKLineData } from './stockApi';
-import { calculateKDJ } from '@/utils/indicators';
 import { ConcurrencyManager } from '@/utils/concurrencyManager';
 import { OVERVIEW_CONCURRENT_LIMIT, OVERVIEW_BATCH_DELAY } from '@/utils/constants';
+import { calcAllIndicators, formatKDJValues } from '@/utils/indicators';
 
 /**
  * 分析单只股票
  */
 export async function analyzeStock(
   stock: StockInfo,
-  period: KLinePeriod
+  period: KLinePeriod,
+  count: number = 300
 ): Promise<StockOverviewData> {
   const { code, name } = stock;
   const analyzedAt = Date.now();
@@ -30,22 +31,61 @@ export async function analyzeStock(
     // 2. 获取详情数据
     const detail = await getStockDetail(code);
 
-    // 3. 获取K线数据并计算KDJ
+    // 3. 获取K线数据并计算指标
     let kdjK: number | undefined;
     let kdjD: number | undefined;
     let kdjJ: number | undefined;
+    let avgPrice: number | undefined;
+    let highPrice: number | undefined;
+    let lowPrice: number | undefined;
+    let opportunityChangePercent: number | undefined;
+    let ma5: number | undefined;
+    let ma10: number | undefined;
+    let ma20: number | undefined;
+    let ma30: number | undefined;
+    let ma60: number | undefined;
+    let ma120: number | undefined;
+    let ma240: number | undefined;
+    let ma360: number | undefined;
 
     try {
-      const klineData = await getKLineData(code, period, 200);
+      const klineData = await getKLineData(code, period, count);
       if (klineData && klineData.length > 0) {
-        const kdj = calculateKDJ(klineData);
-        // 取最后一个值（最新的KDJ值）
-        const lastIndex = kdj.k.length - 1;
-        if (lastIndex >= 0) {
-          kdjK = isNaN(kdj.k[lastIndex]) ? undefined : kdj.k[lastIndex];
-          kdjD = isNaN(kdj.d[lastIndex]) ? undefined : kdj.d[lastIndex];
-          kdjJ = isNaN(kdj.j[lastIndex]) ? undefined : kdj.j[lastIndex];
-        }
+        // 计算所有技术指标
+        const {
+          kdj,
+          priceStats,
+          opportunityChangePercent: oppChangePercent,
+          maFields,
+        } = calcAllIndicators(klineData, {
+          price: quote.price,
+          high: quote.high,
+          low: quote.low,
+        });
+
+        // 格式化KDJ值
+        const formattedKDJ = formatKDJValues(kdj);
+        kdjK = formattedKDJ.kdjK;
+        kdjD = formattedKDJ.kdjD;
+        kdjJ = formattedKDJ.kdjJ;
+
+        // 价格统计
+        avgPrice = priceStats.avgPrice;
+        highPrice = priceStats.highPrice;
+        lowPrice = priceStats.lowPrice;
+
+        // 回撤比
+        opportunityChangePercent = oppChangePercent;
+
+        // MA涨跌幅
+        ma5 = maFields.ma5;
+        ma10 = maFields.ma10;
+        ma20 = maFields.ma20;
+        ma30 = maFields.ma30;
+        ma60 = maFields.ma60;
+        ma120 = maFields.ma120;
+        ma240 = maFields.ma240;
+        ma360 = maFields.ma360;
       }
     } catch (error) {
       console.warn(`[${code}] 获取K线数据失败:`, error);
@@ -68,6 +108,18 @@ export async function analyzeStock(
       kdjK,
       kdjD,
       kdjJ,
+      avgPrice,
+      highPrice,
+      lowPrice,
+      opportunityChangePercent,
+      ma5,
+      ma10,
+      ma20,
+      ma30,
+      ma60,
+      ma120,
+      ma240,
+      ma360,
       analyzedAt,
     };
 
@@ -96,7 +148,7 @@ export async function analyzeStock(
  */
 async function analyzeStockDetails(
   stock: StockInfo,
-  _quote: {
+  quote: {
     code: string;
     name: string;
     price: number;
@@ -104,8 +156,11 @@ async function analyzeStockDetails(
     changePercent: number;
     volume: number;
     amount: number;
+    high: number;
+    low: number;
   },
-  period: KLinePeriod
+  period: KLinePeriod,
+  count: number = 300
 ): Promise<Partial<StockOverviewData>> {
   const { code } = stock;
   const result: Partial<StockOverviewData> = {};
@@ -120,18 +175,43 @@ async function analyzeStockDetails(
       result.turnoverRate = detail.turnoverRate;
     }
 
-    // 2. 获取K线数据并计算KDJ
+    // 2. 获取K线数据并计算指标
     try {
-      const klineData = await getKLineData(code, period, 200);
+      const klineData = await getKLineData(code, period, count);
       if (klineData && klineData.length > 0) {
-        const kdj = calculateKDJ(klineData);
-        // 取最后一个值（最新的KDJ值）
-        const lastIndex = kdj.k.length - 1;
-        if (lastIndex >= 0) {
-          result.kdjK = isNaN(kdj.k[lastIndex]) ? undefined : kdj.k[lastIndex];
-          result.kdjD = isNaN(kdj.d[lastIndex]) ? undefined : kdj.d[lastIndex];
-          result.kdjJ = isNaN(kdj.j[lastIndex]) ? undefined : kdj.j[lastIndex];
-        }
+        // 计算所有技术指标
+        const { kdj, priceStats, opportunityChangePercent, maFields } = calcAllIndicators(
+          klineData,
+          {
+            price: quote.price,
+            high: quote.high,
+            low: quote.low,
+          }
+        );
+
+        // 格式化KDJ值
+        const formattedKDJ = formatKDJValues(kdj);
+        result.kdjK = formattedKDJ.kdjK;
+        result.kdjD = formattedKDJ.kdjD;
+        result.kdjJ = formattedKDJ.kdjJ;
+
+        // 价格统计
+        result.avgPrice = priceStats.avgPrice;
+        result.highPrice = priceStats.highPrice;
+        result.lowPrice = priceStats.lowPrice;
+
+        // 回撤比
+        result.opportunityChangePercent = opportunityChangePercent;
+
+        // MA涨跌幅
+        result.ma5 = maFields.ma5;
+        result.ma10 = maFields.ma10;
+        result.ma20 = maFields.ma20;
+        result.ma30 = maFields.ma30;
+        result.ma60 = maFields.ma60;
+        result.ma120 = maFields.ma120;
+        result.ma240 = maFields.ma240;
+        result.ma360 = maFields.ma360;
       }
     } catch (error) {
       console.warn(`[${code}] 获取K线数据失败:`, error);
@@ -152,6 +232,7 @@ async function analyzeStockDetails(
 export function analyzeAllStocks(
   stocks: StockInfo[],
   period: KLinePeriod,
+  count: number = 300,
   onProgress?: (progress: {
     total: number;
     completed: number;
@@ -242,7 +323,22 @@ export function analyzeAllStocks(
         if (quote && detailManager) {
           detailManager.addTask({
             fn: async () => {
-              const details = await analyzeStockDetails(stock, quote, period);
+              const details = await analyzeStockDetails(
+                stock,
+                {
+                  code: quote.code,
+                  name: quote.name,
+                  price: quote.price,
+                  change: quote.change,
+                  changePercent: quote.changePercent,
+                  volume: quote.volume,
+                  amount: quote.amount,
+                  high: quote.high,
+                  low: quote.low,
+                },
+                period,
+                count
+              );
               return {
                 code: stock.code,
                 details,
@@ -319,6 +415,18 @@ export function analyzeAllStocks(
             kdjK: details.kdjK !== undefined ? Number(details.kdjK.toFixed(2)) : undefined,
             kdjD: details.kdjD !== undefined ? Number(details.kdjD.toFixed(2)) : undefined,
             kdjJ: details.kdjJ !== undefined ? Number(details.kdjJ.toFixed(2)) : undefined,
+            avgPrice: details.avgPrice,
+            highPrice: details.highPrice,
+            lowPrice: details.lowPrice,
+            opportunityChangePercent: details.opportunityChangePercent,
+            ma5: details.ma5,
+            ma10: details.ma10,
+            ma20: details.ma20,
+            ma30: details.ma30,
+            ma60: details.ma60,
+            ma120: details.ma120,
+            ma240: details.ma240,
+            ma360: details.ma360,
             analyzedAt,
           });
         }

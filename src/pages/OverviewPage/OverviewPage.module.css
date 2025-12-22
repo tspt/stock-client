@@ -7,7 +7,7 @@
 .header {
   background: var(--ant-color-bg-container);
   border-bottom: 1px solid var(--ant-color-border);
-  padding: 0 24px;
+  padding: 0 16px;
   height: 64px;
   line-height: 64px;
 }
@@ -17,6 +17,17 @@
   justify-content: space-between;
   align-items: center;
   height: 100%;
+}
+
+.spaceCompact {
+  display: flex;
+  align-items: center;
+  margin-right: 8px;
+}
+
+.label {
+  font-size: 14px;
+  white-space: nowrap;
 }
 
 .title {

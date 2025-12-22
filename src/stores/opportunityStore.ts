@@ -9,6 +9,7 @@ import type {
   OverviewColumnConfig,
   OverviewSortConfig,
   KLinePeriod,
+  StockInfo,
 } from '@/types/stock';
 import { analyzeAllStocksOpportunity } from '@/services/opportunityService';
 import {
@@ -17,7 +18,6 @@ import {
   saveOpportunityHistory,
 } from '@/utils/opportunityIndexedDB';
 import { OPPORTUNITY_DEFAULT_COLUMNS } from '@/utils/constants';
-import { useStockStore } from './stockStore';
 
 const OPPORTUNITY_COLUMN_CONFIG_KEY = 'opportunity_column_config';
 
@@ -37,7 +37,7 @@ interface OpportunityState {
   errors: Array<{ stock: { code: string; name: string }; error: string }>;
   cancelFn: (() => void) | null;
 
-  startAnalysis: (period: KLinePeriod, groupId: string, count: number) => Promise<void>;
+  startAnalysis: (period: KLinePeriod, stocks: StockInfo[], count: number) => Promise<void>;
   cancelAnalysis: () => void;
   loadCachedData: () => Promise<void>;
   updateColumnConfig: (config: OverviewColumnConfig[]) => void;
@@ -89,21 +89,14 @@ export const useOpportunityStore = create<OpportunityState>((set, get) => ({
   loading: false,
   progress: { total: 0, completed: 0, failed: 0, percent: 0 },
   currentPeriod: 'day',
-  currentCount: 2000,
+  currentCount: 300,
   columnConfig: initColumnConfig(),
   sortConfig: { key: null, direction: null },
   errors: [],
   cancelFn: null,
 
-  startAnalysis: async (period, groupId, count) => {
-    const { watchList } = useStockStore.getState();
-
-    const targetList =
-      groupId && groupId !== '__all__'
-        ? watchList.filter((s) => s.groupIds && s.groupIds.includes(groupId))
-        : watchList;
-
-    if (targetList.length === 0) {
+  startAnalysis: async (period, stocks, count) => {
+    if (stocks.length === 0) {
       return;
     }
 
@@ -118,7 +111,7 @@ export const useOpportunityStore = create<OpportunityState>((set, get) => ({
     let cancelled = false;
 
     try {
-      const { promise, cancel } = analyzeAllStocksOpportunity(targetList, period, count, (p) => {
+      const { promise, cancel } = analyzeAllStocksOpportunity(stocks, period, count, (p) => {
         if (!cancelled) {
           set({ progress: p });
         }
@@ -144,8 +137,8 @@ export const useOpportunityStore = create<OpportunityState>((set, get) => ({
         timestamp: Date.now(),
         period,
         count,
-        groupId,
-        total: targetList.length,
+        groupId: '', // 不再使用 groupId，保留字段以保持兼容性
+        total: stocks.length,
         success: results.filter((r) => !r.error).length,
         failed: results.filter((r) => r.error).length,
       };

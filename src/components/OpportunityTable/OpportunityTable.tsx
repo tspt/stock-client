@@ -26,7 +26,7 @@ interface OpportunityTableProps {
 export function OpportunityTable({ data, columns, sortConfig, onSortChange }: OpportunityTableProps) {
   const [pagination, setPagination] = useState<TablePaginationConfig>({
     current: 1,
-    pageSize: 20,
+    pageSize: 50,
     showSizeChanger: true,
     showTotal: (total) => `共 ${total} 条`,
     pageSizeOptions: ['20', '50', '100', '200'],
@@ -45,12 +45,6 @@ export function OpportunityTable({ data, columns, sortConfig, onSortChange }: Op
         return formatPrice(Number(value));
       case 'opportunityChangePercent':
         return `${Number(value).toFixed(2)}%`;
-      case 'change1w':
-      case 'change1m':
-      case 'change1q':
-      case 'change6m':
-      case 'change1y':
-        return `${Number(value).toFixed(2)}%`;
       case 'volume':
         return formatVolumeInBillion(Number(value));
       case 'amount':
@@ -65,6 +59,7 @@ export function OpportunityTable({ data, columns, sortConfig, onSortChange }: Op
       case 'kdjK':
       case 'kdjD':
       case 'kdjJ':
+        return value !== undefined && value !== null ? Number(value).toFixed(2) : '-';
       case 'ma5':
       case 'ma10':
       case 'ma20':
@@ -73,7 +68,7 @@ export function OpportunityTable({ data, columns, sortConfig, onSortChange }: Op
       case 'ma120':
       case 'ma240':
       case 'ma360':
-        return value !== undefined && value !== null ? Number(value).toFixed(2) : '-';
+        return value !== undefined && value !== null ? `${Number(value).toFixed(2)}%` : '-';
       default:
         return String(value);
     }
@@ -101,11 +96,14 @@ export function OpportunityTable({ data, columns, sortConfig, onSortChange }: Op
             );
           }
           if (
-            col.key === 'change1w' ||
-            col.key === 'change1m' ||
-            col.key === 'change1q' ||
-            col.key === 'change6m' ||
-            col.key === 'change1y'
+            col.key === 'ma5' ||
+            col.key === 'ma10' ||
+            col.key === 'ma20' ||
+            col.key === 'ma30' ||
+            col.key === 'ma60' ||
+            col.key === 'ma120' ||
+            col.key === 'ma240' ||
+            col.key === 'ma360'
           ) {
             const isPositive = typeof value === 'number' ? value >= 0 : false;
             return (

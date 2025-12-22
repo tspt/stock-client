@@ -265,7 +265,7 @@ export async function getStockDetail(code: string): Promise<StockDetail | null> 
 export async function getKLineData(
   code: string,
   period: string,
-  count: number = 2000
+  count: number = 300
 ): Promise<KLineData[]> {
   try {
     const pureCode = getPureCode(code);
