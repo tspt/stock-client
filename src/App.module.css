@@ -60,6 +60,7 @@
 .mainTabs :global(.ant-tabs-content-holder) {
   flex: 1;
   overflow: hidden;
+  margin: 0;
 }
 
 .mainTabs :global(.ant-tabs-content) {
@@ -113,6 +114,10 @@
   width: 100%;
   height: 100%;
   overflow: hidden;
+}
+
+.mgr6 {
+  margin-right: 6px; 
 }
 
 /* 主题变量 */

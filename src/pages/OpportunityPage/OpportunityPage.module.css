@@ -86,6 +86,7 @@
 .tableCard {
   height: 100%;
   overflow: hidden;
+  border-radius: 0;
 }
 
 .emptyCard {

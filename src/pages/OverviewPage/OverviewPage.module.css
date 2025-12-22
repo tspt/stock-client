@@ -86,6 +86,7 @@
 .tableCard {
   height: 100%;
   overflow: hidden;
+  border-radius: 0;
 }
 
 .emptyCard {
@@ -93,6 +94,7 @@
   align-items: center;
   justify-content: center;
   min-height: 400px;
+  border-radius: 0 !important;
 }
 
 .emptyText {

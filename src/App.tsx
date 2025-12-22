@@ -107,7 +107,7 @@ function AppContent() {
                     key: 'stocks',
                     label: (
                       <span>
-                        <StockOutlined />
+                        <StockOutlined className={styles.mgr6} />
                         股票列表
                       </span>
                     ),
@@ -126,7 +126,7 @@ function AppContent() {
                     key: 'alerts',
                     label: (
                       <span>
-                        <BellOutlined />
+                        <BellOutlined className={styles.mgr6} />
                         提醒管理
                       </span>
                     ),
@@ -140,7 +140,7 @@ function AppContent() {
                     key: 'overview',
                     label: (
                       <span>
-                        <BarChartOutlined />
+                        <BarChartOutlined className={styles.mgr6} />
                         列表数据概况
                       </span>
                     ),
@@ -154,7 +154,7 @@ function AppContent() {
                     key: 'opportunity',
                     label: (
                       <span>
-                        <BarChartOutlined />
+                        <BarChartOutlined className={styles.mgr6} />
                         机会分析
                       </span>
                     ),

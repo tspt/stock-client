@@ -47,11 +47,13 @@ export function OverviewTable({
 
     switch (key) {
       case 'price':
-        return formatPrice(value);
+      case 'avgPrice':
+      case 'highPrice':
+      case 'lowPrice':
+        return formatPrice(Number(value));
       case 'change':
         return value >= 0 ? `+${value.toFixed(2)}` : value.toFixed(2);
       case 'changePercent':
-        // 涨跌幅已经是百分比，直接格式化为5.66%格式
         return value !== null && value !== undefined ? `${value.toFixed(2)}%` : '-';
       case 'volume':
         return formatVolumeInBillion(value);
@@ -230,7 +232,7 @@ export function OverviewTable({
         dataSource={sortedData}
         rowKey="code"
         pagination={pagination}
-        scroll={{ x: 'max-content', y: 'calc(100vh - 300px)' }}
+        scroll={{ x: 'max-content', y: 'calc(100vh - 240px)' }}
         onChange={handleTableChange}
         size="small"
       />

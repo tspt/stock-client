@@ -43,8 +43,10 @@ export function OpportunityTable({ data, columns, sortConfig, onSortChange }: Op
       case 'highPrice':
       case 'lowPrice':
         return formatPrice(Number(value));
-      case 'opportunityChangePercent':
-        return `${Number(value).toFixed(2)}%`;
+      case 'change':
+        return value >= 0 ? `+${value.toFixed(2)}` : value.toFixed(2);
+      case 'changePercent':
+        return value !== null && value !== undefined ? `${value.toFixed(2)}%` : '-';
       case 'volume':
         return formatVolumeInBillion(Number(value));
       case 'amount':
@@ -60,6 +62,8 @@ export function OpportunityTable({ data, columns, sortConfig, onSortChange }: Op
       case 'kdjD':
       case 'kdjJ':
         return value !== undefined && value !== null ? Number(value).toFixed(2) : '-';
+      case 'opportunityChangePercent':
+        return value !== undefined && value !== null ? `${Number(value).toFixed(2)}%` : '-';
       case 'ma5':
       case 'ma10':
       case 'ma20':
@@ -196,7 +200,7 @@ export function OpportunityTable({ data, columns, sortConfig, onSortChange }: Op
         dataSource={sortedData}
         rowKey="code"
         pagination={pagination}
-        scroll={{ x: 'max-content', y: 'calc(100vh - 300px)' }}
+        scroll={{ x: 'max-content', y: 'calc(100vh - 240px)' }}
         onChange={handleTableChange}
         size="small"
       />
