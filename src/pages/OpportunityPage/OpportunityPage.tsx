@@ -10,10 +10,12 @@ import {
   ExportOutlined,
   SettingOutlined,
   ExclamationCircleOutlined,
+  FilterOutlined,
+  ClearOutlined,
 } from '@ant-design/icons';
 import { useOpportunityStore } from '@/stores/opportunityStore';
 import { OpportunityTable } from '@/components/OpportunityTable/OpportunityTable';
-import { OverviewColumnSettings } from '@/components/OverviewColumnSettings/OverviewColumnSettings';
+import { ColumnSettings } from '@/components/ColumnSettings/ColumnSettings';
 import { exportOpportunityToExcel } from '@/utils/opportunityExportUtils';
 import type { KLinePeriod, StockInfo } from '@/types/stock';
 import { useAllStocks } from '@/hooks/useAllStocks';
@@ -67,6 +69,13 @@ export function OpportunityPage() {
   const [priceRange, setPriceRange] = useState<{ min?: number; max?: number }>({});
   const [nameType, setNameType] = useState<string>('all');
   const [filteringQuotes, setFilteringQuotes] = useState(false);
+
+  // 筛选条件状态
+  const [marketCapRange, setMarketCapRange] = useState<{ min?: number; max?: number }>({});
+  const [circulatingMarketCapRange, setCirculatingMarketCapRange] = useState<{ min?: number; max?: number }>({});
+  const [turnoverRateRange, setTurnoverRateRange] = useState<{ min?: number; max?: number }>({});
+  const [peRatioRange, setPeRatioRange] = useState<{ min?: number; max?: number }>({});
+  const [filterVisible, setFilterVisible] = useState(true);
 
   useEffect(() => {
     loadCachedData();
@@ -123,6 +132,58 @@ export function OpportunityPage() {
       return marketMatch && nameTypeMatch;
     });
   }, [allStocks, selectedMarket, nameType]);
+
+  // 对分析数据进行二次筛选
+  const filteredAnalysisData = useMemo(() => {
+    if (analysisData.length === 0) {
+      return [];
+    }
+
+    return analysisData.filter((item) => {
+      // 总市值筛选
+      if (marketCapRange.min !== undefined && item.marketCap !== null && item.marketCap !== undefined) {
+        if (item.marketCap < marketCapRange.min) return false;
+      }
+      if (marketCapRange.max !== undefined && item.marketCap !== null && item.marketCap !== undefined) {
+        if (item.marketCap > marketCapRange.max) return false;
+      }
+
+      // 流通市值筛选
+      if (circulatingMarketCapRange.min !== undefined && item.circulatingMarketCap !== null && item.circulatingMarketCap !== undefined) {
+        if (item.circulatingMarketCap < circulatingMarketCapRange.min) return false;
+      }
+      if (circulatingMarketCapRange.max !== undefined && item.circulatingMarketCap !== null && item.circulatingMarketCap !== undefined) {
+        if (item.circulatingMarketCap > circulatingMarketCapRange.max) return false;
+      }
+
+      // 换手率筛选
+      if (turnoverRateRange.min !== undefined && item.turnoverRate !== null && item.turnoverRate !== undefined) {
+        if (item.turnoverRate < turnoverRateRange.min) return false;
+      }
+      if (turnoverRateRange.max !== undefined && item.turnoverRate !== null && item.turnoverRate !== undefined) {
+        if (item.turnoverRate > turnoverRateRange.max) return false;
+      }
+
+      // 市盈率筛选
+      if (peRatioRange.min !== undefined && item.peRatio !== null && item.peRatio !== undefined) {
+        if (item.peRatio < peRatioRange.min) return false;
+      }
+      if (peRatioRange.max !== undefined && item.peRatio !== null && item.peRatio !== undefined) {
+        if (item.peRatio > peRatioRange.max) return false;
+      }
+
+      return true;
+    });
+  }, [analysisData, marketCapRange, circulatingMarketCapRange, turnoverRateRange, peRatioRange]);
+
+  // 重置所有筛选条件
+  const handleResetFilters = () => {
+    setMarketCapRange({});
+    setCirculatingMarketCapRange({});
+    setTurnoverRateRange({});
+    setPeRatioRange({});
+    message.info('筛选条件已重置');
+  };
 
   const handleAnalyze = async () => {
     if (filteredStocks.length === 0) {
@@ -197,14 +258,14 @@ export function OpportunityPage() {
   };
 
   const handleExport = async (format: 'excel') => {
-    if (analysisData.length === 0) {
+    if (filteredAnalysisData.length === 0) {
       message.warning('没有数据可导出');
       return;
     }
 
     try {
       if (format === 'excel') {
-        await exportOpportunityToExcel(analysisData, columnConfig);
+        await exportOpportunityToExcel(filteredAnalysisData, columnConfig);
         message.success('Excel导出成功');
       }
     } catch (error) {
@@ -411,9 +472,186 @@ export function OpportunityPage() {
         )}
 
         {analysisData.length > 0 ? (
-          <Card className={styles.tableCard}>
-            <OpportunityTable data={analysisData} columns={columnConfig} sortConfig={sortConfig} onSortChange={updateSortConfig} />
-          </Card>
+          <>
+            {/* 筛选区域 */}
+            <Card className={styles.filterCard} size="small">
+              <div className={styles.filterHeader}>
+                <Space>
+                  <FilterOutlined />
+                  <span>数据筛选</span>
+                  <Button
+                    type="text"
+                    size="small"
+                    icon={filterVisible ? <ExclamationCircleOutlined /> : null}
+                    onClick={() => setFilterVisible(!filterVisible)}
+                  >
+                    {filterVisible ? '收起' : '展开'}
+                  </Button>
+                </Space>
+                <Button
+                  size="small"
+                  icon={<ClearOutlined />}
+                  onClick={handleResetFilters}
+                  disabled={!filterVisible}
+                >
+                  重置
+                </Button>
+              </div>
+              {filterVisible && (
+                <div className={styles.filterContent}>
+                  <div className={styles.filterRow}>
+                    <div className={styles.filterItem}>
+                      <span className={styles.filterLabel}>总市值(亿)：</span>
+                      <InputNumber
+                        value={marketCapRange.min}
+                        min={0}
+                        step={0.01}
+                        precision={2}
+                        style={{ width: 100 }}
+                        placeholder="最小值"
+                        onChange={(v) => {
+                          setMarketCapRange((prev) => ({
+                            ...prev,
+                            min: typeof v === 'number' && isFinite(v) ? v : undefined,
+                          }));
+                        }}
+                      />
+                      <span style={{ margin: '0 4px' }}>~</span>
+                      <InputNumber
+                        value={marketCapRange.max}
+                        min={0}
+                        step={0.01}
+                        precision={2}
+                        style={{ width: 100 }}
+                        placeholder="最大值"
+                        onChange={(v) => {
+                          setMarketCapRange((prev) => ({
+                            ...prev,
+                            max: typeof v === 'number' && isFinite(v) ? v : undefined,
+                          }));
+                        }}
+                      />
+                    </div>
+                    <div className={styles.filterItem}>
+                      <span className={styles.filterLabel}>流通市值(亿)：</span>
+                      <InputNumber
+                        value={circulatingMarketCapRange.min}
+                        min={0}
+                        step={0.01}
+                        precision={2}
+                        style={{ width: 100 }}
+                        placeholder="最小值"
+                        onChange={(v) => {
+                          setCirculatingMarketCapRange((prev) => ({
+                            ...prev,
+                            min: typeof v === 'number' && isFinite(v) ? v : undefined,
+                          }));
+                        }}
+                      />
+                      <span style={{ margin: '0 4px' }}>~</span>
+                      <InputNumber
+                        value={circulatingMarketCapRange.max}
+                        min={0}
+                        step={0.01}
+                        precision={2}
+                        style={{ width: 100 }}
+                        placeholder="最大值"
+                        onChange={(v) => {
+                          setCirculatingMarketCapRange((prev) => ({
+                            ...prev,
+                            max: typeof v === 'number' && isFinite(v) ? v : undefined,
+                          }));
+                        }}
+                      />
+                    </div>
+                    <div className={styles.filterItem}>
+                      <span className={styles.filterLabel}>换手率(%)：</span>
+                      <InputNumber
+                        value={turnoverRateRange.min}
+                        min={0}
+                        max={100}
+                        step={0.01}
+                        precision={2}
+                        style={{ width: 100 }}
+                        placeholder="最小值"
+                        onChange={(v) => {
+                          setTurnoverRateRange((prev) => ({
+                            ...prev,
+                            min: typeof v === 'number' && isFinite(v) ? v : undefined,
+                          }));
+                        }}
+                      />
+                      <span style={{ margin: '0 4px' }}>~</span>
+                      <InputNumber
+                        value={turnoverRateRange.max}
+                        min={0}
+                        max={100}
+                        step={0.01}
+                        precision={2}
+                        style={{ width: 100 }}
+                        placeholder="最大值"
+                        onChange={(v) => {
+                          setTurnoverRateRange((prev) => ({
+                            ...prev,
+                            max: typeof v === 'number' && isFinite(v) ? v : undefined,
+                          }));
+                        }}
+                      />
+                    </div>
+                    <div className={styles.filterItem}>
+                      <span className={styles.filterLabel}>市盈率：</span>
+                      <InputNumber
+                        value={peRatioRange.min}
+                        min={0}
+                        step={0.01}
+                        precision={2}
+                        style={{ width: 100 }}
+                        placeholder="最小值"
+                        onChange={(v) => {
+                          setPeRatioRange((prev) => ({
+                            ...prev,
+                            min: typeof v === 'number' && isFinite(v) ? v : undefined,
+                          }));
+                        }}
+                      />
+                      <span style={{ margin: '0 4px' }}>~</span>
+                      <InputNumber
+                        value={peRatioRange.max}
+                        min={0}
+                        step={0.01}
+                        precision={2}
+                        style={{ width: 100 }}
+                        placeholder="最大值"
+                        onChange={(v) => {
+                          setPeRatioRange((prev) => ({
+                            ...prev,
+                            max: typeof v === 'number' && isFinite(v) ? v : undefined,
+                          }));
+                        }}
+                      />
+                    </div>
+                  </div>
+                  <div className={styles.filterResult}>
+                    {filteredAnalysisData.length !== analysisData.length && (
+                      <span>
+                        筛选结果：{filteredAnalysisData.length} / {analysisData.length} 条
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
+            </Card>
+
+            {/* 表格区域 */}
+            <Card className={styles.tableCard}>
+              <OpportunityTable
+                data={filteredAnalysisData}
+                columns={columnConfig}
+                sortConfig={sortConfig}
+                onSortChange={updateSortConfig}
+              />
+            </Card>
+          </>
         ) : (
           <Card className={styles.emptyCard}>
             <div className={styles.emptyText}>
@@ -423,12 +661,13 @@ export function OpportunityPage() {
         )}
       </Content>
 
-      <OverviewColumnSettings
+      <ColumnSettings
         visible={columnSettingsVisible}
         columns={columnConfig}
         onOk={handleColumnSettingsOk}
         onCancel={() => setColumnSettingsVisible(false)}
         onReset={resetColumnConfig}
+        title="机会列表列设置"
       />
     </Layout >
   );

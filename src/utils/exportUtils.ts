@@ -2,7 +2,8 @@
  * 数据导出工具
  */
 
-import type { StockOverviewData, OverviewColumnConfig } from '@/types/stock';
+import type { StockOverviewData } from '@/types/stock';
+import type { ColumnConfig } from '@/types/common';
 import {
   formatPrice,
   formatChangePercent,
@@ -54,7 +55,7 @@ function formatValue(value: any, key: string): string {
  */
 export async function exportToExcel(
   data: StockOverviewData[],
-  columns: OverviewColumnConfig[]
+  columns: ColumnConfig[]
 ): Promise<void> {
   try {
     // 动态导入xlsx库（ES模块方式）

@@ -6,11 +6,11 @@ import { create } from 'zustand';
 import type {
   StockOpportunityData,
   OpportunityAnalysisResult,
-  OverviewColumnConfig,
   OverviewSortConfig,
   KLinePeriod,
   StockInfo,
 } from '@/types/stock';
+import type { ColumnConfig } from '@/types/common';
 import { analyzeAllStocksOpportunity } from '@/services/opportunityService';
 import {
   saveOpportunityData,
@@ -32,7 +32,7 @@ interface OpportunityState {
   };
   currentPeriod: KLinePeriod;
   currentCount: number;
-  columnConfig: OverviewColumnConfig[];
+  columnConfig: ColumnConfig[];
   sortConfig: OverviewSortConfig;
   errors: Array<{ stock: { code: string; name: string }; error: string }>;
   cancelFn: (() => void) | null;
@@ -40,13 +40,13 @@ interface OpportunityState {
   startAnalysis: (period: KLinePeriod, stocks: StockInfo[], count: number) => Promise<void>;
   cancelAnalysis: () => void;
   loadCachedData: () => Promise<void>;
-  updateColumnConfig: (config: OverviewColumnConfig[]) => void;
+  updateColumnConfig: (config: ColumnConfig[]) => void;
   updateSortConfig: (config: OverviewSortConfig) => void;
   clearData: () => void;
   resetColumnConfig: () => void;
 }
 
-function initColumnConfig(): OverviewColumnConfig[] {
+function initColumnConfig(): ColumnConfig[] {
   return OPPORTUNITY_DEFAULT_COLUMNS.map((col, index) => ({
     ...col,
     order: index,
@@ -56,12 +56,12 @@ function initColumnConfig(): OverviewColumnConfig[] {
 /**
  * 向后兼容：当新增列时，将默认列合并到已保存的列配置中（保持用户原有顺序，并把新列追加到末尾）
  */
-function mergeSavedColumns(saved: OverviewColumnConfig[]): OverviewColumnConfig[] {
+function mergeSavedColumns(saved: ColumnConfig[]): ColumnConfig[] {
   const defaults = initColumnConfig();
   const defaultMap = new Map(defaults.map((c) => [c.key, c]));
 
   const sortedSaved = [...saved].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-  const merged: OverviewColumnConfig[] = [];
+  const merged: ColumnConfig[] = [];
 
   // 先按用户保存的顺序写入（仅保留仍存在于默认列的key）
   sortedSaved.forEach((col) => {
@@ -222,7 +222,7 @@ export const useOpportunityStore = create<OpportunityState>((set, get) => ({
 try {
   const saved = localStorage.getItem(OPPORTUNITY_COLUMN_CONFIG_KEY);
   if (saved) {
-    const config = JSON.parse(saved) as OverviewColumnConfig[];
+    const config = JSON.parse(saved) as ColumnConfig[];
     useOpportunityStore.setState({ columnConfig: mergeSavedColumns(config) });
   }
 } catch (error) {

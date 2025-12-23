@@ -6,10 +6,10 @@ import { create } from 'zustand';
 import type {
   StockOverviewData,
   OverviewAnalysisResult,
-  OverviewColumnConfig,
   OverviewSortConfig,
   KLinePeriod,
 } from '@/types/stock';
+import type { ColumnConfig } from '@/types/common';
 import { analyzeAllStocks } from '@/services/overviewService';
 import { saveOverviewData, getOverviewData, saveOverviewHistory } from '@/utils/indexedDB';
 import { OVERVIEW_DEFAULT_COLUMNS } from '@/utils/constants';
@@ -30,7 +30,7 @@ interface OverviewState {
   // 当前K线周期
   currentPeriod: KLinePeriod;
   // 列配置
-  columnConfig: OverviewColumnConfig[];
+  columnConfig: ColumnConfig[];
   // 排序配置
   sortConfig: OverviewSortConfig;
   // 错误列表
@@ -42,14 +42,14 @@ interface OverviewState {
   startAnalysis: (period: KLinePeriod, groupId?: string, count?: number) => Promise<void>;
   cancelAnalysis: () => void;
   loadCachedData: () => Promise<void>;
-  updateColumnConfig: (config: OverviewColumnConfig[]) => void;
+  updateColumnConfig: (config: ColumnConfig[]) => void;
   updateSortConfig: (config: OverviewSortConfig) => void;
   clearData: () => void;
   resetColumnConfig: () => void;
 }
 
 // 初始化列配置
-function initColumnConfig(): OverviewColumnConfig[] {
+function initColumnConfig(): ColumnConfig[] {
   return OVERVIEW_DEFAULT_COLUMNS.map((col, index) => ({
     ...col,
     order: index,
@@ -178,7 +178,7 @@ export const useOverviewStore = create<OverviewState>((set, get) => ({
     }
   },
 
-  updateColumnConfig: (config: OverviewColumnConfig[]) => {
+  updateColumnConfig: (config: ColumnConfig[]) => {
     set({ columnConfig: config });
     // 保存到localStorage
     try {
@@ -215,7 +215,7 @@ export const useOverviewStore = create<OverviewState>((set, get) => ({
 try {
   const saved = localStorage.getItem('overview_column_config');
   if (saved) {
-    const config = JSON.parse(saved) as OverviewColumnConfig[];
+    const config = JSON.parse(saved) as ColumnConfig[];
     useOverviewStore.setState({ columnConfig: config });
   }
 } catch (error) {

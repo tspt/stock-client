@@ -69,8 +69,8 @@ stockClient/
 │   │   ├── ThemeToggle/  # 主题切换
 │   │   ├── GroupManager/ # 分组管理
 │   │   ├── GroupTabs/    # 分组标签
+│   │   ├── ColumnSettings/ # 通用列设置
 │   │   ├── OpportunityTable/ # 机会分析表格
-│   │   ├── OverviewColumnSettings/ # 概况列设置
 │   │   ├── OverviewTable/ # 概况表格
 │   │   └── StockGroupSelector/ # 股票分组选择器
 │   ├── pages/            # 页面

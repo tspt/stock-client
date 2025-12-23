@@ -38,6 +38,8 @@
 
 .content {
   flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .progressCard {
@@ -84,7 +86,7 @@
 }
 
 .tableCard {
-  height: 100%;
+  flex: auto;
   overflow: hidden;
   border-radius: 0;
 }
@@ -100,6 +102,48 @@
 .emptyText {
   font-size: 16px;
   color: var(--ant-color-text-secondary);
+}
+
+/* 筛选区域样式 */
+.filterCard {
+  flex: none;
+  border-radius: 0 !important;
+  margin-bottom: 16px;
+}
+
+.filterHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.filterContent {
+  padding-top: 8px;
+}
+
+.filterRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  margin-bottom: 12px;
+}
+
+.filterItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filterLabel {
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.filterResult {
+  font-size: 14px;
+  color: var(--ant-color-text-secondary);
+  margin-top: 8px;
 }
 
 

@@ -5,7 +5,8 @@
 import { useMemo, useState } from 'react';
 import { Table } from 'antd';
 import type { ColumnsType, TablePaginationConfig } from 'antd/es/table';
-import type { OverviewColumnConfig, OverviewSortConfig, StockOpportunityData } from '@/types/stock';
+import type { OverviewSortConfig, StockOpportunityData } from '@/types/stock';
+import type { ColumnConfig } from '@/types/common';
 import {
   formatPrice,
   formatVolumeInBillion,
@@ -18,7 +19,7 @@ import styles from './OpportunityTable.module.css';
 
 interface OpportunityTableProps {
   data: StockOpportunityData[];
-  columns: OverviewColumnConfig[];
+  columns: ColumnConfig[];
   sortConfig: OverviewSortConfig;
   onSortChange: (config: OverviewSortConfig) => void;
 }
@@ -200,7 +201,7 @@ export function OpportunityTable({ data, columns, sortConfig, onSortChange }: Op
         dataSource={sortedData}
         rowKey="code"
         pagination={pagination}
-        scroll={{ x: 'max-content', y: 'calc(100vh - 240px)' }}
+        scroll={{ x: 'max-content', y: 'calc(100vh - 370px)' }}
         onChange={handleTableChange}
         size="small"
       />

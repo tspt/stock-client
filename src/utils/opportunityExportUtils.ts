@@ -2,7 +2,8 @@
  * 机会分析数据导出工具
  */
 
-import type { StockOpportunityData, OverviewColumnConfig } from '@/types/stock';
+import type { StockOpportunityData } from '@/types/stock';
+import type { ColumnConfig } from '@/types/common';
 import {
   formatPrice,
   formatVolumeInBillion,
@@ -56,7 +57,7 @@ function formatValue(value: any, key: string): string {
 
 export async function exportOpportunityToExcel(
   data: StockOpportunityData[],
-  columns: OverviewColumnConfig[]
+  columns: ColumnConfig[]
 ): Promise<void> {
   try {
     const XLSX = await import('xlsx').catch(() => {

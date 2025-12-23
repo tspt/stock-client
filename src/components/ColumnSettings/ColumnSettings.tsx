@@ -1,29 +1,22 @@
 /**
- * 列设置组件
+ * 通用列设置组件
  */
 
 import { useState, useEffect } from 'react';
 import { Modal, Switch, Button, Space, message } from 'antd';
 import { ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons';
-import type { OverviewColumnConfig } from '@/types/stock';
-import styles from './OverviewColumnSettings.module.css';
+import type { ColumnSettingsProps } from '@/types/common';
+import styles from './ColumnSettings.module.css';
 
-interface OverviewColumnSettingsProps {
-  visible: boolean;
-  columns: OverviewColumnConfig[];
-  onOk: (columns: OverviewColumnConfig[]) => void;
-  onCancel: () => void;
-  onReset: () => void;
-}
-
-export function OverviewColumnSettings({
+export function ColumnSettings({
   visible,
   columns,
   onOk,
   onCancel,
   onReset,
-}: OverviewColumnSettingsProps) {
-  const [localColumns, setLocalColumns] = useState<OverviewColumnConfig[]>(columns);
+  title = "列设置",
+}: ColumnSettingsProps) {
+  const [localColumns, setLocalColumns] = useState(columns);
 
   useEffect(() => {
     if (visible) {
@@ -72,7 +65,7 @@ export function OverviewColumnSettings({
 
   return (
     <Modal
-      title="列设置"
+      title={title}
       open={visible}
       onOk={handleOk}
       onCancel={onCancel}
@@ -122,4 +115,3 @@ export function OverviewColumnSettings({
     </Modal>
   );
 }
-

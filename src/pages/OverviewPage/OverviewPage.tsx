@@ -14,7 +14,7 @@ import {
 import { useOverviewStore } from '@/stores/overviewStore';
 import { useStockStore } from '@/stores/stockStore';
 import { OverviewTable } from '@/components/OverviewTable/OverviewTable';
-import { OverviewColumnSettings } from '@/components/OverviewColumnSettings/OverviewColumnSettings';
+import { ColumnSettings } from '@/components/ColumnSettings/ColumnSettings';
 import { exportToExcel } from '@/utils/exportUtils';
 import type { KLinePeriod } from '@/types/stock';
 import { BUILTIN_GROUP_SELF_ID, BUILTIN_GROUP_SELF_NAME } from '@/utils/constants';
@@ -277,12 +277,13 @@ export function OverviewPage() {
       </Content>
 
       {/* 列设置弹窗 */}
-      <OverviewColumnSettings
+      <ColumnSettings
         visible={columnSettingsVisible}
         columns={columnConfig}
         onOk={handleColumnSettingsOk}
         onCancel={() => setColumnSettingsVisible(false)}
         onReset={resetColumnConfig}
+        title="数据列表列设置"
       />
     </Layout>
   );

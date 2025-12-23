@@ -400,6 +400,7 @@ export interface OpportunityAnalysisResult {
 
 /**
  * 列配置项
+ * @deprecated 请使用 @/types/common 中的 ColumnConfig 替代
  */
 export interface OverviewColumnConfig {
   /** 列key */
