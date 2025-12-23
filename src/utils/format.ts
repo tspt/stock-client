@@ -110,14 +110,11 @@ export function getPureCode(code: string): string {
 }
 
 /**
- * 格式化市值（转换为万、亿）
+ * 格式化市值（转换为万亿、亿）
  */
 export function formatMarketCap(marketCap: number): string {
-  if (marketCap >= 100000000) {
-    return `${(marketCap / 100000000).toFixed(2)}亿`;
-  }
   if (marketCap >= 10000) {
-    return `${(marketCap / 10000).toFixed(2)}万`;
+    return `${(marketCap / 10000).toFixed(2)}万亿`;
   }
   return `${marketCap.toFixed(2)}亿`;
 }

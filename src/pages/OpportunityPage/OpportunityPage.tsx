@@ -37,6 +37,12 @@ const MARKET_OPTIONS: { label: string; value: string }[] = [
   { label: '创业板', value: 'sz_gem' },
 ];
 
+const NAME_TYPE_OPTIONS: { label: string; value: string }[] = [
+  { label: '不限', value: 'all' },
+  { label: 'ST', value: 'st' },
+  { label: '非ST', value: 'non_st' },
+];
+
 export function OpportunityPage() {
   const {
     analysisData,
@@ -59,13 +65,14 @@ export function OpportunityPage() {
   const [columnSettingsVisible, setColumnSettingsVisible] = useState(false);
   const [selectedMarket, setSelectedMarket] = useState<string>('sh_main');
   const [priceRange, setPriceRange] = useState<{ min?: number; max?: number }>({});
+  const [nameType, setNameType] = useState<string>('all');
   const [filteringQuotes, setFilteringQuotes] = useState(false);
 
   useEffect(() => {
     loadCachedData();
   }, [loadCachedData]);
 
-  // 根据选择的市场类型筛选股票
+  // 根据选择的市场类型和名称类型筛选股票
   const filteredStocks = useMemo<StockInfo[]>(() => {
     if (allStocks.length === 0) {
       return [];
@@ -73,22 +80,49 @@ export function OpportunityPage() {
 
     return allStocks.filter((stock) => {
       const pureCode = getPureCode(stock.code);
+      const isST = stock.name.includes('ST');
 
+      // 市场类型过滤
+      let marketMatch = false;
       switch (selectedMarket) {
         case 'sh_main':
           // 沪市主板：60开头
-          return pureCode.startsWith('60');
+          marketMatch = pureCode.startsWith('60');
+          break;
         case 'sz_main':
           // 深市主板：00开头
-          return pureCode.startsWith('00');
+          marketMatch = pureCode.startsWith('00');
+          break;
         case 'sz_gem':
           // 创业板：30开头
-          return pureCode.startsWith('30');
+          marketMatch = pureCode.startsWith('30');
+          break;
         default:
-          return false;
+          marketMatch = false;
       }
+
+      // 名称类型过滤
+      let nameTypeMatch = false;
+      switch (nameType) {
+        case 'all':
+          // 不限
+          nameTypeMatch = true;
+          break;
+        case 'st':
+          // ST股票
+          nameTypeMatch = isST;
+          break;
+        case 'non_st':
+          // 非ST股票
+          nameTypeMatch = !isST;
+          break;
+        default:
+          nameTypeMatch = true;
+      }
+
+      return marketMatch && nameTypeMatch;
     });
-  }, [allStocks, selectedMarket]);
+  }, [allStocks, selectedMarket, nameType]);
 
   const handleAnalyze = async () => {
     if (filteredStocks.length === 0) {
@@ -239,6 +273,21 @@ export function OpportunityPage() {
                 }}
               />
             </Space>
+            <Space.Compact className={styles.spaceCompact}>
+              <span className={styles.label}>名称类型：</span>
+              <Select
+                value={nameType}
+                onChange={(value: string) => {
+                  setNameType(value);
+                  if (analysisData.length > 0) {
+                    message.info('名称类型已更改，请重新分析');
+                  }
+                }}
+                options={NAME_TYPE_OPTIONS}
+                style={{ width: 120 }}
+                disabled={loading || filteringQuotes}
+              />
+            </Space.Compact>
             <Space.Compact className={styles.spaceCompact}>
               <span className={styles.label}>价格范围：</span>
               <InputNumber
