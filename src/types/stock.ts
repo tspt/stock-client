@@ -253,6 +253,8 @@ export interface StockOverviewData {
   marketCap?: number;
   /** 流通市值（元） */
   circulatingMarketCap?: number;
+  /** 总股数（股） */
+  totalShares?: number;
   /** 市盈率(PE) */
   peRatio?: number;
   /** 换手率（百分比） */
@@ -344,6 +346,8 @@ export interface StockOpportunityData {
   marketCap?: number;
   /** 流通市值（元） */
   circulatingMarketCap?: number;
+  /** 总股数（股） */
+  totalShares?: number;
   /** 市盈率(PE) */
   peRatio?: number;
   /** 换手率（百分比） */

@@ -138,3 +138,13 @@ export function formatTurnoverRate(rate: number): string {
   }
   return `${rate.toFixed(2)}%`;
 }
+
+/**
+ * 格式化总股数（转换为亿单位，保留2位小数）
+ */
+export function formatTotalShares(shares: number): string {
+  if (shares === null || shares === undefined || !isFinite(shares)) {
+    return '-';
+  }
+  return `${shares.toFixed(2)}亿`;
+}

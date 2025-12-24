@@ -5,7 +5,12 @@
 import { create } from 'zustand';
 import type { StockInfo, StockQuote, SortType, Group, StockWatchListData } from '@/types/stock';
 import { getStorage, setStorage } from '@/utils/storage';
-import { STORAGE_KEYS, MAX_GROUP_COUNT, BUILTIN_GROUP_SELF_ID, BUILTIN_GROUP_SELF_NAME } from '@/utils/constants';
+import {
+  STORAGE_KEYS,
+  MAX_GROUP_COUNT,
+  BUILTIN_GROUP_SELF_ID,
+  BUILTIN_GROUP_SELF_NAME,
+} from '@/utils/constants';
 import {
   migrateOldWatchList,
   isOldFormat,
@@ -150,12 +155,12 @@ export const useStockStore = create<StockState>((set, get) => ({
   loadWatchList: () => {
     // 先尝试迁移数据
     get().migrateWatchListData();
-    
+
     // 加载新格式数据
-    const saved = getStorage<StockWatchListData | StockInfo[]>(
-      STORAGE_KEYS.WATCH_LIST,
-      { groups: [], watchList: [] }
-    );
+    const saved = getStorage<StockWatchListData | StockInfo[]>(STORAGE_KEYS.WATCH_LIST, {
+      groups: [],
+      watchList: [],
+    });
 
     // 检查是否为旧格式
     if (isOldFormat(saved)) {
@@ -260,7 +265,7 @@ export const useStockStore = create<StockState>((set, get) => ({
 
   addGroup: (group) => {
     const { groups } = get();
-    
+
     // 检查分组数量限制
     if (groups.length >= MAX_GROUP_COUNT) {
       message.warning(`最多只能创建 ${MAX_GROUP_COUNT} 个分组`);
@@ -345,17 +350,17 @@ export const useStockStore = create<StockState>((set, get) => ({
         // 如果股票数量较多，显示进度
         if (stocksInGroup.length > 10) {
           const hide = message.loading('正在删除分组和股票...', 0);
-          
+
           // 模拟进度（实际删除很快，这里主要是用户体验）
           await new Promise((resolve) => setTimeout(resolve, 500));
-          
+
           // 删除分组和关联的股票
           const stockCodesToRemove = stocksInGroup.map((s) => s.code);
           const newWatchList = watchList.filter(
             (stock) => !stockCodesToRemove.includes(stock.code)
           );
           const newGroups = groups.filter((g) => g.id !== id);
-          
+
           // 更新排序
           const reorderedGroups = newGroups
             .map((g, index) => ({ ...g, order: index }))
@@ -363,7 +368,7 @@ export const useStockStore = create<StockState>((set, get) => ({
 
           set({ groups: reorderedGroups, watchList: newWatchList });
           get().saveWatchList();
-          
+
           hide();
           message.success(`已删除分组"${group.name}"及 ${stocksInGroup.length} 只股票`);
         } else {
@@ -373,7 +378,7 @@ export const useStockStore = create<StockState>((set, get) => ({
             (stock) => !stockCodesToRemove.includes(stock.code)
           );
           const newGroups = groups.filter((g) => g.id !== id);
-          
+
           // 更新排序
           const reorderedGroups = newGroups
             .map((g, index) => ({ ...g, order: index }))
@@ -402,9 +407,7 @@ export const useStockStore = create<StockState>((set, get) => ({
     }
     const { watchList } = get();
     const newWatchList = watchList.map((stock) =>
-      stock.code === stockCode
-        ? { ...stock, groupIds: [...new Set(groupIds)] }
-        : stock
+      stock.code === stockCode ? { ...stock, groupIds: [...new Set(groupIds)] } : stock
     );
     set({ watchList: newWatchList });
     get().saveWatchList();
@@ -466,10 +469,10 @@ export const useStockStore = create<StockState>((set, get) => ({
   },
 
   migrateWatchListData: () => {
-    const saved = getStorage<StockWatchListData | StockInfo[]>(
-      STORAGE_KEYS.WATCH_LIST,
-      null
-    );
+    const saved = getStorage<StockWatchListData | StockInfo[]>(STORAGE_KEYS.WATCH_LIST, {
+      groups: [],
+      watchList: [],
+    });
 
     if (!saved) {
       // 如果没有数据，初始化为空
@@ -485,7 +488,11 @@ export const useStockStore = create<StockState>((set, get) => ({
         ...s,
         groupIds: s.groupIds && s.groupIds.length > 0 ? s.groupIds : [BUILTIN_GROUP_SELF_ID],
       }));
-      set({ groups: migrated.groups, watchList: normalizedWatchList, selectedGroupId: BUILTIN_GROUP_SELF_ID });
+      set({
+        groups: migrated.groups,
+        watchList: normalizedWatchList,
+        selectedGroupId: BUILTIN_GROUP_SELF_ID,
+      });
       get().saveWatchList();
     }
   },

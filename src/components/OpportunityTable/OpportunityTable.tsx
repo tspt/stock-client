@@ -14,6 +14,7 @@ import {
   formatMarketCap,
   formatRatio,
   formatTurnoverRate,
+  formatTotalShares,
 } from '@/utils/format';
 import styles from './OpportunityTable.module.css';
 
@@ -59,6 +60,8 @@ export function OpportunityTable({ data, columns, sortConfig, onSortChange }: Op
         return formatRatio(Number(value));
       case 'turnoverRate':
         return formatTurnoverRate(Number(value));
+      case 'totalShares':
+        return formatTotalShares(Number(value));
       case 'kdjK':
       case 'kdjD':
       case 'kdjJ':

@@ -2,10 +2,8 @@
  * 分组工具函数
  */
 
-import type { Group, StockInfo, StockWatchListData } from '@/types/stock';
-import {
-  MAX_GROUP_NAME_LENGTH,
-} from './constants';
+import type { StockInfo, StockWatchListData } from '@/types/stock';
+import { MAX_GROUP_NAME_LENGTH } from './constants';
 import { BUILTIN_GROUP_SELF_ID } from './constants';
 
 /**
@@ -56,4 +54,3 @@ export function migrateOldWatchList(oldList: StockInfo[]): StockWatchListData {
 export function isOldFormat(data: unknown): data is StockInfo[] {
   return Array.isArray(data) && data.length > 0 && 'code' in data[0] && !('groups' in data);
 }
-

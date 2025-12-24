@@ -6,7 +6,6 @@ import type { StockOverviewData } from '@/types/stock';
 import type { ColumnConfig } from '@/types/common';
 import {
   formatPrice,
-  formatChangePercent,
   formatVolumeInBillion,
   formatAmountInBillion,
   formatMarketCap,

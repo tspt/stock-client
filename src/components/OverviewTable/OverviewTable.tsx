@@ -9,12 +9,12 @@ import type { StockOverviewData, OverviewSortConfig } from '@/types/stock';
 import type { ColumnConfig } from '@/types/common';
 import {
   formatPrice,
-  formatChangePercent,
   formatVolumeInBillion,
   formatAmountInBillion,
   formatMarketCap,
   formatRatio,
   formatTurnoverRate,
+  formatTotalShares,
 } from '@/utils/format';
 import styles from './OverviewTable.module.css';
 
@@ -67,6 +67,8 @@ export function OverviewTable({
         return formatRatio(value);
       case 'turnoverRate':
         return formatTurnoverRate(value);
+      case 'totalShares':
+        return formatTotalShares(value);
       case 'kdjK':
       case 'kdjD':
       case 'kdjJ':

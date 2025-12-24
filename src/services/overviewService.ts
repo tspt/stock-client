@@ -103,6 +103,7 @@ export async function analyzeStock(
       amount: quote.amount,
       marketCap: detail?.marketCap,
       circulatingMarketCap: detail?.circulatingMarketCap,
+      totalShares: detail?.marketCap && quote.price ? detail.marketCap / quote.price : undefined,
       peRatio: detail?.peRatio,
       turnoverRate: detail?.turnoverRate,
       kdjK,
@@ -171,6 +172,8 @@ async function analyzeStockDetails(
     if (detail) {
       result.marketCap = detail.marketCap;
       result.circulatingMarketCap = detail.circulatingMarketCap;
+      result.totalShares =
+        detail.marketCap && quote.price ? detail.marketCap / quote.price : undefined;
       result.peRatio = detail.peRatio;
       result.turnoverRate = detail.turnoverRate;
     }
@@ -410,6 +413,7 @@ export function analyzeAllStocks(
             amount: Number((quote.amount / 100000000).toFixed(2)), // 从元转为亿，保留两位小数
             marketCap: details.marketCap,
             circulatingMarketCap: details.circulatingMarketCap,
+            totalShares: details.totalShares,
             peRatio: details.peRatio,
             turnoverRate: details.turnoverRate,
             kdjK: details.kdjK !== undefined ? Number(details.kdjK.toFixed(2)) : undefined,

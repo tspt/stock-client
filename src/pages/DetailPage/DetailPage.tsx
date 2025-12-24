@@ -13,7 +13,6 @@ import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { AlertSettingModal } from '@/components/PriceAlert/AlertSettingModal';
 import {
   formatPrice,
-  formatChangePercent,
   formatVolume,
   formatAmount,
   formatMarketCap,

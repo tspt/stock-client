@@ -3,14 +3,7 @@
  */
 
 import { create } from 'zustand';
-import type {
-  PriceAlert,
-  StockQuote,
-  AlertType,
-  AlertCondition,
-  AlertTimePeriod,
-  NotificationConfig,
-} from '@/types/stock';
+import type { PriceAlert, StockQuote } from '@/types/stock';
 import { getStorage, setStorage } from '@/utils/storage';
 import { STORAGE_KEYS } from '@/utils/constants';
 
