@@ -20,4 +20,41 @@
   font-size: 12px;
 }
 
+.consolidationYes {
+  color: #52c41a;
+  font-weight: 500;
+}
+
+.consolidationNo {
+  color: #8c8c8c;
+}
+
+.strengthContainer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.strengthBar {
+  flex: 1;
+  height: 8px;
+  background-color: #f0f0f0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.strengthBarFill {
+  height: 100%;
+  background-color: #1890ff;
+  transition: width 0.3s;
+}
+
+.volumeShrinking {
+  color: #ff4d4f;
+}
+
+.volumeNormal {
+  color: #8c8c8c;
+}
+
 

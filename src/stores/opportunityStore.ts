@@ -9,6 +9,7 @@ import type {
   OverviewSortConfig,
   KLinePeriod,
   StockInfo,
+  KLineData,
 } from '@/types/stock';
 import type { ColumnConfig } from '@/types/common';
 import { analyzeAllStocksOpportunity } from '@/services/opportunityService';
@@ -36,6 +37,8 @@ interface OpportunityState {
   sortConfig: OverviewSortConfig;
   errors: Array<{ stock: { code: string; name: string }; error: string }>;
   cancelFn: (() => void) | null;
+  // K线数据缓存：Map<股票代码, K线数据数组>
+  klineDataCache: Map<string, KLineData[]>;
 
   startAnalysis: (period: KLinePeriod, stocks: StockInfo[], count: number) => Promise<void>;
   cancelAnalysis: () => void;
@@ -94,6 +97,7 @@ export const useOpportunityStore = create<OpportunityState>((set, get) => ({
   sortConfig: { key: null, direction: null },
   errors: [],
   cancelFn: null,
+  klineDataCache: new Map(),
 
   startAnalysis: async (period, stocks, count) => {
     if (stocks.length === 0) {
@@ -125,7 +129,7 @@ export const useOpportunityStore = create<OpportunityState>((set, get) => ({
         },
       });
 
-      const { results, errors } = await promise;
+      const { results, errors, klineDataMap } = await promise;
 
       if (cancelled) {
         set({ loading: false, cancelFn: null });
@@ -151,11 +155,19 @@ export const useOpportunityStore = create<OpportunityState>((set, get) => ({
         error: err.error.message,
       }));
 
-      set({
-        analysisData: results,
-        loading: false,
-        errors: formattedErrors,
-        cancelFn: null,
+      // 保存K线数据到缓存
+      set((state) => {
+        const newCache = new Map(state.klineDataCache);
+        klineDataMap.forEach((klineData, code) => {
+          newCache.set(code, klineData);
+        });
+        return {
+          analysisData: results,
+          loading: false,
+          errors: formattedErrors,
+          cancelFn: null,
+          klineDataCache: newCache,
+        };
       });
     } catch (error) {
       console.error('机会分析失败:', error);
@@ -204,6 +216,7 @@ export const useOpportunityStore = create<OpportunityState>((set, get) => ({
       analysisData: [],
       progress: { total: 0, completed: 0, failed: 0, percent: 0 },
       errors: [],
+      klineDataCache: new Map(),
     });
   },
 

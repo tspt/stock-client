@@ -170,4 +170,9 @@ export const OPPORTUNITY_DEFAULT_COLUMNS = [
   { key: 'ma120', title: 'MA-120涨跌幅', visible: true, width: 130 },
   { key: 'ma240', title: 'MA-240涨跌幅', visible: false, width: 130 },
   { key: 'ma360', title: 'MA-360涨跌幅', visible: false, width: 130 },
+  { key: 'consolidationStatus', title: '横盘状态', visible: true, width: 100 },
+  { key: 'consolidationStrength', title: '横盘强度', visible: true, width: 110 },
+  { key: 'volatility', title: '波动率', visible: true, width: 100 },
+  { key: 'maSpread', title: 'MA离散度', visible: true, width: 110 },
+  { key: 'volumeRatio', title: '成交量比率', visible: true, width: 110 },
 ] as const;

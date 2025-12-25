@@ -374,10 +374,50 @@ export interface StockOpportunityData {
   ma240?: number;
   /** MA-360 */
   ma360?: number;
+  /** 横盘分析结果 */
+  consolidation?: ConsolidationAnalysis;
   /** 分析时间戳 */
   analyzedAt: number;
   /** 错误信息（如果获取失败） */
   error?: string;
+}
+
+/**
+ * 横盘分析结果
+ */
+export interface ConsolidationAnalysis {
+  /** 价格波动率法分析结果 */
+  priceVolatility: {
+    /** 是否横盘 */
+    isConsolidation: boolean;
+    /** 波动率（百分比，如 3.25） */
+    volatility: number;
+    /** 横盘强度 0-100（波动率越小，强度越高） */
+    strength: number;
+  };
+  /** MA收敛法分析结果 */
+  maConvergence: {
+    /** 是否横盘 */
+    isConsolidation: boolean;
+    /** MA离散度（百分比，如 2.15） */
+    maSpread: number;
+    /** 横盘强度 0-100（离散度越小，强度越高） */
+    strength: number;
+  };
+  /** 综合判断结果 */
+  combined: {
+    /** 是否横盘 */
+    isConsolidation: boolean;
+    /** 综合强度 0-100 */
+    strength: number;
+  };
+  /** 成交量分析结果 */
+  volumeAnalysis: {
+    /** 平均成交量比率（相对于更长期均量，如 75.5 表示75.5%） */
+    avgVolumeRatio: number;
+    /** 是否缩量 */
+    isVolumeShrinking: boolean;
+  };
 }
 
 /**

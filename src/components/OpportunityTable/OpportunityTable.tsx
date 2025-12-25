@@ -4,6 +4,7 @@
 
 import { useMemo, useState } from 'react';
 import { Table } from 'antd';
+import type React from 'react';
 import type { ColumnsType, TablePaginationConfig } from 'antd/es/table';
 import type { OverviewSortConfig, StockOpportunityData } from '@/types/stock';
 import type { ColumnConfig } from '@/types/common';
@@ -34,7 +35,7 @@ export function OpportunityTable({ data, columns, sortConfig, onSortChange }: Op
     pageSizeOptions: ['20', '50', '100', '200'],
   });
 
-  const formatValue = (value: any, key: string): string | number => {
+  const formatValue = (value: any, key: string, record?: StockOpportunityData): string | number | React.ReactNode => {
     if (value === null || value === undefined || value === '') {
       return '-';
     }
@@ -67,7 +68,7 @@ export function OpportunityTable({ data, columns, sortConfig, onSortChange }: Op
       case 'kdjJ':
         return value !== undefined && value !== null ? Number(value).toFixed(2) : '-';
       case 'opportunityChangePercent':
-        return value !== undefined && value !== null ? `${Number(value).toFixed(2)}%` : '-';
+        return value !== null && value !== undefined ? `${Number(value).toFixed(2)}%` : '-';
       case 'ma5':
       case 'ma10':
       case 'ma20':
@@ -77,6 +78,43 @@ export function OpportunityTable({ data, columns, sortConfig, onSortChange }: Op
       case 'ma240':
       case 'ma360':
         return value !== undefined && value !== null ? `${Number(value).toFixed(2)}%` : '-';
+      case 'consolidationStatus':
+        if (!record?.consolidation) return '-';
+        const isConsolidation = record.consolidation.combined.isConsolidation;
+        return (
+          <span className={isConsolidation ? styles.consolidationYes : styles.consolidationNo}>
+            {isConsolidation ? '是' : '否'}
+          </span>
+        );
+      case 'consolidationStrength':
+        if (!record?.consolidation) return '-';
+        const strength = record.consolidation.combined.strength;
+        return (
+          <div className={styles.strengthContainer}>
+            <span>{strength.toFixed(0)}</span>
+            <div className={styles.strengthBar}>
+              <div
+                className={styles.strengthBarFill}
+                style={{ width: `${strength}%` }}
+              />
+            </div>
+          </div>
+        );
+      case 'volatility':
+        if (!record?.consolidation) return '-';
+        return `${record.consolidation.priceVolatility.volatility.toFixed(2)}%`;
+      case 'maSpread':
+        if (!record?.consolidation) return '-';
+        return `${record.consolidation.maConvergence.maSpread.toFixed(2)}%`;
+      case 'volumeRatio':
+        if (!record?.consolidation) return '-';
+        const ratio = record.consolidation.volumeAnalysis.avgVolumeRatio;
+        const isShrinking = record.consolidation.volumeAnalysis.isVolumeShrinking;
+        return (
+          <span className={isShrinking ? styles.volumeShrinking : styles.volumeNormal}>
+            {ratio.toFixed(1)}%
+          </span>
+        );
       default:
         return String(value);
     }
@@ -91,7 +129,7 @@ export function OpportunityTable({ data, columns, sortConfig, onSortChange }: Op
         dataIndex: col.key,
         key: col.key,
         width: col.width || 120,
-        render: (value: any) => {
+        render: (value: any, record: StockOpportunityData) => {
           if (col.key === 'name') {
             return <span className={styles.stockName}>{value}</span>;
           }
@@ -99,7 +137,7 @@ export function OpportunityTable({ data, columns, sortConfig, onSortChange }: Op
             const isPositive = typeof value === 'number' ? value >= 0 : false;
             return (
               <span className={isPositive ? styles.positiveValue : styles.negativeValue}>
-                {formatValue(value, col.key)}
+                {formatValue(value, col.key, record)}
               </span>
             );
           }
@@ -116,28 +154,59 @@ export function OpportunityTable({ data, columns, sortConfig, onSortChange }: Op
             const isPositive = typeof value === 'number' ? value >= 0 : false;
             return (
               <span className={isPositive ? styles.positiveValue : styles.negativeValue}>
-                {formatValue(value, col.key)}
+                {formatValue(value, col.key, record)}
               </span>
             );
           }
           if (col.key === 'error') {
             return <span className={styles.errorText}>{value}</span>;
           }
-          return formatValue(value, col.key);
+          return formatValue(value, col.key, record);
         },
       };
 
       if (col.key === 'name') {
         column.fixed = 'left';
       } else {
-        column.sorter = (a: any, b: any) => {
-          const aVal = a[col.key];
-          const bVal = b[col.key];
-          if (aVal === null || aVal === undefined) return 1;
-          if (bVal === null || bVal === undefined) return -1;
-          if (typeof aVal === 'number' && typeof bVal === 'number') return aVal - bVal;
-          return String(aVal).localeCompare(String(bVal));
-        };
+        // 横盘相关列的特殊排序逻辑
+        if (col.key === 'consolidationStatus' || col.key === 'consolidationStrength' || 
+            col.key === 'volatility' || col.key === 'maSpread' || col.key === 'volumeRatio') {
+          column.sorter = (a: any, b: any) => {
+            let aVal: any;
+            let bVal: any;
+            
+            if (col.key === 'consolidationStatus') {
+              aVal = a.consolidation?.combined?.isConsolidation ? 1 : 0;
+              bVal = b.consolidation?.combined?.isConsolidation ? 1 : 0;
+            } else if (col.key === 'consolidationStrength') {
+              aVal = a.consolidation?.combined?.strength;
+              bVal = b.consolidation?.combined?.strength;
+            } else if (col.key === 'volatility') {
+              aVal = a.consolidation?.priceVolatility?.volatility;
+              bVal = b.consolidation?.priceVolatility?.volatility;
+            } else if (col.key === 'maSpread') {
+              aVal = a.consolidation?.maConvergence?.maSpread;
+              bVal = b.consolidation?.maConvergence?.maSpread;
+            } else if (col.key === 'volumeRatio') {
+              aVal = a.consolidation?.volumeAnalysis?.avgVolumeRatio;
+              bVal = b.consolidation?.volumeAnalysis?.avgVolumeRatio;
+            }
+            
+            if (aVal === null || aVal === undefined) return 1;
+            if (bVal === null || bVal === undefined) return -1;
+            if (typeof aVal === 'number' && typeof bVal === 'number') return aVal - bVal;
+            return String(aVal).localeCompare(String(bVal));
+          };
+        } else {
+          column.sorter = (a: any, b: any) => {
+            const aVal = a[col.key];
+            const bVal = b[col.key];
+            if (aVal === null || aVal === undefined) return 1;
+            if (bVal === null || bVal === undefined) return -1;
+            if (typeof aVal === 'number' && typeof bVal === 'number') return aVal - bVal;
+            return String(aVal).localeCompare(String(bVal));
+          };
+        }
 
         column.sortOrder =
           sortConfig.key === col.key

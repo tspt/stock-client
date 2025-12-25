@@ -4,9 +4,10 @@
  * - 再按“每批3只，批次间隔1.2s”并发获取详情+K线并计算指标
  */
 
-import type { KLinePeriod, StockInfo, StockOpportunityData } from '@/types/stock';
+import type { KLinePeriod, StockInfo, StockOpportunityData, KLineData } from '@/types/stock';
 import { getKLineData, getStockDetail, getStockQuotes } from '@/services/stockApi';
 import { calcAllIndicators, formatKDJValues } from '@/utils/indicators';
+import { calculateConsolidation } from '@/utils/consolidationAnalysis';
 import { ConcurrencyManager } from '@/utils/concurrencyManager';
 import {
   OPPORTUNITY_BATCH_DELAY,
@@ -32,7 +33,7 @@ async function analyzeOneStock(
   period: KLinePeriod,
   count: number,
   cancelledRef: { cancelled: boolean }
-): Promise<StockOpportunityData> {
+): Promise<{ data: StockOpportunityData; klineData: KLineData[] }> {
   const analyzedAt = Date.now();
   const { code } = stock;
 
@@ -60,11 +61,26 @@ async function analyzeOneStock(
   const { avgPrice, highPrice, lowPrice } = priceStats;
   const formattedKDJ = formatKDJValues(kdj);
 
-  // 与数据概况页保持一致：volume/amount 先转为“亿单位”再显示
+  // 横盘分析（使用默认参数：周期10，价格波动阈值5%，MA离散度阈值3%，缩量阈值80%）
+  let consolidation;
+  try {
+    consolidation = calculateConsolidation(klineData, {
+      period: 10,
+      priceVolatilityThreshold: 5,
+      maSpreadThreshold: 3,
+      volumeShrinkingThreshold: 80,
+    });
+  } catch (error) {
+    console.warn(`[${code}] 横盘分析失败:`, error);
+    // 横盘分析失败不影响其他数据
+  }
+
+  // 与数据概况页保持一致：volume/amount 先转为"亿单位"再显示
   const volume = Number((quote.volume / 100000000).toFixed(2));
   const amount = Number((quote.amount / 100000000).toFixed(2));
 
   return {
+    data: {
       code,
       name: quote.name || stock.name,
       price: quote.price,
@@ -92,8 +108,11 @@ async function analyzeOneStock(
       ma120: maFields.ma120,
       ma240: maFields.ma240,
       ma360: maFields.ma360,
+      consolidation,
       analyzedAt,
-    };
+    },
+    klineData,
+  };
 }
 
 /**
@@ -114,12 +133,13 @@ export function analyzeAllStocksOpportunity(
   promise: Promise<{
     results: StockOpportunityData[];
     errors: Array<{ stock: StockInfo; error: Error }>;
+    klineDataMap: Map<string, KLineData[]>;
   }>;
   cancel: () => void;
 } {
   if (stocks.length === 0) {
     return {
-      promise: Promise.resolve({ results: [], errors: [] }),
+      promise: Promise.resolve({ results: [], errors: [], klineDataMap: new Map() }),
       cancel: () => {},
     };
   }
@@ -135,6 +155,7 @@ export function analyzeAllStocksOpportunity(
   const promise = (async () => {
     const errors: Array<{ stock: StockInfo; error: Error }> = [];
     const results: StockOpportunityData[] = [];
+    const klineDataMap = new Map<string, KLineData[]>();
     const totalStocks = stocks.length;
 
     onProgress?.({ total: totalStocks, completed: 0, failed: 0, percent: 0 });
@@ -273,7 +294,7 @@ export function analyzeAllStocksOpportunity(
         manager.addTask({
           id: stock.code,
           fn: async () => {
-            const data = await analyzeOneStock(
+            const { data, klineData } = await analyzeOneStock(
               stock,
               {
                 code: quote.code,
@@ -290,6 +311,8 @@ export function analyzeAllStocksOpportunity(
               count,
               cancelledRef
             );
+            // 保存K线数据到Map
+            klineDataMap.set(stock.code, klineData);
             return { code: stock.code, data };
           },
         });
@@ -354,14 +377,14 @@ export function analyzeAllStocksOpportunity(
       });
     }
 
-    return { results, errors };
+    return { results, errors, klineDataMap };
   })().catch((e) => {
     const err = e instanceof Error ? e : new Error(String(e));
     const errors: Array<{ stock: StockInfo; error: Error }> = stocks.map((s) => ({
       stock: s,
       error: err,
     }));
-    return { results: [], errors };
+    return { results: [], errors, klineDataMap: new Map() };
   });
 
   return { promise, cancel };
