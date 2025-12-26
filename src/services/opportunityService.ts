@@ -61,7 +61,7 @@ async function analyzeOneStock(
   const { avgPrice, highPrice, lowPrice } = priceStats;
   const formattedKDJ = formatKDJValues(kdj);
 
-  // 横盘分析（使用默认参数：周期10，价格波动阈值5%，MA离散度阈值3%，缩量阈值80%）
+  // 横盘分析（使用默认参数：周期10，价格波动阈值5%，MA离散度阈值3%，缩量阈值80%，趋势分析周期30天）
   let consolidation;
   try {
     consolidation = calculateConsolidation(klineData, {
@@ -69,6 +69,8 @@ async function analyzeOneStock(
       priceVolatilityThreshold: 5,
       maSpreadThreshold: 3,
       volumeShrinkingThreshold: 80,
+      currentPrice: quote.price,
+      trendPeriod: 30,
     });
   } catch (error) {
     console.warn(`[${code}] 横盘分析失败:`, error);

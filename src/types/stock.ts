@@ -418,6 +418,38 @@ export interface ConsolidationAnalysis {
     /** 是否缩量 */
     isVolumeShrinking: boolean;
   };
+  /** 价格位置分析结果 */
+  pricePosition?: {
+    /** 相对高点位置（从最高点下跌的幅度，百分比，如 10.5 表示下跌10.5%） */
+    relativeToHigh: number;
+    /** 相对低点位置（从最低点上涨的幅度，百分比，如 5.2 表示上涨5.2%） */
+    relativeToLow: number;
+    /** 当前价在近期价格区间的位置（0-100，0=最低，100=最高） */
+    positionInRange: number;
+    /** 近期最高价 */
+    recentHigh: number;
+    /** 近期最低价 */
+    recentLow: number;
+  };
+  /** 横盘前趋势分析结果 */
+  trendBefore?: {
+    /** 横盘前趋势方向：'up' | 'down' | 'sideways' | 'volatile' */
+    direction: 'up' | 'down' | 'sideways' | 'volatile';
+    /** 横盘前涨跌幅（百分比） */
+    changePercent: number;
+    /** 横盘前天数 */
+    daysBefore: number;
+    /** 是否有深跌（跌幅较大） */
+    hasDeepDrop: boolean;
+    /** 是否有反弹 */
+    hasRebound: boolean;
+    /** 是否反复震荡 */
+    isVolatile: boolean;
+    /** 震荡类型：'up_down' | 'down_up' | 'sideways_up' | 'sideways_down' | 'multiple' */
+    volatileType?: 'up_down' | 'down_up' | 'sideways_up' | 'sideways_down' | 'multiple';
+    /** 是否有上涨→下跌模式（用于情况1） */
+    hasUpThenDown?: boolean;
+  };
 }
 
 /**

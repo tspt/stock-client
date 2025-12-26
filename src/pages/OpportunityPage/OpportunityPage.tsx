@@ -90,6 +90,20 @@ export function OpportunityPage() {
   const [strengthRange, setStrengthRange] = useState<{ min?: number; max?: number }>({});
   const [consolidationFilterVisible, setConsolidationFilterVisible] = useState(true);
 
+  // 价格位置和趋势筛选状态
+  const [trendPeriod, setTrendPeriod] = useState<number>(30);
+  const [pricePositionRange, setPricePositionRange] = useState<{
+    relativeToHigh?: { min?: number; max?: number };
+    relativeToLow?: { min?: number; max?: number };
+    positionInRange?: { min?: number; max?: number };
+  }>({});
+  const [trendDirection, setTrendDirection] = useState<string>('all'); // 'all' | 'up' | 'down' | 'sideways' | 'volatile'
+  const [trendChangePercentRange, setTrendChangePercentRange] = useState<{ min?: number; max?: number }>({});
+  const [hasDeepDrop, setHasDeepDrop] = useState<boolean | undefined>(undefined);
+  const [hasRebound, setHasRebound] = useState<boolean | undefined>(undefined);
+  const [volatileTypes, setVolatileTypes] = useState<string[]>([]); // 反复震荡类型多选
+  const [quickFilter, setQuickFilter] = useState<string>('all'); // 快速筛选：'all' | 'case1' | 'case2' | 'case3' | 'case4'
+
   useEffect(() => {
     loadCachedData();
   }, [loadCachedData]);
@@ -171,6 +185,8 @@ export function OpportunityPage() {
           priceVolatilityThreshold: priceVolatilityThreshold,
           maSpreadThreshold: maSpreadThreshold,
           volumeShrinkingThreshold: volumeShrinkingThreshold,
+          currentPrice: item.price,
+          trendPeriod: trendPeriod,
         });
 
         return {
@@ -190,6 +206,7 @@ export function OpportunityPage() {
     priceVolatilityThreshold,
     maSpreadThreshold,
     volumeShrinkingThreshold,
+    trendPeriod,
   ]);
 
   // 对分析数据进行二次筛选
@@ -267,10 +284,110 @@ export function OpportunityPage() {
 
         if (!isConsolidation) return false;
 
-        // 强度范围筛选
-        const strength = combined.strength;
+        // 强度范围筛选：根据选中的方法动态选择强度
+        let strength: number;
+        if (consolidationMethods.length === 1) {
+          // 只选一种方法，使用该方法的强度
+          if (consolidationMethods.includes('priceVolatility')) {
+            strength = priceVolatility.strength;
+          } else {
+            strength = maConvergence.strength;
+          }
+        } else {
+          // 两种方法都选，使用综合强度（平均值）
+          strength = combined.strength;
+        }
+
         if (strengthRange.min !== undefined && strength < strengthRange.min) return false;
         if (strengthRange.max !== undefined && strength > strengthRange.max) return false;
+      }
+
+      // 价格位置筛选
+      if (item.consolidation?.pricePosition) {
+        const { relativeToHigh, relativeToLow, positionInRange } = item.consolidation.pricePosition;
+
+        // 相对高点位置筛选
+        if (pricePositionRange.relativeToHigh?.min !== undefined && relativeToHigh < pricePositionRange.relativeToHigh.min) {
+          return false;
+        }
+        if (pricePositionRange.relativeToHigh?.max !== undefined && relativeToHigh > pricePositionRange.relativeToHigh.max) {
+          return false;
+        }
+
+        // 相对低点位置筛选
+        if (pricePositionRange.relativeToLow?.min !== undefined && relativeToLow < pricePositionRange.relativeToLow.min) {
+          return false;
+        }
+        if (pricePositionRange.relativeToLow?.max !== undefined && relativeToLow > pricePositionRange.relativeToLow.max) {
+          return false;
+        }
+
+        // 当前价在价格区间位置筛选
+        if (pricePositionRange.positionInRange?.min !== undefined && positionInRange < pricePositionRange.positionInRange.min) {
+          return false;
+        }
+        if (pricePositionRange.positionInRange?.max !== undefined && positionInRange > pricePositionRange.positionInRange.max) {
+          return false;
+        }
+      }
+
+      // 横盘前趋势筛选
+      if (item.consolidation?.trendBefore) {
+        const trend = item.consolidation.trendBefore;
+
+        // 快速筛选：4种情况
+        if (quickFilter !== 'all') {
+          let match = false;
+          switch (quickFilter) {
+            case 'case1': // 横盘→上涨→下跌→横盘
+              // 有上涨→下跌模式，且最后是下跌
+              match = trend.hasUpThenDown === true && trend.direction === 'down';
+              break;
+            case 'case2': // 整体下跌→横盘
+              // 整体下跌，没有深跌和反弹（平稳下跌）
+              match = trend.direction === 'down' && !trend.hasDeepDrop && !trend.hasRebound;
+              break;
+            case 'case3': // 整体下跌→深跌→反弹→横盘
+              // 有深跌和反弹
+              match = trend.direction === 'down' && trend.hasDeepDrop && trend.hasRebound;
+              break;
+            case 'case4': // 近期反复涨跌
+              // 反复震荡
+              match = trend.isVolatile;
+              break;
+          }
+          if (!match) return false;
+        }
+
+        // 趋势方向筛选
+        if (trendDirection !== 'all' && trend.direction !== trendDirection) {
+          return false;
+        }
+
+        // 横盘前涨跌幅范围筛选
+        if (trendChangePercentRange.min !== undefined && trend.changePercent < trendChangePercentRange.min) {
+          return false;
+        }
+        if (trendChangePercentRange.max !== undefined && trend.changePercent > trendChangePercentRange.max) {
+          return false;
+        }
+
+        // 深跌筛选
+        if (hasDeepDrop !== undefined && trend.hasDeepDrop !== hasDeepDrop) {
+          return false;
+        }
+
+        // 反弹筛选
+        if (hasRebound !== undefined && trend.hasRebound !== hasRebound) {
+          return false;
+        }
+
+        // 反复震荡类型筛选
+        if (volatileTypes.length > 0 && trend.isVolatile && trend.volatileType) {
+          if (!volatileTypes.includes(trend.volatileType)) {
+            return false;
+          }
+        }
       }
 
       return true;
@@ -285,6 +402,13 @@ export function OpportunityPage() {
     consolidationFilterMode,
     requireVolumeShrinking,
     strengthRange,
+    pricePositionRange,
+    quickFilter,
+    trendDirection,
+    trendChangePercentRange,
+    hasDeepDrop,
+    hasRebound,
+    volatileTypes,
   ]);
 
   // 重置所有筛选条件
@@ -912,6 +1036,285 @@ export function OpportunityPage() {
                   </div>
                 </div>
               )}
+            </Card>
+
+            {/* 价格位置和趋势筛选区域 */}
+            <Card className={styles.filterCard} size="small">
+              <div className={styles.filterHeader}>
+                <Space>
+                  <FilterOutlined />
+                  <span>价格位置和趋势筛选</span>
+                </Space>
+              </div>
+              <div className={styles.filterContent}>
+                <div className={styles.filterRow}>
+                  <div className={styles.filterItem}>
+                    <span className={styles.filterLabel}>快速筛选：</span>
+                    <Select
+                      value={quickFilter}
+                      onChange={(value) => setQuickFilter(value)}
+                      style={{ width: 200 }}
+                      options={[
+                        { label: '不限', value: 'all' },
+                        { label: '情况1：横盘→上涨→下跌→横盘', value: 'case1' },
+                        { label: '情况2：整体下跌→横盘', value: 'case2' },
+                        { label: '情况3：深跌反弹→横盘', value: 'case3' },
+                        { label: '情况4：近期反复涨跌', value: 'case4' },
+                      ]}
+                    />
+                  </div>
+                  <div className={styles.filterItem}>
+                    <span className={styles.filterLabel}>趋势分析周期：</span>
+                    <InputNumber
+                      value={trendPeriod}
+                      min={10}
+                      max={100}
+                      step={5}
+                      style={{ width: 100 }}
+                      onChange={(v) => {
+                        const next = typeof v === 'number' && isFinite(v) ? Math.floor(v) : 30;
+                        setTrendPeriod(next);
+                      }}
+                    />
+                    <span style={{ marginLeft: 4 }}>天</span>
+                  </div>
+                </div>
+
+                <div className={styles.filterRow}>
+                  <div className={styles.filterItem}>
+                    <span className={styles.filterLabel}>相对高点位置(%)：</span>
+                    <InputNumber
+                      value={pricePositionRange.relativeToHigh?.min}
+                      min={0}
+                      max={100}
+                      step={0.1}
+                      precision={1}
+                      style={{ width: 100 }}
+                      placeholder="最小值"
+                      onChange={(v) => {
+                        setPricePositionRange((prev) => ({
+                          ...prev,
+                          relativeToHigh: {
+                            ...prev.relativeToHigh,
+                            min: typeof v === 'number' && isFinite(v) ? v : undefined,
+                          },
+                        }));
+                      }}
+                    />
+                    <span style={{ margin: '0 4px' }}>~</span>
+                    <InputNumber
+                      value={pricePositionRange.relativeToHigh?.max}
+                      min={0}
+                      max={100}
+                      step={0.1}
+                      precision={1}
+                      style={{ width: 100 }}
+                      placeholder="最大值"
+                      onChange={(v) => {
+                        setPricePositionRange((prev) => ({
+                          ...prev,
+                          relativeToHigh: {
+                            ...prev.relativeToHigh,
+                            max: typeof v === 'number' && isFinite(v) ? v : undefined,
+                          },
+                        }));
+                      }}
+                    />
+                    <span style={{ marginLeft: 4, fontSize: 12, color: '#999' }}>
+                      (从高点下跌幅度)
+                    </span>
+                  </div>
+                  <div className={styles.filterItem}>
+                    <span className={styles.filterLabel}>相对低点位置(%)：</span>
+                    <InputNumber
+                      value={pricePositionRange.relativeToLow?.min}
+                      min={0}
+                      max={100}
+                      step={0.1}
+                      precision={1}
+                      style={{ width: 100 }}
+                      placeholder="最小值"
+                      onChange={(v) => {
+                        setPricePositionRange((prev) => ({
+                          ...prev,
+                          relativeToLow: {
+                            ...prev.relativeToLow,
+                            min: typeof v === 'number' && isFinite(v) ? v : undefined,
+                          },
+                        }));
+                      }}
+                    />
+                    <span style={{ margin: '0 4px' }}>~</span>
+                    <InputNumber
+                      value={pricePositionRange.relativeToLow?.max}
+                      min={0}
+                      max={100}
+                      step={0.1}
+                      precision={1}
+                      style={{ width: 100 }}
+                      placeholder="最大值"
+                      onChange={(v) => {
+                        setPricePositionRange((prev) => ({
+                          ...prev,
+                          relativeToLow: {
+                            ...prev.relativeToLow,
+                            max: typeof v === 'number' && isFinite(v) ? v : undefined,
+                          },
+                        }));
+                      }}
+                    />
+                    <span style={{ marginLeft: 4, fontSize: 12, color: '#999' }}>
+                      (从低点上涨幅度)
+                    </span>
+                  </div>
+                </div>
+
+                <div className={styles.filterRow}>
+                  <div className={styles.filterItem}>
+                    <span className={styles.filterLabel}>当前价位置(%)：</span>
+                    <InputNumber
+                      value={pricePositionRange.positionInRange?.min}
+                      min={0}
+                      max={100}
+                      step={1}
+                      style={{ width: 100 }}
+                      placeholder="最小值"
+                      onChange={(v) => {
+                        setPricePositionRange((prev) => ({
+                          ...prev,
+                          positionInRange: {
+                            ...prev.positionInRange,
+                            min: typeof v === 'number' && isFinite(v) ? v : undefined,
+                          },
+                        }));
+                      }}
+                    />
+                    <span style={{ margin: '0 4px' }}>~</span>
+                    <InputNumber
+                      value={pricePositionRange.positionInRange?.max}
+                      min={0}
+                      max={100}
+                      step={1}
+                      style={{ width: 100 }}
+                      placeholder="最大值"
+                      onChange={(v) => {
+                        setPricePositionRange((prev) => ({
+                          ...prev,
+                          positionInRange: {
+                            ...prev.positionInRange,
+                            max: typeof v === 'number' && isFinite(v) ? v : undefined,
+                          },
+                        }));
+                      }}
+                    />
+                    <span style={{ marginLeft: 4, fontSize: 12, color: '#999' }}>
+                      (在价格区间位置，0=最低，100=最高)
+                    </span>
+                  </div>
+                </div>
+
+                <div className={styles.filterRow}>
+                  <div className={styles.filterItem}>
+                    <span className={styles.filterLabel}>横盘前趋势方向：</span>
+                    <Select
+                      value={trendDirection}
+                      onChange={(value) => setTrendDirection(value)}
+                      style={{ width: 150 }}
+                      options={[
+                        { label: '不限', value: 'all' },
+                        { label: '上涨后横盘', value: 'up' },
+                        { label: '下跌后横盘', value: 'down' },
+                        { label: '横盘后横盘', value: 'sideways' },
+                        { label: '反复震荡', value: 'volatile' },
+                      ]}
+                    />
+                  </div>
+                  <div className={styles.filterItem}>
+                    <span className={styles.filterLabel}>横盘前涨跌幅(%)：</span>
+                    <InputNumber
+                      value={trendChangePercentRange.min}
+                      min={-100}
+                      max={100}
+                      step={0.1}
+                      precision={1}
+                      style={{ width: 100 }}
+                      placeholder="最小值"
+                      onChange={(v) => {
+                        setTrendChangePercentRange((prev) => ({
+                          ...prev,
+                          min: typeof v === 'number' && isFinite(v) ? v : undefined,
+                        }));
+                      }}
+                    />
+                    <span style={{ margin: '0 4px' }}>~</span>
+                    <InputNumber
+                      value={trendChangePercentRange.max}
+                      min={-100}
+                      max={100}
+                      step={0.1}
+                      precision={1}
+                      style={{ width: 100 }}
+                      placeholder="最大值"
+                      onChange={(v) => {
+                        setTrendChangePercentRange((prev) => ({
+                          ...prev,
+                          max: typeof v === 'number' && isFinite(v) ? v : undefined,
+                        }));
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <div className={styles.filterRow}>
+                  <div className={styles.filterItem}>
+                    <span className={styles.filterLabel}>特殊形态：</span>
+                    <Checkbox
+                      checked={hasDeepDrop === true}
+                      indeterminate={hasDeepDrop === undefined}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setHasDeepDrop(true);
+                        } else {
+                          setHasDeepDrop(undefined);
+                        }
+                      }}
+                    >
+                      包含深跌
+                    </Checkbox>
+                    <Checkbox
+                      checked={hasRebound === true}
+                      indeterminate={hasRebound === undefined}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setHasRebound(true);
+                        } else {
+                          setHasRebound(undefined);
+                        }
+                      }}
+                      style={{ marginLeft: 16 }}
+                    >
+                      包含反弹
+                    </Checkbox>
+                  </div>
+                  <div className={styles.filterItem}>
+                    <span className={styles.filterLabel}>反复震荡类型：</span>
+                    <Select
+                      mode="multiple"
+                      value={volatileTypes}
+                      onChange={(values) => setVolatileTypes(values)}
+                      style={{ width: 300 }}
+                      placeholder="选择震荡类型"
+                      options={[
+                        { label: '上涨→下跌→上涨', value: 'up_down' },
+                        { label: '下跌→上涨→下跌', value: 'down_up' },
+                        { label: '横盘→上涨', value: 'sideways_up' },
+                        { label: '横盘→下跌', value: 'sideways_down' },
+                        { label: '多次震荡', value: 'multiple' },
+                      ]}
+                    />
+                  </div>
+                </div>
+              </div>
             </Card>
 
             {/* 表格区域 */}
