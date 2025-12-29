@@ -2,7 +2,7 @@
  * 机会分析页面
  */
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef, useCallback, useLayoutEffect } from 'react';
 import { Layout, Card, Button, Space, Progress, Select, Collapse, message, InputNumber, Checkbox } from 'antd';
 import {
   PlayCircleOutlined,
@@ -18,7 +18,7 @@ import { calculateConsolidation } from '@/utils/consolidationAnalysis';
 import { OpportunityTable } from '@/components/OpportunityTable/OpportunityTable';
 import { ColumnSettings } from '@/components/ColumnSettings/ColumnSettings';
 import { exportOpportunityToExcel } from '@/utils/opportunityExportUtils';
-import type { KLinePeriod, StockInfo } from '@/types/stock';
+import type { KLinePeriod, StockInfo, KLineData } from '@/types/stock';
 import { useAllStocks } from '@/hooks/useAllStocks';
 import { getPureCode } from '@/utils/format';
 import { getStockQuotes } from '@/services/stockApi';
@@ -79,8 +79,14 @@ export function OpportunityPage() {
   const [peRatioRange, setPeRatioRange] = useState<{ min?: number; max?: number }>({});
   const [filterVisible, setFilterVisible] = useState(true);
 
+  // 涨停/跌停筛选状态
+  const [recentLimitUpCount, setRecentLimitUpCount] = useState<number | undefined>();
+  const [recentLimitDownCount, setRecentLimitDownCount] = useState<number | undefined>();
+  const [limitUpPeriod, setLimitUpPeriod] = useState<number>(10);
+  const [limitDownPeriod, setLimitDownPeriod] = useState<number>(10);
+
   // 横盘筛选状态
-  const [consolidationMethods, setConsolidationMethods] = useState<string[]>(['priceVolatility', 'maConvergence']);
+  const [consolidationMethods, setConsolidationMethods] = useState<string[]>([]);
   const [consolidationFilterMode, setConsolidationFilterMode] = useState<'and' | 'or'>('and');
   const [consolidationPeriod, setConsolidationPeriod] = useState<number>(10);
   const [priceVolatilityThreshold, setPriceVolatilityThreshold] = useState<number>(5);
@@ -103,10 +109,61 @@ export function OpportunityPage() {
   const [hasRebound, setHasRebound] = useState<boolean | undefined>(undefined);
   const [volatileTypes, setVolatileTypes] = useState<string[]>([]); // 反复震荡类型多选
   const [quickFilter, setQuickFilter] = useState<string>('all'); // 快速筛选：'all' | 'case1' | 'case2' | 'case3' | 'case4'
+  const [trendFilterVisible, setTrendFilterVisible] = useState<boolean>(true); // 价格位置和趋势筛选显示状态
+  const [tableHeight, setTableHeight] = useState<number>(400); // 表格高度
+  const tableCardRef = useRef<HTMLDivElement>(null); // 表格Card的引用
 
   useEffect(() => {
     loadCachedData();
   }, [loadCachedData]);
+
+  // 计算表格高度
+  const updateTableHeight = useCallback(() => {
+    if (!tableCardRef.current) {
+      return;
+    }
+
+    const cardBody = tableCardRef.current.querySelector('.ant-card-body') as HTMLElement;
+    if (!cardBody) {
+      return;
+    }
+
+    const bodyHeight = cardBody.clientHeight;
+    if (bodyHeight > 0) {
+      // 查找分页器
+      const pagination = cardBody.querySelector('.ant-pagination') as HTMLElement;
+      const paginationHeight = pagination ? pagination.offsetHeight : 64;
+
+      // 表格可用高度 = body高度 - 分页器高度 - 一些边距
+      const height = bodyHeight - paginationHeight - 40 - 38 - 10;
+      setTableHeight(Math.max(100, height));
+    }
+  }, []);
+
+  // 使用useLayoutEffect在DOM更新后立即计算高度
+  useLayoutEffect(() => {
+    if (analysisData.length === 0) {
+      return;
+    }
+    updateTableHeight();
+  }, [analysisData.length, filterVisible, consolidationFilterVisible, trendFilterVisible, loading, errors.length, updateTableHeight]);
+
+  // 使用ResizeObserver监听表格Card大小变化
+  useEffect(() => {
+    if (!tableCardRef.current || analysisData.length === 0) {
+      return;
+    }
+
+    const resizeObserver = new ResizeObserver(() => {
+      updateTableHeight();
+    });
+
+    resizeObserver.observe(tableCardRef.current);
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [updateTableHeight, analysisData.length]);
 
   // 根据选择的市场类型和名称类型筛选股票
   const filteredStocks = useMemo<StockInfo[]>(() => {
@@ -159,6 +216,43 @@ export function OpportunityPage() {
       return marketMatch && nameTypeMatch;
     });
   }, [allStocks, selectedMarket, nameType]);
+
+  // 计算最近N天内的涨停和跌停数量
+  const countLimitUpDown = (klineData: KLineData[], period: number, isST: boolean): { limitUp: number; limitDown: number } => {
+    if (!klineData || klineData.length < 2) {
+      return { limitUp: 0, limitDown: 0 };
+    }
+
+    // 涨停/跌停阈值：普通股票10%，ST股票5%
+    const limitThreshold = isST ? 4.5 : 9.5; // 使用4.5%和9.5%作为阈值，避免浮点数精度问题
+
+    // 取最近period天的数据
+    const recentData = klineData.slice(-period);
+    let limitUpCount = 0;
+    let limitDownCount = 0;
+
+    // 从第二个数据点开始，因为需要前一天的收盘价来计算涨跌幅
+    for (let i = 1; i < recentData.length; i++) {
+      const current = recentData[i];
+      const prev = recentData[i - 1];
+
+      // 计算涨跌幅：(当前收盘价 - 前一天收盘价) / 前一天收盘价 * 100
+      if (prev.close > 0) {
+        const changePercent = ((current.close - prev.close) / prev.close) * 100;
+
+        // 判断涨停：涨幅 >= 阈值
+        if (changePercent >= limitThreshold) {
+          limitUpCount++;
+        }
+        // 判断跌停：跌幅 <= -阈值
+        else if (changePercent <= -limitThreshold) {
+          limitDownCount++;
+        }
+      }
+    }
+
+    return { limitUp: limitUpCount, limitDown: limitDownCount };
+  };
 
   // 根据用户参数重新计算横盘结果
   const analysisDataWithRecalculatedConsolidation = useMemo(() => {
@@ -390,6 +484,35 @@ export function OpportunityPage() {
         }
       }
 
+      // 涨停/跌停筛选
+      if (recentLimitUpCount !== undefined || recentLimitDownCount !== undefined) {
+        const klineData = klineDataCache.get(item.code);
+        if (klineData && klineData.length > 0) {
+          const isST = item.name.includes('ST');
+
+          // 计算涨停数量
+          if (recentLimitUpCount !== undefined) {
+            const { limitUp } = countLimitUpDown(klineData, limitUpPeriod, isST);
+            if (limitUp < recentLimitUpCount) {
+              return false;
+            }
+          }
+
+          // 计算跌停数量
+          if (recentLimitDownCount !== undefined) {
+            const { limitDown } = countLimitUpDown(klineData, limitDownPeriod, isST);
+            if (limitDown < recentLimitDownCount) {
+              return false;
+            }
+          }
+        } else {
+          // 如果没有K线数据，且设置了涨停/跌停筛选，则过滤掉
+          if (recentLimitUpCount !== undefined || recentLimitDownCount !== undefined) {
+            return false;
+          }
+        }
+      }
+
       return true;
     });
   }, [
@@ -409,6 +532,11 @@ export function OpportunityPage() {
     hasDeepDrop,
     hasRebound,
     volatileTypes,
+    recentLimitUpCount,
+    recentLimitDownCount,
+    limitUpPeriod,
+    limitDownPeriod,
+    klineDataCache,
   ]);
 
   // 重置所有筛选条件
@@ -418,6 +546,10 @@ export function OpportunityPage() {
     setTurnoverRateRange({});
     setPeRatioRange({});
     setStrengthRange({});
+    setRecentLimitUpCount(1);
+    setRecentLimitDownCount(1);
+    setLimitUpPeriod(10);
+    setLimitDownPeriod(10);
     message.info('筛选条件已重置');
   };
 
@@ -709,621 +841,691 @@ export function OpportunityPage() {
 
         {analysisData.length > 0 ? (
           <>
-            {/* 筛选区域 */}
-            <Card className={styles.filterCard} size="small">
-              <div className={styles.filterHeader}>
-                <Space>
-                  <FilterOutlined />
-                  <span>数据筛选</span>
+            {/* 筛选区域容器 */}
+            <div className={styles.filterContainer}>
+              {/* 筛选区域 */}
+              <Card className={styles.filterCard} size="small">
+                <div className={styles.filterHeader}>
+                  <Space>
+                    <FilterOutlined />
+                    <span>数据筛选</span>
+                    <Button
+                      type="text"
+                      size="small"
+                      icon={filterVisible ? <ExclamationCircleOutlined /> : null}
+                      onClick={() => setFilterVisible(!filterVisible)}
+                    >
+                      {filterVisible ? '收起' : '展开'}
+                    </Button>
+                  </Space>
                   <Button
-                    type="text"
                     size="small"
-                    icon={filterVisible ? <ExclamationCircleOutlined /> : null}
-                    onClick={() => setFilterVisible(!filterVisible)}
+                    icon={<ClearOutlined />}
+                    onClick={handleResetFilters}
+                    disabled={!filterVisible}
                   >
-                    {filterVisible ? '收起' : '展开'}
+                    重置
                   </Button>
-                </Space>
-                <Button
-                  size="small"
-                  icon={<ClearOutlined />}
-                  onClick={handleResetFilters}
-                  disabled={!filterVisible}
-                >
-                  重置
-                </Button>
-              </div>
-              {filterVisible && (
-                <div className={styles.filterContent}>
-                  <div className={styles.filterRow}>
-                    <div className={styles.filterItem}>
-                      <span className={styles.filterLabel}>总市值(亿)：</span>
-                      <InputNumber
-                        value={marketCapRange.min}
-                        min={0}
-                        step={0.01}
-                        precision={2}
-                        style={{ width: 100 }}
-                        placeholder="最小值"
-                        onChange={(v) => {
-                          setMarketCapRange((prev) => ({
-                            ...prev,
-                            min: typeof v === 'number' && isFinite(v) ? v : undefined,
-                          }));
-                        }}
-                      />
-                      <span style={{ margin: '0 4px' }}>~</span>
-                      <InputNumber
-                        value={marketCapRange.max}
-                        min={0}
-                        step={0.01}
-                        precision={2}
-                        style={{ width: 100 }}
-                        placeholder="最大值"
-                        onChange={(v) => {
-                          setMarketCapRange((prev) => ({
-                            ...prev,
-                            max: typeof v === 'number' && isFinite(v) ? v : undefined,
-                          }));
-                        }}
-                      />
-                    </div>
-                    <div className={styles.filterItem}>
-                      <span className={styles.filterLabel}>流通市值(亿)：</span>
-                      <InputNumber
-                        value={circulatingMarketCapRange.min}
-                        min={0}
-                        step={0.01}
-                        precision={2}
-                        style={{ width: 100 }}
-                        placeholder="最小值"
-                        onChange={(v) => {
-                          setCirculatingMarketCapRange((prev) => ({
-                            ...prev,
-                            min: typeof v === 'number' && isFinite(v) ? v : undefined,
-                          }));
-                        }}
-                      />
-                      <span style={{ margin: '0 4px' }}>~</span>
-                      <InputNumber
-                        value={circulatingMarketCapRange.max}
-                        min={0}
-                        step={0.01}
-                        precision={2}
-                        style={{ width: 100 }}
-                        placeholder="最大值"
-                        onChange={(v) => {
-                          setCirculatingMarketCapRange((prev) => ({
-                            ...prev,
-                            max: typeof v === 'number' && isFinite(v) ? v : undefined,
-                          }));
-                        }}
-                      />
-                    </div>
-                    <div className={styles.filterItem}>
-                      <span className={styles.filterLabel}>换手率(%)：</span>
-                      <InputNumber
-                        value={turnoverRateRange.min}
-                        min={0}
-                        max={100}
-                        step={0.01}
-                        precision={2}
-                        style={{ width: 100 }}
-                        placeholder="最小值"
-                        onChange={(v) => {
-                          setTurnoverRateRange((prev) => ({
-                            ...prev,
-                            min: typeof v === 'number' && isFinite(v) ? v : undefined,
-                          }));
-                        }}
-                      />
-                      <span style={{ margin: '0 4px' }}>~</span>
-                      <InputNumber
-                        value={turnoverRateRange.max}
-                        min={0}
-                        max={100}
-                        step={0.01}
-                        precision={2}
-                        style={{ width: 100 }}
-                        placeholder="最大值"
-                        onChange={(v) => {
-                          setTurnoverRateRange((prev) => ({
-                            ...prev,
-                            max: typeof v === 'number' && isFinite(v) ? v : undefined,
-                          }));
-                        }}
-                      />
-                    </div>
-                    <div className={styles.filterItem}>
-                      <span className={styles.filterLabel}>市盈率：</span>
-                      <InputNumber
-                        value={peRatioRange.min}
-                        min={0}
-                        step={0.01}
-                        precision={2}
-                        style={{ width: 100 }}
-                        placeholder="最小值"
-                        onChange={(v) => {
-                          setPeRatioRange((prev) => ({
-                            ...prev,
-                            min: typeof v === 'number' && isFinite(v) ? v : undefined,
-                          }));
-                        }}
-                      />
-                      <span style={{ margin: '0 4px' }}>~</span>
-                      <InputNumber
-                        value={peRatioRange.max}
-                        min={0}
-                        step={0.01}
-                        precision={2}
-                        style={{ width: 100 }}
-                        placeholder="最大值"
-                        onChange={(v) => {
-                          setPeRatioRange((prev) => ({
-                            ...prev,
-                            max: typeof v === 'number' && isFinite(v) ? v : undefined,
-                          }));
-                        }}
-                      />
-                    </div>
-                  </div>
-                  <div className={styles.filterResult}>
-                    {filteredAnalysisData.length !== analysisDataWithRecalculatedConsolidation.length && (
-                      <span>
-                        筛选结果：{filteredAnalysisData.length} / {analysisDataWithRecalculatedConsolidation.length} 条
-                      </span>
-                    )}
-                  </div>
                 </div>
-              )}
-            </Card>
-
-            {/* 横盘筛选区域 */}
-            <Card className={styles.filterCard} size="small">
-              <div className={styles.filterHeader}>
-                <Space>
-                  <FilterOutlined />
-                  <span>横盘筛选</span>
-                  <Button
-                    type="text"
-                    size="small"
-                    icon={consolidationFilterVisible ? <ExclamationCircleOutlined /> : null}
-                    onClick={() => setConsolidationFilterVisible(!consolidationFilterVisible)}
-                  >
-                    {consolidationFilterVisible ? '收起' : '展开'}
-                  </Button>
-                </Space>
-              </div>
-              {consolidationFilterVisible && (
-                <div className={styles.filterContent}>
-                  <div className={styles.filterRow}>
-                    <div className={styles.filterItem}>
-                      <span className={styles.filterLabel}>判断方法：</span>
-                      <Checkbox.Group
-                        value={consolidationMethods}
-                        onChange={(values) => {
-                          const checkedValues = values as string[];
-                          setConsolidationMethods(checkedValues);
-                          // 如果两种方法都选，显示筛选模式；否则隐藏
-                        }}
-                      >
-                        <Checkbox value="priceVolatility">价格波动率法</Checkbox>
-                        <Checkbox value="maConvergence">MA收敛法</Checkbox>
-                      </Checkbox.Group>
-                    </div>
-                    {consolidationMethods.length === 2 && (
+                {filterVisible && (
+                  <div className={styles.filterContent}>
+                    <div className={styles.filterRow}>
                       <div className={styles.filterItem}>
-                        <span className={styles.filterLabel}>筛选模式：</span>
+                        <span className={styles.filterLabel}>总市值(亿)：</span>
+                        <InputNumber
+                          value={marketCapRange.min}
+                          min={0}
+                          step={0.01}
+                          precision={2}
+                          style={{ width: 100 }}
+                          placeholder="最小值"
+                          onChange={(v) => {
+                            setMarketCapRange((prev) => ({
+                              ...prev,
+                              min: typeof v === 'number' && isFinite(v) ? v : undefined,
+                            }));
+                          }}
+                        />
+                        <span style={{ margin: '0 4px' }}>~</span>
+                        <InputNumber
+                          value={marketCapRange.max}
+                          min={0}
+                          step={0.01}
+                          precision={2}
+                          style={{ width: 100 }}
+                          placeholder="最大值"
+                          onChange={(v) => {
+                            setMarketCapRange((prev) => ({
+                              ...prev,
+                              max: typeof v === 'number' && isFinite(v) ? v : undefined,
+                            }));
+                          }}
+                        />
+                      </div>
+                      <div className={styles.filterItem}>
+                        <span className={styles.filterLabel}>流通市值(亿)：</span>
+                        <InputNumber
+                          value={circulatingMarketCapRange.min}
+                          min={0}
+                          step={0.01}
+                          precision={2}
+                          style={{ width: 100 }}
+                          placeholder="最小值"
+                          onChange={(v) => {
+                            setCirculatingMarketCapRange((prev) => ({
+                              ...prev,
+                              min: typeof v === 'number' && isFinite(v) ? v : undefined,
+                            }));
+                          }}
+                        />
+                        <span style={{ margin: '0 4px' }}>~</span>
+                        <InputNumber
+                          value={circulatingMarketCapRange.max}
+                          min={0}
+                          step={0.01}
+                          precision={2}
+                          style={{ width: 100 }}
+                          placeholder="最大值"
+                          onChange={(v) => {
+                            setCirculatingMarketCapRange((prev) => ({
+                              ...prev,
+                              max: typeof v === 'number' && isFinite(v) ? v : undefined,
+                            }));
+                          }}
+                        />
+                      </div>
+                      <div className={styles.filterItem}>
+                        <span className={styles.filterLabel}>换手率(%)：</span>
+                        <InputNumber
+                          value={turnoverRateRange.min}
+                          min={0}
+                          max={100}
+                          step={0.01}
+                          precision={2}
+                          style={{ width: 100 }}
+                          placeholder="最小值"
+                          onChange={(v) => {
+                            setTurnoverRateRange((prev) => ({
+                              ...prev,
+                              min: typeof v === 'number' && isFinite(v) ? v : undefined,
+                            }));
+                          }}
+                        />
+                        <span style={{ margin: '0 4px' }}>~</span>
+                        <InputNumber
+                          value={turnoverRateRange.max}
+                          min={0}
+                          max={100}
+                          step={0.01}
+                          precision={2}
+                          style={{ width: 100 }}
+                          placeholder="最大值"
+                          onChange={(v) => {
+                            setTurnoverRateRange((prev) => ({
+                              ...prev,
+                              max: typeof v === 'number' && isFinite(v) ? v : undefined,
+                            }));
+                          }}
+                        />
+                      </div>
+                      <div className={styles.filterItem}>
+                        <span className={styles.filterLabel}>市盈率：</span>
+                        <InputNumber
+                          value={peRatioRange.min}
+                          min={0}
+                          step={0.01}
+                          precision={2}
+                          style={{ width: 100 }}
+                          placeholder="最小值"
+                          onChange={(v) => {
+                            setPeRatioRange((prev) => ({
+                              ...prev,
+                              min: typeof v === 'number' && isFinite(v) ? v : undefined,
+                            }));
+                          }}
+                        />
+                        <span style={{ margin: '0 4px' }}>~</span>
+                        <InputNumber
+                          value={peRatioRange.max}
+                          min={0}
+                          step={0.01}
+                          precision={2}
+                          style={{ width: 100 }}
+                          placeholder="最大值"
+                          onChange={(v) => {
+                            setPeRatioRange((prev) => ({
+                              ...prev,
+                              max: typeof v === 'number' && isFinite(v) ? v : undefined,
+                            }));
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <div className={styles.filterRow}>
+                      <div className={styles.filterItem}>
+                        <span className={styles.filterLabel}>最近涨停数：</span>
+                        <InputNumber
+                          value={recentLimitUpCount}
+                          min={0}
+                          step={1}
+                          style={{ width: 100 }}
+                          onChange={(v) => {
+                            setRecentLimitUpCount(typeof v === 'number' && isFinite(v) ? Math.floor(v) : undefined);
+                          }}
+                        />
+                      </div>
+                      <div className={styles.filterItem}>
+                        <span className={styles.filterLabel}>涨停周期范围：</span>
+                        <InputNumber
+                          value={limitUpPeriod}
+                          min={1}
+                          max={100}
+                          step={1}
+                          style={{ width: 100 }}
+                          onChange={(v) => {
+                            const next = typeof v === 'number' && isFinite(v) ? Math.floor(v) : 10;
+                            setLimitUpPeriod(next);
+                          }}
+                        />
+                        <span style={{ marginLeft: 4 }}>天</span>
+                      </div>
+                      <div className={styles.filterItem}>
+                        <span className={styles.filterLabel}>最近跌停数：</span>
+                        <InputNumber
+                          value={recentLimitDownCount}
+                          min={0}
+                          step={1}
+                          style={{ width: 100 }}
+                          onChange={(v) => {
+                            setRecentLimitDownCount(typeof v === 'number' && isFinite(v) ? Math.floor(v) : undefined);
+                          }}
+                        />
+                      </div>
+                      <div className={styles.filterItem}>
+                        <span className={styles.filterLabel}>跌停周期范围：</span>
+                        <InputNumber
+                          value={limitDownPeriod}
+                          min={1}
+                          max={100}
+                          step={1}
+                          style={{ width: 100 }}
+                          onChange={(v) => {
+                            const next = typeof v === 'number' && isFinite(v) ? Math.floor(v) : 10;
+                            setLimitDownPeriod(next);
+                          }}
+                        />
+                        <span style={{ marginLeft: 4 }}>天</span>
+                      </div>
+                    </div>
+                    <div className={styles.filterResult}>
+                      {filteredAnalysisData.length !== analysisDataWithRecalculatedConsolidation.length && (
+                        <span>
+                          筛选结果：{filteredAnalysisData.length} / {analysisDataWithRecalculatedConsolidation.length} 条
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </Card>
+
+              {/* 横盘筛选区域 */}
+              <Card className={styles.filterCard} size="small">
+                <div className={styles.filterHeader}>
+                  <Space>
+                    <FilterOutlined />
+                    <span>横盘筛选</span>
+                    <Button
+                      type="text"
+                      size="small"
+                      icon={consolidationFilterVisible ? <ExclamationCircleOutlined /> : null}
+                      onClick={() => setConsolidationFilterVisible(!consolidationFilterVisible)}
+                    >
+                      {consolidationFilterVisible ? '收起' : '展开'}
+                    </Button>
+                  </Space>
+                </div>
+                {consolidationFilterVisible && (
+                  <div className={styles.filterContent}>
+                    <div className={styles.filterRow}>
+                      <div className={styles.filterItem}>
+                        <span className={styles.filterLabel}>判断方法：</span>
+                        <Checkbox.Group
+                          value={consolidationMethods}
+                          onChange={(values) => {
+                            const checkedValues = values as string[];
+                            setConsolidationMethods(checkedValues);
+                            // 如果两种方法都选，显示筛选模式；否则隐藏
+                          }}
+                        >
+                          <Checkbox value="priceVolatility">价格波动率法</Checkbox>
+                          <Checkbox value="maConvergence">MA收敛法</Checkbox>
+                        </Checkbox.Group>
+                      </div>
+                      {consolidationMethods.length === 2 && (
+                        <div className={styles.filterItem}>
+                          <span className={styles.filterLabel}>筛选模式：</span>
+                          <Select
+                            value={consolidationFilterMode}
+                            onChange={(value) => setConsolidationFilterMode(value)}
+                            style={{ width: 120 }}
+                            options={[
+                              { label: '都满足（AND）', value: 'and' },
+                              { label: '任一满足（OR）', value: 'or' },
+                            ]}
+                          />
+                        </div>
+                      )}
+                    </div>
+                    <div className={styles.filterRow}>
+                      <div className={styles.filterItem}>
+                        <span className={styles.filterLabel}>周期数：</span>
+                        <InputNumber
+                          value={consolidationPeriod}
+                          min={5}
+                          max={100}
+                          step={1}
+                          style={{ width: 100 }}
+                          onChange={(v) => {
+                            const next = typeof v === 'number' && isFinite(v) ? Math.floor(v) : 10;
+                            setConsolidationPeriod(next);
+                          }}
+                        />
+                      </div>
+                      {consolidationMethods.includes('priceVolatility') && (
+                        <div className={styles.filterItem}>
+                          <span className={styles.filterLabel}>价格波动阈值(%)：</span>
+                          <InputNumber
+                            value={priceVolatilityThreshold}
+                            min={0}
+                            max={50}
+                            step={0.1}
+                            precision={1}
+                            style={{ width: 100 }}
+                            onChange={(v) => {
+                              const next = typeof v === 'number' && isFinite(v) ? v : 5;
+                              setPriceVolatilityThreshold(next);
+                            }}
+                          />
+                        </div>
+                      )}
+                      {consolidationMethods.includes('maConvergence') && (
+                        <div className={styles.filterItem}>
+                          <span className={styles.filterLabel}>MA离散度阈值(%)：</span>
+                          <InputNumber
+                            value={maSpreadThreshold}
+                            min={0}
+                            max={50}
+                            step={0.1}
+                            precision={1}
+                            style={{ width: 100 }}
+                            onChange={(v) => {
+                              const next = typeof v === 'number' && isFinite(v) ? v : 3;
+                              setMaSpreadThreshold(next);
+                            }}
+                          />
+                        </div>
+                      )}
+                    </div>
+                    <div className={styles.filterRow}>
+                      <div className={styles.filterItem}>
+                        <span className={styles.filterLabel}>缩量阈值(%)：</span>
+                        <InputNumber
+                          value={volumeShrinkingThreshold}
+                          min={0}
+                          max={200}
+                          step={1}
+                          style={{ width: 100 }}
+                          onChange={(v) => {
+                            const next = typeof v === 'number' && isFinite(v) ? v : 80;
+                            setVolumeShrinkingThreshold(next);
+                          }}
+                        />
+                      </div>
+                      <div className={styles.filterItem}>
+                        <Checkbox
+                          checked={requireVolumeShrinking}
+                          onChange={(e) => setRequireVolumeShrinking(e.target.checked)}
+                        >
+                          必须缩量（作为必要条件）
+                        </Checkbox>
+                      </div>
+                    </div>
+                    <div className={styles.filterRow}>
+                      <div className={styles.filterItem}>
+                        <span className={styles.filterLabel}>横盘强度范围：</span>
+                        <InputNumber
+                          value={strengthRange.min}
+                          min={0}
+                          max={100}
+                          step={1}
+                          style={{ width: 100 }}
+                          placeholder="最小值"
+                          onChange={(v) => {
+                            setStrengthRange((prev) => ({
+                              ...prev,
+                              min: typeof v === 'number' && isFinite(v) ? v : undefined,
+                            }));
+                          }}
+                        />
+                        <span style={{ margin: '0 4px' }}>~</span>
+                        <InputNumber
+                          value={strengthRange.max}
+                          min={0}
+                          max={100}
+                          step={1}
+                          style={{ width: 100 }}
+                          placeholder="最大值"
+                          onChange={(v) => {
+                            setStrengthRange((prev) => ({
+                              ...prev,
+                              max: typeof v === 'number' && isFinite(v) ? v : undefined,
+                            }));
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </Card>
+
+              {/* 价格位置和趋势筛选区域 */}
+              <Card className={styles.filterCard} size="small">
+                <div className={styles.filterHeader}>
+                  <Space>
+                    <FilterOutlined />
+                    <span>价格位置和趋势筛选</span>
+                    <Button
+                      type="text"
+                      size="small"
+                      icon={trendFilterVisible ? <ExclamationCircleOutlined /> : null}
+                      onClick={() => setTrendFilterVisible(!trendFilterVisible)}
+                    >
+                      {trendFilterVisible ? '收起' : '展开'}
+                    </Button>
+                  </Space>
+                </div>
+                {trendFilterVisible && (
+                  <div className={styles.filterContent}>
+                    <div className={styles.filterRow}>
+                      <div className={styles.filterItem}>
+                        <span className={styles.filterLabel}>快速筛选：</span>
                         <Select
-                          value={consolidationFilterMode}
-                          onChange={(value) => setConsolidationFilterMode(value)}
-                          style={{ width: 120 }}
+                          value={quickFilter}
+                          onChange={(value) => setQuickFilter(value)}
+                          style={{ width: 200 }}
                           options={[
-                            { label: '都满足（AND）', value: 'and' },
-                            { label: '任一满足（OR）', value: 'or' },
+                            { label: '不限', value: 'all' },
+                            { label: '情况1：横盘→上涨→下跌→横盘', value: 'case1' },
+                            { label: '情况2：整体下跌→横盘', value: 'case2' },
+                            { label: '情况3：深跌反弹→横盘', value: 'case3' },
+                            { label: '情况4：近期反复涨跌', value: 'case4' },
                           ]}
                         />
                       </div>
-                    )}
-                  </div>
-                  <div className={styles.filterRow}>
-                    <div className={styles.filterItem}>
-                      <span className={styles.filterLabel}>周期数：</span>
-                      <InputNumber
-                        value={consolidationPeriod}
-                        min={5}
-                        max={100}
-                        step={1}
-                        style={{ width: 100 }}
-                        onChange={(v) => {
-                          const next = typeof v === 'number' && isFinite(v) ? Math.floor(v) : 10;
-                          setConsolidationPeriod(next);
-                        }}
-                      />
-                    </div>
-                    {consolidationMethods.includes('priceVolatility') && (
                       <div className={styles.filterItem}>
-                        <span className={styles.filterLabel}>价格波动阈值(%)：</span>
+                        <span className={styles.filterLabel}>趋势分析周期：</span>
                         <InputNumber
-                          value={priceVolatilityThreshold}
+                          value={trendPeriod}
+                          min={10}
+                          max={100}
+                          step={5}
+                          style={{ width: 100 }}
+                          onChange={(v) => {
+                            const next = typeof v === 'number' && isFinite(v) ? Math.floor(v) : 30;
+                            setTrendPeriod(next);
+                          }}
+                        />
+                        <span style={{ marginLeft: 4 }}>天</span>
+                      </div>
+                    </div>
+
+                    <div className={styles.filterRow}>
+                      <div className={styles.filterItem}>
+                        <span className={styles.filterLabel}>相对高点位置(%)：</span>
+                        <InputNumber
+                          value={pricePositionRange.relativeToHigh?.min}
                           min={0}
-                          max={50}
+                          max={100}
                           step={0.1}
                           precision={1}
                           style={{ width: 100 }}
+                          placeholder="最小值"
                           onChange={(v) => {
-                            const next = typeof v === 'number' && isFinite(v) ? v : 5;
-                            setPriceVolatilityThreshold(next);
+                            setPricePositionRange((prev) => ({
+                              ...prev,
+                              relativeToHigh: {
+                                ...prev.relativeToHigh,
+                                min: typeof v === 'number' && isFinite(v) ? v : undefined,
+                              },
+                            }));
                           }}
                         />
-                      </div>
-                    )}
-                    {consolidationMethods.includes('maConvergence') && (
-                      <div className={styles.filterItem}>
-                        <span className={styles.filterLabel}>MA离散度阈值(%)：</span>
+                        <span style={{ margin: '0 4px' }}>~</span>
                         <InputNumber
-                          value={maSpreadThreshold}
+                          value={pricePositionRange.relativeToHigh?.max}
                           min={0}
-                          max={50}
+                          max={100}
                           step={0.1}
                           precision={1}
                           style={{ width: 100 }}
+                          placeholder="最大值"
                           onChange={(v) => {
-                            const next = typeof v === 'number' && isFinite(v) ? v : 3;
-                            setMaSpreadThreshold(next);
+                            setPricePositionRange((prev) => ({
+                              ...prev,
+                              relativeToHigh: {
+                                ...prev.relativeToHigh,
+                                max: typeof v === 'number' && isFinite(v) ? v : undefined,
+                              },
+                            }));
+                          }}
+                        />
+                        <span style={{ marginLeft: 4, fontSize: 12, color: '#999' }}>
+                          (从高点下跌幅度)
+                        </span>
+                      </div>
+                      <div className={styles.filterItem}>
+                        <span className={styles.filterLabel}>相对低点位置(%)：</span>
+                        <InputNumber
+                          value={pricePositionRange.relativeToLow?.min}
+                          min={0}
+                          max={100}
+                          step={0.1}
+                          precision={1}
+                          style={{ width: 100 }}
+                          placeholder="最小值"
+                          onChange={(v) => {
+                            setPricePositionRange((prev) => ({
+                              ...prev,
+                              relativeToLow: {
+                                ...prev.relativeToLow,
+                                min: typeof v === 'number' && isFinite(v) ? v : undefined,
+                              },
+                            }));
+                          }}
+                        />
+                        <span style={{ margin: '0 4px' }}>~</span>
+                        <InputNumber
+                          value={pricePositionRange.relativeToLow?.max}
+                          min={0}
+                          max={100}
+                          step={0.1}
+                          precision={1}
+                          style={{ width: 100 }}
+                          placeholder="最大值"
+                          onChange={(v) => {
+                            setPricePositionRange((prev) => ({
+                              ...prev,
+                              relativeToLow: {
+                                ...prev.relativeToLow,
+                                max: typeof v === 'number' && isFinite(v) ? v : undefined,
+                              },
+                            }));
+                          }}
+                        />
+                        <span style={{ marginLeft: 4, fontSize: 12, color: '#999' }}>
+                          (从低点上涨幅度)
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className={styles.filterRow}>
+                      <div className={styles.filterItem}>
+                        <span className={styles.filterLabel}>当前价位置(%)：</span>
+                        <InputNumber
+                          value={pricePositionRange.positionInRange?.min}
+                          min={0}
+                          max={100}
+                          step={1}
+                          style={{ width: 100 }}
+                          placeholder="最小值"
+                          onChange={(v) => {
+                            setPricePositionRange((prev) => ({
+                              ...prev,
+                              positionInRange: {
+                                ...prev.positionInRange,
+                                min: typeof v === 'number' && isFinite(v) ? v : undefined,
+                              },
+                            }));
+                          }}
+                        />
+                        <span style={{ margin: '0 4px' }}>~</span>
+                        <InputNumber
+                          value={pricePositionRange.positionInRange?.max}
+                          min={0}
+                          max={100}
+                          step={1}
+                          style={{ width: 100 }}
+                          placeholder="最大值"
+                          onChange={(v) => {
+                            setPricePositionRange((prev) => ({
+                              ...prev,
+                              positionInRange: {
+                                ...prev.positionInRange,
+                                max: typeof v === 'number' && isFinite(v) ? v : undefined,
+                              },
+                            }));
+                          }}
+                        />
+                        <span style={{ marginLeft: 4, fontSize: 12, color: '#999' }}>
+                          (在价格区间位置，0=最低，100=最高)
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className={styles.filterRow}>
+                      <div className={styles.filterItem}>
+                        <span className={styles.filterLabel}>横盘前趋势方向：</span>
+                        <Select
+                          value={trendDirection}
+                          onChange={(value) => setTrendDirection(value)}
+                          style={{ width: 150 }}
+                          options={[
+                            { label: '不限', value: 'all' },
+                            { label: '上涨后横盘', value: 'up' },
+                            { label: '下跌后横盘', value: 'down' },
+                            { label: '横盘后横盘', value: 'sideways' },
+                            { label: '反复震荡', value: 'volatile' },
+                          ]}
+                        />
+                      </div>
+                      <div className={styles.filterItem}>
+                        <span className={styles.filterLabel}>横盘前涨跌幅(%)：</span>
+                        <InputNumber
+                          value={trendChangePercentRange.min}
+                          min={-100}
+                          max={100}
+                          step={0.1}
+                          precision={1}
+                          style={{ width: 100 }}
+                          placeholder="最小值"
+                          onChange={(v) => {
+                            setTrendChangePercentRange((prev) => ({
+                              ...prev,
+                              min: typeof v === 'number' && isFinite(v) ? v : undefined,
+                            }));
+                          }}
+                        />
+                        <span style={{ margin: '0 4px' }}>~</span>
+                        <InputNumber
+                          value={trendChangePercentRange.max}
+                          min={-100}
+                          max={100}
+                          step={0.1}
+                          precision={1}
+                          style={{ width: 100 }}
+                          placeholder="最大值"
+                          onChange={(v) => {
+                            setTrendChangePercentRange((prev) => ({
+                              ...prev,
+                              max: typeof v === 'number' && isFinite(v) ? v : undefined,
+                            }));
                           }}
                         />
                       </div>
-                    )}
-                  </div>
-                  <div className={styles.filterRow}>
-                    <div className={styles.filterItem}>
-                      <span className={styles.filterLabel}>缩量阈值(%)：</span>
-                      <InputNumber
-                        value={volumeShrinkingThreshold}
-                        min={0}
-                        max={200}
-                        step={1}
-                        style={{ width: 100 }}
-                        onChange={(v) => {
-                          const next = typeof v === 'number' && isFinite(v) ? v : 80;
-                          setVolumeShrinkingThreshold(next);
-                        }}
-                      />
                     </div>
-                    <div className={styles.filterItem}>
-                      <Checkbox
-                        checked={requireVolumeShrinking}
-                        onChange={(e) => setRequireVolumeShrinking(e.target.checked)}
-                      >
-                        必须缩量（作为必要条件）
-                      </Checkbox>
-                    </div>
-                  </div>
-                  <div className={styles.filterRow}>
-                    <div className={styles.filterItem}>
-                      <span className={styles.filterLabel}>横盘强度范围：</span>
-                      <InputNumber
-                        value={strengthRange.min}
-                        min={0}
-                        max={100}
-                        step={1}
-                        style={{ width: 100 }}
-                        placeholder="最小值"
-                        onChange={(v) => {
-                          setStrengthRange((prev) => ({
-                            ...prev,
-                            min: typeof v === 'number' && isFinite(v) ? v : undefined,
-                          }));
-                        }}
-                      />
-                      <span style={{ margin: '0 4px' }}>~</span>
-                      <InputNumber
-                        value={strengthRange.max}
-                        min={0}
-                        max={100}
-                        step={1}
-                        style={{ width: 100 }}
-                        placeholder="最大值"
-                        onChange={(v) => {
-                          setStrengthRange((prev) => ({
-                            ...prev,
-                            max: typeof v === 'number' && isFinite(v) ? v : undefined,
-                          }));
-                        }}
-                      />
+
+                    <div className={styles.filterRow}>
+                      <div className={styles.filterItem}>
+                        <span className={styles.filterLabel}>特殊形态：</span>
+                        <Checkbox
+                          checked={hasDeepDrop === true}
+                          indeterminate={hasDeepDrop === undefined}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setHasDeepDrop(true);
+                            } else {
+                              setHasDeepDrop(undefined);
+                            }
+                          }}
+                        >
+                          包含深跌
+                        </Checkbox>
+                        <Checkbox
+                          checked={hasRebound === true}
+                          indeterminate={hasRebound === undefined}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setHasRebound(true);
+                            } else {
+                              setHasRebound(undefined);
+                            }
+                          }}
+                          style={{ marginLeft: 16 }}
+                        >
+                          包含反弹
+                        </Checkbox>
+                      </div>
+                      <div className={styles.filterItem}>
+                        <span className={styles.filterLabel}>反复震荡类型：</span>
+                        <Select
+                          mode="multiple"
+                          value={volatileTypes}
+                          onChange={(values) => setVolatileTypes(values)}
+                          style={{ width: 300 }}
+                          placeholder="选择震荡类型"
+                          options={[
+                            { label: '上涨→下跌→上涨', value: 'up_down' },
+                            { label: '下跌→上涨→下跌', value: 'down_up' },
+                            { label: '横盘→上涨', value: 'sideways_up' },
+                            { label: '横盘→下跌', value: 'sideways_down' },
+                            { label: '多次震荡', value: 'multiple' },
+                          ]}
+                        />
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
-            </Card>
-
-            {/* 价格位置和趋势筛选区域 */}
-            <Card className={styles.filterCard} size="small">
-              <div className={styles.filterHeader}>
-                <Space>
-                  <FilterOutlined />
-                  <span>价格位置和趋势筛选</span>
-                </Space>
-              </div>
-              <div className={styles.filterContent}>
-                <div className={styles.filterRow}>
-                  <div className={styles.filterItem}>
-                    <span className={styles.filterLabel}>快速筛选：</span>
-                    <Select
-                      value={quickFilter}
-                      onChange={(value) => setQuickFilter(value)}
-                      style={{ width: 200 }}
-                      options={[
-                        { label: '不限', value: 'all' },
-                        { label: '情况1：横盘→上涨→下跌→横盘', value: 'case1' },
-                        { label: '情况2：整体下跌→横盘', value: 'case2' },
-                        { label: '情况3：深跌反弹→横盘', value: 'case3' },
-                        { label: '情况4：近期反复涨跌', value: 'case4' },
-                      ]}
-                    />
-                  </div>
-                  <div className={styles.filterItem}>
-                    <span className={styles.filterLabel}>趋势分析周期：</span>
-                    <InputNumber
-                      value={trendPeriod}
-                      min={10}
-                      max={100}
-                      step={5}
-                      style={{ width: 100 }}
-                      onChange={(v) => {
-                        const next = typeof v === 'number' && isFinite(v) ? Math.floor(v) : 30;
-                        setTrendPeriod(next);
-                      }}
-                    />
-                    <span style={{ marginLeft: 4 }}>天</span>
-                  </div>
-                </div>
-
-                <div className={styles.filterRow}>
-                  <div className={styles.filterItem}>
-                    <span className={styles.filterLabel}>相对高点位置(%)：</span>
-                    <InputNumber
-                      value={pricePositionRange.relativeToHigh?.min}
-                      min={0}
-                      max={100}
-                      step={0.1}
-                      precision={1}
-                      style={{ width: 100 }}
-                      placeholder="最小值"
-                      onChange={(v) => {
-                        setPricePositionRange((prev) => ({
-                          ...prev,
-                          relativeToHigh: {
-                            ...prev.relativeToHigh,
-                            min: typeof v === 'number' && isFinite(v) ? v : undefined,
-                          },
-                        }));
-                      }}
-                    />
-                    <span style={{ margin: '0 4px' }}>~</span>
-                    <InputNumber
-                      value={pricePositionRange.relativeToHigh?.max}
-                      min={0}
-                      max={100}
-                      step={0.1}
-                      precision={1}
-                      style={{ width: 100 }}
-                      placeholder="最大值"
-                      onChange={(v) => {
-                        setPricePositionRange((prev) => ({
-                          ...prev,
-                          relativeToHigh: {
-                            ...prev.relativeToHigh,
-                            max: typeof v === 'number' && isFinite(v) ? v : undefined,
-                          },
-                        }));
-                      }}
-                    />
-                    <span style={{ marginLeft: 4, fontSize: 12, color: '#999' }}>
-                      (从高点下跌幅度)
-                    </span>
-                  </div>
-                  <div className={styles.filterItem}>
-                    <span className={styles.filterLabel}>相对低点位置(%)：</span>
-                    <InputNumber
-                      value={pricePositionRange.relativeToLow?.min}
-                      min={0}
-                      max={100}
-                      step={0.1}
-                      precision={1}
-                      style={{ width: 100 }}
-                      placeholder="最小值"
-                      onChange={(v) => {
-                        setPricePositionRange((prev) => ({
-                          ...prev,
-                          relativeToLow: {
-                            ...prev.relativeToLow,
-                            min: typeof v === 'number' && isFinite(v) ? v : undefined,
-                          },
-                        }));
-                      }}
-                    />
-                    <span style={{ margin: '0 4px' }}>~</span>
-                    <InputNumber
-                      value={pricePositionRange.relativeToLow?.max}
-                      min={0}
-                      max={100}
-                      step={0.1}
-                      precision={1}
-                      style={{ width: 100 }}
-                      placeholder="最大值"
-                      onChange={(v) => {
-                        setPricePositionRange((prev) => ({
-                          ...prev,
-                          relativeToLow: {
-                            ...prev.relativeToLow,
-                            max: typeof v === 'number' && isFinite(v) ? v : undefined,
-                          },
-                        }));
-                      }}
-                    />
-                    <span style={{ marginLeft: 4, fontSize: 12, color: '#999' }}>
-                      (从低点上涨幅度)
-                    </span>
-                  </div>
-                </div>
-
-                <div className={styles.filterRow}>
-                  <div className={styles.filterItem}>
-                    <span className={styles.filterLabel}>当前价位置(%)：</span>
-                    <InputNumber
-                      value={pricePositionRange.positionInRange?.min}
-                      min={0}
-                      max={100}
-                      step={1}
-                      style={{ width: 100 }}
-                      placeholder="最小值"
-                      onChange={(v) => {
-                        setPricePositionRange((prev) => ({
-                          ...prev,
-                          positionInRange: {
-                            ...prev.positionInRange,
-                            min: typeof v === 'number' && isFinite(v) ? v : undefined,
-                          },
-                        }));
-                      }}
-                    />
-                    <span style={{ margin: '0 4px' }}>~</span>
-                    <InputNumber
-                      value={pricePositionRange.positionInRange?.max}
-                      min={0}
-                      max={100}
-                      step={1}
-                      style={{ width: 100 }}
-                      placeholder="最大值"
-                      onChange={(v) => {
-                        setPricePositionRange((prev) => ({
-                          ...prev,
-                          positionInRange: {
-                            ...prev.positionInRange,
-                            max: typeof v === 'number' && isFinite(v) ? v : undefined,
-                          },
-                        }));
-                      }}
-                    />
-                    <span style={{ marginLeft: 4, fontSize: 12, color: '#999' }}>
-                      (在价格区间位置，0=最低，100=最高)
-                    </span>
-                  </div>
-                </div>
-
-                <div className={styles.filterRow}>
-                  <div className={styles.filterItem}>
-                    <span className={styles.filterLabel}>横盘前趋势方向：</span>
-                    <Select
-                      value={trendDirection}
-                      onChange={(value) => setTrendDirection(value)}
-                      style={{ width: 150 }}
-                      options={[
-                        { label: '不限', value: 'all' },
-                        { label: '上涨后横盘', value: 'up' },
-                        { label: '下跌后横盘', value: 'down' },
-                        { label: '横盘后横盘', value: 'sideways' },
-                        { label: '反复震荡', value: 'volatile' },
-                      ]}
-                    />
-                  </div>
-                  <div className={styles.filterItem}>
-                    <span className={styles.filterLabel}>横盘前涨跌幅(%)：</span>
-                    <InputNumber
-                      value={trendChangePercentRange.min}
-                      min={-100}
-                      max={100}
-                      step={0.1}
-                      precision={1}
-                      style={{ width: 100 }}
-                      placeholder="最小值"
-                      onChange={(v) => {
-                        setTrendChangePercentRange((prev) => ({
-                          ...prev,
-                          min: typeof v === 'number' && isFinite(v) ? v : undefined,
-                        }));
-                      }}
-                    />
-                    <span style={{ margin: '0 4px' }}>~</span>
-                    <InputNumber
-                      value={trendChangePercentRange.max}
-                      min={-100}
-                      max={100}
-                      step={0.1}
-                      precision={1}
-                      style={{ width: 100 }}
-                      placeholder="最大值"
-                      onChange={(v) => {
-                        setTrendChangePercentRange((prev) => ({
-                          ...prev,
-                          max: typeof v === 'number' && isFinite(v) ? v : undefined,
-                        }));
-                      }}
-                    />
-                  </div>
-                </div>
-
-                <div className={styles.filterRow}>
-                  <div className={styles.filterItem}>
-                    <span className={styles.filterLabel}>特殊形态：</span>
-                    <Checkbox
-                      checked={hasDeepDrop === true}
-                      indeterminate={hasDeepDrop === undefined}
-                      onChange={(e) => {
-                        if (e.target.checked) {
-                          setHasDeepDrop(true);
-                        } else {
-                          setHasDeepDrop(undefined);
-                        }
-                      }}
-                    >
-                      包含深跌
-                    </Checkbox>
-                    <Checkbox
-                      checked={hasRebound === true}
-                      indeterminate={hasRebound === undefined}
-                      onChange={(e) => {
-                        if (e.target.checked) {
-                          setHasRebound(true);
-                        } else {
-                          setHasRebound(undefined);
-                        }
-                      }}
-                      style={{ marginLeft: 16 }}
-                    >
-                      包含反弹
-                    </Checkbox>
-                  </div>
-                  <div className={styles.filterItem}>
-                    <span className={styles.filterLabel}>反复震荡类型：</span>
-                    <Select
-                      mode="multiple"
-                      value={volatileTypes}
-                      onChange={(values) => setVolatileTypes(values)}
-                      style={{ width: 300 }}
-                      placeholder="选择震荡类型"
-                      options={[
-                        { label: '上涨→下跌→上涨', value: 'up_down' },
-                        { label: '下跌→上涨→下跌', value: 'down_up' },
-                        { label: '横盘→上涨', value: 'sideways_up' },
-                        { label: '横盘→下跌', value: 'sideways_down' },
-                        { label: '多次震荡', value: 'multiple' },
-                      ]}
-                    />
-                  </div>
-                </div>
-              </div>
-            </Card>
+                )}
+              </Card>
+            </div>
 
             {/* 表格区域 */}
-            <Card className={styles.tableCard}>
+            <Card className={styles.tableCard} ref={tableCardRef}>
               <OpportunityTable
                 data={filteredAnalysisData}
                 columns={columnConfig}
                 sortConfig={sortConfig}
                 onSortChange={updateSortConfig}
+                tableHeight={tableHeight}
               />
             </Card>
           </>

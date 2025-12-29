@@ -24,9 +24,10 @@ interface OpportunityTableProps {
   columns: ColumnConfig[];
   sortConfig: OverviewSortConfig;
   onSortChange: (config: OverviewSortConfig) => void;
+  tableHeight?: number;
 }
 
-export function OpportunityTable({ data, columns, sortConfig, onSortChange }: OpportunityTableProps) {
+export function OpportunityTable({ data, columns, sortConfig, onSortChange, tableHeight = 600 }: OpportunityTableProps) {
   const [pagination, setPagination] = useState<TablePaginationConfig>({
     current: 1,
     pageSize: 50,
@@ -169,12 +170,12 @@ export function OpportunityTable({ data, columns, sortConfig, onSortChange }: Op
         column.fixed = 'left';
       } else {
         // 横盘相关列的特殊排序逻辑
-        if (col.key === 'consolidationStatus' || col.key === 'consolidationStrength' || 
-            col.key === 'volatility' || col.key === 'maSpread' || col.key === 'volumeRatio') {
+        if (col.key === 'consolidationStatus' || col.key === 'consolidationStrength' ||
+          col.key === 'volatility' || col.key === 'maSpread' || col.key === 'volumeRatio') {
           column.sorter = (a: any, b: any) => {
             let aVal: any;
             let bVal: any;
-            
+
             if (col.key === 'consolidationStatus') {
               aVal = a.consolidation?.combined?.isConsolidation ? 1 : 0;
               bVal = b.consolidation?.combined?.isConsolidation ? 1 : 0;
@@ -191,7 +192,7 @@ export function OpportunityTable({ data, columns, sortConfig, onSortChange }: Op
               aVal = a.consolidation?.volumeAnalysis?.avgVolumeRatio;
               bVal = b.consolidation?.volumeAnalysis?.avgVolumeRatio;
             }
-            
+
             if (aVal === null || aVal === undefined) return 1;
             if (bVal === null || bVal === undefined) return -1;
             if (typeof aVal === 'number' && typeof bVal === 'number') return aVal - bVal;
@@ -273,7 +274,7 @@ export function OpportunityTable({ data, columns, sortConfig, onSortChange }: Op
         dataSource={sortedData}
         rowKey="code"
         pagination={pagination}
-        scroll={{ x: 'max-content', y: 'calc(100vh - 370px)' }}
+        scroll={{ x: 'max-content', y: tableHeight }}
         onChange={handleTableChange}
         size="small"
       />
