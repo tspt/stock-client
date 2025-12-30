@@ -376,6 +376,8 @@ export interface StockOpportunityData {
   ma360?: number;
   /** 横盘分析结果 */
   consolidation?: ConsolidationAnalysis;
+  /** 放量急跌/拉升模式分析结果 */
+  volumeSurgePatterns?: VolumeSurgePatternAnalysis;
   /** 分析时间戳 */
   analyzedAt: number;
   /** 错误信息（如果获取失败） */
@@ -450,6 +452,82 @@ export interface ConsolidationAnalysis {
     /** 是否有上涨→下跌模式（用于情况1） */
     hasUpThenDown?: boolean;
   };
+}
+
+/**
+ * 放量急跌/拉升周期
+ */
+export interface VolumeSurgePeriod {
+  /** 周期开始索引（在klineData中的位置） */
+  startIndex: number;
+  /** 周期结束索引 */
+  endIndex: number;
+  /** 起始价格 */
+  startPrice: number;
+  /** 结束价格 */
+  endPrice: number;
+  /** 跌幅/涨幅百分比 */
+  changePercent: number;
+  /** 平均成交量倍数（相对于更长期均量） */
+  avgVolumeRatio: number;
+  /** 周期强度：'light' | 'medium' | 'heavy' */
+  intensity: 'light' | 'medium' | 'heavy';
+  /** 周期天数 */
+  days: number;
+}
+
+/**
+ * 急跌/拉升后的分析结果
+ */
+export interface AfterSurgeAnalysis {
+  /** 类型：'none' | 'consolidation' | 'consolidation_with_rebound' | 'consolidation_with_drop' */
+  type: 'none' | 'consolidation' | 'consolidation_with_rebound' | 'consolidation_with_drop';
+  /** 横盘信息（如果存在） */
+  consolidationInfo?: {
+    /** 横盘开始索引 */
+    startIndex: number;
+    /** 横盘结束索引 */
+    endIndex: number;
+    /** 横盘强度 */
+    strength: number;
+    /** 横盘天数 */
+    days: number;
+  };
+  /** 反弹/下跌信息（如果存在） */
+  reboundInfo?: {
+    /** 反弹/下跌开始索引 */
+    startIndex: number;
+    /** 反弹/下跌结束索引 */
+    endIndex: number;
+    /** 反弹/下跌幅度百分比 */
+    changePercent: number;
+    /** 平均成交量倍数 */
+    avgVolumeRatio: number;
+  };
+}
+
+/**
+ * 放量急跌/拉升模式分析结果
+ */
+export interface VolumeSurgePatternAnalysis {
+  /** 放量急跌周期列表 */
+  dropPeriods: VolumeSurgePeriod[];
+  /** 放量拉升周期列表 */
+  risePeriods: VolumeSurgePeriod[];
+  /** 急跌后的分析结果（每个急跌周期对应一个分析） */
+  afterDropAnalyses: Array<{
+    period: VolumeSurgePeriod;
+    analysis: AfterSurgeAnalysis;
+  }>;
+  /** 拉升后的分析结果（每个拉升周期对应一个分析） */
+  afterRiseAnalyses: Array<{
+    period: VolumeSurgePeriod;
+    analysis: AfterSurgeAnalysis;
+  }>;
+  /** 放量急跌周期数量 */
+  dropCount: number;
+  /** 放量拉升周期数量 */
+  riseCount: number;
 }
 
 /**

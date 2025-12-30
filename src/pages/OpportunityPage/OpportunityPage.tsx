@@ -69,7 +69,7 @@ export function OpportunityPage() {
   const [columnSettingsVisible, setColumnSettingsVisible] = useState(false);
   const [selectedMarket, setSelectedMarket] = useState<string>('sh_main');
   const [priceRange, setPriceRange] = useState<{ min?: number; max?: number }>({});
-  const [nameType, setNameType] = useState<string>('all');
+  const [nameType, setNameType] = useState<string>('non_st');
   const [filteringQuotes, setFilteringQuotes] = useState(false);
 
   // 筛选条件状态
@@ -96,22 +96,22 @@ export function OpportunityPage() {
   const [strengthRange, setStrengthRange] = useState<{ min?: number; max?: number }>({});
   const [consolidationFilterVisible, setConsolidationFilterVisible] = useState(true);
 
-  // 价格位置和趋势筛选状态
-  const [trendPeriod, setTrendPeriod] = useState<number>(30);
-  const [pricePositionRange, setPricePositionRange] = useState<{
-    relativeToHigh?: { min?: number; max?: number };
-    relativeToLow?: { min?: number; max?: number };
-    positionInRange?: { min?: number; max?: number };
-  }>({});
-  const [trendDirection, setTrendDirection] = useState<string>('all'); // 'all' | 'up' | 'down' | 'sideways' | 'volatile'
-  const [trendChangePercentRange, setTrendChangePercentRange] = useState<{ min?: number; max?: number }>({});
-  const [hasDeepDrop, setHasDeepDrop] = useState<boolean | undefined>(undefined);
-  const [hasRebound, setHasRebound] = useState<boolean | undefined>(undefined);
-  const [volatileTypes, setVolatileTypes] = useState<string[]>([]); // 反复震荡类型多选
-  const [quickFilter, setQuickFilter] = useState<string>('all'); // 快速筛选：'all' | 'case1' | 'case2' | 'case3' | 'case4'
-  const [trendFilterVisible, setTrendFilterVisible] = useState<boolean>(true); // 价格位置和趋势筛选显示状态
+  // 横盘分析参数（用于重新计算横盘结果，不用于筛选）
+  const trendPeriod = 30; // 固定值，用于分析横盘前趋势
+
+  // 放量急跌/拉升筛选显示状态
+  const [volumeSurgeFilterVisible, setVolumeSurgeFilterVisible] = useState<boolean>(true);
   const [tableHeight, setTableHeight] = useState<number>(400); // 表格高度
   const tableCardRef = useRef<HTMLDivElement>(null); // 表格Card的引用
+
+  // 放量急跌/拉升筛选状态
+  const [volumeSurgeDropEnabled, setVolumeSurgeDropEnabled] = useState<boolean>(false);
+  const [volumeSurgeRiseEnabled, setVolumeSurgeRiseEnabled] = useState<boolean>(false);
+  const [volumeSurgePeriod, setVolumeSurgePeriod] = useState<number>(10);
+  const [volumeRatioRange, setVolumeRatioRange] = useState<string>('1.5-2.0'); // '1.2-1.5' | '1.5-2.0' | '2.0+'
+  const [dropRisePercentRange, setDropRisePercentRange] = useState<string>('5-10'); // '5-10' | '10+'
+  const [afterDropType, setAfterDropType] = useState<string>('all'); // 'all' | 'none' | 'consolidation' | 'consolidation_with_rebound'
+  const [afterRiseType, setAfterRiseType] = useState<string>('all'); // 'all' | 'none' | 'consolidation' | 'consolidation_with_drop'
 
   useEffect(() => {
     loadCachedData();
@@ -146,7 +146,7 @@ export function OpportunityPage() {
       return;
     }
     updateTableHeight();
-  }, [analysisData.length, filterVisible, consolidationFilterVisible, trendFilterVisible, loading, errors.length, updateTableHeight]);
+  }, [analysisData.length, filterVisible, consolidationFilterVisible, loading, errors.length, updateTableHeight]);
 
   // 使用ResizeObserver监听表格Card大小变化
   useEffect(() => {
@@ -396,94 +396,6 @@ export function OpportunityPage() {
         if (strengthRange.max !== undefined && strength > strengthRange.max) return false;
       }
 
-      // 价格位置筛选
-      if (item.consolidation?.pricePosition) {
-        const { relativeToHigh, relativeToLow, positionInRange } = item.consolidation.pricePosition;
-
-        // 相对高点位置筛选
-        if (pricePositionRange.relativeToHigh?.min !== undefined && relativeToHigh < pricePositionRange.relativeToHigh.min) {
-          return false;
-        }
-        if (pricePositionRange.relativeToHigh?.max !== undefined && relativeToHigh > pricePositionRange.relativeToHigh.max) {
-          return false;
-        }
-
-        // 相对低点位置筛选
-        if (pricePositionRange.relativeToLow?.min !== undefined && relativeToLow < pricePositionRange.relativeToLow.min) {
-          return false;
-        }
-        if (pricePositionRange.relativeToLow?.max !== undefined && relativeToLow > pricePositionRange.relativeToLow.max) {
-          return false;
-        }
-
-        // 当前价在价格区间位置筛选
-        if (pricePositionRange.positionInRange?.min !== undefined && positionInRange < pricePositionRange.positionInRange.min) {
-          return false;
-        }
-        if (pricePositionRange.positionInRange?.max !== undefined && positionInRange > pricePositionRange.positionInRange.max) {
-          return false;
-        }
-      }
-
-      // 横盘前趋势筛选
-      if (item.consolidation?.trendBefore) {
-        const trend = item.consolidation.trendBefore;
-
-        // 快速筛选：4种情况
-        if (quickFilter !== 'all') {
-          let match = false;
-          switch (quickFilter) {
-            case 'case1': // 横盘→上涨→下跌→横盘
-              // 有上涨→下跌模式，且最后是下跌
-              match = trend.hasUpThenDown === true && trend.direction === 'down';
-              break;
-            case 'case2': // 整体下跌→横盘
-              // 整体下跌，没有深跌和反弹（平稳下跌）
-              match = trend.direction === 'down' && !trend.hasDeepDrop && !trend.hasRebound;
-              break;
-            case 'case3': // 整体下跌→深跌→反弹→横盘
-              // 有深跌和反弹
-              match = trend.direction === 'down' && trend.hasDeepDrop && trend.hasRebound;
-              break;
-            case 'case4': // 近期反复涨跌
-              // 反复震荡
-              match = trend.isVolatile;
-              break;
-          }
-          if (!match) return false;
-        }
-
-        // 趋势方向筛选
-        if (trendDirection !== 'all' && trend.direction !== trendDirection) {
-          return false;
-        }
-
-        // 横盘前涨跌幅范围筛选
-        if (trendChangePercentRange.min !== undefined && trend.changePercent < trendChangePercentRange.min) {
-          return false;
-        }
-        if (trendChangePercentRange.max !== undefined && trend.changePercent > trendChangePercentRange.max) {
-          return false;
-        }
-
-        // 深跌筛选
-        if (hasDeepDrop !== undefined && trend.hasDeepDrop !== hasDeepDrop) {
-          return false;
-        }
-
-        // 反弹筛选
-        if (hasRebound !== undefined && trend.hasRebound !== hasRebound) {
-          return false;
-        }
-
-        // 反复震荡类型筛选
-        if (volatileTypes.length > 0 && trend.isVolatile && trend.volatileType) {
-          if (!volatileTypes.includes(trend.volatileType)) {
-            return false;
-          }
-        }
-      }
-
       // 涨停/跌停筛选
       if (recentLimitUpCount !== undefined || recentLimitDownCount !== undefined) {
         const klineData = klineDataCache.get(item.code);
@@ -513,6 +425,121 @@ export function OpportunityPage() {
         }
       }
 
+      // 放量急跌/拉升筛选
+      if (volumeSurgeDropEnabled || volumeSurgeRiseEnabled) {
+        const patterns = item.volumeSurgePatterns;
+        if (!patterns) {
+          return false;
+        }
+
+        // 解析放量倍数范围
+        const getVolumeRatioRange = (range: string): { min: number; max?: number } => {
+          if (range === '1.2-1.5') {
+            return { min: 1.2, max: 1.5 };
+          } else if (range === '1.5-2.0') {
+            return { min: 1.5, max: 2.0 };
+          } else if (range === '2.0+') {
+            return { min: 2.0 };
+          }
+          return { min: 1.5, max: 2.0 };
+        };
+
+        // 解析急跌/急涨幅度范围
+        const getPercentRange = (range: string): { min: number; max?: number } => {
+          if (range === '5-10') {
+            return { min: 5, max: 10 };
+          } else if (range === '10+') {
+            return { min: 10 };
+          }
+          return { min: 5, max: 10 };
+        };
+
+        const volumeRange = getVolumeRatioRange(volumeRatioRange);
+        const percentRange = getPercentRange(dropRisePercentRange);
+
+        // 放量急跌筛选
+        if (volumeSurgeDropEnabled) {
+          // 检查是否有符合条件的急跌周期
+          const matchingDrops = patterns.dropPeriods.filter((drop) => {
+            const volumeMatch =
+              drop.avgVolumeRatio >= volumeRange.min &&
+              (volumeRange.max === undefined || drop.avgVolumeRatio <= volumeRange.max);
+            const percentMatch =
+              Math.abs(drop.changePercent) >= percentRange.min &&
+              (percentRange.max === undefined || Math.abs(drop.changePercent) <= percentRange.max);
+            return volumeMatch && percentMatch;
+          });
+
+          if (matchingDrops.length === 0) {
+            return false;
+          }
+
+          // 如果设置了急跌后类型筛选
+          if (afterDropType !== 'all') {
+            const hasMatchingAfterType = matchingDrops.some((drop) => {
+              const analysis = patterns.afterDropAnalyses.find(
+                (a) => a.period.startIndex === drop.startIndex && a.period.endIndex === drop.endIndex
+              );
+              if (!analysis) return false;
+
+              if (afterDropType === 'none') {
+                return analysis.analysis.type === 'none';
+              } else if (afterDropType === 'consolidation') {
+                return analysis.analysis.type === 'consolidation';
+              } else if (afterDropType === 'consolidation_with_rebound') {
+                return analysis.analysis.type === 'consolidation_with_rebound';
+              }
+              return false;
+            });
+
+            if (!hasMatchingAfterType) {
+              return false;
+            }
+          }
+        }
+
+        // 放量拉升筛选
+        if (volumeSurgeRiseEnabled) {
+          // 检查是否有符合条件的拉升周期
+          const matchingRises = patterns.risePeriods.filter((rise) => {
+            const volumeMatch =
+              rise.avgVolumeRatio >= volumeRange.min &&
+              (volumeRange.max === undefined || rise.avgVolumeRatio <= volumeRange.max);
+            const percentMatch =
+              rise.changePercent >= percentRange.min &&
+              (percentRange.max === undefined || rise.changePercent <= percentRange.max);
+            return volumeMatch && percentMatch;
+          });
+
+          if (matchingRises.length === 0) {
+            return false;
+          }
+
+          // 如果设置了拉升后类型筛选
+          if (afterRiseType !== 'all') {
+            const hasMatchingAfterType = matchingRises.some((rise) => {
+              const analysis = patterns.afterRiseAnalyses.find(
+                (a) => a.period.startIndex === rise.startIndex && a.period.endIndex === rise.endIndex
+              );
+              if (!analysis) return false;
+
+              if (afterRiseType === 'none') {
+                return analysis.analysis.type === 'none';
+              } else if (afterRiseType === 'consolidation') {
+                return analysis.analysis.type === 'consolidation';
+              } else if (afterRiseType === 'consolidation_with_drop') {
+                return analysis.analysis.type === 'consolidation_with_drop';
+              }
+              return false;
+            });
+
+            if (!hasMatchingAfterType) {
+              return false;
+            }
+          }
+        }
+      }
+
       return true;
     });
   }, [
@@ -525,18 +552,18 @@ export function OpportunityPage() {
     consolidationFilterMode,
     requireVolumeShrinking,
     strengthRange,
-    pricePositionRange,
-    quickFilter,
-    trendDirection,
-    trendChangePercentRange,
-    hasDeepDrop,
-    hasRebound,
-    volatileTypes,
     recentLimitUpCount,
     recentLimitDownCount,
     limitUpPeriod,
     limitDownPeriod,
     klineDataCache,
+    volumeSurgeDropEnabled,
+    volumeSurgeRiseEnabled,
+    volumeSurgePeriod,
+    volumeRatioRange,
+    dropRisePercentRange,
+    afterDropType,
+    afterRiseType,
   ]);
 
   // 重置所有筛选条件
@@ -1057,13 +1084,6 @@ export function OpportunityPage() {
                         <span style={{ marginLeft: 4 }}>天</span>
                       </div>
                     </div>
-                    <div className={styles.filterResult}>
-                      {filteredAnalysisData.length !== analysisDataWithRecalculatedConsolidation.length && (
-                        <span>
-                          筛选结果：{filteredAnalysisData.length} / {analysisDataWithRecalculatedConsolidation.length} 条
-                        </span>
-                      )}
-                    </div>
                   </div>
                 )}
               </Card>
@@ -1228,294 +1248,147 @@ export function OpportunityPage() {
                 )}
               </Card>
 
-              {/* 价格位置和趋势筛选区域 */}
+              {/* 放量急跌/拉升筛选区域 */}
               <Card className={styles.filterCard} size="small">
                 <div className={styles.filterHeader}>
                   <Space>
                     <FilterOutlined />
-                    <span>价格位置和趋势筛选</span>
+                    <span>放量急跌/拉升筛选</span>
                     <Button
                       type="text"
                       size="small"
-                      icon={trendFilterVisible ? <ExclamationCircleOutlined /> : null}
-                      onClick={() => setTrendFilterVisible(!trendFilterVisible)}
+                      icon={volumeSurgeFilterVisible ? <ExclamationCircleOutlined /> : null}
+                      onClick={() => setVolumeSurgeFilterVisible(!volumeSurgeFilterVisible)}
                     >
-                      {trendFilterVisible ? '收起' : '展开'}
+                      {volumeSurgeFilterVisible ? '收起' : '展开'}
                     </Button>
                   </Space>
                 </div>
-                {trendFilterVisible && (
+                {volumeSurgeFilterVisible && (
                   <div className={styles.filterContent}>
+                    {/* 放量急跌/拉升筛选 */}
                     <div className={styles.filterRow}>
                       <div className={styles.filterItem}>
-                        <span className={styles.filterLabel}>快速筛选：</span>
-                        <Select
-                          value={quickFilter}
-                          onChange={(value) => setQuickFilter(value)}
-                          style={{ width: 200 }}
-                          options={[
-                            { label: '不限', value: 'all' },
-                            { label: '情况1：横盘→上涨→下跌→横盘', value: 'case1' },
-                            { label: '情况2：整体下跌→横盘', value: 'case2' },
-                            { label: '情况3：深跌反弹→横盘', value: 'case3' },
-                            { label: '情况4：近期反复涨跌', value: 'case4' },
-                          ]}
-                        />
-                      </div>
-                      <div className={styles.filterItem}>
-                        <span className={styles.filterLabel}>趋势分析周期：</span>
-                        <InputNumber
-                          value={trendPeriod}
-                          min={10}
-                          max={100}
-                          step={5}
-                          style={{ width: 100 }}
-                          onChange={(v) => {
-                            const next = typeof v === 'number' && isFinite(v) ? Math.floor(v) : 30;
-                            setTrendPeriod(next);
-                          }}
-                        />
-                        <span style={{ marginLeft: 4 }}>天</span>
-                      </div>
-                    </div>
-
-                    <div className={styles.filterRow}>
-                      <div className={styles.filterItem}>
-                        <span className={styles.filterLabel}>相对高点位置(%)：</span>
-                        <InputNumber
-                          value={pricePositionRange.relativeToHigh?.min}
-                          min={0}
-                          max={100}
-                          step={0.1}
-                          precision={1}
-                          style={{ width: 100 }}
-                          placeholder="最小值"
-                          onChange={(v) => {
-                            setPricePositionRange((prev) => ({
-                              ...prev,
-                              relativeToHigh: {
-                                ...prev.relativeToHigh,
-                                min: typeof v === 'number' && isFinite(v) ? v : undefined,
-                              },
-                            }));
-                          }}
-                        />
-                        <span style={{ margin: '0 4px' }}>~</span>
-                        <InputNumber
-                          value={pricePositionRange.relativeToHigh?.max}
-                          min={0}
-                          max={100}
-                          step={0.1}
-                          precision={1}
-                          style={{ width: 100 }}
-                          placeholder="最大值"
-                          onChange={(v) => {
-                            setPricePositionRange((prev) => ({
-                              ...prev,
-                              relativeToHigh: {
-                                ...prev.relativeToHigh,
-                                max: typeof v === 'number' && isFinite(v) ? v : undefined,
-                              },
-                            }));
-                          }}
-                        />
-                        <span style={{ marginLeft: 4, fontSize: 12, color: '#999' }}>
-                          (从高点下跌幅度)
-                        </span>
-                      </div>
-                      <div className={styles.filterItem}>
-                        <span className={styles.filterLabel}>相对低点位置(%)：</span>
-                        <InputNumber
-                          value={pricePositionRange.relativeToLow?.min}
-                          min={0}
-                          max={100}
-                          step={0.1}
-                          precision={1}
-                          style={{ width: 100 }}
-                          placeholder="最小值"
-                          onChange={(v) => {
-                            setPricePositionRange((prev) => ({
-                              ...prev,
-                              relativeToLow: {
-                                ...prev.relativeToLow,
-                                min: typeof v === 'number' && isFinite(v) ? v : undefined,
-                              },
-                            }));
-                          }}
-                        />
-                        <span style={{ margin: '0 4px' }}>~</span>
-                        <InputNumber
-                          value={pricePositionRange.relativeToLow?.max}
-                          min={0}
-                          max={100}
-                          step={0.1}
-                          precision={1}
-                          style={{ width: 100 }}
-                          placeholder="最大值"
-                          onChange={(v) => {
-                            setPricePositionRange((prev) => ({
-                              ...prev,
-                              relativeToLow: {
-                                ...prev.relativeToLow,
-                                max: typeof v === 'number' && isFinite(v) ? v : undefined,
-                              },
-                            }));
-                          }}
-                        />
-                        <span style={{ marginLeft: 4, fontSize: 12, color: '#999' }}>
-                          (从低点上涨幅度)
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className={styles.filterRow}>
-                      <div className={styles.filterItem}>
-                        <span className={styles.filterLabel}>当前价位置(%)：</span>
-                        <InputNumber
-                          value={pricePositionRange.positionInRange?.min}
-                          min={0}
-                          max={100}
-                          step={1}
-                          style={{ width: 100 }}
-                          placeholder="最小值"
-                          onChange={(v) => {
-                            setPricePositionRange((prev) => ({
-                              ...prev,
-                              positionInRange: {
-                                ...prev.positionInRange,
-                                min: typeof v === 'number' && isFinite(v) ? v : undefined,
-                              },
-                            }));
-                          }}
-                        />
-                        <span style={{ margin: '0 4px' }}>~</span>
-                        <InputNumber
-                          value={pricePositionRange.positionInRange?.max}
-                          min={0}
-                          max={100}
-                          step={1}
-                          style={{ width: 100 }}
-                          placeholder="最大值"
-                          onChange={(v) => {
-                            setPricePositionRange((prev) => ({
-                              ...prev,
-                              positionInRange: {
-                                ...prev.positionInRange,
-                                max: typeof v === 'number' && isFinite(v) ? v : undefined,
-                              },
-                            }));
-                          }}
-                        />
-                        <span style={{ marginLeft: 4, fontSize: 12, color: '#999' }}>
-                          (在价格区间位置，0=最低，100=最高)
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className={styles.filterRow}>
-                      <div className={styles.filterItem}>
-                        <span className={styles.filterLabel}>横盘前趋势方向：</span>
-                        <Select
-                          value={trendDirection}
-                          onChange={(value) => setTrendDirection(value)}
-                          style={{ width: 150 }}
-                          options={[
-                            { label: '不限', value: 'all' },
-                            { label: '上涨后横盘', value: 'up' },
-                            { label: '下跌后横盘', value: 'down' },
-                            { label: '横盘后横盘', value: 'sideways' },
-                            { label: '反复震荡', value: 'volatile' },
-                          ]}
-                        />
-                      </div>
-                      <div className={styles.filterItem}>
-                        <span className={styles.filterLabel}>横盘前涨跌幅(%)：</span>
-                        <InputNumber
-                          value={trendChangePercentRange.min}
-                          min={-100}
-                          max={100}
-                          step={0.1}
-                          precision={1}
-                          style={{ width: 100 }}
-                          placeholder="最小值"
-                          onChange={(v) => {
-                            setTrendChangePercentRange((prev) => ({
-                              ...prev,
-                              min: typeof v === 'number' && isFinite(v) ? v : undefined,
-                            }));
-                          }}
-                        />
-                        <span style={{ margin: '0 4px' }}>~</span>
-                        <InputNumber
-                          value={trendChangePercentRange.max}
-                          min={-100}
-                          max={100}
-                          step={0.1}
-                          precision={1}
-                          style={{ width: 100 }}
-                          placeholder="最大值"
-                          onChange={(v) => {
-                            setTrendChangePercentRange((prev) => ({
-                              ...prev,
-                              max: typeof v === 'number' && isFinite(v) ? v : undefined,
-                            }));
-                          }}
-                        />
-                      </div>
-                    </div>
-
-                    <div className={styles.filterRow}>
-                      <div className={styles.filterItem}>
-                        <span className={styles.filterLabel}>特殊形态：</span>
                         <Checkbox
-                          checked={hasDeepDrop === true}
-                          indeterminate={hasDeepDrop === undefined}
-                          onChange={(e) => {
-                            if (e.target.checked) {
-                              setHasDeepDrop(true);
-                            } else {
-                              setHasDeepDrop(undefined);
-                            }
-                          }}
+                          checked={volumeSurgeDropEnabled}
+                          onChange={(e) => setVolumeSurgeDropEnabled(e.target.checked)}
                         >
-                          包含深跌
+                          启用放量急跌筛选
                         </Checkbox>
                         <Checkbox
-                          checked={hasRebound === true}
-                          indeterminate={hasRebound === undefined}
-                          onChange={(e) => {
-                            if (e.target.checked) {
-                              setHasRebound(true);
-                            } else {
-                              setHasRebound(undefined);
-                            }
-                          }}
+                          checked={volumeSurgeRiseEnabled}
+                          onChange={(e) => setVolumeSurgeRiseEnabled(e.target.checked)}
                           style={{ marginLeft: 16 }}
                         >
-                          包含反弹
+                          启用放量拉升筛选
                         </Checkbox>
                       </div>
-                      <div className={styles.filterItem}>
-                        <span className={styles.filterLabel}>反复震荡类型：</span>
-                        <Select
-                          mode="multiple"
-                          value={volatileTypes}
-                          onChange={(values) => setVolatileTypes(values)}
-                          style={{ width: 300 }}
-                          placeholder="选择震荡类型"
-                          options={[
-                            { label: '上涨→下跌→上涨', value: 'up_down' },
-                            { label: '下跌→上涨→下跌', value: 'down_up' },
-                            { label: '横盘→上涨', value: 'sideways_up' },
-                            { label: '横盘→下跌', value: 'sideways_down' },
-                            { label: '多次震荡', value: 'multiple' },
-                          ]}
-                        />
-                      </div>
                     </div>
+
+                    {(volumeSurgeDropEnabled || volumeSurgeRiseEnabled) && (
+                      <>
+                        <div className={styles.filterRow}>
+                          <div className={styles.filterItem}>
+                            <span className={styles.filterLabel}>分析周期：</span>
+                            <InputNumber
+                              value={volumeSurgePeriod}
+                              min={5}
+                              max={30}
+                              step={1}
+                              style={{ width: 100 }}
+                              onChange={(v) => {
+                                const next = typeof v === 'number' && isFinite(v) ? Math.floor(v) : 10;
+                                setVolumeSurgePeriod(next);
+                              }}
+                            />
+                            <span style={{ marginLeft: 4 }}>天</span>
+                          </div>
+                          <div className={styles.filterItem}>
+                            <span className={styles.filterLabel}>放量倍数：</span>
+                            <Select
+                              value={volumeRatioRange}
+                              onChange={(value) => setVolumeRatioRange(value)}
+                              style={{ width: 150 }}
+                              options={[
+                                { label: '1.2-1.5倍', value: '1.2-1.5' },
+                                { label: '1.5-2.0倍', value: '1.5-2.0' },
+                                { label: '2.0倍以上', value: '2.0+' },
+                              ]}
+                            />
+                          </div>
+                          <div className={styles.filterItem}>
+                            <span className={styles.filterLabel}>急跌/急涨幅度：</span>
+                            <Select
+                              value={dropRisePercentRange}
+                              onChange={(value) => setDropRisePercentRange(value)}
+                              style={{ width: 150 }}
+                              options={[
+                                { label: '5-10%', value: '5-10' },
+                                { label: '10%以上', value: '10+' },
+                              ]}
+                            />
+                          </div>
+                        </div>
+
+                        {volumeSurgeDropEnabled && (
+                          <div className={styles.filterRow}>
+                            <div className={styles.filterItem}>
+                              <span className={styles.filterLabel}>急跌后类型：</span>
+                              <Select
+                                value={afterDropType}
+                                onChange={(value) => setAfterDropType(value)}
+                                style={{ width: 200 }}
+                                options={[
+                                  { label: '不限', value: 'all' },
+                                  { label: '不限（无横盘）', value: 'none' },
+                                  { label: '横盘', value: 'consolidation' },
+                                  { label: '横盘后放量反弹', value: 'consolidation_with_rebound' },
+                                ]}
+                              />
+                            </div>
+                          </div>
+                        )}
+
+                        {volumeSurgeRiseEnabled && (
+                          <div className={styles.filterRow}>
+                            <div className={styles.filterItem}>
+                              <span className={styles.filterLabel}>拉升后类型：</span>
+                              <Select
+                                value={afterRiseType}
+                                onChange={(value) => setAfterRiseType(value)}
+                                style={{ width: 200 }}
+                                options={[
+                                  { label: '不限', value: 'all' },
+                                  { label: '不限（无横盘）', value: 'none' },
+                                  { label: '横盘', value: 'consolidation' },
+                                  { label: '横盘后放量下跌', value: 'consolidation_with_drop' },
+                                ]}
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </>
+                    )}
                   </div>
                 )}
               </Card>
+
+              {/* 筛选结果提示 */}
+              {analysisDataWithRecalculatedConsolidation.length > 0 && (
+                <div className={styles.filterResult}>
+                  <span>
+                    {filteredAnalysisData.length !== analysisDataWithRecalculatedConsolidation.length ? (
+                      <>
+                        筛选结果：<strong>{filteredAnalysisData.length}</strong> / {analysisDataWithRecalculatedConsolidation.length} 条
+                      </>
+                    ) : (
+                      <>
+                        共 <strong>{filteredAnalysisData.length}</strong> 条数据
+                      </>
+                    )}
+                  </span>
+                </div>
+              )}
             </div>
 
             {/* 表格区域 */}

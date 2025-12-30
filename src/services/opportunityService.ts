@@ -7,7 +7,7 @@
 import type { KLinePeriod, StockInfo, StockOpportunityData, KLineData } from '@/types/stock';
 import { getKLineData, getStockDetail, getStockQuotes } from '@/services/stockApi';
 import { calcAllIndicators, formatKDJValues } from '@/utils/indicators';
-import { calculateConsolidation } from '@/utils/consolidationAnalysis';
+import { calculateConsolidation, analyzeVolumeSurgePatterns } from '@/utils/consolidationAnalysis';
 import { ConcurrencyManager } from '@/utils/concurrencyManager';
 import {
   OPPORTUNITY_BATCH_DELAY,
@@ -77,6 +77,26 @@ async function analyzeOneStock(
     // 横盘分析失败不影响其他数据
   }
 
+  // 放量急跌/拉升模式分析（使用默认参数：周期10天，放量1.5-2倍，急跌/急涨5-10%）
+  let volumeSurgePatterns;
+  try {
+    volumeSurgePatterns = analyzeVolumeSurgePatterns(klineData, {
+      period: 10,
+      volumeRatioRange: { min: 1.5, max: 2.0 },
+      dropPercentRange: { min: 5, max: 10 },
+      risePercentRange: { min: 5, max: 10 },
+      consolidationOptions: {
+        period: 10,
+        priceVolatilityThreshold: 5,
+        maSpreadThreshold: 3,
+        volumeShrinkingThreshold: 80,
+      },
+    });
+  } catch (error) {
+    console.warn(`[${code}] 放量急跌/拉升模式分析失败:`, error);
+    // 分析失败不影响其他数据
+  }
+
   // 与数据概况页保持一致：volume/amount 先转为"亿单位"再显示
   const volume = Number((quote.volume / 100000000).toFixed(2));
   const amount = Number((quote.amount / 100000000).toFixed(2));
@@ -111,6 +131,7 @@ async function analyzeOneStock(
       ma240: maFields.ma240,
       ma360: maFields.ma360,
       consolidation,
+      volumeSurgePatterns,
       analyzedAt,
     },
     klineData,

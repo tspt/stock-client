@@ -135,7 +135,8 @@
 .filterCard {
   flex: none;
   border-radius: 0 !important;
-  margin-bottom: 16px;
+  border: none;
+  border-bottom: 1px solid var(--ant-color-border);
 }
 
 .filterContainer .filterCard:last-child {
@@ -149,7 +150,6 @@
 }
 
 .filterContent {
-  padding-top: 16px;
 }
 
 .filterRow {
@@ -160,7 +160,7 @@
 .filterItem {
   display: flex;
   align-items: center;
-  margin: 0 16px 10px 0;
+  margin: 10px 16px 0 0;
 }
 
 .filterLabel {
@@ -169,9 +169,18 @@
 }
 
 .filterResult {
+  padding: 12px 16px;
+  background: var(--ant-color-info-bg);
+  border-top: 1px solid var(--ant-color-border);
   font-size: 14px;
-  color: var(--ant-color-text-secondary);
-  margin-top: 8px;
+  color: var(--ant-color-text);
+  text-align: center;
+}
+
+.filterResult strong {
+  color: var(--ant-color-primary);
+  font-weight: 600;
+  font-size: 16px;
 }
 
 

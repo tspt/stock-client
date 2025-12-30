@@ -116,6 +116,12 @@ export function OpportunityTable({ data, columns, sortConfig, onSortChange, tabl
             {ratio.toFixed(1)}%
           </span>
         );
+      case 'volumeSurgeDropCount':
+        if (!record?.volumeSurgePatterns) return '-';
+        return record.volumeSurgePatterns.dropCount || 0;
+      case 'volumeSurgeRiseCount':
+        if (!record?.volumeSurgePatterns) return '-';
+        return record.volumeSurgePatterns.riseCount || 0;
       default:
         return String(value);
     }

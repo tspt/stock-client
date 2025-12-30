@@ -2,7 +2,12 @@
  * 横盘分析工具函数
  */
 
-import type { KLineData } from '@/types/stock';
+import type {
+  KLineData,
+  VolumeSurgePeriod,
+  AfterSurgeAnalysis,
+  VolumeSurgePatternAnalysis,
+} from '@/types/stock';
 import { calculateMA } from './indicators';
 
 /**
@@ -419,7 +424,13 @@ export function analyzeTrendBefore(
 
   // 检测反复震荡
   let isVolatile = false;
-  let volatileType: 'up_down' | 'down_up' | 'sideways_up' | 'sideways_down' | 'multiple' | undefined;
+  let volatileType:
+    | 'up_down'
+    | 'down_up'
+    | 'sideways_up'
+    | 'sideways_down'
+    | 'multiple'
+    | undefined;
 
   if (direction === 'volatile' || trendRangeSize > 12) {
     isVolatile = true;
@@ -516,8 +527,7 @@ export function calculateConsolidation(
   const isCombinedConsolidation = priceVolatility.isConsolidation && maConvergence.isConsolidation;
 
   // 综合强度：取两种方法的强度平均值
-  const combinedStrength =
-    (priceVolatility.strength + maConvergence.strength) / 2;
+  const combinedStrength = (priceVolatility.strength + maConvergence.strength) / 2;
 
   return {
     priceVolatility,
@@ -532,3 +542,451 @@ export function calculateConsolidation(
   };
 }
 
+/**
+ * 检测放量急跌周期
+ * @param klineData K线数据
+ * @param period 分析周期数（默认10天）
+ * @param volumeRatioRange 放量倍数范围 {min: 1.5, max: 2.0}
+ * @param dropPercentRange 急跌幅度范围 {min: 5, max: 10}（百分比）
+ */
+export function detectVolumeSurgeDrop(
+  klineData: KLineData[],
+  period: number = 10,
+  volumeRatioRange: { min: number; max?: number } = { min: 1.5, max: 2.0 },
+  dropPercentRange: { min: number; max?: number } = { min: 5, max: 10 }
+): VolumeSurgePeriod[] {
+  if (!klineData || klineData.length < period * 2) {
+    return [];
+  }
+
+  const periods: VolumeSurgePeriod[] = [];
+  const longTermPeriod = period * 2;
+
+  // 计算更长期的平均成交量（用于对比）
+  const longTermAvgVolume =
+    klineData.length >= longTermPeriod
+      ? klineData.slice(-longTermPeriod, -period).reduce((sum, k) => sum + k.volume, 0) / period
+      : klineData.slice(0, -period).reduce((sum, k) => sum + k.volume, 0) /
+        Math.max(1, klineData.length - period);
+
+  if (longTermAvgVolume <= 0) {
+    return [];
+  }
+
+  // 滑动窗口检测
+  for (let i = period; i <= klineData.length; i++) {
+    const window = klineData.slice(i - period, i);
+    if (window.length < period) continue;
+
+    const startPrice = window[0].close;
+    const endPrice = window[window.length - 1].close;
+    const changePercent = ((endPrice - startPrice) / startPrice) * 100;
+
+    // 检查是否急跌
+    const isDrop = changePercent < 0;
+    const absDrop = Math.abs(changePercent);
+    const isSharpDrop =
+      absDrop >= dropPercentRange.min &&
+      (dropPercentRange.max === undefined || absDrop <= dropPercentRange.max);
+
+    if (!isDrop || !isSharpDrop) continue;
+
+    // 计算窗口内的平均成交量
+    const avgVolume = window.reduce((sum, k) => sum + k.volume, 0) / window.length;
+    const volumeRatio = avgVolume / longTermAvgVolume;
+
+    // 检查是否放量
+    const isVolumeSurge =
+      volumeRatio >= volumeRatioRange.min &&
+      (volumeRatioRange.max === undefined || volumeRatio <= volumeRatioRange.max);
+
+    if (!isVolumeSurge) continue;
+
+    // 判断强度
+    let intensity: 'light' | 'medium' | 'heavy';
+    if (volumeRatio >= 2.0 && absDrop >= 10) {
+      intensity = 'heavy';
+    } else if (volumeRatio >= 1.5 && absDrop >= 5) {
+      intensity = 'medium';
+    } else {
+      intensity = 'light';
+    }
+
+    periods.push({
+      startIndex: i - period,
+      endIndex: i - 1,
+      startPrice,
+      endPrice,
+      changePercent: Number(changePercent.toFixed(2)),
+      avgVolumeRatio: Number(volumeRatio.toFixed(2)),
+      intensity,
+      days: period,
+    });
+  }
+
+  return periods;
+}
+
+/**
+ * 检测放量拉升周期
+ * @param klineData K线数据
+ * @param period 分析周期数（默认10天）
+ * @param volumeRatioRange 放量倍数范围 {min: 1.5, max: 2.0}
+ * @param risePercentRange 急涨幅度范围 {min: 5, max: 10}（百分比）
+ */
+export function detectVolumeSurgeRise(
+  klineData: KLineData[],
+  period: number = 10,
+  volumeRatioRange: { min: number; max?: number } = { min: 1.5, max: 2.0 },
+  risePercentRange: { min: number; max?: number } = { min: 5, max: 10 }
+): VolumeSurgePeriod[] {
+  if (!klineData || klineData.length < period * 2) {
+    return [];
+  }
+
+  const periods: VolumeSurgePeriod[] = [];
+  const longTermPeriod = period * 2;
+
+  // 计算更长期的平均成交量（用于对比）
+  const longTermAvgVolume =
+    klineData.length >= longTermPeriod
+      ? klineData.slice(-longTermPeriod, -period).reduce((sum, k) => sum + k.volume, 0) / period
+      : klineData.slice(0, -period).reduce((sum, k) => sum + k.volume, 0) /
+        Math.max(1, klineData.length - period);
+
+  if (longTermAvgVolume <= 0) {
+    return [];
+  }
+
+  // 滑动窗口检测
+  for (let i = period; i <= klineData.length; i++) {
+    const window = klineData.slice(i - period, i);
+    if (window.length < period) continue;
+
+    const startPrice = window[0].close;
+    const endPrice = window[window.length - 1].close;
+    const changePercent = ((endPrice - startPrice) / startPrice) * 100;
+
+    // 检查是否急涨
+    const isRise = changePercent > 0;
+    const isSharpRise =
+      changePercent >= risePercentRange.min &&
+      (risePercentRange.max === undefined || changePercent <= risePercentRange.max);
+
+    if (!isRise || !isSharpRise) continue;
+
+    // 计算窗口内的平均成交量
+    const avgVolume = window.reduce((sum, k) => sum + k.volume, 0) / window.length;
+    const volumeRatio = avgVolume / longTermAvgVolume;
+
+    // 检查是否放量
+    const isVolumeSurge =
+      volumeRatio >= volumeRatioRange.min &&
+      (volumeRatioRange.max === undefined || volumeRatio <= volumeRatioRange.max);
+
+    if (!isVolumeSurge) continue;
+
+    // 判断强度
+    let intensity: 'light' | 'medium' | 'heavy';
+    if (volumeRatio >= 2.0 && changePercent >= 10) {
+      intensity = 'heavy';
+    } else if (volumeRatio >= 1.5 && changePercent >= 5) {
+      intensity = 'medium';
+    } else {
+      intensity = 'light';
+    }
+
+    periods.push({
+      startIndex: i - period,
+      endIndex: i - 1,
+      startPrice,
+      endPrice,
+      changePercent: Number(changePercent.toFixed(2)),
+      avgVolumeRatio: Number(volumeRatio.toFixed(2)),
+      intensity,
+      days: period,
+    });
+  }
+
+  return periods;
+}
+
+/**
+ * 分析急跌后的情况
+ * @param klineData K线数据
+ * @param dropPeriod 急跌周期信息
+ * @param consolidationOptions 横盘分析选项
+ */
+export function analyzeAfterSurgeDrop(
+  klineData: KLineData[],
+  dropPeriod: VolumeSurgePeriod,
+  consolidationOptions: {
+    period: number;
+    priceVolatilityThreshold: number;
+    maSpreadThreshold: number;
+    volumeShrinkingThreshold: number;
+  }
+): AfterSurgeAnalysis {
+  // 急跌结束后的第二天开始计算
+  const afterDropStartIndex = dropPeriod.endIndex + 2;
+  if (afterDropStartIndex >= klineData.length) {
+    return { type: 'none' };
+  }
+
+  const afterDropData = klineData.slice(afterDropStartIndex);
+  if (afterDropData.length < consolidationOptions.period) {
+    return { type: 'none' };
+  }
+
+  // 检测横盘（从急跌结束后的第二天开始）
+  // 需要足够的K线数据来计算MA，所以取更多数据
+  const consolidationCheckEndIndex = Math.min(
+    afterDropStartIndex + consolidationOptions.period,
+    klineData.length
+  );
+  const consolidationCheckData = klineData.slice(
+    Math.max(0, afterDropStartIndex - 20),
+    consolidationCheckEndIndex
+  );
+
+  if (consolidationCheckData.length < consolidationOptions.period + 20) {
+    return { type: 'none' };
+  }
+
+  const consolidation = calculateConsolidation(consolidationCheckData, {
+    ...consolidationOptions,
+    currentPrice: klineData[consolidationCheckEndIndex - 1]?.close || afterDropData[0].close,
+  });
+
+  // 只检查最近period天的横盘情况
+  const recentConsolidationData = afterDropData.slice(0, consolidationOptions.period);
+
+  if (!consolidation.combined.isConsolidation) {
+    return { type: 'none' };
+  }
+
+  // 检测横盘后的放量反弹
+  const afterConsolidationStartIndex = afterDropStartIndex + consolidationOptions.period;
+  if (afterConsolidationStartIndex < klineData.length) {
+    const afterConsolidationData = klineData.slice(afterConsolidationStartIndex);
+    const checkPeriod = Math.min(5, afterConsolidationData.length); // 检查横盘后5天
+
+    if (checkPeriod >= 2) {
+      const reboundCheckData = afterConsolidationData.slice(0, checkPeriod);
+      const consolidationEndPrice =
+        recentConsolidationData[recentConsolidationData.length - 1].close;
+      const reboundEndPrice = reboundCheckData[reboundCheckData.length - 1].close;
+      const reboundPercent =
+        ((reboundEndPrice - consolidationEndPrice) / consolidationEndPrice) * 100;
+
+      // 计算横盘期间的成交量作为基准
+      const consolidationAvgVolume =
+        recentConsolidationData.reduce((sum, k) => sum + k.volume, 0) /
+        recentConsolidationData.length;
+      const reboundAvgVolume =
+        reboundCheckData.reduce((sum, k) => sum + k.volume, 0) / reboundCheckData.length;
+      const reboundVolumeRatio =
+        consolidationAvgVolume > 0 ? reboundAvgVolume / consolidationAvgVolume : 1;
+
+      // 反弹超过3%且放量超过1.5倍
+      if (reboundPercent > 3 && reboundVolumeRatio >= 1.5) {
+        return {
+          type: 'consolidation_with_rebound',
+          consolidationInfo: {
+            startIndex: afterDropStartIndex,
+            endIndex: afterDropStartIndex + consolidationOptions.period - 1,
+            strength: consolidation.combined.strength,
+            days: consolidationOptions.period,
+          },
+          reboundInfo: {
+            startIndex: afterConsolidationStartIndex,
+            endIndex: afterConsolidationStartIndex + checkPeriod - 1,
+            changePercent: Number(reboundPercent.toFixed(2)),
+            avgVolumeRatio: Number(reboundVolumeRatio.toFixed(2)),
+          },
+        };
+      }
+    }
+  }
+
+  // 只有横盘，没有反弹
+  return {
+    type: 'consolidation',
+    consolidationInfo: {
+      startIndex: afterDropStartIndex,
+      endIndex: afterDropStartIndex + consolidationOptions.period - 1,
+      strength: consolidation.combined.strength,
+      days: consolidationOptions.period,
+    },
+  };
+}
+
+/**
+ * 分析拉升后的情况
+ * @param klineData K线数据
+ * @param risePeriod 拉升周期信息
+ * @param consolidationOptions 横盘分析选项
+ */
+export function analyzeAfterSurgeRise(
+  klineData: KLineData[],
+  risePeriod: VolumeSurgePeriod,
+  consolidationOptions: {
+    period: number;
+    priceVolatilityThreshold: number;
+    maSpreadThreshold: number;
+    volumeShrinkingThreshold: number;
+  }
+): AfterSurgeAnalysis {
+  // 拉升结束后的第二天开始计算
+  const afterRiseStartIndex = risePeriod.endIndex + 2;
+  if (afterRiseStartIndex >= klineData.length) {
+    return { type: 'none' };
+  }
+
+  const afterRiseData = klineData.slice(afterRiseStartIndex);
+  if (afterRiseData.length < consolidationOptions.period) {
+    return { type: 'none' };
+  }
+
+  // 检测横盘（从拉升结束后的第二天开始）
+  // 需要足够的K线数据来计算MA，所以取更多数据
+  const consolidationCheckEndIndex = Math.min(
+    afterRiseStartIndex + consolidationOptions.period,
+    klineData.length
+  );
+  const consolidationCheckData = klineData.slice(
+    Math.max(0, afterRiseStartIndex - 20),
+    consolidationCheckEndIndex
+  );
+
+  if (consolidationCheckData.length < consolidationOptions.period + 20) {
+    return { type: 'none' };
+  }
+
+  const consolidation = calculateConsolidation(consolidationCheckData, {
+    ...consolidationOptions,
+    currentPrice: klineData[consolidationCheckEndIndex - 1]?.close || afterRiseData[0].close,
+  });
+
+  // 只检查最近period天的横盘情况
+  const recentConsolidationData = afterRiseData.slice(0, consolidationOptions.period);
+
+  if (!consolidation.combined.isConsolidation) {
+    return { type: 'none' };
+  }
+
+  // 检测横盘后的放量下跌
+  const afterConsolidationStartIndex = afterRiseStartIndex + consolidationOptions.period;
+  if (afterConsolidationStartIndex < klineData.length) {
+    const afterConsolidationData = klineData.slice(afterConsolidationStartIndex);
+    const checkPeriod = Math.min(5, afterConsolidationData.length); // 检查横盘后5天
+
+    if (checkPeriod >= 2) {
+      const dropCheckData = afterConsolidationData.slice(0, checkPeriod);
+      const consolidationEndPrice =
+        recentConsolidationData[recentConsolidationData.length - 1].close;
+      const dropEndPrice = dropCheckData[dropCheckData.length - 1].close;
+      const dropPercent = ((dropEndPrice - consolidationEndPrice) / consolidationEndPrice) * 100;
+
+      // 计算横盘期间的成交量作为基准
+      const consolidationAvgVolume =
+        recentConsolidationData.reduce((sum, k) => sum + k.volume, 0) /
+        recentConsolidationData.length;
+      const dropAvgVolume =
+        dropCheckData.reduce((sum, k) => sum + k.volume, 0) / dropCheckData.length;
+      const dropVolumeRatio =
+        consolidationAvgVolume > 0 ? dropAvgVolume / consolidationAvgVolume : 1;
+
+      // 下跌超过3%且放量超过1.5倍
+      if (dropPercent < -3 && dropVolumeRatio >= 1.5) {
+        return {
+          type: 'consolidation_with_drop',
+          consolidationInfo: {
+            startIndex: afterRiseStartIndex,
+            endIndex: afterRiseStartIndex + consolidationOptions.period - 1,
+            strength: consolidation.combined.strength,
+            days: consolidationOptions.period,
+          },
+          reboundInfo: {
+            startIndex: afterConsolidationStartIndex,
+            endIndex: afterConsolidationStartIndex + checkPeriod - 1,
+            changePercent: Number(dropPercent.toFixed(2)),
+            avgVolumeRatio: Number(dropVolumeRatio.toFixed(2)),
+          },
+        };
+      }
+    }
+  }
+
+  // 只有横盘，没有下跌
+  return {
+    type: 'consolidation',
+    consolidationInfo: {
+      startIndex: afterRiseStartIndex,
+      endIndex: afterRiseStartIndex + consolidationOptions.period - 1,
+      strength: consolidation.combined.strength,
+      days: consolidationOptions.period,
+    },
+  };
+}
+
+/**
+ * 综合分析放量急跌/拉升模式
+ * @param klineData K线数据
+ * @param options 分析选项
+ */
+export function analyzeVolumeSurgePatterns(
+  klineData: KLineData[],
+  options: {
+    period?: number;
+    volumeRatioRange?: { min: number; max?: number };
+    dropPercentRange?: { min: number; max?: number };
+    risePercentRange?: { min: number; max?: number };
+    consolidationOptions?: {
+      period: number;
+      priceVolatilityThreshold: number;
+      maSpreadThreshold: number;
+      volumeShrinkingThreshold: number;
+    };
+  } = {}
+): VolumeSurgePatternAnalysis {
+  const {
+    period = 10,
+    volumeRatioRange = { min: 1.5, max: 2.0 },
+    dropPercentRange = { min: 5, max: 10 },
+    risePercentRange = { min: 5, max: 10 },
+    consolidationOptions = {
+      period: 10,
+      priceVolatilityThreshold: 5,
+      maSpreadThreshold: 3,
+      volumeShrinkingThreshold: 80,
+    },
+  } = options;
+
+  // 检测放量急跌周期
+  const dropPeriods = detectVolumeSurgeDrop(klineData, period, volumeRatioRange, dropPercentRange);
+
+  // 检测放量拉升周期
+  const risePeriods = detectVolumeSurgeRise(klineData, period, volumeRatioRange, risePercentRange);
+
+  // 分析每个急跌周期后的情况
+  const afterDropAnalyses = dropPeriods.map((period) => ({
+    period,
+    analysis: analyzeAfterSurgeDrop(klineData, period, consolidationOptions),
+  }));
+
+  // 分析每个拉升周期后的情况
+  const afterRiseAnalyses = risePeriods.map((period) => ({
+    period,
+    analysis: analyzeAfterSurgeRise(klineData, period, consolidationOptions),
+  }));
+
+  return {
+    dropPeriods,
+    risePeriods,
+    afterDropAnalyses,
+    afterRiseAnalyses,
+    dropCount: dropPeriods.length,
+    riseCount: risePeriods.length,
+  };
+}
