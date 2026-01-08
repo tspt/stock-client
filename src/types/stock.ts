@@ -468,11 +468,7 @@ export interface VolumeSurgePeriod {
   endPrice: number;
   /** 跌幅/涨幅百分比 */
   changePercent: number;
-  /** 平均成交量倍数（相对于更长期均量） */
-  avgVolumeRatio: number;
-  /** 周期强度：'light' | 'medium' | 'heavy' */
-  intensity: 'light' | 'medium' | 'heavy';
-  /** 周期天数 */
+  /** 周期天数（单日模式为1） */
   days: number;
 }
 
@@ -480,8 +476,8 @@ export interface VolumeSurgePeriod {
  * 急跌/拉升后的分析结果
  */
 export interface AfterSurgeAnalysis {
-  /** 类型：'none' | 'consolidation' | 'consolidation_with_rebound' | 'consolidation_with_drop' */
-  type: 'none' | 'consolidation' | 'consolidation_with_rebound' | 'consolidation_with_drop';
+  /** 类型：'none' | 'consolidation' | 'consolidation_with_rise' | 'consolidation_with_drop' */
+  type: 'none' | 'consolidation' | 'consolidation_with_rise' | 'consolidation_with_drop';
   /** 横盘信息（如果存在） */
   consolidationInfo?: {
     /** 横盘开始索引 */
@@ -493,40 +489,38 @@ export interface AfterSurgeAnalysis {
     /** 横盘天数 */
     days: number;
   };
-  /** 反弹/下跌信息（如果存在） */
+  /** 上涨/下跌信息（如果存在） */
   reboundInfo?: {
-    /** 反弹/下跌开始索引 */
+    /** 上涨/下跌开始索引 */
     startIndex: number;
-    /** 反弹/下跌结束索引 */
+    /** 上涨/下跌结束索引 */
     endIndex: number;
-    /** 反弹/下跌幅度百分比 */
+    /** 上涨/下跌幅度百分比 */
     changePercent: number;
-    /** 平均成交量倍数 */
-    avgVolumeRatio: number;
   };
 }
 
 /**
- * 放量急跌/拉升模式分析结果
+ * 急跌/急涨模式分析结果（单日模式）
  */
 export interface VolumeSurgePatternAnalysis {
-  /** 放量急跌周期列表 */
+  /** 急跌周期列表（单日模式） */
   dropPeriods: VolumeSurgePeriod[];
-  /** 放量拉升周期列表 */
+  /** 急涨周期列表（单日模式） */
   risePeriods: VolumeSurgePeriod[];
   /** 急跌后的分析结果（每个急跌周期对应一个分析） */
   afterDropAnalyses: Array<{
     period: VolumeSurgePeriod;
     analysis: AfterSurgeAnalysis;
   }>;
-  /** 拉升后的分析结果（每个拉升周期对应一个分析） */
+  /** 急涨后的分析结果（每个急涨周期对应一个分析） */
   afterRiseAnalyses: Array<{
     period: VolumeSurgePeriod;
     analysis: AfterSurgeAnalysis;
   }>;
-  /** 放量急跌周期数量 */
+  /** 急跌周期数量 */
   dropCount: number;
-  /** 放量拉升周期数量 */
+  /** 急涨周期数量 */
   riseCount: number;
 }
 
@@ -550,6 +544,8 @@ export interface OpportunityAnalysisResult {
   success: number;
   /** 失败数量 */
   failed: number;
+  /** K线数据缓存（序列化后的数组格式：Array<[code, klineData]>） */
+  klineDataCache?: Array<[string, KLineData[]]>;
 }
 
 /**
