@@ -104,14 +104,14 @@ export function OpportunityPage() {
   const [tableHeight, setTableHeight] = useState<number>(400); // 表格高度
   const tableCardRef = useRef<HTMLDivElement>(null); // 表格Card的引用
 
-  // 放量急跌/拉升筛选状态
+  // 急跌/急涨筛选状态（单日模式，去掉放量逻辑）
   const [volumeSurgeDropEnabled, setVolumeSurgeDropEnabled] = useState<boolean>(false);
   const [volumeSurgeRiseEnabled, setVolumeSurgeRiseEnabled] = useState<boolean>(false);
-  const [volumeSurgePeriod, setVolumeSurgePeriod] = useState<number>(10);
-  const [volumeRatioRange, setVolumeRatioRange] = useState<string>('1.5-2.0'); // '1.2-1.5' | '1.5-2.0' | '2.0+'
   const [dropRisePercentRange, setDropRisePercentRange] = useState<string>('5-10'); // '5-10' | '10+'
-  const [afterDropType, setAfterDropType] = useState<string>('all'); // 'all' | 'none' | 'consolidation' | 'consolidation_with_rebound'
-  const [afterRiseType, setAfterRiseType] = useState<string>('all'); // 'all' | 'none' | 'consolidation' | 'consolidation_with_drop'
+  const [afterDropType, setAfterDropType] = useState<string>('all'); // 'all' | 'consolidation' | 'consolidation_with_rise' | 'consolidation_with_drop'
+  const [afterRiseType, setAfterRiseType] = useState<string>('all'); // 'all' | 'consolidation' | 'consolidation_with_rise' | 'consolidation_with_drop'
+  const [afterDropPercentRange, setAfterDropPercentRange] = useState<string>('5-10'); // '5-10' | '10+'
+  const [afterRisePercentRange, setAfterRisePercentRange] = useState<string>('5-10'); // '5-10' | '10+'
 
   useEffect(() => {
     loadCachedData();
@@ -425,24 +425,12 @@ export function OpportunityPage() {
         }
       }
 
-      // 放量急跌/拉升筛选
+      // 急跌/急涨筛选（单日模式，去掉放量逻辑）
       if (volumeSurgeDropEnabled || volumeSurgeRiseEnabled) {
         const patterns = item.volumeSurgePatterns;
         if (!patterns) {
           return false;
         }
-
-        // 解析放量倍数范围
-        const getVolumeRatioRange = (range: string): { min: number; max?: number } => {
-          if (range === '1.2-1.5') {
-            return { min: 1.2, max: 1.5 };
-          } else if (range === '1.5-2.0') {
-            return { min: 1.5, max: 2.0 };
-          } else if (range === '2.0+') {
-            return { min: 2.0 };
-          }
-          return { min: 1.5, max: 2.0 };
-        };
 
         // 解析急跌/急涨幅度范围
         const getPercentRange = (range: string): { min: number; max?: number } => {
@@ -454,20 +442,16 @@ export function OpportunityPage() {
           return { min: 5, max: 10 };
         };
 
-        const volumeRange = getVolumeRatioRange(volumeRatioRange);
         const percentRange = getPercentRange(dropRisePercentRange);
 
-        // 放量急跌筛选
+        // 急跌筛选
         if (volumeSurgeDropEnabled) {
-          // 检查是否有符合条件的急跌周期
+          // 检查是否有符合条件的急跌周期（单日模式，只要有一天满足即可）
           const matchingDrops = patterns.dropPeriods.filter((drop) => {
-            const volumeMatch =
-              drop.avgVolumeRatio >= volumeRange.min &&
-              (volumeRange.max === undefined || drop.avgVolumeRatio <= volumeRange.max);
             const percentMatch =
               Math.abs(drop.changePercent) >= percentRange.min &&
               (percentRange.max === undefined || Math.abs(drop.changePercent) <= percentRange.max);
-            return volumeMatch && percentMatch;
+            return percentMatch;
           });
 
           if (matchingDrops.length === 0) {
@@ -476,18 +460,37 @@ export function OpportunityPage() {
 
           // 如果设置了急跌后类型筛选
           if (afterDropType !== 'all') {
+            const afterPercentRange = getPercentRange(afterDropPercentRange);
             const hasMatchingAfterType = matchingDrops.some((drop) => {
               const analysis = patterns.afterDropAnalyses.find(
                 (a) => a.period.startIndex === drop.startIndex && a.period.endIndex === drop.endIndex
               );
               if (!analysis) return false;
 
-              if (afterDropType === 'none') {
-                return analysis.analysis.type === 'none';
-              } else if (afterDropType === 'consolidation') {
+              if (afterDropType === 'consolidation') {
                 return analysis.analysis.type === 'consolidation';
-              } else if (afterDropType === 'consolidation_with_rebound') {
-                return analysis.analysis.type === 'consolidation_with_rebound';
+              } else if (afterDropType === 'consolidation_with_rise') {
+                if (analysis.analysis.type !== 'consolidation_with_rise') return false;
+                // 检查幅度是否满足条件
+                if (analysis.analysis.reboundInfo) {
+                  const changePercent = analysis.analysis.reboundInfo.changePercent;
+                  return (
+                    changePercent >= afterPercentRange.min &&
+                    (afterPercentRange.max === undefined || changePercent <= afterPercentRange.max)
+                  );
+                }
+                return false;
+              } else if (afterDropType === 'consolidation_with_drop') {
+                if (analysis.analysis.type !== 'consolidation_with_drop') return false;
+                // 检查幅度是否满足条件
+                if (analysis.analysis.reboundInfo) {
+                  const changePercent = Math.abs(analysis.analysis.reboundInfo.changePercent);
+                  return (
+                    changePercent >= afterPercentRange.min &&
+                    (afterPercentRange.max === undefined || changePercent <= afterPercentRange.max)
+                  );
+                }
+                return false;
               }
               return false;
             });
@@ -498,37 +501,53 @@ export function OpportunityPage() {
           }
         }
 
-        // 放量拉升筛选
+        // 急涨筛选
         if (volumeSurgeRiseEnabled) {
-          // 检查是否有符合条件的拉升周期
+          // 检查是否有符合条件的急涨周期（单日模式，只要有一天满足即可）
           const matchingRises = patterns.risePeriods.filter((rise) => {
-            const volumeMatch =
-              rise.avgVolumeRatio >= volumeRange.min &&
-              (volumeRange.max === undefined || rise.avgVolumeRatio <= volumeRange.max);
             const percentMatch =
               rise.changePercent >= percentRange.min &&
               (percentRange.max === undefined || rise.changePercent <= percentRange.max);
-            return volumeMatch && percentMatch;
+            return percentMatch;
           });
 
           if (matchingRises.length === 0) {
             return false;
           }
 
-          // 如果设置了拉升后类型筛选
+          // 如果设置了急涨后类型筛选
           if (afterRiseType !== 'all') {
+            const afterPercentRange = getPercentRange(afterRisePercentRange);
             const hasMatchingAfterType = matchingRises.some((rise) => {
               const analysis = patterns.afterRiseAnalyses.find(
                 (a) => a.period.startIndex === rise.startIndex && a.period.endIndex === rise.endIndex
               );
               if (!analysis) return false;
 
-              if (afterRiseType === 'none') {
-                return analysis.analysis.type === 'none';
-              } else if (afterRiseType === 'consolidation') {
+              if (afterRiseType === 'consolidation') {
                 return analysis.analysis.type === 'consolidation';
+              } else if (afterRiseType === 'consolidation_with_rise') {
+                if (analysis.analysis.type !== 'consolidation_with_rise') return false;
+                // 检查幅度是否满足条件
+                if (analysis.analysis.reboundInfo) {
+                  const changePercent = analysis.analysis.reboundInfo.changePercent;
+                  return (
+                    changePercent >= afterPercentRange.min &&
+                    (afterPercentRange.max === undefined || changePercent <= afterPercentRange.max)
+                  );
+                }
+                return false;
               } else if (afterRiseType === 'consolidation_with_drop') {
-                return analysis.analysis.type === 'consolidation_with_drop';
+                if (analysis.analysis.type !== 'consolidation_with_drop') return false;
+                // 检查幅度是否满足条件
+                if (analysis.analysis.reboundInfo) {
+                  const changePercent = Math.abs(analysis.analysis.reboundInfo.changePercent);
+                  return (
+                    changePercent >= afterPercentRange.min &&
+                    (afterPercentRange.max === undefined || changePercent <= afterPercentRange.max)
+                  );
+                }
+                return false;
               }
               return false;
             });
@@ -559,11 +578,11 @@ export function OpportunityPage() {
     klineDataCache,
     volumeSurgeDropEnabled,
     volumeSurgeRiseEnabled,
-    volumeSurgePeriod,
-    volumeRatioRange,
     dropRisePercentRange,
     afterDropType,
     afterRiseType,
+    afterDropPercentRange,
+    afterRisePercentRange,
   ]);
 
   // 重置所有筛选条件
@@ -1248,12 +1267,12 @@ export function OpportunityPage() {
                 )}
               </Card>
 
-              {/* 放量急跌/拉升筛选区域 */}
+              {/* 急跌/急涨筛选区域（单日模式） */}
               <Card className={styles.filterCard} size="small">
                 <div className={styles.filterHeader}>
                   <Space>
                     <FilterOutlined />
-                    <span>放量急跌/拉升筛选</span>
+                    <span>急跌/急涨筛选（单日模式）</span>
                     <Button
                       type="text"
                       size="small"
@@ -1266,21 +1285,20 @@ export function OpportunityPage() {
                 </div>
                 {volumeSurgeFilterVisible && (
                   <div className={styles.filterContent}>
-                    {/* 放量急跌/拉升筛选 */}
                     <div className={styles.filterRow}>
                       <div className={styles.filterItem}>
                         <Checkbox
                           checked={volumeSurgeDropEnabled}
                           onChange={(e) => setVolumeSurgeDropEnabled(e.target.checked)}
                         >
-                          启用放量急跌筛选
+                          启用急跌筛选
                         </Checkbox>
                         <Checkbox
                           checked={volumeSurgeRiseEnabled}
                           onChange={(e) => setVolumeSurgeRiseEnabled(e.target.checked)}
                           style={{ marginLeft: 16 }}
                         >
-                          启用放量拉升筛选
+                          启用急涨筛选
                         </Checkbox>
                       </div>
                     </div>
@@ -1288,34 +1306,6 @@ export function OpportunityPage() {
                     {(volumeSurgeDropEnabled || volumeSurgeRiseEnabled) && (
                       <>
                         <div className={styles.filterRow}>
-                          <div className={styles.filterItem}>
-                            <span className={styles.filterLabel}>分析周期：</span>
-                            <InputNumber
-                              value={volumeSurgePeriod}
-                              min={5}
-                              max={30}
-                              step={1}
-                              style={{ width: 100 }}
-                              onChange={(v) => {
-                                const next = typeof v === 'number' && isFinite(v) ? Math.floor(v) : 10;
-                                setVolumeSurgePeriod(next);
-                              }}
-                            />
-                            <span style={{ marginLeft: 4 }}>天</span>
-                          </div>
-                          <div className={styles.filterItem}>
-                            <span className={styles.filterLabel}>放量倍数：</span>
-                            <Select
-                              value={volumeRatioRange}
-                              onChange={(value) => setVolumeRatioRange(value)}
-                              style={{ width: 150 }}
-                              options={[
-                                { label: '1.2-1.5倍', value: '1.2-1.5' },
-                                { label: '1.5-2.0倍', value: '1.5-2.0' },
-                                { label: '2.0倍以上', value: '2.0+' },
-                              ]}
-                            />
-                          </div>
                           <div className={styles.filterItem}>
                             <span className={styles.filterLabel}>急跌/急涨幅度：</span>
                             <Select
@@ -1331,41 +1321,77 @@ export function OpportunityPage() {
                         </div>
 
                         {volumeSurgeDropEnabled && (
-                          <div className={styles.filterRow}>
-                            <div className={styles.filterItem}>
-                              <span className={styles.filterLabel}>急跌后类型：</span>
-                              <Select
-                                value={afterDropType}
-                                onChange={(value) => setAfterDropType(value)}
-                                style={{ width: 200 }}
-                                options={[
-                                  { label: '不限', value: 'all' },
-                                  { label: '不限（无横盘）', value: 'none' },
-                                  { label: '横盘', value: 'consolidation' },
-                                  { label: '横盘后放量反弹', value: 'consolidation_with_rebound' },
-                                ]}
-                              />
+                          <>
+                            <div className={styles.filterRow}>
+                              <div className={styles.filterItem}>
+                                <span className={styles.filterLabel}>急跌后类型：</span>
+                                <Select
+                                  value={afterDropType}
+                                  onChange={(value) => setAfterDropType(value)}
+                                  style={{ width: 200 }}
+                                  options={[
+                                    { label: '不限', value: 'all' },
+                                    { label: '横盘', value: 'consolidation' },
+                                    { label: '横盘后上涨', value: 'consolidation_with_rise' },
+                                    { label: '横盘后下跌', value: 'consolidation_with_drop' },
+                                  ]}
+                                />
+                              </div>
                             </div>
-                          </div>
+                            {(afterDropType === 'consolidation_with_rise' || afterDropType === 'consolidation_with_drop') && (
+                              <div className={styles.filterRow}>
+                                <div className={styles.filterItem}>
+                                  <span className={styles.filterLabel}>横盘后幅度：</span>
+                                  <Select
+                                    value={afterDropPercentRange}
+                                    onChange={(value) => setAfterDropPercentRange(value)}
+                                    style={{ width: 150 }}
+                                    options={[
+                                      { label: '5-10%', value: '5-10' },
+                                      { label: '10%以上', value: '10+' },
+                                    ]}
+                                  />
+                                </div>
+                              </div>
+                            )}
+                          </>
                         )}
 
                         {volumeSurgeRiseEnabled && (
-                          <div className={styles.filterRow}>
-                            <div className={styles.filterItem}>
-                              <span className={styles.filterLabel}>拉升后类型：</span>
-                              <Select
-                                value={afterRiseType}
-                                onChange={(value) => setAfterRiseType(value)}
-                                style={{ width: 200 }}
-                                options={[
-                                  { label: '不限', value: 'all' },
-                                  { label: '不限（无横盘）', value: 'none' },
-                                  { label: '横盘', value: 'consolidation' },
-                                  { label: '横盘后放量下跌', value: 'consolidation_with_drop' },
-                                ]}
-                              />
+                          <>
+                            <div className={styles.filterRow}>
+                              <div className={styles.filterItem}>
+                                <span className={styles.filterLabel}>急涨后类型：</span>
+                                <Select
+                                  value={afterRiseType}
+                                  onChange={(value) => setAfterRiseType(value)}
+                                  style={{ width: 200 }}
+                                  options={[
+                                    { label: '不限', value: 'all' },
+                                    { label: '横盘', value: 'consolidation' },
+                                    { label: '横盘后上涨', value: 'consolidation_with_rise' },
+                                    { label: '横盘后下跌', value: 'consolidation_with_drop' },
+                                  ]}
+                                />
+                              </div>
                             </div>
-                          </div>
+                            {(afterRiseType === 'consolidation_with_rise' || afterRiseType === 'consolidation_with_drop') && (
+                              <div className={styles.filterRow}>
+                                <div className={styles.filterItem}>
+                                  <span className={styles.filterLabel}>横盘后幅度：</span>
+                                  <Select
+                                    value={afterRisePercentRange}
+                                    onChange={(value) => setAfterRisePercentRange(value)}
+                                    style={{ width: 150 }}
+                                    options={[
+                                      { label: '5-10%', value: '5-10' },
+                                      { label: '10%以上', value: '10+' },
+                                    ]}
+                                  />
+                                </div>
+                              </div>
+                            )}
+                          </>
                         )}
                       </>
                     )}

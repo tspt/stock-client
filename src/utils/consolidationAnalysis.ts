@@ -543,84 +543,46 @@ export function calculateConsolidation(
 }
 
 /**
- * 检测放量急跌周期
+ * 检测单日急跌（去掉放量逻辑）
  * @param klineData K线数据
- * @param period 分析周期数（默认10天）
- * @param volumeRatioRange 放量倍数范围 {min: 1.5, max: 2.0}
  * @param dropPercentRange 急跌幅度范围 {min: 5, max: 10}（百分比）
  */
 export function detectVolumeSurgeDrop(
   klineData: KLineData[],
-  period: number = 10,
-  volumeRatioRange: { min: number; max?: number } = { min: 1.5, max: 2.0 },
   dropPercentRange: { min: number; max?: number } = { min: 5, max: 10 }
 ): VolumeSurgePeriod[] {
-  if (!klineData || klineData.length < period * 2) {
+  if (!klineData || klineData.length < 2) {
     return [];
   }
 
   const periods: VolumeSurgePeriod[] = [];
-  const longTermPeriod = period * 2;
 
-  // 计算更长期的平均成交量（用于对比）
-  const longTermAvgVolume =
-    klineData.length >= longTermPeriod
-      ? klineData.slice(-longTermPeriod, -period).reduce((sum, k) => sum + k.volume, 0) / period
-      : klineData.slice(0, -period).reduce((sum, k) => sum + k.volume, 0) /
-        Math.max(1, klineData.length - period);
+  // 单日模式：遍历每一天，检查当天相对于前一天的跌幅
+  for (let i = 1; i < klineData.length; i++) {
+    const prev = klineData[i - 1];
+    const current = klineData[i];
 
-  if (longTermAvgVolume <= 0) {
-    return [];
-  }
+    if (prev.close <= 0) continue;
 
-  // 滑动窗口检测
-  for (let i = period; i <= klineData.length; i++) {
-    const window = klineData.slice(i - period, i);
-    if (window.length < period) continue;
-
-    const startPrice = window[0].close;
-    const endPrice = window[window.length - 1].close;
-    const changePercent = ((endPrice - startPrice) / startPrice) * 100;
+    // 计算当天跌幅
+    const changePercent = ((current.close - prev.close) / prev.close) * 100;
+    const absDrop = Math.abs(changePercent);
 
     // 检查是否急跌
     const isDrop = changePercent < 0;
-    const absDrop = Math.abs(changePercent);
     const isSharpDrop =
       absDrop >= dropPercentRange.min &&
       (dropPercentRange.max === undefined || absDrop <= dropPercentRange.max);
 
     if (!isDrop || !isSharpDrop) continue;
 
-    // 计算窗口内的平均成交量
-    const avgVolume = window.reduce((sum, k) => sum + k.volume, 0) / window.length;
-    const volumeRatio = avgVolume / longTermAvgVolume;
-
-    // 检查是否放量
-    const isVolumeSurge =
-      volumeRatio >= volumeRatioRange.min &&
-      (volumeRatioRange.max === undefined || volumeRatio <= volumeRatioRange.max);
-
-    if (!isVolumeSurge) continue;
-
-    // 判断强度
-    let intensity: 'light' | 'medium' | 'heavy';
-    if (volumeRatio >= 2.0 && absDrop >= 10) {
-      intensity = 'heavy';
-    } else if (volumeRatio >= 1.5 && absDrop >= 5) {
-      intensity = 'medium';
-    } else {
-      intensity = 'light';
-    }
-
     periods.push({
-      startIndex: i - period,
-      endIndex: i - 1,
-      startPrice,
-      endPrice,
+      startIndex: i - 1,
+      endIndex: i,
+      startPrice: prev.close,
+      endPrice: current.close,
       changePercent: Number(changePercent.toFixed(2)),
-      avgVolumeRatio: Number(volumeRatio.toFixed(2)),
-      intensity,
-      days: period,
+      days: 1,
     });
   }
 
@@ -628,44 +590,29 @@ export function detectVolumeSurgeDrop(
 }
 
 /**
- * 检测放量拉升周期
+ * 检测单日急涨（去掉放量逻辑）
  * @param klineData K线数据
- * @param period 分析周期数（默认10天）
- * @param volumeRatioRange 放量倍数范围 {min: 1.5, max: 2.0}
  * @param risePercentRange 急涨幅度范围 {min: 5, max: 10}（百分比）
  */
 export function detectVolumeSurgeRise(
   klineData: KLineData[],
-  period: number = 10,
-  volumeRatioRange: { min: number; max?: number } = { min: 1.5, max: 2.0 },
   risePercentRange: { min: number; max?: number } = { min: 5, max: 10 }
 ): VolumeSurgePeriod[] {
-  if (!klineData || klineData.length < period * 2) {
+  if (!klineData || klineData.length < 2) {
     return [];
   }
 
   const periods: VolumeSurgePeriod[] = [];
-  const longTermPeriod = period * 2;
 
-  // 计算更长期的平均成交量（用于对比）
-  const longTermAvgVolume =
-    klineData.length >= longTermPeriod
-      ? klineData.slice(-longTermPeriod, -period).reduce((sum, k) => sum + k.volume, 0) / period
-      : klineData.slice(0, -period).reduce((sum, k) => sum + k.volume, 0) /
-        Math.max(1, klineData.length - period);
+  // 单日模式：遍历每一天，检查当天相对于前一天的涨幅
+  for (let i = 1; i < klineData.length; i++) {
+    const prev = klineData[i - 1];
+    const current = klineData[i];
 
-  if (longTermAvgVolume <= 0) {
-    return [];
-  }
+    if (prev.close <= 0) continue;
 
-  // 滑动窗口检测
-  for (let i = period; i <= klineData.length; i++) {
-    const window = klineData.slice(i - period, i);
-    if (window.length < period) continue;
-
-    const startPrice = window[0].close;
-    const endPrice = window[window.length - 1].close;
-    const changePercent = ((endPrice - startPrice) / startPrice) * 100;
+    // 计算当天涨幅
+    const changePercent = ((current.close - prev.close) / prev.close) * 100;
 
     // 检查是否急涨
     const isRise = changePercent > 0;
@@ -675,36 +622,13 @@ export function detectVolumeSurgeRise(
 
     if (!isRise || !isSharpRise) continue;
 
-    // 计算窗口内的平均成交量
-    const avgVolume = window.reduce((sum, k) => sum + k.volume, 0) / window.length;
-    const volumeRatio = avgVolume / longTermAvgVolume;
-
-    // 检查是否放量
-    const isVolumeSurge =
-      volumeRatio >= volumeRatioRange.min &&
-      (volumeRatioRange.max === undefined || volumeRatio <= volumeRatioRange.max);
-
-    if (!isVolumeSurge) continue;
-
-    // 判断强度
-    let intensity: 'light' | 'medium' | 'heavy';
-    if (volumeRatio >= 2.0 && changePercent >= 10) {
-      intensity = 'heavy';
-    } else if (volumeRatio >= 1.5 && changePercent >= 5) {
-      intensity = 'medium';
-    } else {
-      intensity = 'light';
-    }
-
     periods.push({
-      startIndex: i - period,
-      endIndex: i - 1,
-      startPrice,
-      endPrice,
+      startIndex: i - 1,
+      endIndex: i,
+      startPrice: prev.close,
+      endPrice: current.close,
       changePercent: Number(changePercent.toFixed(2)),
-      avgVolumeRatio: Number(volumeRatio.toFixed(2)),
-      intensity,
-      days: period,
+      days: 1,
     });
   }
 
@@ -761,61 +685,99 @@ export function analyzeAfterSurgeDrop(
   // 只检查最近period天的横盘情况
   const recentConsolidationData = afterDropData.slice(0, consolidationOptions.period);
 
-  if (!consolidation.combined.isConsolidation) {
+  // 修改为OR模式：只要价格波动率法或MA收敛法任一满足，就判定为横盘
+  // 这样与页面筛选逻辑保持一致，用户可以选择只使用一种方法
+  const isConsolidation = consolidation.priceVolatility.isConsolidation || consolidation.maConvergence.isConsolidation;
+  
+  if (!isConsolidation) {
     return { type: 'none' };
   }
 
-  // 检测横盘后的放量反弹
+  // 检测横盘后的上涨/下跌（去掉放量逻辑）
   const afterConsolidationStartIndex = afterDropStartIndex + consolidationOptions.period;
   if (afterConsolidationStartIndex < klineData.length) {
     const afterConsolidationData = klineData.slice(afterConsolidationStartIndex);
-    const checkPeriod = Math.min(5, afterConsolidationData.length); // 检查横盘后5天
+    const checkPeriod = Math.min(10, afterConsolidationData.length); // 检查横盘后10天
 
-    if (checkPeriod >= 2) {
-      const reboundCheckData = afterConsolidationData.slice(0, checkPeriod);
+    if (checkPeriod >= 1) {
       const consolidationEndPrice =
         recentConsolidationData[recentConsolidationData.length - 1].close;
-      const reboundEndPrice = reboundCheckData[reboundCheckData.length - 1].close;
-      const reboundPercent =
-        ((reboundEndPrice - consolidationEndPrice) / consolidationEndPrice) * 100;
+      
+      // 检查是否有上涨或下跌
+      for (let i = 0; i < checkPeriod; i++) {
+        const currentPrice = afterConsolidationData[i].close;
+        const changePercent = ((currentPrice - consolidationEndPrice) / consolidationEndPrice) * 100;
 
-      // 计算横盘期间的成交量作为基准
-      const consolidationAvgVolume =
-        recentConsolidationData.reduce((sum, k) => sum + k.volume, 0) /
-        recentConsolidationData.length;
-      const reboundAvgVolume =
-        reboundCheckData.reduce((sum, k) => sum + k.volume, 0) / reboundCheckData.length;
-      const reboundVolumeRatio =
-        consolidationAvgVolume > 0 ? reboundAvgVolume / consolidationAvgVolume : 1;
+        // 如果上涨超过3%，返回横盘后上涨
+        if (changePercent > 3) {
+          // 计算横盘强度：如果两种方法都满足，用平均值；否则用满足的方法的强度
+          const consolidationStrength = 
+            consolidation.priceVolatility.isConsolidation && consolidation.maConvergence.isConsolidation
+              ? consolidation.combined.strength
+              : consolidation.priceVolatility.isConsolidation
+              ? consolidation.priceVolatility.strength
+              : consolidation.maConvergence.strength;
+          
+          return {
+            type: 'consolidation_with_rise',
+            consolidationInfo: {
+              startIndex: afterDropStartIndex,
+              endIndex: afterDropStartIndex + consolidationOptions.period - 1,
+              strength: consolidationStrength,
+              days: consolidationOptions.period,
+            },
+            reboundInfo: {
+              startIndex: afterConsolidationStartIndex,
+              endIndex: afterConsolidationStartIndex + i,
+              changePercent: Number(changePercent.toFixed(2)),
+            },
+          };
+        }
 
-      // 反弹超过3%且放量超过1.5倍
-      if (reboundPercent > 3 && reboundVolumeRatio >= 1.5) {
-        return {
-          type: 'consolidation_with_rebound',
-          consolidationInfo: {
-            startIndex: afterDropStartIndex,
-            endIndex: afterDropStartIndex + consolidationOptions.period - 1,
-            strength: consolidation.combined.strength,
-            days: consolidationOptions.period,
-          },
-          reboundInfo: {
-            startIndex: afterConsolidationStartIndex,
-            endIndex: afterConsolidationStartIndex + checkPeriod - 1,
-            changePercent: Number(reboundPercent.toFixed(2)),
-            avgVolumeRatio: Number(reboundVolumeRatio.toFixed(2)),
-          },
-        };
+        // 如果下跌超过3%，返回横盘后下跌
+        if (changePercent < -3) {
+          // 计算横盘强度：如果两种方法都满足，用平均值；否则用满足的方法的强度
+          const consolidationStrength = 
+            consolidation.priceVolatility.isConsolidation && consolidation.maConvergence.isConsolidation
+              ? consolidation.combined.strength
+              : consolidation.priceVolatility.isConsolidation
+              ? consolidation.priceVolatility.strength
+              : consolidation.maConvergence.strength;
+          
+          return {
+            type: 'consolidation_with_drop',
+            consolidationInfo: {
+              startIndex: afterDropStartIndex,
+              endIndex: afterDropStartIndex + consolidationOptions.period - 1,
+              strength: consolidationStrength,
+              days: consolidationOptions.period,
+            },
+            reboundInfo: {
+              startIndex: afterConsolidationStartIndex,
+              endIndex: afterConsolidationStartIndex + i,
+              changePercent: Number(changePercent.toFixed(2)),
+            },
+          };
+        }
       }
     }
   }
 
-  // 只有横盘，没有反弹
+  // 只有横盘，没有上涨或下跌
+  // 计算横盘强度：如果两种方法都满足，用平均值；否则用满足的方法的强度
+  const consolidationStrength = 
+    consolidation.priceVolatility.isConsolidation && consolidation.maConvergence.isConsolidation
+      ? consolidation.combined.strength
+      : consolidation.priceVolatility.isConsolidation
+      ? consolidation.priceVolatility.strength
+      : consolidation.maConvergence.strength;
+  
   return {
     type: 'consolidation',
     consolidationInfo: {
       startIndex: afterDropStartIndex,
       endIndex: afterDropStartIndex + consolidationOptions.period - 1,
-      strength: consolidation.combined.strength,
+      strength: consolidationStrength,
       days: consolidationOptions.period,
     },
   };
@@ -871,75 +833,112 @@ export function analyzeAfterSurgeRise(
   // 只检查最近period天的横盘情况
   const recentConsolidationData = afterRiseData.slice(0, consolidationOptions.period);
 
-  if (!consolidation.combined.isConsolidation) {
+  // 修改为OR模式：只要价格波动率法或MA收敛法任一满足，就判定为横盘
+  // 这样与页面筛选逻辑保持一致，用户可以选择只使用一种方法
+  const isConsolidation = consolidation.priceVolatility.isConsolidation || consolidation.maConvergence.isConsolidation;
+  
+  if (!isConsolidation) {
     return { type: 'none' };
   }
 
-  // 检测横盘后的放量下跌
+  // 检测横盘后的上涨/下跌（去掉放量逻辑）
   const afterConsolidationStartIndex = afterRiseStartIndex + consolidationOptions.period;
   if (afterConsolidationStartIndex < klineData.length) {
     const afterConsolidationData = klineData.slice(afterConsolidationStartIndex);
-    const checkPeriod = Math.min(5, afterConsolidationData.length); // 检查横盘后5天
+    const checkPeriod = Math.min(10, afterConsolidationData.length); // 检查横盘后10天
 
-    if (checkPeriod >= 2) {
-      const dropCheckData = afterConsolidationData.slice(0, checkPeriod);
+    if (checkPeriod >= 1) {
       const consolidationEndPrice =
         recentConsolidationData[recentConsolidationData.length - 1].close;
-      const dropEndPrice = dropCheckData[dropCheckData.length - 1].close;
-      const dropPercent = ((dropEndPrice - consolidationEndPrice) / consolidationEndPrice) * 100;
+      
+      // 检查是否有上涨或下跌
+      for (let i = 0; i < checkPeriod; i++) {
+        const currentPrice = afterConsolidationData[i].close;
+        const changePercent = ((currentPrice - consolidationEndPrice) / consolidationEndPrice) * 100;
 
-      // 计算横盘期间的成交量作为基准
-      const consolidationAvgVolume =
-        recentConsolidationData.reduce((sum, k) => sum + k.volume, 0) /
-        recentConsolidationData.length;
-      const dropAvgVolume =
-        dropCheckData.reduce((sum, k) => sum + k.volume, 0) / dropCheckData.length;
-      const dropVolumeRatio =
-        consolidationAvgVolume > 0 ? dropAvgVolume / consolidationAvgVolume : 1;
+        // 如果上涨超过3%，返回横盘后上涨
+        if (changePercent > 3) {
+          // 计算横盘强度：如果两种方法都满足，用平均值；否则用满足的方法的强度
+          const consolidationStrength = 
+            consolidation.priceVolatility.isConsolidation && consolidation.maConvergence.isConsolidation
+              ? consolidation.combined.strength
+              : consolidation.priceVolatility.isConsolidation
+              ? consolidation.priceVolatility.strength
+              : consolidation.maConvergence.strength;
+          
+          return {
+            type: 'consolidation_with_rise',
+            consolidationInfo: {
+              startIndex: afterRiseStartIndex,
+              endIndex: afterRiseStartIndex + consolidationOptions.period - 1,
+              strength: consolidationStrength,
+              days: consolidationOptions.period,
+            },
+            reboundInfo: {
+              startIndex: afterConsolidationStartIndex,
+              endIndex: afterConsolidationStartIndex + i,
+              changePercent: Number(changePercent.toFixed(2)),
+            },
+          };
+        }
 
-      // 下跌超过3%且放量超过1.5倍
-      if (dropPercent < -3 && dropVolumeRatio >= 1.5) {
-        return {
-          type: 'consolidation_with_drop',
-          consolidationInfo: {
-            startIndex: afterRiseStartIndex,
-            endIndex: afterRiseStartIndex + consolidationOptions.period - 1,
-            strength: consolidation.combined.strength,
-            days: consolidationOptions.period,
-          },
-          reboundInfo: {
-            startIndex: afterConsolidationStartIndex,
-            endIndex: afterConsolidationStartIndex + checkPeriod - 1,
-            changePercent: Number(dropPercent.toFixed(2)),
-            avgVolumeRatio: Number(dropVolumeRatio.toFixed(2)),
-          },
-        };
+        // 如果下跌超过3%，返回横盘后下跌
+        if (changePercent < -3) {
+          // 计算横盘强度：如果两种方法都满足，用平均值；否则用满足的方法的强度
+          const consolidationStrength = 
+            consolidation.priceVolatility.isConsolidation && consolidation.maConvergence.isConsolidation
+              ? consolidation.combined.strength
+              : consolidation.priceVolatility.isConsolidation
+              ? consolidation.priceVolatility.strength
+              : consolidation.maConvergence.strength;
+          
+          return {
+            type: 'consolidation_with_drop',
+            consolidationInfo: {
+              startIndex: afterRiseStartIndex,
+              endIndex: afterRiseStartIndex + consolidationOptions.period - 1,
+              strength: consolidationStrength,
+              days: consolidationOptions.period,
+            },
+            reboundInfo: {
+              startIndex: afterConsolidationStartIndex,
+              endIndex: afterConsolidationStartIndex + i,
+              changePercent: Number(changePercent.toFixed(2)),
+            },
+          };
+        }
       }
     }
   }
 
-  // 只有横盘，没有下跌
+  // 只有横盘，没有上涨或下跌
+  // 计算横盘强度：如果两种方法都满足，用平均值；否则用满足的方法的强度
+  const consolidationStrength = 
+    consolidation.priceVolatility.isConsolidation && consolidation.maConvergence.isConsolidation
+      ? consolidation.combined.strength
+      : consolidation.priceVolatility.isConsolidation
+      ? consolidation.priceVolatility.strength
+      : consolidation.maConvergence.strength;
+  
   return {
     type: 'consolidation',
     consolidationInfo: {
       startIndex: afterRiseStartIndex,
       endIndex: afterRiseStartIndex + consolidationOptions.period - 1,
-      strength: consolidation.combined.strength,
+      strength: consolidationStrength,
       days: consolidationOptions.period,
     },
   };
 }
 
 /**
- * 综合分析放量急跌/拉升模式
+ * 综合分析急跌/急涨模式（单日模式，去掉放量逻辑）
  * @param klineData K线数据
  * @param options 分析选项
  */
 export function analyzeVolumeSurgePatterns(
   klineData: KLineData[],
   options: {
-    period?: number;
-    volumeRatioRange?: { min: number; max?: number };
     dropPercentRange?: { min: number; max?: number };
     risePercentRange?: { min: number; max?: number };
     consolidationOptions?: {
@@ -951,8 +950,6 @@ export function analyzeVolumeSurgePatterns(
   } = {}
 ): VolumeSurgePatternAnalysis {
   const {
-    period = 10,
-    volumeRatioRange = { min: 1.5, max: 2.0 },
     dropPercentRange = { min: 5, max: 10 },
     risePercentRange = { min: 5, max: 10 },
     consolidationOptions = {
@@ -963,11 +960,11 @@ export function analyzeVolumeSurgePatterns(
     },
   } = options;
 
-  // 检测放量急跌周期
-  const dropPeriods = detectVolumeSurgeDrop(klineData, period, volumeRatioRange, dropPercentRange);
+  // 检测单日急跌
+  const dropPeriods = detectVolumeSurgeDrop(klineData, dropPercentRange);
 
-  // 检测放量拉升周期
-  const risePeriods = detectVolumeSurgeRise(klineData, period, volumeRatioRange, risePercentRange);
+  // 检测单日急涨
+  const risePeriods = detectVolumeSurgeRise(klineData, risePercentRange);
 
   // 分析每个急跌周期后的情况
   const afterDropAnalyses = dropPeriods.map((period) => ({
@@ -975,7 +972,7 @@ export function analyzeVolumeSurgePatterns(
     analysis: analyzeAfterSurgeDrop(klineData, period, consolidationOptions),
   }));
 
-  // 分析每个拉升周期后的情况
+  // 分析每个急涨周期后的情况
   const afterRiseAnalyses = risePeriods.map((period) => ({
     period,
     analysis: analyzeAfterSurgeRise(klineData, period, consolidationOptions),

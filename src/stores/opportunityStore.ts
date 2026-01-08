@@ -136,6 +136,15 @@ export const useOpportunityStore = create<OpportunityState>((set, get) => ({
         return;
       }
 
+      // 保存K线数据到缓存
+      const newCache = new Map(get().klineDataCache);
+      klineDataMap.forEach((klineData, code) => {
+        newCache.set(code, klineData);
+      });
+
+      // 将 Map 序列化为数组格式以便保存到 IndexedDB
+      const klineDataCacheArray: Array<[string, KLineData[]]> = Array.from(newCache.entries());
+
       const result: OpportunityAnalysisResult = {
         data: results,
         timestamp: Date.now(),
@@ -145,6 +154,7 @@ export const useOpportunityStore = create<OpportunityState>((set, get) => ({
         total: stocks.length,
         success: results.filter((r) => !r.error).length,
         failed: results.filter((r) => r.error).length,
+        klineDataCache: klineDataCacheArray,
       };
 
       await saveOpportunityData(result);
@@ -155,19 +165,12 @@ export const useOpportunityStore = create<OpportunityState>((set, get) => ({
         error: err.error.message,
       }));
 
-      // 保存K线数据到缓存
-      set((state) => {
-        const newCache = new Map(state.klineDataCache);
-        klineDataMap.forEach((klineData, code) => {
-          newCache.set(code, klineData);
-        });
-        return {
-          analysisData: results,
-          loading: false,
-          errors: formattedErrors,
-          cancelFn: null,
-          klineDataCache: newCache,
-        };
+      set({
+        analysisData: results,
+        loading: false,
+        errors: formattedErrors,
+        cancelFn: null,
+        klineDataCache: newCache,
       });
     } catch (error) {
       console.error('机会分析失败:', error);
@@ -187,10 +190,19 @@ export const useOpportunityStore = create<OpportunityState>((set, get) => ({
     try {
       const cached = await getOpportunityData();
       if (cached) {
+        // 恢复 klineDataCache（从数组格式恢复为 Map）
+        const klineDataCache = new Map<string, KLineData[]>();
+        if (cached.klineDataCache) {
+          cached.klineDataCache.forEach(([code, klineData]) => {
+            klineDataCache.set(code, klineData);
+          });
+        }
+
         set({
           analysisData: cached.data,
           currentPeriod: cached.period,
           currentCount: cached.count,
+          klineDataCache,
         });
       }
     } catch (error) {
