@@ -14,7 +14,7 @@ import {
   ClearOutlined,
 } from '@ant-design/icons';
 import { useOpportunityStore } from '@/stores/opportunityStore';
-import { calculateConsolidation } from '@/utils/consolidationAnalysis';
+import { calculateConsolidation, analyzeAfterSurgeDrop, analyzeAfterSurgeRise } from '@/utils/consolidationAnalysis';
 import { OpportunityTable } from '@/components/OpportunityTable/OpportunityTable';
 import { ColumnSettings } from '@/components/ColumnSettings/ColumnSettings';
 import { exportOpportunityToExcel } from '@/utils/opportunityExportUtils';
@@ -107,6 +107,7 @@ export function OpportunityPage() {
   // 急跌/急涨筛选状态（单日模式，去掉放量逻辑）
   const [volumeSurgeDropEnabled, setVolumeSurgeDropEnabled] = useState<boolean>(false);
   const [volumeSurgeRiseEnabled, setVolumeSurgeRiseEnabled] = useState<boolean>(false);
+  const [volumeSurgePeriod, setVolumeSurgePeriod] = useState<number>(10); // 横盘检测周期，默认10天
   const [dropRisePercentRange, setDropRisePercentRange] = useState<string>('5-10'); // '5-10' | '10+'
   const [afterDropType, setAfterDropType] = useState<string>('all'); // 'all' | 'consolidation' | 'consolidation_with_rise' | 'consolidation_with_drop'
   const [afterRiseType, setAfterRiseType] = useState<string>('all'); // 'all' | 'consolidation' | 'consolidation_with_rise' | 'consolidation_with_drop'
@@ -303,13 +304,84 @@ export function OpportunityPage() {
     trendPeriod,
   ]);
 
+  // 根据用户设置的周期重新计算急跌/急涨后的横盘结果
+  const analysisDataWithRecalculatedVolumeSurge = useMemo(() => {
+    if (analysisDataWithRecalculatedConsolidation.length === 0 || klineDataCache.size === 0) {
+      return analysisDataWithRecalculatedConsolidation;
+    }
+
+    // 如果用户没有启用急跌/急涨筛选，直接返回原数据
+    if (!volumeSurgeDropEnabled && !volumeSurgeRiseEnabled) {
+      return analysisDataWithRecalculatedConsolidation;
+    }
+
+    return analysisDataWithRecalculatedConsolidation.map((item) => {
+      const patterns = item.volumeSurgePatterns;
+      if (!patterns) {
+        return item;
+      }
+
+      const klineData = klineDataCache.get(item.code);
+      if (!klineData || klineData.length === 0) {
+        return item;
+      }
+
+      // 使用用户设置的周期重新计算急跌后的横盘结果
+      const recalculatedAfterDropAnalyses = patterns.afterDropAnalyses.map(({ period, analysis }) => {
+        try {
+          const newAnalysis = analyzeAfterSurgeDrop(klineData, period, {
+            period: volumeSurgePeriod,
+            priceVolatilityThreshold: 5,
+            maSpreadThreshold: 3,
+            volumeShrinkingThreshold: 80,
+          });
+          return { period, analysis: newAnalysis };
+        } catch (error) {
+          console.warn(`[${item.code}] 重新计算急跌后横盘结果失败:`, error);
+          return { period, analysis };
+        }
+      });
+
+      // 使用用户设置的周期重新计算急涨后的横盘结果
+      const recalculatedAfterRiseAnalyses = patterns.afterRiseAnalyses.map(({ period, analysis }) => {
+        try {
+          const newAnalysis = analyzeAfterSurgeRise(klineData, period, {
+            period: volumeSurgePeriod,
+            priceVolatilityThreshold: 5,
+            maSpreadThreshold: 3,
+            volumeShrinkingThreshold: 80,
+          });
+          return { period, analysis: newAnalysis };
+        } catch (error) {
+          console.warn(`[${item.code}] 重新计算急涨后横盘结果失败:`, error);
+          return { period, analysis };
+        }
+      });
+
+      return {
+        ...item,
+        volumeSurgePatterns: {
+          ...patterns,
+          afterDropAnalyses: recalculatedAfterDropAnalyses,
+          afterRiseAnalyses: recalculatedAfterRiseAnalyses,
+        },
+      };
+    });
+  }, [
+    analysisDataWithRecalculatedConsolidation,
+    klineDataCache,
+    volumeSurgeDropEnabled,
+    volumeSurgeRiseEnabled,
+    volumeSurgePeriod,
+  ]);
+
   // 对分析数据进行二次筛选
   const filteredAnalysisData = useMemo(() => {
-    if (analysisDataWithRecalculatedConsolidation.length === 0) {
+    if (analysisDataWithRecalculatedVolumeSurge.length === 0) {
       return [];
     }
 
-    return analysisDataWithRecalculatedConsolidation.filter((item) => {
+    return analysisDataWithRecalculatedVolumeSurge.filter((item) => {
       // 总市值筛选
       if (marketCapRange.min !== undefined && item.marketCap !== null && item.marketCap !== undefined) {
         if (item.marketCap < marketCapRange.min) return false;
@@ -578,6 +650,7 @@ export function OpportunityPage() {
     klineDataCache,
     volumeSurgeDropEnabled,
     volumeSurgeRiseEnabled,
+    volumeSurgePeriod,
     dropRisePercentRange,
     afterDropType,
     afterRiseType,
@@ -1306,6 +1379,21 @@ export function OpportunityPage() {
                     {(volumeSurgeDropEnabled || volumeSurgeRiseEnabled) && (
                       <>
                         <div className={styles.filterRow}>
+                          <div className={styles.filterItem}>
+                            <span className={styles.filterLabel}>周期：</span>
+                            <InputNumber
+                              value={volumeSurgePeriod}
+                              min={5}
+                              max={30}
+                              step={1}
+                              style={{ width: 100 }}
+                              onChange={(v) => {
+                                const next = typeof v === 'number' && isFinite(v) ? Math.floor(v) : 10;
+                                setVolumeSurgePeriod(next);
+                              }}
+                            />
+                            <span style={{ marginLeft: 4 }}>天</span>
+                          </div>
                           <div className={styles.filterItem}>
                             <span className={styles.filterLabel}>急跌/急涨幅度：</span>
                             <Select
