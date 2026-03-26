@@ -21,7 +21,6 @@ import { exportOpportunityToExcel } from '@/utils/opportunityExportUtils';
 import type { KLinePeriod, StockInfo, KLineData } from '@/types/stock';
 import { useAllStocks } from '@/hooks/useAllStocks';
 import { getPureCode } from '@/utils/format';
-import { getStockQuotes } from '@/services/stockApi';
 import styles from './OpportunityPage.module.css';
 
 const { Header, Content } = Layout;
@@ -35,8 +34,7 @@ const PERIOD_OPTIONS: { label: string; value: KLinePeriod }[] = [
 ];
 
 const MARKET_OPTIONS: { label: string; value: string }[] = [
-  { label: '沪市主板', value: 'sh_main' },
-  { label: '深市主板', value: 'sz_main' },
+  { label: '沪深主板', value: 'hs_main' },
   { label: '创业板', value: 'sz_gem' },
 ];
 
@@ -67,23 +65,22 @@ export function OpportunityPage() {
 
   const { allStocks } = useAllStocks();
   const [columnSettingsVisible, setColumnSettingsVisible] = useState(false);
-  const [selectedMarket, setSelectedMarket] = useState<string>('sh_main');
-  const [priceRange, setPriceRange] = useState<{ min?: number; max?: number }>({});
+  const [selectedMarket, setSelectedMarket] = useState<string>('hs_main');
+  const [priceRange, setPriceRange] = useState<{ min?: number; max?: number }>({ min: 3, max: 30 });
   const [nameType, setNameType] = useState<string>('non_st');
-  const [filteringQuotes, setFilteringQuotes] = useState(false);
 
   // 筛选条件状态
-  const [marketCapRange, setMarketCapRange] = useState<{ min?: number; max?: number }>({});
-  const [circulatingMarketCapRange, setCirculatingMarketCapRange] = useState<{ min?: number; max?: number }>({});
-  const [turnoverRateRange, setTurnoverRateRange] = useState<{ min?: number; max?: number }>({});
+  const [marketCapRange, setMarketCapRange] = useState<{ min?: number; max?: number }>({ min: 30, max: 500 });
+  const [turnoverRateRange, setTurnoverRateRange] = useState<{ min?: number; max?: number }>({ min: 1 });
   const [peRatioRange, setPeRatioRange] = useState<{ min?: number; max?: number }>({});
+  const [kdjJRange, setKdjJRange] = useState<{ min?: number; max?: number }>({});
   const [filterVisible, setFilterVisible] = useState(true);
 
   // 涨停/跌停筛选状态
   const [recentLimitUpCount, setRecentLimitUpCount] = useState<number | undefined>();
   const [recentLimitDownCount, setRecentLimitDownCount] = useState<number | undefined>();
-  const [limitUpPeriod, setLimitUpPeriod] = useState<number>(10);
-  const [limitDownPeriod, setLimitDownPeriod] = useState<number>(10);
+  const [limitUpPeriod, setLimitUpPeriod] = useState<number>(20);
+  const [limitDownPeriod, setLimitDownPeriod] = useState<number>(20);
 
   // 横盘筛选状态
   const [consolidationMethods, setConsolidationMethods] = useState<string[]>([]);
@@ -179,13 +176,9 @@ export function OpportunityPage() {
       // 市场类型过滤
       let marketMatch = false;
       switch (selectedMarket) {
-        case 'sh_main':
-          // 沪市主板：60开头
-          marketMatch = pureCode.startsWith('60');
-          break;
-        case 'sz_main':
-          // 深市主板：00开头
-          marketMatch = pureCode.startsWith('00');
+        case 'hs_main':
+          // 沪深主板：60开头或00开头
+          marketMatch = pureCode.startsWith('60') || pureCode.startsWith('00');
           break;
         case 'sz_gem':
           // 创业板：30开头
@@ -382,20 +375,16 @@ export function OpportunityPage() {
     }
 
     return analysisDataWithRecalculatedVolumeSurge.filter((item) => {
+      // 价格范围筛选
+      if (priceRange.min !== undefined && item.price < priceRange.min) return false;
+      if (priceRange.max !== undefined && item.price > priceRange.max) return false;
+
       // 总市值筛选
       if (marketCapRange.min !== undefined && item.marketCap !== null && item.marketCap !== undefined) {
         if (item.marketCap < marketCapRange.min) return false;
       }
       if (marketCapRange.max !== undefined && item.marketCap !== null && item.marketCap !== undefined) {
         if (item.marketCap > marketCapRange.max) return false;
-      }
-
-      // 流通市值筛选
-      if (circulatingMarketCapRange.min !== undefined && item.circulatingMarketCap !== null && item.circulatingMarketCap !== undefined) {
-        if (item.circulatingMarketCap < circulatingMarketCapRange.min) return false;
-      }
-      if (circulatingMarketCapRange.max !== undefined && item.circulatingMarketCap !== null && item.circulatingMarketCap !== undefined) {
-        if (item.circulatingMarketCap > circulatingMarketCapRange.max) return false;
       }
 
       // 换手率筛选
@@ -412,6 +401,12 @@ export function OpportunityPage() {
       }
       if (peRatioRange.max !== undefined && item.peRatio !== null && item.peRatio !== undefined) {
         if (item.peRatio > peRatioRange.max) return false;
+      }
+
+      // KDJ-J筛选：未计算出值时按需求保留
+      if (item.kdjJ !== null && item.kdjJ !== undefined) {
+        if (kdjJRange.min !== undefined && item.kdjJ < kdjJRange.min) return false;
+        if (kdjJRange.max !== undefined && item.kdjJ > kdjJRange.max) return false;
       }
 
       // 横盘筛选（使用重新计算的结果）
@@ -635,10 +630,11 @@ export function OpportunityPage() {
     });
   }, [
     analysisDataWithRecalculatedConsolidation,
+    priceRange,
     marketCapRange,
-    circulatingMarketCapRange,
     turnoverRateRange,
     peRatioRange,
+    kdjJRange,
     consolidationMethods,
     consolidationFilterMode,
     requireVolumeShrinking,
@@ -660,10 +656,11 @@ export function OpportunityPage() {
 
   // 重置所有筛选条件
   const handleResetFilters = () => {
-    setMarketCapRange({});
-    setCirculatingMarketCapRange({});
-    setTurnoverRateRange({});
+    setPriceRange({ min: 3, max: 30 });
+    setMarketCapRange({ min: 30, max: 500 });
+    setTurnoverRateRange({ min: 1 });
     setPeRatioRange({});
+    setKdjJRange({});
     setStrengthRange({});
     setRecentLimitUpCount(1);
     setRecentLimitDownCount(1);
@@ -678,65 +675,7 @@ export function OpportunityPage() {
       return;
     }
 
-    // 如果设置了价格范围，需要先获取行情进行筛选
-    const hasPriceFilter = priceRange.min !== undefined || priceRange.max !== undefined;
-
-    if (hasPriceFilter) {
-      setFilteringQuotes(true);
-      try {
-        // Step 1: 分批获取行情（每批最多100个）
-        const QUOTES_BATCH_SIZE = 100;
-        const batches: StockInfo[][] = [];
-        for (let i = 0; i < filteredStocks.length; i += QUOTES_BATCH_SIZE) {
-          batches.push(filteredStocks.slice(i, i + QUOTES_BATCH_SIZE));
-        }
-
-        const allQuotes: Array<{ stock: StockInfo; price: number }> = [];
-
-        for (const batch of batches) {
-          const codes = batch.map((s) => s.code);
-          const quotes = await getStockQuotes(codes);
-
-          quotes.forEach((quote) => {
-            const stock = batch.find((s) => s.code === quote.code);
-            if (stock) {
-              allQuotes.push({ stock, price: quote.price });
-            }
-          });
-        }
-
-        // Step 2: 根据价格范围筛选
-        const finalStocks = allQuotes
-          .filter((item) => {
-            const price = item.price;
-            if (priceRange.min !== undefined && price < priceRange.min) {
-              return false;
-            }
-            if (priceRange.max !== undefined && price > priceRange.max) {
-              return false;
-            }
-            return true;
-          })
-          .map((item) => item.stock);
-
-        if (finalStocks.length === 0) {
-          message.warning('没有股票满足价格范围条件');
-          setFilteringQuotes(false);
-          return;
-        }
-
-        // Step 3: 对筛选后的股票进行分析
-        await startAnalysis(currentPeriod, finalStocks, currentCount);
-      } catch (error) {
-        console.error('获取行情失败:', error);
-        message.error('获取行情数据失败，请重试');
-      } finally {
-        setFilteringQuotes(false);
-      }
-    } else {
-      // 没有设置价格范围，直接使用所有股票进行分析
-      await startAnalysis(currentPeriod, filteredStocks, currentCount);
-    }
+    await startAnalysis(currentPeriod, filteredStocks, currentCount);
   };
 
   const handleCancel = () => {
@@ -788,6 +727,21 @@ export function OpportunityPage() {
               />
             </Space.Compact>
             <Space.Compact className={styles.spaceCompact}>
+              <span className={styles.label}>名称类型：</span>
+              <Select
+                value={nameType}
+                onChange={(value: string) => {
+                  setNameType(value);
+                  if (analysisData.length > 0) {
+                    message.info('名称类型已更改，请重新分析');
+                  }
+                }}
+                options={NAME_TYPE_OPTIONS}
+                style={{ width: 120 }}
+                disabled={loading}
+              />
+            </Space.Compact>
+            <Space.Compact className={styles.spaceCompact}>
               <span className={styles.label}>周期：</span>
               <Select
                 value={currentPeriod}
@@ -811,7 +765,7 @@ export function OpportunityPage() {
                 step={10}
                 style={{ width: 120 }}
                 placeholder="count"
-                disabled={loading || filteringQuotes}
+                disabled={loading}
                 onChange={(v) => {
                   const next = typeof v === 'number' && isFinite(v) ? Math.floor(v) : 500;
                   useOpportunityStore.setState({ currentCount: next });
@@ -821,82 +775,12 @@ export function OpportunityPage() {
                 }}
               />
             </Space>
-            <Space.Compact className={styles.spaceCompact}>
-              <span className={styles.label}>名称类型：</span>
-              <Select
-                value={nameType}
-                onChange={(value: string) => {
-                  setNameType(value);
-                  if (analysisData.length > 0) {
-                    message.info('名称类型已更改，请重新分析');
-                  }
-                }}
-                options={NAME_TYPE_OPTIONS}
-                style={{ width: 120 }}
-                disabled={loading || filteringQuotes}
-              />
-            </Space.Compact>
-            <Space.Compact className={styles.spaceCompact}>
-              <span className={styles.label}>价格范围：</span>
-              <InputNumber
-                value={priceRange.min}
-                min={0}
-                step={0.01}
-                precision={2}
-                style={{ width: 100 }}
-                placeholder="最低价"
-                disabled={loading || filteringQuotes}
-                onChange={(v) => {
-                  setPriceRange((prev) => ({
-                    ...prev,
-                    min: typeof v === 'number' && isFinite(v) ? v : undefined,
-                  }));
-                  if (analysisData.length > 0) {
-                    message.info('价格范围已更改，请重新分析');
-                  }
-                }}
-              />
-              <span style={{ margin: '0 4px' }}>~</span>
-              <InputNumber
-                value={priceRange.max}
-                min={0}
-                step={0.01}
-                precision={2}
-                style={{ width: 100 }}
-                placeholder="最高价"
-                disabled={loading || filteringQuotes}
-                onChange={(v) => {
-                  setPriceRange((prev) => ({
-                    ...prev,
-                    max: typeof v === 'number' && isFinite(v) ? v : undefined,
-                  }));
-                  if (analysisData.length > 0) {
-                    message.info('价格范围已更改，请重新分析');
-                  }
-                }}
-              />
-              {(priceRange.min !== undefined || priceRange.max !== undefined) && (
-                <Button
-                  size="small"
-                  style={{ marginLeft: 8 }}
-                  onClick={() => {
-                    setPriceRange({});
-                    if (analysisData.length > 0) {
-                      message.info('价格范围已清除，请重新分析');
-                    }
-                  }}
-                  disabled={loading || filteringQuotes}
-                >
-                  不限
-                </Button>
-              )}
-            </Space.Compact>
             <Button
               type="primary"
               icon={<PlayCircleOutlined />}
               onClick={handleAnalyze}
-              loading={loading || filteringQuotes}
-              disabled={loading || filteringQuotes || filteredStocks.length === 0}
+              loading={loading}
+              disabled={loading || filteredStocks.length === 0}
             >
               一键分析
             </Button>
@@ -990,6 +874,38 @@ export function OpportunityPage() {
                   <div className={styles.filterContent}>
                     <div className={styles.filterRow}>
                       <div className={styles.filterItem}>
+                        <span className={styles.filterLabel}>价格范围：</span>
+                        <InputNumber
+                          value={priceRange.min}
+                          min={0}
+                          step={0.01}
+                          precision={2}
+                          style={{ width: 100 }}
+                          placeholder="最低价"
+                          onChange={(v) => {
+                            setPriceRange((prev) => ({
+                              ...prev,
+                              min: typeof v === 'number' && isFinite(v) ? v : undefined,
+                            }));
+                          }}
+                        />
+                        <span style={{ margin: '0 4px' }}>~</span>
+                        <InputNumber
+                          value={priceRange.max}
+                          min={0}
+                          step={0.01}
+                          precision={2}
+                          style={{ width: 100 }}
+                          placeholder="最高价"
+                          onChange={(v) => {
+                            setPriceRange((prev) => ({
+                              ...prev,
+                              max: typeof v === 'number' && isFinite(v) ? v : undefined,
+                            }));
+                          }}
+                        />
+                      </div>
+                      <div className={styles.filterItem}>
                         <span className={styles.filterLabel}>总市值(亿)：</span>
                         <InputNumber
                           value={marketCapRange.min}
@@ -1015,38 +931,6 @@ export function OpportunityPage() {
                           placeholder="最大值"
                           onChange={(v) => {
                             setMarketCapRange((prev) => ({
-                              ...prev,
-                              max: typeof v === 'number' && isFinite(v) ? v : undefined,
-                            }));
-                          }}
-                        />
-                      </div>
-                      <div className={styles.filterItem}>
-                        <span className={styles.filterLabel}>流通市值(亿)：</span>
-                        <InputNumber
-                          value={circulatingMarketCapRange.min}
-                          min={0}
-                          step={0.01}
-                          precision={2}
-                          style={{ width: 100 }}
-                          placeholder="最小值"
-                          onChange={(v) => {
-                            setCirculatingMarketCapRange((prev) => ({
-                              ...prev,
-                              min: typeof v === 'number' && isFinite(v) ? v : undefined,
-                            }));
-                          }}
-                        />
-                        <span style={{ margin: '0 4px' }}>~</span>
-                        <InputNumber
-                          value={circulatingMarketCapRange.max}
-                          min={0}
-                          step={0.01}
-                          precision={2}
-                          style={{ width: 100 }}
-                          placeholder="最大值"
-                          onChange={(v) => {
-                            setCirculatingMarketCapRange((prev) => ({
                               ...prev,
                               max: typeof v === 'number' && isFinite(v) ? v : undefined,
                             }));
@@ -1113,6 +997,36 @@ export function OpportunityPage() {
                           placeholder="最大值"
                           onChange={(v) => {
                             setPeRatioRange((prev) => ({
+                              ...prev,
+                              max: typeof v === 'number' && isFinite(v) ? v : undefined,
+                            }));
+                          }}
+                        />
+                      </div>
+                      <div className={styles.filterItem}>
+                        <span className={styles.filterLabel}>KDJ-J：</span>
+                        <InputNumber
+                          value={kdjJRange.min}
+                          step={0.01}
+                          precision={2}
+                          style={{ width: 100 }}
+                          placeholder="最小值"
+                          onChange={(v) => {
+                            setKdjJRange((prev) => ({
+                              ...prev,
+                              min: typeof v === 'number' && isFinite(v) ? v : undefined,
+                            }));
+                          }}
+                        />
+                        <span style={{ margin: '0 4px' }}>~</span>
+                        <InputNumber
+                          value={kdjJRange.max}
+                          step={0.01}
+                          precision={2}
+                          style={{ width: 100 }}
+                          placeholder="最大值"
+                          onChange={(v) => {
+                            setKdjJRange((prev) => ({
                               ...prev,
                               max: typeof v === 'number' && isFinite(v) ? v : undefined,
                             }));
