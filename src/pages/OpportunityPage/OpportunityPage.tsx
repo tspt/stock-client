@@ -14,11 +14,16 @@ import {
   ClearOutlined,
 } from '@ant-design/icons';
 import { useOpportunityStore } from '@/stores/opportunityStore';
-import { calculateConsolidation, analyzeAfterSurgeDrop, analyzeAfterSurgeRise } from '@/utils/consolidationAnalysis';
+import {
+  analyzeAfterSurgeDrop,
+  analyzeAfterSurgeRise,
+  calculateConsolidation,
+  CONSOLIDATION_TYPE_LABELS,
+} from '@/utils/consolidationAnalysis';
 import { OpportunityTable } from '@/components/OpportunityTable/OpportunityTable';
 import { ColumnSettings } from '@/components/ColumnSettings/ColumnSettings';
 import { exportOpportunityToExcel } from '@/utils/opportunityExportUtils';
-import type { KLinePeriod, StockInfo, KLineData } from '@/types/stock';
+import type { ConsolidationType, KLinePeriod, StockInfo, KLineData } from '@/types/stock';
 import { useAllStocks } from '@/hooks/useAllStocks';
 import { getPureCode } from '@/utils/format';
 import styles from './OpportunityPage.module.css';
@@ -43,6 +48,14 @@ const NAME_TYPE_OPTIONS: { label: string; value: string }[] = [
   { label: 'ST', value: 'st' },
   { label: '非ST', value: 'non_st' },
 ];
+
+const CONSOLIDATION_TYPE_OPTIONS: { label: string; value: ConsolidationType }[] = [
+  { label: CONSOLIDATION_TYPE_LABELS.low_stable, value: 'low_stable' },
+  { label: CONSOLIDATION_TYPE_LABELS.high_stable, value: 'high_stable' },
+  { label: CONSOLIDATION_TYPE_LABELS.box, value: 'box' },
+];
+
+const DEFAULT_CONSOLIDATION_TYPES: ConsolidationType[] = CONSOLIDATION_TYPE_OPTIONS.map((item) => item.value);
 
 export function OpportunityPage() {
   const {
@@ -83,18 +96,10 @@ export function OpportunityPage() {
   const [limitDownPeriod, setLimitDownPeriod] = useState<number>(20);
 
   // 横盘筛选状态
-  const [consolidationMethods, setConsolidationMethods] = useState<string[]>([]);
-  const [consolidationFilterMode, setConsolidationFilterMode] = useState<'and' | 'or'>('and');
-  const [consolidationPeriod, setConsolidationPeriod] = useState<number>(10);
-  const [priceVolatilityThreshold, setPriceVolatilityThreshold] = useState<number>(5);
-  const [maSpreadThreshold, setMaSpreadThreshold] = useState<number>(3);
-  const [volumeShrinkingThreshold, setVolumeShrinkingThreshold] = useState<number>(80);
-  const [requireVolumeShrinking, setRequireVolumeShrinking] = useState<boolean>(false);
-  const [strengthRange, setStrengthRange] = useState<{ min?: number; max?: number }>({});
+  const [consolidationTypes, setConsolidationTypes] = useState<ConsolidationType[]>(DEFAULT_CONSOLIDATION_TYPES);
+  const [consolidationPeriod, setConsolidationPeriod] = useState<number>(3);
+  const [consolidationThreshold, setConsolidationThreshold] = useState<number>(2);
   const [consolidationFilterVisible, setConsolidationFilterVisible] = useState(true);
-
-  // 横盘分析参数（用于重新计算横盘结果，不用于筛选）
-  const trendPeriod = 30; // 固定值，用于分析横盘前趋势
 
   // 放量急跌/拉升筛选显示状态
   const [volumeSurgeFilterVisible, setVolumeSurgeFilterVisible] = useState<boolean>(true);
@@ -254,11 +259,6 @@ export function OpportunityPage() {
       return analysisData;
     }
 
-    // 如果用户没有选择任何横盘筛选方法，直接返回原数据
-    if (consolidationMethods.length === 0) {
-      return analysisData;
-    }
-
     return analysisData.map((item) => {
       // 如果没有K线数据缓存，使用原始数据
       const klineData = klineDataCache.get(item.code);
@@ -270,11 +270,7 @@ export function OpportunityPage() {
       try {
         const recalculatedConsolidation = calculateConsolidation(klineData, {
           period: consolidationPeriod,
-          priceVolatilityThreshold: priceVolatilityThreshold,
-          maSpreadThreshold: maSpreadThreshold,
-          volumeShrinkingThreshold: volumeShrinkingThreshold,
-          currentPrice: item.price,
-          trendPeriod: trendPeriod,
+          threshold: consolidationThreshold,
         });
 
         return {
@@ -289,12 +285,8 @@ export function OpportunityPage() {
   }, [
     analysisData,
     klineDataCache,
-    consolidationMethods,
     consolidationPeriod,
-    priceVolatilityThreshold,
-    maSpreadThreshold,
-    volumeShrinkingThreshold,
-    trendPeriod,
+    consolidationThreshold,
   ]);
 
   // 根据用户设置的周期重新计算急跌/急涨后的横盘结果
@@ -324,9 +316,7 @@ export function OpportunityPage() {
         try {
           const newAnalysis = analyzeAfterSurgeDrop(klineData, period, {
             period: volumeSurgePeriod,
-            priceVolatilityThreshold: 5,
-            maSpreadThreshold: 3,
-            volumeShrinkingThreshold: 80,
+            threshold: consolidationThreshold,
           });
           return { period, analysis: newAnalysis };
         } catch (error) {
@@ -340,9 +330,7 @@ export function OpportunityPage() {
         try {
           const newAnalysis = analyzeAfterSurgeRise(klineData, period, {
             period: volumeSurgePeriod,
-            priceVolatilityThreshold: 5,
-            maSpreadThreshold: 3,
-            volumeShrinkingThreshold: 80,
+            threshold: consolidationThreshold,
           });
           return { period, analysis: newAnalysis };
         } catch (error) {
@@ -366,6 +354,7 @@ export function OpportunityPage() {
     volumeSurgeDropEnabled,
     volumeSurgeRiseEnabled,
     volumeSurgePeriod,
+    consolidationThreshold,
   ]);
 
   // 对分析数据进行二次筛选
@@ -410,57 +399,18 @@ export function OpportunityPage() {
       }
 
       // 横盘筛选（使用重新计算的结果）
-      if (consolidationMethods.length > 0) {
-        if (!item.consolidation) {
-          // 如果没有横盘数据，跳过
+      if (consolidationTypes.length > 0) {
+        if (!item.consolidation || !item.consolidation.isConsolidation) {
           return false;
         }
 
-        const { priceVolatility, maConvergence, combined, volumeAnalysis } = item.consolidation;
+        const hasMatchedType = item.consolidation.matchedTypes.some((type) =>
+          consolidationTypes.includes(type)
+        );
 
-        // 判断是否满足横盘条件
-        let isConsolidation = false;
-        if (consolidationMethods.length === 1) {
-          // 只选一种方法
-          if (consolidationMethods.includes('priceVolatility')) {
-            isConsolidation = priceVolatility.isConsolidation;
-          } else if (consolidationMethods.includes('maConvergence')) {
-            isConsolidation = maConvergence.isConsolidation;
-          }
-        } else {
-          // 两种方法都选
-          if (consolidationFilterMode === 'and') {
-            // 都满足
-            isConsolidation = priceVolatility.isConsolidation && maConvergence.isConsolidation;
-          } else {
-            // 任一满足
-            isConsolidation = priceVolatility.isConsolidation || maConvergence.isConsolidation;
-          }
+        if (!hasMatchedType) {
+          return false;
         }
-
-        // 如果必须缩量，则横盘判断必须同时满足缩量条件
-        if (requireVolumeShrinking && !volumeAnalysis.isVolumeShrinking) {
-          isConsolidation = false;
-        }
-
-        if (!isConsolidation) return false;
-
-        // 强度范围筛选：根据选中的方法动态选择强度
-        let strength: number;
-        if (consolidationMethods.length === 1) {
-          // 只选一种方法，使用该方法的强度
-          if (consolidationMethods.includes('priceVolatility')) {
-            strength = priceVolatility.strength;
-          } else {
-            strength = maConvergence.strength;
-          }
-        } else {
-          // 两种方法都选，使用综合强度（平均值）
-          strength = combined.strength;
-        }
-
-        if (strengthRange.min !== undefined && strength < strengthRange.min) return false;
-        if (strengthRange.max !== undefined && strength > strengthRange.max) return false;
       }
 
       // 涨停/跌停筛选
@@ -635,10 +585,7 @@ export function OpportunityPage() {
     turnoverRateRange,
     peRatioRange,
     kdjJRange,
-    consolidationMethods,
-    consolidationFilterMode,
-    requireVolumeShrinking,
-    strengthRange,
+    consolidationTypes,
     recentLimitUpCount,
     recentLimitDownCount,
     limitUpPeriod,
@@ -661,7 +608,9 @@ export function OpportunityPage() {
     setTurnoverRateRange({ min: 1 });
     setPeRatioRange({});
     setKdjJRange({});
-    setStrengthRange({});
+    setConsolidationTypes(DEFAULT_CONSOLIDATION_TYPES);
+    setConsolidationPeriod(3);
+    setConsolidationThreshold(2);
     setRecentLimitUpCount(1);
     setRecentLimitDownCount(1);
     setLimitUpPeriod(10);
@@ -1114,140 +1063,58 @@ export function OpportunityPage() {
                   <div className={styles.filterContent}>
                     <div className={styles.filterRow}>
                       <div className={styles.filterItem}>
-                        <span className={styles.filterLabel}>判断方法：</span>
+                        <span className={styles.filterLabel}>横盘类型：</span>
                         <Checkbox.Group
-                          value={consolidationMethods}
+                          value={consolidationTypes}
                           onChange={(values) => {
-                            const checkedValues = values as string[];
-                            setConsolidationMethods(checkedValues);
-                            // 如果两种方法都选，显示筛选模式；否则隐藏
+                            setConsolidationTypes(values as ConsolidationType[]);
                           }}
                         >
-                          <Checkbox value="priceVolatility">价格波动率法</Checkbox>
-                          <Checkbox value="maConvergence">MA收敛法</Checkbox>
+                          {CONSOLIDATION_TYPE_OPTIONS.map((item) => (
+                            <Checkbox key={item.value} value={item.value}>
+                              {item.label}
+                            </Checkbox>
+                          ))}
                         </Checkbox.Group>
                       </div>
-                      {consolidationMethods.length === 2 && (
-                        <div className={styles.filterItem}>
-                          <span className={styles.filterLabel}>筛选模式：</span>
-                          <Select
-                            value={consolidationFilterMode}
-                            onChange={(value) => setConsolidationFilterMode(value)}
-                            style={{ width: 120 }}
-                            options={[
-                              { label: '都满足（AND）', value: 'and' },
-                              { label: '任一满足（OR）', value: 'or' },
-                            ]}
-                          />
-                        </div>
-                      )}
                     </div>
                     <div className={styles.filterRow}>
                       <div className={styles.filterItem}>
-                        <span className={styles.filterLabel}>周期数：</span>
+                        <span className={styles.filterLabel}>连续天数：</span>
                         <InputNumber
                           value={consolidationPeriod}
-                          min={5}
+                          min={3}
                           max={100}
                           step={1}
                           style={{ width: 100 }}
                           onChange={(v) => {
-                            const next = typeof v === 'number' && isFinite(v) ? Math.floor(v) : 10;
+                            const next = typeof v === 'number' && isFinite(v) ? Math.floor(v) : 3;
                             setConsolidationPeriod(next);
                           }}
                         />
                       </div>
-                      {consolidationMethods.includes('priceVolatility') && (
-                        <div className={styles.filterItem}>
-                          <span className={styles.filterLabel}>价格波动阈值(%)：</span>
-                          <InputNumber
-                            value={priceVolatilityThreshold}
-                            min={0}
-                            max={50}
-                            step={0.1}
-                            precision={1}
-                            style={{ width: 100 }}
-                            onChange={(v) => {
-                              const next = typeof v === 'number' && isFinite(v) ? v : 5;
-                              setPriceVolatilityThreshold(next);
-                            }}
-                          />
-                        </div>
-                      )}
-                      {consolidationMethods.includes('maConvergence') && (
-                        <div className={styles.filterItem}>
-                          <span className={styles.filterLabel}>MA离散度阈值(%)：</span>
-                          <InputNumber
-                            value={maSpreadThreshold}
-                            min={0}
-                            max={50}
-                            step={0.1}
-                            precision={1}
-                            style={{ width: 100 }}
-                            onChange={(v) => {
-                              const next = typeof v === 'number' && isFinite(v) ? v : 3;
-                              setMaSpreadThreshold(next);
-                            }}
-                          />
-                        </div>
-                      )}
-                    </div>
-                    <div className={styles.filterRow}>
                       <div className={styles.filterItem}>
-                        <span className={styles.filterLabel}>缩量阈值(%)：</span>
+                        <span className={styles.filterLabel}>波动阈值(%)：</span>
                         <InputNumber
-                          value={volumeShrinkingThreshold}
+                          value={consolidationThreshold}
                           min={0}
-                          max={200}
-                          step={1}
+                          max={20}
+                          step={0.1}
+                          precision={1}
                           style={{ width: 100 }}
                           onChange={(v) => {
-                            const next = typeof v === 'number' && isFinite(v) ? v : 80;
-                            setVolumeShrinkingThreshold(next);
+                            const next = typeof v === 'number' && isFinite(v) ? v : 2;
+                            setConsolidationThreshold(next);
                           }}
                         />
-                      </div>
-                      <div className={styles.filterItem}>
-                        <Checkbox
-                          checked={requireVolumeShrinking}
-                          onChange={(e) => setRequireVolumeShrinking(e.target.checked)}
-                        >
-                          必须缩量（作为必要条件）
-                        </Checkbox>
                       </div>
                     </div>
                     <div className={styles.filterRow}>
                       <div className={styles.filterItem}>
-                        <span className={styles.filterLabel}>横盘强度范围：</span>
-                        <InputNumber
-                          value={strengthRange.min}
-                          min={0}
-                          max={100}
-                          step={1}
-                          style={{ width: 100 }}
-                          placeholder="最小值"
-                          onChange={(v) => {
-                            setStrengthRange((prev) => ({
-                              ...prev,
-                              min: typeof v === 'number' && isFinite(v) ? v : undefined,
-                            }));
-                          }}
-                        />
-                        <span style={{ margin: '0 4px' }}>~</span>
-                        <InputNumber
-                          value={strengthRange.max}
-                          min={0}
-                          max={100}
-                          step={1}
-                          style={{ width: 100 }}
-                          placeholder="最大值"
-                          onChange={(v) => {
-                            setStrengthRange((prev) => ({
-                              ...prev,
-                              max: typeof v === 'number' && isFinite(v) ? v : undefined,
-                            }));
-                          }}
-                        />
+                        <span className={styles.filterLabel}>命中说明：</span>
+                        <span>
+                          列表将显示全部命中类型，并按当前参数生成命中原因。
+                        </span>
                       </div>
                     </div>
                   </div>

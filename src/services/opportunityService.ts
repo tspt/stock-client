@@ -61,16 +61,12 @@ async function analyzeOneStock(
   const { avgPrice, highPrice, lowPrice } = priceStats;
   const formattedKDJ = formatKDJValues(kdj);
 
-  // 横盘分析（使用默认参数：周期10，价格波动阈值5%，MA离散度阈值3%，缩量阈值80%，趋势分析周期30天）
+  // 横盘分析（默认按3天、2%阈值识别三种横盘结构）
   let consolidation;
   try {
     consolidation = calculateConsolidation(klineData, {
-      period: 10,
-      priceVolatilityThreshold: 5,
-      maSpreadThreshold: 3,
-      volumeShrinkingThreshold: 80,
-      currentPrice: quote.price,
-      trendPeriod: 30,
+      period: 3,
+      threshold: 2,
     });
   } catch (error) {
     console.warn(`[${code}] 横盘分析失败:`, error);
@@ -84,10 +80,8 @@ async function analyzeOneStock(
       dropPercentRange: { min: 5, max: 10 },
       risePercentRange: { min: 5, max: 10 },
       consolidationOptions: {
-        period: 10,
-        priceVolatilityThreshold: 5,
-        maSpreadThreshold: 3,
-        volumeShrinkingThreshold: 80,
+        period: 3,
+        threshold: 2,
       },
     });
   } catch (error) {
@@ -215,7 +209,7 @@ export function analyzeAllStocksOpportunity(
     const { results: quotesResults, errors: quotesErrors } = await quotesManager.start();
 
     if (cancelledRef.cancelled) {
-      return { results, errors };
+      return { results, errors, klineDataMap };
     }
 
     // 将行情结果按批次索引排序并创建映射

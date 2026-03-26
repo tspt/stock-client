@@ -385,72 +385,56 @@ export interface StockOpportunityData {
 }
 
 /**
+ * 横盘结构类型
+ */
+export type ConsolidationType = 'low_stable' | 'high_stable' | 'box';
+
+/**
+ * 单个横盘结构命中结果
+ */
+export interface ConsolidationMatch {
+  /** 命中的结构类型 */
+  type: ConsolidationType;
+  /** 结构名称 */
+  label: string;
+  /** 命中说明 */
+  reason: string;
+  /** 结构强度，便于排序和复用 */
+  strength: number;
+}
+
+/**
  * 横盘分析结果
  */
 export interface ConsolidationAnalysis {
-  /** 价格波动率法分析结果 */
-  priceVolatility: {
-    /** 是否横盘 */
-    isConsolidation: boolean;
-    /** 波动率（百分比，如 3.25） */
-    volatility: number;
-    /** 横盘强度 0-100（波动率越小，强度越高） */
-    strength: number;
-  };
-  /** MA收敛法分析结果 */
-  maConvergence: {
-    /** 是否横盘 */
-    isConsolidation: boolean;
-    /** MA离散度（百分比，如 2.15） */
-    maSpread: number;
-    /** 横盘强度 0-100（离散度越小，强度越高） */
-    strength: number;
-  };
-  /** 综合判断结果 */
-  combined: {
-    /** 是否横盘 */
-    isConsolidation: boolean;
-    /** 综合强度 0-100 */
-    strength: number;
-  };
-  /** 成交量分析结果 */
-  volumeAnalysis: {
-    /** 平均成交量比率（相对于更长期均量，如 75.5 表示75.5%） */
-    avgVolumeRatio: number;
-    /** 是否缩量 */
-    isVolumeShrinking: boolean;
-  };
-  /** 价格位置分析结果 */
-  pricePosition?: {
-    /** 相对高点位置（从最高点下跌的幅度，百分比，如 10.5 表示下跌10.5%） */
-    relativeToHigh: number;
-    /** 相对低点位置（从最低点上涨的幅度，百分比，如 5.2 表示上涨5.2%） */
-    relativeToLow: number;
-    /** 当前价在近期价格区间的位置（0-100，0=最低，100=最高） */
-    positionInRange: number;
-    /** 近期最高价 */
-    recentHigh: number;
-    /** 近期最低价 */
-    recentLow: number;
-  };
-  /** 横盘前趋势分析结果 */
-  trendBefore?: {
-    /** 横盘前趋势方向：'up' | 'down' | 'sideways' | 'volatile' */
-    direction: 'up' | 'down' | 'sideways' | 'volatile';
-    /** 横盘前涨跌幅（百分比） */
-    changePercent: number;
-    /** 横盘前天数 */
-    daysBefore: number;
-    /** 是否有深跌（跌幅较大） */
-    hasDeepDrop: boolean;
-    /** 是否有反弹 */
-    hasRebound: boolean;
-    /** 是否反复震荡 */
-    isVolatile: boolean;
-    /** 震荡类型：'up_down' | 'down_up' | 'sideways_up' | 'sideways_down' | 'multiple' */
-    volatileType?: 'up_down' | 'down_up' | 'sideways_up' | 'sideways_down' | 'multiple';
-    /** 是否有上涨→下跌模式（用于情况1） */
-    hasUpThenDown?: boolean;
+  /** 分析窗口天数 */
+  period: number;
+  /** 波动阈值（百分比） */
+  threshold: number;
+  /** 是否命中任一横盘结构 */
+  isConsolidation: boolean;
+  /** 命中的结构类型 */
+  matchedTypes: ConsolidationType[];
+  /** 命中的结构名称 */
+  matchedTypeLabels: string[];
+  /** 命中详情 */
+  matches: ConsolidationMatch[];
+  /** 列表展示用说明 */
+  reasonText: string;
+  /** 综合强度，取命中结构中的最高值 */
+  strength: number;
+  /** 最近N天的关键波动指标 */
+  metrics: {
+    /** 最近N天最低价离散度 */
+    lowRangePercent: number;
+    /** 最近N天最高价离散度 */
+    highRangePercent: number;
+    /** 最近N天收盘价是否存在差异 */
+    closeChanged: boolean;
+    /** 最近N天最高价是否存在差异 */
+    highChanged: boolean;
+    /** 最近N天最低价是否存在差异 */
+    lowChanged: boolean;
   };
 }
 

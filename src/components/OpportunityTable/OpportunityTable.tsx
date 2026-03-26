@@ -36,7 +36,59 @@ export function OpportunityTable({ data, columns, sortConfig, onSortChange, tabl
     pageSizeOptions: ['20', '50', '100', '200'],
   });
 
+  const getSortValue = (record: StockOpportunityData, key: string): string | number | null | undefined => {
+    switch (key) {
+      case 'consolidationStatus':
+        return record.consolidation?.isConsolidation ? 1 : 0;
+      case 'consolidationTypes':
+        return record.consolidation?.matchedTypeLabels.join('、') ?? '';
+      case 'consolidationReason':
+        return record.consolidation?.reasonText ?? '';
+      default:
+        return (record as any)[key];
+    }
+  };
+
+  const compareSortValue = (
+    aVal: string | number | null | undefined,
+    bVal: string | number | null | undefined
+  ): number => {
+    if (aVal === null || aVal === undefined || aVal === '') return 1;
+    if (bVal === null || bVal === undefined || bVal === '') return -1;
+    if (typeof aVal === 'number' && typeof bVal === 'number') return aVal - bVal;
+    return String(aVal).localeCompare(String(bVal));
+  };
+
   const formatValue = (value: any, key: string, record?: StockOpportunityData): string | number | React.ReactNode => {
+    if (key === 'consolidationStatus') {
+      if (!record?.consolidation) return '-';
+      const isConsolidation = record.consolidation.isConsolidation;
+      return (
+        <span className={isConsolidation ? styles.consolidationYes : styles.consolidationNo}>
+          {isConsolidation ? '是' : '否'}
+        </span>
+      );
+    }
+
+    if (key === 'consolidationTypes') {
+      if (!record?.consolidation || record.consolidation.matchedTypeLabels.length === 0) {
+        return '-';
+      }
+      return (
+        <div className={styles.consolidationTypes}>
+          {record.consolidation.matchedTypeLabels.map((label) => (
+            <span key={label} className={styles.consolidationTag}>
+              {label}
+            </span>
+          ))}
+        </div>
+      );
+    }
+
+    if (key === 'consolidationReason') {
+      return record?.consolidation?.reasonText || '-';
+    }
+
     if (value === null || value === undefined || value === '') {
       return '-';
     }
@@ -79,43 +131,6 @@ export function OpportunityTable({ data, columns, sortConfig, onSortChange, tabl
       case 'ma240':
       case 'ma360':
         return value !== undefined && value !== null ? `${Number(value).toFixed(2)}%` : '-';
-      case 'consolidationStatus':
-        if (!record?.consolidation) return '-';
-        const isConsolidation = record.consolidation.combined.isConsolidation;
-        return (
-          <span className={isConsolidation ? styles.consolidationYes : styles.consolidationNo}>
-            {isConsolidation ? '是' : '否'}
-          </span>
-        );
-      case 'consolidationStrength':
-        if (!record?.consolidation) return '-';
-        const strength = record.consolidation.combined.strength;
-        return (
-          <div className={styles.strengthContainer}>
-            <span>{strength.toFixed(0)}</span>
-            <div className={styles.strengthBar}>
-              <div
-                className={styles.strengthBarFill}
-                style={{ width: `${strength}%` }}
-              />
-            </div>
-          </div>
-        );
-      case 'volatility':
-        if (!record?.consolidation) return '-';
-        return `${record.consolidation.priceVolatility.volatility.toFixed(2)}%`;
-      case 'maSpread':
-        if (!record?.consolidation) return '-';
-        return `${record.consolidation.maConvergence.maSpread.toFixed(2)}%`;
-      case 'volumeRatio':
-        if (!record?.consolidation) return '-';
-        const ratio = record.consolidation.volumeAnalysis.avgVolumeRatio;
-        const isShrinking = record.consolidation.volumeAnalysis.isVolumeShrinking;
-        return (
-          <span className={isShrinking ? styles.volumeShrinking : styles.volumeNormal}>
-            {ratio.toFixed(1)}%
-          </span>
-        );
       case 'volumeSurgeDropCount':
         if (!record?.volumeSurgePatterns) return '-';
         return record.volumeSurgePatterns.dropCount || 0;
@@ -175,45 +190,8 @@ export function OpportunityTable({ data, columns, sortConfig, onSortChange, tabl
       if (col.key === 'name') {
         column.fixed = 'left';
       } else {
-        // 横盘相关列的特殊排序逻辑
-        if (col.key === 'consolidationStatus' || col.key === 'consolidationStrength' ||
-          col.key === 'volatility' || col.key === 'maSpread' || col.key === 'volumeRatio') {
-          column.sorter = (a: any, b: any) => {
-            let aVal: any;
-            let bVal: any;
-
-            if (col.key === 'consolidationStatus') {
-              aVal = a.consolidation?.combined?.isConsolidation ? 1 : 0;
-              bVal = b.consolidation?.combined?.isConsolidation ? 1 : 0;
-            } else if (col.key === 'consolidationStrength') {
-              aVal = a.consolidation?.combined?.strength;
-              bVal = b.consolidation?.combined?.strength;
-            } else if (col.key === 'volatility') {
-              aVal = a.consolidation?.priceVolatility?.volatility;
-              bVal = b.consolidation?.priceVolatility?.volatility;
-            } else if (col.key === 'maSpread') {
-              aVal = a.consolidation?.maConvergence?.maSpread;
-              bVal = b.consolidation?.maConvergence?.maSpread;
-            } else if (col.key === 'volumeRatio') {
-              aVal = a.consolidation?.volumeAnalysis?.avgVolumeRatio;
-              bVal = b.consolidation?.volumeAnalysis?.avgVolumeRatio;
-            }
-
-            if (aVal === null || aVal === undefined) return 1;
-            if (bVal === null || bVal === undefined) return -1;
-            if (typeof aVal === 'number' && typeof bVal === 'number') return aVal - bVal;
-            return String(aVal).localeCompare(String(bVal));
-          };
-        } else {
-          column.sorter = (a: any, b: any) => {
-            const aVal = a[col.key];
-            const bVal = b[col.key];
-            if (aVal === null || aVal === undefined) return 1;
-            if (bVal === null || bVal === undefined) return -1;
-            if (typeof aVal === 'number' && typeof bVal === 'number') return aVal - bVal;
-            return String(aVal).localeCompare(String(bVal));
-          };
-        }
+        column.sorter = (a: StockOpportunityData, b: StockOpportunityData) =>
+          compareSortValue(getSortValue(a, col.key), getSortValue(b, col.key));
 
         column.sortOrder =
           sortConfig.key === col.key
@@ -254,18 +232,9 @@ export function OpportunityTable({ data, columns, sortConfig, onSortChange, tabl
     }
 
     const sorted = [...data].sort((a, b) => {
-      const aVal = (a as any)[sortConfig.key!];
-      const bVal = (b as any)[sortConfig.key!];
-
-      if (aVal === null || aVal === undefined) return 1;
-      if (bVal === null || bVal === undefined) return -1;
-
-      let comparison = 0;
-      if (typeof aVal === 'number' && typeof bVal === 'number') {
-        comparison = aVal - bVal;
-      } else {
-        comparison = String(aVal).localeCompare(String(bVal));
-      }
+      const aVal = getSortValue(a, sortConfig.key!);
+      const bVal = getSortValue(b, sortConfig.key!);
+      const comparison = compareSortValue(aVal, bVal);
 
       return sortConfig.direction === 'asc' ? comparison : -comparison;
     });

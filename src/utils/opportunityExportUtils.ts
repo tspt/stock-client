@@ -13,7 +13,19 @@ import {
   formatTurnoverRate,
 } from './format';
 
-function formatValue(value: any, key: string): string {
+function formatValue(value: any, key: string, record?: StockOpportunityData): string {
+  if (key === 'consolidationStatus') {
+    return record?.consolidation?.isConsolidation ? '是' : '否';
+  }
+
+  if (key === 'consolidationTypes') {
+    return record?.consolidation?.matchedTypeLabels.join('、') || '-';
+  }
+
+  if (key === 'consolidationReason') {
+    return record?.consolidation?.reasonText || '-';
+  }
+
   if (value === null || value === undefined || value === '') {
     return '-';
   }
@@ -73,7 +85,7 @@ export async function exportOpportunityToExcel(
       worksheetData.push(
         visibleColumns.map((col) => {
           const value = (item as any)[col.key];
-          return formatValue(value, col.key);
+          return formatValue(value, col.key, item);
         })
       );
     });
@@ -85,7 +97,7 @@ export async function exportOpportunityToExcel(
       const headerLength = col.title.length;
       const maxContentLength = Math.max(
         headerLength,
-        ...data.map((item) => String(formatValue((item as any)[col.key], col.key)).length)
+        ...data.map((item) => String(formatValue((item as any)[col.key], col.key, item)).length)
       );
       return { wch: Math.min(Math.max(maxContentLength + 2, 10), 30) };
     });

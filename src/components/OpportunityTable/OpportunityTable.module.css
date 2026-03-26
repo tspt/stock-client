@@ -60,32 +60,18 @@
   color: #8c8c8c;
 }
 
-.strengthContainer {
+.consolidationTypes {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+  flex-wrap: wrap;
 }
 
-.strengthBar {
-  flex: 1;
-  height: 8px;
-  background-color: #f0f0f0;
-  border-radius: 4px;
-  overflow: hidden;
+.consolidationTag {
+  padding: 2px 8px;
+  border-radius: 12px;
+  background: #e6f4ff;
+  color: #1677ff;
+  white-space: nowrap;
+  line-height: 20px;
 }
-
-.strengthBarFill {
-  height: 100%;
-  background-color: #1890ff;
-  transition: width 0.3s;
-}
-
-.volumeShrinking {
-  color: #ff4d4f;
-}
-
-.volumeNormal {
-  color: #8c8c8c;
-}
-
-
