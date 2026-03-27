@@ -26,6 +26,14 @@ function formatValue(value: any, key: string, record?: StockOpportunityData): st
     return record?.consolidation?.reasonText || '-';
   }
 
+  if (key === 'trendLineStatus') {
+    return record?.trendLine?.isHit ? '是' : '否';
+  }
+
+  if (key === 'trendLineReason') {
+    return record?.trendLine?.reasonText || '-';
+  }
+
   if (value === null || value === undefined || value === '') {
     return '-';
   }

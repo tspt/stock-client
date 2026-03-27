@@ -314,6 +314,20 @@ export interface OverviewAnalysisResult {
 }
 
 /**
+ * 沿趋势线筛选分析结果（检索窗内连续 N 根：收盘≥昨收且收盘≥当日 MA5）
+ */
+export interface TrendLineAnalysis {
+  /** 实际检索根数 M */
+  lookback: number;
+  /** 连续根数 N */
+  consecutive: number;
+  /** 是否命中 */
+  isHit: boolean;
+  /** 列表简要说明 */
+  reasonText: string;
+}
+
+/**
  * 机会分析 - 单只股票的分析数据
  */
 export interface StockOpportunityData {
@@ -376,6 +390,8 @@ export interface StockOpportunityData {
   ma360?: number;
   /** 横盘分析结果 */
   consolidation?: ConsolidationAnalysis;
+  /** 沿趋势线（收盘不跌 + 在 MA5 上）检索结果 */
+  trendLine?: TrendLineAnalysis;
   /** 放量急跌/拉升模式分析结果 */
   volumeSurgePatterns?: VolumeSurgePatternAnalysis;
   /** 分析时间戳 */
@@ -407,8 +423,10 @@ export interface ConsolidationMatch {
  * 横盘分析结果
  */
 export interface ConsolidationAnalysis {
-  /** 分析窗口天数 */
+  /** 连续满足横盘的 K 线根数（N） */
   period: number;
+  /** 从数据末尾向前检索的 K 线根数（M）；未使用滑动检索时与 period 相同或省略 */
+  lookback?: number;
   /** 波动阈值（百分比） */
   threshold: number;
   /** 是否命中任一横盘结构 */

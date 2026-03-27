@@ -44,6 +44,10 @@ export function OpportunityTable({ data, columns, sortConfig, onSortChange, tabl
         return record.consolidation?.matchedTypeLabels.join('、') ?? '';
       case 'consolidationReason':
         return record.consolidation?.reasonText ?? '';
+      case 'trendLineStatus':
+        return record.trendLine?.isHit ? 1 : 0;
+      case 'trendLineReason':
+        return record.trendLine?.reasonText ?? '';
       default:
         return (record as any)[key];
     }
@@ -87,6 +91,18 @@ export function OpportunityTable({ data, columns, sortConfig, onSortChange, tabl
 
     if (key === 'consolidationReason') {
       return record?.consolidation?.reasonText || '-';
+    }
+
+    if (key === 'trendLineStatus') {
+      if (!record?.trendLine) return '-';
+      const hit = record.trendLine.isHit;
+      return (
+        <span className={hit ? styles.consolidationYes : styles.consolidationNo}>{hit ? '是' : '否'}</span>
+      );
+    }
+
+    if (key === 'trendLineReason') {
+      return record?.trendLine?.reasonText || '-';
     }
 
     if (value === null || value === undefined || value === '') {

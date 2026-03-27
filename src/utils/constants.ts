@@ -132,14 +132,14 @@ export const OPPORTUNITY_DB_VERSION = 1;
 export const OPPORTUNITY_STORE_NAME = 'opportunityData';
 /** 历史存储名称 */
 export const OPPORTUNITY_HISTORY_STORE_NAME = 'opportunityHistory';
-/** 默认并发数（每批5只股票） */
-export const OPPORTUNITY_CONCURRENT_LIMIT = 5;
+/** 默认并发数（每批股票数，与 OPPORTUNITY_BATCH_DELAY 配合控频） */
+export const OPPORTUNITY_CONCURRENT_LIMIT = 8;
 /** 批次间延迟（毫秒） */
-export const OPPORTUNITY_BATCH_DELAY = 1000;
+export const OPPORTUNITY_BATCH_DELAY = 500;
 /** 行情批次间延迟（毫秒） */
-export const QUOTES_BATCH_DELAY = 200;
+export const QUOTES_BATCH_DELAY = 100;
 /** 行情并发数 */
-export const QUOTES_CONCURRENT_LIMIT = 5;
+export const QUOTES_CONCURRENT_LIMIT = 8;
 /** 行情批次大小 */
 export const QUOTES_BATCH_SIZE = 100;
 /** 默认列配置 */
@@ -163,8 +163,10 @@ export const OPPORTUNITY_DEFAULT_COLUMNS = [
   { key: 'lowPrice', title: '区间最低价', visible: true, width: 110 },
   { key: 'opportunityChangePercent', title: '区间最大值回撤比', visible: true, width: 150 },
   { key: 'consolidationStatus', title: '横盘状态', visible: true, width: 100 },
-  { key: 'consolidationTypes', title: '命中类型', visible: true, width: 180 },
-  { key: 'consolidationReason', title: '命中说明', visible: true, width: 360 },
+  { key: 'consolidationTypes', title: '命中类型', visible: true, width: 280 },
+  { key: 'consolidationReason', title: '命中说明', visible: true, width: 280 },
+  { key: 'trendLineStatus', title: '趋势线', visible: true, width: 88 },
+  { key: 'trendLineReason', title: '趋势线说明', visible: true, width: 220 },
   { key: 'volumeSurgeDropCount', title: '放量急跌周期数', visible: true, width: 130 },
   { key: 'volumeSurgeRiseCount', title: '放量拉升周期数', visible: true, width: 130 },
   { key: 'ma5', title: 'MA-5涨跌幅', visible: false },

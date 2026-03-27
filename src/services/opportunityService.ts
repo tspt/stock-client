@@ -1,13 +1,14 @@
 /**
  * 机会分析服务
  * - 先批量获取行情
- * - 再按“每批3只，批次间隔1.2s”并发获取详情+K线并计算指标
+ * - 再按 OPPORTUNITY_CONCURRENT_LIMIT / OPPORTUNITY_BATCH_DELAY 并发获取详情+K线并计算指标
  */
 
 import type { KLinePeriod, StockInfo, StockOpportunityData, KLineData } from '@/types/stock';
 import { getKLineData, getStockDetail, getStockQuotes } from '@/services/stockApi';
 import { calcAllIndicators, formatKDJValues } from '@/utils/indicators';
-import { calculateConsolidation, analyzeVolumeSurgePatterns } from '@/utils/consolidationAnalysis';
+import { calculateConsolidationInLookback, analyzeVolumeSurgePatterns } from '@/utils/consolidationAnalysis';
+import { calculateTrendLineInLookback } from '@/utils/trendLineAnalysis';
 import { ConcurrencyManager } from '@/utils/concurrencyManager';
 import {
   OPPORTUNITY_BATCH_DELAY,
@@ -61,16 +62,28 @@ async function analyzeOneStock(
   const { avgPrice, highPrice, lowPrice } = priceStats;
   const formattedKDJ = formatKDJValues(kdj);
 
-  // 横盘分析（默认按3天、2%阈值识别三种横盘结构）
+  // 横盘分析：默认近10根内存在连续3根满足、2% 阈值
   let consolidation;
   try {
-    consolidation = calculateConsolidation(klineData, {
-      period: 3,
+    consolidation = calculateConsolidationInLookback(klineData, {
+      lookback: 10,
+      consecutive: 3,
       threshold: 2,
+      requireClosesAboveMa10: false,
     });
   } catch (error) {
     console.warn(`[${code}] 横盘分析失败:`, error);
     // 横盘分析失败不影响其他数据
+  }
+
+  let trendLine;
+  try {
+    trendLine = calculateTrendLineInLookback(klineData, {
+      lookback: 10,
+      consecutive: 3,
+    });
+  } catch (error) {
+    console.warn(`[${code}] 趋势线分析失败:`, error);
   }
 
   // 急跌/急涨模式分析（单日模式，去掉放量逻辑）
@@ -123,6 +136,7 @@ async function analyzeOneStock(
       ma240: maFields.ma240,
       ma360: maFields.ma360,
       consolidation,
+      trendLine,
       volumeSurgePatterns,
       analyzedAt,
     },
@@ -278,7 +292,7 @@ export function analyzeAllStocksOpportunity(
         continue;
       }
 
-      // Step 2：按批处理并发分析（每批5只，批次间隔1s）
+      // Step 2：按批处理并发分析（并发与间隔见 constants）
       const manager = new ConcurrencyManager<{ code: string; data: StockOpportunityData }>({
         maxConcurrency: OPPORTUNITY_CONCURRENT_LIMIT,
         batchDelay: OPPORTUNITY_BATCH_DELAY,
