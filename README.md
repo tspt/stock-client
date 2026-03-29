@@ -106,6 +106,9 @@ stockClient/
 │   │   ├── constants.ts         # 常量定义
 │   │   ├── exportUtils.ts       # 数据导出工具
 │   │   ├── opportunityExportUtils.ts # 机会导出工具
+│   │   ├── opportunityFilterPrefs.ts # 机会分析-查询/筛选偏好 localStorage
+│   │   ├── trendLineAnalysis.ts # 机会分析-趋势线判定
+│   │   ├── consolidationAnalysis.ts # 横盘等分析
 │   │   ├── groupUtils.ts        # 分组工具
 │   │   └── concurrencyManager.ts # 并发管理
 │   ├── types/            # 类型定义
@@ -147,6 +150,16 @@ stockClient/
 - **并发控制**：使用并发管理器限制 API 请求频率
 - **数据缓存**：对 API 响应进行缓存，减少重复请求
 - **懒加载**：非关键组件延迟加载，提高应用启动速度
+- **机会分析**：趋势线等指标在工具函数中单次预计算（如 MA5 数组），避免滑动窗口内重复求和
+
+### 文档索引（`docs/`）
+
+| 文档 | 说明 |
+|------|------|
+| [横盘分析参数说明](docs/横盘分析参数说明.md) | 横盘判定参数、组合建议与常见问题 |
+| [趋势线分析说明](docs/趋势线分析说明.md) | 趋势线规则、M/N 含义、页面数据流与实现要点 |
+| [机会分析缓存与筛选](docs/机会分析缓存与筛选.md) | IndexedDB 与筛选偏好、纯前端筛选范围 |
+| [API 代理说明](docs/api-proxy-solutions.md) | 开发环境跨域与代理方案 |
 
 ## 注意事项
 

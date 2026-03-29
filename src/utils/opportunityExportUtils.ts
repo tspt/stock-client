@@ -19,7 +19,7 @@ function formatValue(value: any, key: string, record?: StockOpportunityData): st
   }
 
   if (key === 'consolidationTypes') {
-    return record?.consolidation?.matchedTypeLabels.join('、') || '-';
+    return record?.consolidation?.matchedTypeLabels?.join('、') || '-';
   }
 
   if (key === 'consolidationReason') {

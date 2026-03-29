@@ -7,18 +7,30 @@ import type { KLineData, TrendLineAnalysis } from '@/types/stock';
 const EPSILON = 1e-6;
 const MA5_PERIOD = 5;
 
-function sma5AtIndex(klineData: KLineData[], index: number): number | null {
-  if (index < MA5_PERIOD - 1 || index >= klineData.length) {
-    return null;
+/** 每根 K 线收盘对应的 MA5；前四根样本不足时为 null。 */
+function buildMa5AtClose(klineData: KLineData[]): (number | null)[] {
+  const len = klineData.length;
+  const ma5: (number | null)[] = new Array(len);
+  for (let j = 0; j < len; j++) {
+    if (j < MA5_PERIOD - 1) {
+      ma5[j] = null;
+      continue;
+    }
+    let sum = 0;
+    for (let k = j - (MA5_PERIOD - 1); k <= j; k++) {
+      sum += klineData[k].close;
+    }
+    ma5[j] = sum / MA5_PERIOD;
   }
-  let sum = 0;
-  for (let k = index - (MA5_PERIOD - 1); k <= index; k++) {
-    sum += klineData[k].close;
-  }
-  return sum / MA5_PERIOD;
+  return ma5;
 }
 
-function segmentSatisfiesTrendLine(klineData: KLineData[], startIndex: number, length: number): boolean {
+function segmentSatisfiesTrendLine(
+  klineData: KLineData[],
+  ma5: (number | null)[],
+  startIndex: number,
+  length: number
+): boolean {
   for (let j = startIndex; j < startIndex + length; j++) {
     if (j < 1) {
       return false;
@@ -26,11 +38,11 @@ function segmentSatisfiesTrendLine(klineData: KLineData[], startIndex: number, l
     if (klineData[j].close + EPSILON < klineData[j - 1].close) {
       return false;
     }
-    const ma5 = sma5AtIndex(klineData, j);
-    if (ma5 === null) {
+    const ma = ma5[j];
+    if (ma === null) {
       return false;
     }
-    if (klineData[j].close + EPSILON < ma5) {
+    if (klineData[j].close + EPSILON < ma) {
       return false;
     }
   }
@@ -57,13 +69,16 @@ export function calculateTrendLineInLookback(
     };
   }
 
+  const ma5 = buildMa5AtClose(klineData);
+
   const m = Math.min(M, klineData.length);
   const windowStart = klineData.length - m;
 
   let bestStart = -1;
-  for (let i = windowStart; i <= klineData.length - N; i++) {
-    if (segmentSatisfiesTrendLine(klineData, i, N)) {
+  for (let i = klineData.length - N; i >= windowStart; i--) {
+    if (segmentSatisfiesTrendLine(klineData, ma5, i, N)) {
       bestStart = i;
+      break;
     }
   }
 

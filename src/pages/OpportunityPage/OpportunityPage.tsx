@@ -3,7 +3,7 @@
  */
 
 import { useEffect, useState, useMemo, useRef, useCallback, useLayoutEffect } from 'react';
-import { Layout, Card, Button, Space, Progress, Select, Collapse, message, InputNumber, Checkbox } from 'antd';
+import { Layout, Card, Button, Space, Progress, Select, Collapse, message, InputNumber, Checkbox, Dropdown } from 'antd';
 import {
   PlayCircleOutlined,
   StopOutlined,
@@ -12,11 +12,12 @@ import {
   ExclamationCircleOutlined,
   FilterOutlined,
   ClearOutlined,
+  DownOutlined,
+  OrderedListOutlined,
 } from '@ant-design/icons';
 import { useOpportunityStore } from '@/stores/opportunityStore';
 import {
-  analyzeAfterSurgeDrop,
-  analyzeAfterSurgeRise,
+  analyzeVolumeSurgePatterns,
   calculateConsolidationInLookback,
   CONSOLIDATION_TYPE_LABELS,
 } from '@/utils/consolidationAnalysis';
@@ -24,9 +25,18 @@ import { calculateTrendLineInLookback } from '@/utils/trendLineAnalysis';
 import { OpportunityTable } from '@/components/OpportunityTable/OpportunityTable';
 import { ColumnSettings } from '@/components/ColumnSettings/ColumnSettings';
 import { exportOpportunityToExcel } from '@/utils/opportunityExportUtils';
+import { exportStockNamesToExcel, exportStockNamesToPng } from '@/utils/stockNamesExportUtils';
 import type { ConsolidationType, KLinePeriod, StockInfo, KLineData } from '@/types/stock';
 import { useAllStocks } from '@/hooks/useAllStocks';
 import { getPureCode } from '@/utils/format';
+import {
+  applyOpportunityFilterPrefsToState,
+  loadOpportunityFilterPrefs,
+  patchSavedPrefsFiltersToDefaults,
+  patchSavedPrefsQueryToDefaults,
+  saveOpportunityFilterPrefs,
+} from '@/utils/opportunityFilterPrefs';
+import type { OpportunityFilterPrefs } from '@/utils/opportunityFilterPrefs';
 import styles from './OpportunityPage.module.css';
 
 const { Header, Content } = Layout;
@@ -91,6 +101,23 @@ const INITIAL_FILTER_STATE = {
   afterDropPercentRange: '5-10' as const,
   afterRisePercentRange: '5-10' as const,
 };
+
+/** 与 opportunityStore 初始值一致，用于「重置」恢复周期与 K 线数量 */
+const INITIAL_OPPORTUNITY_QUERY = {
+  currentPeriod: 'day' as KLinePeriod,
+  currentCount: 300,
+};
+
+/** 解析急跌/急涨主幅度或「后」幅度下拉的数值区间 */
+function parsePercentRangeOption(range: string): { min: number; max?: number } {
+  if (range === '5-10') {
+    return { min: 5, max: 10 };
+  }
+  if (range === '10+') {
+    return { min: 10 };
+  }
+  return { min: 5, max: 10 };
+}
 
 export function OpportunityPage() {
   const {
@@ -185,8 +212,61 @@ export function OpportunityPage() {
   const [afterDropPercentRange, setAfterDropPercentRange] = useState<string>(INITIAL_FILTER_STATE.afterDropPercentRange);
   const [afterRisePercentRange, setAfterRisePercentRange] = useState<string>(INITIAL_FILTER_STATE.afterRisePercentRange);
 
+  // 先恢复 IndexedDB 中的分析结果与 K 线缓存，再套用 localStorage 中的查询/筛选偏好（纯前端筛选用缓存即可）
   useEffect(() => {
-    loadCachedData();
+    let cancelled = false;
+    const hydrate = async () => {
+      await loadCachedData();
+      if (cancelled) return;
+      const prefs = loadOpportunityFilterPrefs();
+      if (!prefs) return;
+      applyOpportunityFilterPrefsToState(prefs, {
+        setSelectedMarket,
+        setNameType,
+        setPriceRange,
+        setMarketCapRange,
+        setTurnoverRateRange,
+        setPeRatioRange,
+        setKdjJRange,
+        setFilterVisible,
+        setRecentLimitUpCount,
+        setRecentLimitDownCount,
+        setLimitUpPeriod,
+        setLimitDownPeriod,
+        setConsolidationTypes,
+        setConsolidationLookback,
+        setConsolidationConsecutive,
+        setConsolidationThreshold,
+        setConsolidationRequireAboveMa10,
+        setConsolidationFilterEnabled,
+        setConsolidationFilterVisible,
+        setTrendLineLookback,
+        setTrendLineConsecutive,
+        setTrendLineFilterEnabled,
+        setTrendLineFilterVisible,
+        setVolumeSurgeFilterVisible,
+        setVolumeSurgeDropEnabled,
+        setVolumeSurgeRiseEnabled,
+        setVolumeSurgePeriod,
+        setDropRisePercentRange,
+        setAfterDropType,
+        setAfterRiseType,
+        setAfterDropPercentRange,
+        setAfterRisePercentRange,
+      });
+      const st = useOpportunityStore.getState();
+      if (st.analysisData.length === 0) {
+        useOpportunityStore.setState({
+          currentPeriod: prefs.currentPeriod,
+          currentCount: prefs.currentCount,
+        });
+      }
+    };
+    void hydrate();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- 仅挂载时恢复缓存与偏好；setter 稳定
   }, [loadCachedData]);
 
   // 计算表格高度
@@ -371,64 +451,38 @@ export function OpportunityPage() {
     consolidationRequireAboveMa10,
   ]);
 
-  // 根据用户设置的周期重新计算急跌/急涨后的横盘结果
+  // 启用急跌/急涨筛选时：用 K 线缓存按当前幅度区间与横盘参数重算 volumeSurgePatterns（与服务端预计算解耦）
   const analysisDataWithRecalculatedVolumeSurge = useMemo(() => {
     if (analysisDataWithRecalculatedConsolidation.length === 0 || klineDataCache.size === 0) {
       return analysisDataWithRecalculatedConsolidation;
     }
 
-    // 如果用户没有启用急跌/急涨筛选，直接返回原数据
     if (!volumeSurgeDropEnabled && !volumeSurgeRiseEnabled) {
       return analysisDataWithRecalculatedConsolidation;
     }
 
-    return analysisDataWithRecalculatedConsolidation.map((item) => {
-      const patterns = item.volumeSurgePatterns;
-      if (!patterns) {
-        return item;
-      }
+    const percentRange = parsePercentRangeOption(dropRisePercentRange);
 
+    return analysisDataWithRecalculatedConsolidation.map((item) => {
       const klineData = klineDataCache.get(item.code);
       if (!klineData || klineData.length === 0) {
         return item;
       }
 
-      // 使用用户设置的周期重新计算急跌后的横盘结果
-      const recalculatedAfterDropAnalyses = patterns.afterDropAnalyses.map(({ period, analysis }) => {
-        try {
-          const newAnalysis = analyzeAfterSurgeDrop(klineData, period, {
+      try {
+        const volumeSurgePatterns = analyzeVolumeSurgePatterns(klineData, {
+          dropPercentRange: percentRange,
+          risePercentRange: percentRange,
+          consolidationOptions: {
             period: volumeSurgePeriod,
             threshold: consolidationThreshold,
-          });
-          return { period, analysis: newAnalysis };
-        } catch (error) {
-          console.warn(`[${item.code}] 重新计算急跌后横盘结果失败:`, error);
-          return { period, analysis };
-        }
-      });
-
-      // 使用用户设置的周期重新计算急涨后的横盘结果
-      const recalculatedAfterRiseAnalyses = patterns.afterRiseAnalyses.map(({ period, analysis }) => {
-        try {
-          const newAnalysis = analyzeAfterSurgeRise(klineData, period, {
-            period: volumeSurgePeriod,
-            threshold: consolidationThreshold,
-          });
-          return { period, analysis: newAnalysis };
-        } catch (error) {
-          console.warn(`[${item.code}] 重新计算急涨后横盘结果失败:`, error);
-          return { period, analysis };
-        }
-      });
-
-      return {
-        ...item,
-        volumeSurgePatterns: {
-          ...patterns,
-          afterDropAnalyses: recalculatedAfterDropAnalyses,
-          afterRiseAnalyses: recalculatedAfterRiseAnalyses,
-        },
-      };
+          },
+        });
+        return { ...item, volumeSurgePatterns };
+      } catch (error) {
+        console.warn(`[${item.code}] 急跌/急涨模式分析（按当前筛选参数重算）失败:`, error);
+        return item;
+      }
     });
   }, [
     analysisDataWithRecalculatedConsolidation,
@@ -437,6 +491,7 @@ export function OpportunityPage() {
     volumeSurgeRiseEnabled,
     volumeSurgePeriod,
     consolidationThreshold,
+    dropRisePercentRange,
   ]);
 
   const analysisDataWithRecalculatedTrendLine = useMemo(() => {
@@ -515,9 +570,8 @@ export function OpportunityPage() {
           return false;
         }
 
-        const hasMatchedType = item.consolidation.matchedTypes.some((type) =>
-          consolidationTypes.includes(type)
-        );
+        const matchedTypes = item.consolidation.matchedTypes ?? [];
+        const hasMatchedType = matchedTypes.some((type) => consolidationTypes.includes(type));
 
         if (!hasMatchedType) {
           return false;
@@ -566,17 +620,7 @@ export function OpportunityPage() {
           return false;
         }
 
-        // 解析急跌/急涨幅度范围
-        const getPercentRange = (range: string): { min: number; max?: number } => {
-          if (range === '5-10') {
-            return { min: 5, max: 10 };
-          } else if (range === '10+') {
-            return { min: 10 };
-          }
-          return { min: 5, max: 10 };
-        };
-
-        const percentRange = getPercentRange(dropRisePercentRange);
+        const percentRange = parsePercentRangeOption(dropRisePercentRange);
 
         // 急跌筛选
         if (volumeSurgeDropEnabled) {
@@ -594,7 +638,7 @@ export function OpportunityPage() {
 
           // 如果设置了急跌后类型筛选
           if (afterDropType !== 'all') {
-            const afterPercentRange = getPercentRange(afterDropPercentRange);
+            const afterPercentRange = parsePercentRangeOption(afterDropPercentRange);
             const hasMatchingAfterType = matchingDrops.some((drop) => {
               const analysis = patterns.afterDropAnalyses.find(
                 (a) => a.period.startIndex === drop.startIndex && a.period.endIndex === drop.endIndex
@@ -651,7 +695,7 @@ export function OpportunityPage() {
 
           // 如果设置了急涨后类型筛选
           if (afterRiseType !== 'all') {
-            const afterPercentRange = getPercentRange(afterRisePercentRange);
+            const afterPercentRange = parsePercentRangeOption(afterRisePercentRange);
             const hasMatchingAfterType = matchingRises.some((rise) => {
               const analysis = patterns.afterRiseAnalyses.find(
                 (a) => a.period.startIndex === rise.startIndex && a.period.endIndex === rise.endIndex
@@ -720,11 +764,22 @@ export function OpportunityPage() {
     afterRisePercentRange,
   ]);
 
-  // 重置所有筛选条件（与 INITIAL_FILTER_STATE / 各区块初始 UI 一致）
-  const handleResetFilters = () => {
+  /** 仅重置顶部：市场、名称类型、周期、K 线数量 */
+  const handleResetQueryBar = () => {
     const s = INITIAL_FILTER_STATE;
     setSelectedMarket(s.selectedMarket);
     setNameType(s.nameType);
+    useOpportunityStore.setState({
+      currentPeriod: INITIAL_OPPORTUNITY_QUERY.currentPeriod,
+      currentCount: INITIAL_OPPORTUNITY_QUERY.currentCount,
+    });
+    patchSavedPrefsQueryToDefaults();
+    message.info('已恢复默认市场、名称类型、周期与 K 线数量');
+  };
+
+  /** 重置数据筛选 / 横盘 / 趋势线 / 急跌急涨等（不含顶部查询条） */
+  const handleResetFilterForms = () => {
+    const s = INITIAL_FILTER_STATE;
     setPriceRange({ ...s.priceRange });
     setMarketCapRange({ ...s.marketCapRange });
     setTurnoverRateRange({ ...s.turnoverRateRange });
@@ -755,7 +810,8 @@ export function OpportunityPage() {
     setAfterRiseType(s.afterRiseType);
     setAfterDropPercentRange(s.afterDropPercentRange);
     setAfterRisePercentRange(s.afterRisePercentRange);
-    message.info('筛选条件已重置');
+    patchSavedPrefsFiltersToDefaults();
+    message.info('已恢复默认筛选条件');
   };
 
   const handleAnalyze = async () => {
@@ -763,6 +819,45 @@ export function OpportunityPage() {
       message.warning('当前市场暂无股票数据');
       return;
     }
+
+    const prefs: OpportunityFilterPrefs = {
+      version: 1,
+      selectedMarket,
+      nameType,
+      currentPeriod,
+      currentCount,
+      priceRange: { ...priceRange },
+      marketCapRange: { ...marketCapRange },
+      turnoverRateRange: { ...turnoverRateRange },
+      peRatioRange: { ...peRatioRange },
+      kdjJRange: { ...kdjJRange },
+      filterVisible,
+      recentLimitUpCount,
+      recentLimitDownCount,
+      limitUpPeriod,
+      limitDownPeriod,
+      consolidationTypes: [...consolidationTypes],
+      consolidationLookback,
+      consolidationConsecutive,
+      consolidationThreshold,
+      consolidationRequireAboveMa10,
+      consolidationFilterEnabled,
+      consolidationFilterVisible,
+      trendLineLookback,
+      trendLineConsecutive,
+      trendLineFilterEnabled,
+      trendLineFilterVisible,
+      volumeSurgeFilterVisible,
+      volumeSurgeDropEnabled,
+      volumeSurgeRiseEnabled,
+      volumeSurgePeriod,
+      dropRisePercentRange,
+      afterDropType,
+      afterRiseType,
+      afterDropPercentRange,
+      afterRisePercentRange,
+    };
+    saveOpportunityFilterPrefs(prefs);
 
     await startAnalysis(currentPeriod, filteredStocks, currentCount);
   };
@@ -787,6 +882,32 @@ export function OpportunityPage() {
       const errorMessage = error instanceof Error ? error.message : '导出失败';
       message.error(errorMessage);
       console.error('导出失败:', error);
+    }
+  };
+
+  /** 当前筛选结果中的股票名称，按列最多 20 条导出为图片或 Excel */
+  const handleExportNames = async (kind: 'png' | 'excel') => {
+    if (filteredAnalysisData.length === 0) {
+      message.warning('没有数据可导出');
+      return;
+    }
+    const names = filteredAnalysisData.map((r) => (r.name || r.code || '').trim()).filter(Boolean);
+    if (names.length === 0) {
+      message.warning('没有可用的股票名称');
+      return;
+    }
+    try {
+      if (kind === 'excel') {
+        await exportStockNamesToExcel(names, { fileNamePrefix: '机会分析_股票名称' });
+        message.success('名称列表已导出为 Excel');
+      } else {
+        await exportStockNamesToPng(names, { fileNamePrefix: '机会分析_股票名称' });
+        message.success('名称列表已导出为图片');
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : '导出失败';
+      message.error(errorMessage);
+      console.error('导出名称失败:', error);
     }
   };
 
@@ -873,14 +994,40 @@ export function OpportunityPage() {
             >
               一键分析
             </Button>
+            <Button icon={<ClearOutlined />} onClick={handleResetQueryBar} disabled={loading}>
+              重置查询
+            </Button>
+            <Button icon={<ClearOutlined />} onClick={handleResetFilterForms} disabled={loading}>
+              重置筛选
+            </Button>
             {loading && (
               <Button icon={<StopOutlined />} onClick={handleCancel}>
                 取消
               </Button>
             )}
-            <Button icon={<ExportOutlined />} onClick={() => handleExport('excel')} disabled={analysisData.length === 0}>
+            <Button
+              icon={<ExportOutlined />}
+              onClick={() => handleExport('excel')}
+              disabled={filteredAnalysisData.length === 0}
+            >
               导出Excel
             </Button>
+            <Dropdown
+              menu={{
+                items: [
+                  { key: 'png', label: '导出为图片（PNG）' },
+                  { key: 'xlsx', label: '导出为 Excel' },
+                ],
+                onClick: ({ key }) => {
+                  void handleExportNames(key === 'xlsx' ? 'excel' : 'png');
+                },
+              }}
+              disabled={filteredAnalysisData.length === 0}
+            >
+              <Button icon={<OrderedListOutlined />} disabled={filteredAnalysisData.length === 0}>
+                导出名称 <DownOutlined />
+              </Button>
+            </Dropdown>
             <Button icon={<SettingOutlined />} onClick={() => setColumnSettingsVisible(true)}>
               列设置
             </Button>
@@ -950,14 +1097,6 @@ export function OpportunityPage() {
                       {filterVisible ? '收起' : '展开'}
                     </Button>
                   </Space>
-                  <Button
-                    size="small"
-                    icon={<ClearOutlined />}
-                    onClick={handleResetFilters}
-                    disabled={!filterVisible}
-                  >
-                    重置
-                  </Button>
                 </div>
                 {filterVisible && (
                   <div className={styles.filterContent}>

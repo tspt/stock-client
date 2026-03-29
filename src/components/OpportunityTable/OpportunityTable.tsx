@@ -41,7 +41,7 @@ export function OpportunityTable({ data, columns, sortConfig, onSortChange, tabl
       case 'consolidationStatus':
         return record.consolidation?.isConsolidation ? 1 : 0;
       case 'consolidationTypes':
-        return record.consolidation?.matchedTypeLabels.join('、') ?? '';
+        return record.consolidation?.matchedTypeLabels?.join('、') ?? '';
       case 'consolidationReason':
         return record.consolidation?.reasonText ?? '';
       case 'trendLineStatus':
@@ -75,12 +75,13 @@ export function OpportunityTable({ data, columns, sortConfig, onSortChange, tabl
     }
 
     if (key === 'consolidationTypes') {
-      if (!record?.consolidation || record.consolidation.matchedTypeLabels.length === 0) {
+      const labels = record?.consolidation?.matchedTypeLabels;
+      if (!labels?.length) {
         return '-';
       }
       return (
         <div className={styles.consolidationTypes}>
-          {record.consolidation.matchedTypeLabels.map((label) => (
+          {labels.map((label) => (
             <span key={label} className={styles.consolidationTag}>
               {label}
             </span>

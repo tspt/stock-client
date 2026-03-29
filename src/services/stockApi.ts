@@ -6,6 +6,33 @@
 import axios from 'axios';
 import type { StockInfo, StockQuote, KLineData, StockDetail } from '@/types/stock';
 import { getPureCode, getMarketFromCode } from '@/utils/format';
+import { getStorage, setStorage } from '@/utils/storage';
+
+/** biyingapi 全量股票列表本地缓存（默认约 1 个月过期） */
+const BIYING_HSLT_LIST_CACHE_KEY = 'biying_hslt_stock_list_v1';
+const BIYING_HSLT_LIST_CACHE_TTL_MS = 30 * 24 * 60 * 60 * 1000;
+
+interface BiyingHsltListCache {
+  savedAt: number;
+  stocks: StockInfo[];
+}
+
+function readBiyingHsltListCache(): StockInfo[] | null {
+  const raw = getStorage<BiyingHsltListCache | null>(BIYING_HSLT_LIST_CACHE_KEY, null);
+  if (
+    raw &&
+    typeof raw.savedAt === 'number' &&
+    Array.isArray(raw.stocks) &&
+    raw.stocks.length > 0 &&
+    Date.now() - raw.savedAt < BIYING_HSLT_LIST_CACHE_TTL_MS
+  ) {
+    return raw.stocks;
+  }
+  return null;
+}
+
+/** 并发时复用同一次拉取，避免缓存失效瞬间多次打满接口 */
+let biyingHsltListFetchPromise: Promise<StockInfo[]> | null = null;
 
 // 开发环境使用本地代理，生产环境直接使用API
 const isDev = import.meta.env?.DEV ?? process.env.NODE_ENV === 'development';
@@ -17,32 +44,55 @@ const API_BASE = {
 
 /**
  * 获取所有股票列表
- * 从 biyingapi 获取全量股票数据
+ * 从 biyingapi 获取全量股票数据；优先使用 localStorage 缓存（默认约 1 个月过期）
  */
 export async function getAllStocks(): Promise<StockInfo[]> {
-  try {
-    const response = await axios.get('https://api.biyingapi.com/hslt/list/biyinglicence');
-    const data = response.data;
-
-    if (Array.isArray(data)) {
-      return data.map((item: { dm: string; mc: string; jys: string }) => {
-        // 转换格式：000001.SZ -> SZ000001
-        const [code, marketSuffix] = item.dm.split('.');
-        const market = marketSuffix === 'SH' ? 'SH' : 'SZ';
-        const normalizedCode = `${market}${code}`;
-
-        return {
-          code: normalizedCode,
-          name: item.mc.trim(),
-          market: market as 'SH' | 'SZ',
-        };
-      });
-    }
-
-    return [];
-  } catch (error) {
-    return [];
+  const cached = readBiyingHsltListCache();
+  if (cached) {
+    return cached;
   }
+
+  if (biyingHsltListFetchPromise) {
+    return biyingHsltListFetchPromise;
+  }
+
+  biyingHsltListFetchPromise = (async (): Promise<StockInfo[]> => {
+    try {
+      const response = await axios.get('https://api.biyingapi.com/hslt/list/biyinglicence');
+      const data = response.data;
+
+      if (Array.isArray(data)) {
+        const stocks: StockInfo[] = data.map((item: { dm: string; mc: string; jys: string }) => {
+          const [code, marketSuffix] = item.dm.split('.');
+          const market = marketSuffix === 'SH' ? 'SH' : 'SZ';
+          const normalizedCode = `${market}${code}`;
+
+          return {
+            code: normalizedCode,
+            name: item.mc.trim(),
+            market: market as 'SH' | 'SZ',
+          };
+        });
+
+        if (stocks.length > 0) {
+          setStorage(BIYING_HSLT_LIST_CACHE_KEY, {
+            savedAt: Date.now(),
+            stocks,
+          });
+        }
+
+        return stocks;
+      }
+
+      return [];
+    } catch {
+      return [];
+    } finally {
+      biyingHsltListFetchPromise = null;
+    }
+  })();
+
+  return biyingHsltListFetchPromise;
 }
 
 /**
