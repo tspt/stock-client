@@ -31,10 +31,8 @@ export async function sendAlertNotification(alert: PriceAlert, quote: StockQuote
           body,
           code: alert.code,
         })
-        .then(() => {
-        })
-        .catch((error) => {
-        })
+        .then(() => {})
+        .catch(() => {})
     );
   }
 
@@ -46,10 +44,8 @@ export async function sendAlertNotification(alert: PriceAlert, quote: StockQuote
           body,
           code: alert.code,
         })
-        .then(() => {
-        })
-        .catch((error) => {
-        })
+        .then(() => {})
+        .catch(() => {})
     );
   }
 
@@ -111,21 +107,3 @@ function buildNotificationContent(
   return { title, body };
 }
 
-/**
- * 初始化通知导航监听
- * @param onNavigate 导航回调函数
- */
-export function initNotificationNavigation(onNavigate: (code: string) => void): () => void {
-  if (!window.electronAPI) {
-    return () => {};
-  }
-
-  window.electronAPI.onNavigateToStock(onNavigate);
-
-  // 返回清理函数
-  return () => {
-    if (window.electronAPI) {
-      window.electronAPI.removeNavigateToStockListener();
-    }
-  };
-}

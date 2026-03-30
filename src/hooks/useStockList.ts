@@ -8,7 +8,6 @@ import { useAlertStore } from '@/stores/alertStore';
 import { getStockQuotes } from '@/services/stockApi';
 import { BUILTIN_GROUP_SELF_ID } from '@/utils/constants';
 import { usePolling } from './usePolling';
-import type { SortType } from '@/types/stock';
 
 /**
  * 股票列表管理Hook

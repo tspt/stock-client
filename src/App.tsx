@@ -2,20 +2,23 @@
  * 主应用组件
  */
 
-import { useEffect, useState } from 'react';
+import { Suspense, lazy, useEffect, useState } from 'react';
 import { ConfigProvider, App as AntdApp, theme, Layout, Tabs } from 'antd';
 import { StockOutlined, BellOutlined, BarChartOutlined } from '@ant-design/icons';
 import zhCN from 'antd/locale/zh_CN';
 import { useTheme } from '@/hooks/useTheme';
 import { useStockStore } from '@/stores/stockStore';
-import { initNotificationNavigation } from '@/services/notificationService';
+import { initNotificationNavigation } from '@/services/notificationNavigation';
 import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
-import { ListPage } from '@/pages/ListPage/ListPage';
-import { DetailPage } from '@/pages/DetailPage/DetailPage';
-import { AlertPage } from '@/pages/AlertPage/AlertPage';
-import { OverviewPage } from '@/pages/OverviewPage/OverviewPage';
-import { OpportunityPage } from '@/pages/OpportunityPage/OpportunityPage';
 import styles from './App.module.css';
+
+const ListPage = lazy(() => import('@/pages/ListPage/ListPage').then((m) => ({ default: m.ListPage })));
+const DetailPage = lazy(() => import('@/pages/DetailPage/DetailPage').then((m) => ({ default: m.DetailPage })));
+const AlertPage = lazy(() => import('@/pages/AlertPage/AlertPage').then((m) => ({ default: m.AlertPage })));
+const OverviewPage = lazy(() => import('@/pages/OverviewPage/OverviewPage').then((m) => ({ default: m.OverviewPage })));
+const OpportunityPage = lazy(() =>
+  import('@/pages/OpportunityPage/OpportunityPage').then((m) => ({ default: m.OpportunityPage }))
+);
 
 const { Header, Content } = Layout;
 
@@ -112,14 +115,16 @@ function AppContent() {
                       </span>
                     ),
                     children: (
-                      <div className={styles.stocksLayout}>
-                        <div className={styles.leftPanel}>
-                          <ListPage />
+                      <Suspense fallback={<div>加载中...</div>}>
+                        <div className={styles.stocksLayout}>
+                          <div className={styles.leftPanel}>
+                            <ListPage />
+                          </div>
+                          <div className={styles.rightPanel}>
+                            <DetailPage />
+                          </div>
                         </div>
-                        <div className={styles.rightPanel}>
-                          <DetailPage />
-                        </div>
-                      </div>
+                      </Suspense>
                     ),
                   },
                   {
@@ -131,9 +136,11 @@ function AppContent() {
                       </span>
                     ),
                     children: (
-                      <div className={styles.alertsLayout}>
-                        <AlertPage />
-                      </div>
+                      <Suspense fallback={<div>加载中...</div>}>
+                        <div className={styles.alertsLayout}>
+                          <AlertPage />
+                        </div>
+                      </Suspense>
                     ),
                   },
                   {
@@ -145,9 +152,11 @@ function AppContent() {
                       </span>
                     ),
                     children: (
-                      <div className={styles.overviewLayout}>
-                        <OverviewPage />
-                      </div>
+                      <Suspense fallback={<div>加载中...</div>}>
+                        <div className={styles.overviewLayout}>
+                          <OverviewPage />
+                        </div>
+                      </Suspense>
                     ),
                   },
                   {
@@ -159,9 +168,11 @@ function AppContent() {
                       </span>
                     ),
                     children: (
-                      <div className={styles.opportunityLayout}>
-                        <OpportunityPage />
-                      </div>
+                      <Suspense fallback={<div>加载中...</div>}>
+                        <div className={styles.opportunityLayout}>
+                          <OpportunityPage />
+                        </div>
+                      </Suspense>
                     ),
                   },
                 ]}

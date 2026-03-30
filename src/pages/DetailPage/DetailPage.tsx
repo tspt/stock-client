@@ -8,7 +8,6 @@ import { BellOutlined } from '@ant-design/icons';
 import { useStockStore } from '@/stores/stockStore';
 import { useKLineData } from '@/hooks/useKLineData';
 import { useStockDetail } from '@/hooks/useStockDetail';
-import { KLineChart } from '@/components/KLineChart/KLineChart';
 import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { AlertSettingModal } from '@/components/PriceAlert/AlertSettingModal';
 import {
@@ -24,19 +23,11 @@ import styles from './DetailPage.module.css';
 
 const { Header, Content } = Layout;
 
-const PERIODS: { label: string; value: KLinePeriod }[] = [
-  { label: '分时', value: '1min' },
-  { label: '日K', value: 'day' },
-  { label: '周K', value: 'week' },
-  { label: '月K', value: 'month' },
-  { label: '年K', value: 'year' },
-];
-
 export function DetailPage() {
-  const { selectedStock, quotes, setSelectedStock, watchList } = useStockStore();
-  const [period, setPeriod] = useState<KLinePeriod>('day');
+  const { selectedStock, quotes, watchList } = useStockStore();
+  const [period] = useState<KLinePeriod>('day');
   const [alertModalVisible, setAlertModalVisible] = useState(false);
-  const { data: klineData, loading, error } = useKLineData({
+  const { error } = useKLineData({
     code: selectedStock,
     period,
     enablePolling: true,
@@ -45,10 +36,6 @@ export function DetailPage() {
 
   const quote = selectedStock ? quotes[selectedStock] : null;
   const stock = selectedStock ? watchList.find((s) => s.code === selectedStock) : null;
-
-  const handleBack = () => {
-    setSelectedStock(null);
-  };
 
   useEffect(() => {
     if (error) {
