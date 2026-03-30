@@ -67,7 +67,7 @@ export function AlertPage() {
             dataIndex: 'code',
             key: 'code',
             width: 120,
-            render: (code: string, alert: PriceAlert) => (
+            render: (code: string) => (
                 <div>
                     <div style={{ fontWeight: 500 }}>{getStockName(code)}</div>
                     <div style={{ fontSize: '12px', color: '#999' }}>{code}</div>
@@ -112,8 +112,8 @@ export function AlertPage() {
             width: 120,
             render: (_: any, alert: PriceAlert) => (
                 <Space size="small">
-                    {alert.notifications.tray && <Tag size="small">托盘</Tag>}
-                    {alert.notifications.desktop && <Tag size="small">桌面</Tag>}
+                    {alert.notifications.tray && <Tag>托盘</Tag>}
+                    {alert.notifications.desktop && <Tag>桌面</Tag>}
                 </Space>
             ),
         },

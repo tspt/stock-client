@@ -3,7 +3,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Modal, Form, Radio, InputNumber, Select, Checkbox, message, Space } from 'antd';
+import { Modal, Form, Radio, InputNumber, Select, Checkbox, message } from 'antd';
 import type { PriceAlert, AlertType, NotificationConfig } from '@/types/stock';
 import { useAlertStore } from '@/stores/alertStore';
 import { useStockStore } from '@/stores/stockStore';

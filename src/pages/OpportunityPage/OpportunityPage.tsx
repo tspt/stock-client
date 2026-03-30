@@ -17,17 +17,15 @@ import {
 } from '@ant-design/icons';
 import { useOpportunityStore } from '@/stores/opportunityStore';
 import {
-  analyzeVolumeSurgePatterns,
-  calculateConsolidationInLookback,
   CONSOLIDATION_TYPE_LABELS,
 } from '@/utils/consolidationAnalysis';
-import { calculateTrendLineInLookback } from '@/utils/trendLineAnalysis';
 import { OpportunityTable } from '@/components/OpportunityTable/OpportunityTable';
 import { ColumnSettings } from '@/components/ColumnSettings/ColumnSettings';
 import { exportOpportunityToExcel } from '@/utils/opportunityExportUtils';
 import { exportStockNamesToExcel, exportStockNamesToPng } from '@/utils/stockNamesExportUtils';
-import type { ConsolidationType, KLinePeriod, StockInfo, KLineData } from '@/types/stock';
+import type { ConsolidationType, KLinePeriod, StockInfo } from '@/types/stock';
 import { useAllStocks } from '@/hooks/useAllStocks';
+import { useOpportunityFilterEngine } from '@/hooks/useOpportunityFilterEngine';
 import { getPureCode } from '@/utils/format';
 import {
   applyOpportunityFilterPrefsToState,
@@ -37,6 +35,7 @@ import {
   saveOpportunityFilterPrefs,
 } from '@/utils/opportunityFilterPrefs';
 import type { OpportunityFilterPrefs } from '@/utils/opportunityFilterPrefs';
+import type { OpportunityFilterSnapshot } from '@/types/opportunityFilter';
 import styles from './OpportunityPage.module.css';
 
 const { Header, Content } = Layout;
@@ -107,17 +106,6 @@ const INITIAL_OPPORTUNITY_QUERY = {
   currentPeriod: 'day' as KLinePeriod,
   currentCount: 300,
 };
-
-/** 解析急跌/急涨主幅度或「后」幅度下拉的数值区间 */
-function parsePercentRangeOption(range: string): { min: number; max?: number } {
-  if (range === '5-10') {
-    return { min: 5, max: 10 };
-  }
-  if (range === '10+') {
-    return { min: 10 };
-  }
-  return { min: 5, max: 10 };
-}
 
 export function OpportunityPage() {
   const {
@@ -195,6 +183,7 @@ export function OpportunityPage() {
 
   // 放量急跌/拉升筛选显示状态
   const [volumeSurgeFilterVisible, setVolumeSurgeFilterVisible] = useState<boolean>(true);
+  const [filterSkippedExpanded, setFilterSkippedExpanded] = useState(false);
   const [tableHeight, setTableHeight] = useState<number>(400); // 表格高度
   const tableCardRef = useRef<HTMLDivElement>(null); // 表格Card的引用
 
@@ -374,395 +363,77 @@ export function OpportunityPage() {
     });
   }, [allStocks, selectedMarket, nameType]);
 
-  // 计算最近N天内的涨停和跌停数量
-  const countLimitUpDown = (klineData: KLineData[], period: number, isST: boolean): { limitUp: number; limitDown: number } => {
-    if (!klineData || klineData.length < 2) {
-      return { limitUp: 0, limitDown: 0 };
-    }
+  const filterSnapshot = useMemo<OpportunityFilterSnapshot>(
+    () => ({
+      priceRange,
+      marketCapRange,
+      turnoverRateRange,
+      peRatioRange,
+      kdjJRange,
+      recentLimitUpCount,
+      recentLimitDownCount,
+      limitUpPeriod,
+      limitDownPeriod,
+      consolidationTypes,
+      consolidationLookback,
+      consolidationConsecutive,
+      consolidationThreshold,
+      consolidationRequireAboveMa10,
+      consolidationFilterEnabled,
+      trendLineLookback,
+      trendLineConsecutive,
+      trendLineFilterEnabled,
+      volumeSurgeDropEnabled,
+      volumeSurgeRiseEnabled,
+      volumeSurgePeriod,
+      dropRisePercentRange,
+      afterDropType,
+      afterRiseType,
+      afterDropPercentRange,
+      afterRisePercentRange,
+    }),
+    [
+      priceRange,
+      marketCapRange,
+      turnoverRateRange,
+      peRatioRange,
+      kdjJRange,
+      recentLimitUpCount,
+      recentLimitDownCount,
+      limitUpPeriod,
+      limitDownPeriod,
+      consolidationTypes,
+      consolidationLookback,
+      consolidationConsecutive,
+      consolidationThreshold,
+      consolidationRequireAboveMa10,
+      consolidationFilterEnabled,
+      trendLineLookback,
+      trendLineConsecutive,
+      trendLineFilterEnabled,
+      volumeSurgeDropEnabled,
+      volumeSurgeRiseEnabled,
+      volumeSurgePeriod,
+      dropRisePercentRange,
+      afterDropType,
+      afterRiseType,
+      afterDropPercentRange,
+      afterRisePercentRange,
+    ]
+  );
 
-    // 涨停/跌停阈值：普通股票10%，ST股票5%
-    const limitThreshold = isST ? 4.5 : 9.5; // 使用4.5%和9.5%作为阈值，避免浮点数精度问题
-
-    // 取最近period天的数据
-    const recentData = klineData.slice(-period);
-    let limitUpCount = 0;
-    let limitDownCount = 0;
-
-    // 从第二个数据点开始，因为需要前一天的收盘价来计算涨跌幅
-    for (let i = 1; i < recentData.length; i++) {
-      const current = recentData[i];
-      const prev = recentData[i - 1];
-
-      // 计算涨跌幅：(当前收盘价 - 前一天收盘价) / 前一天收盘价 * 100
-      if (prev.close > 0) {
-        const changePercent = ((current.close - prev.close) / prev.close) * 100;
-
-        // 判断涨停：涨幅 >= 阈值
-        if (changePercent >= limitThreshold) {
-          limitUpCount++;
-        }
-        // 判断跌停：跌幅 <= -阈值
-        else if (changePercent <= -limitThreshold) {
-          limitDownCount++;
-        }
-      }
-    }
-
-    return { limitUp: limitUpCount, limitDown: limitDownCount };
-  };
-
-  // 根据用户参数重新计算横盘结果
-  const analysisDataWithRecalculatedConsolidation = useMemo(() => {
-    if (analysisData.length === 0 || klineDataCache.size === 0) {
-      return analysisData;
-    }
-
-    return analysisData.map((item) => {
-      // 如果没有K线数据缓存，使用原始数据
-      const klineData = klineDataCache.get(item.code);
-      if (!klineData || klineData.length === 0) {
-        return item;
-      }
-
-      // 使用用户参数重新计算横盘结果
-      try {
-        const recalculatedConsolidation = calculateConsolidationInLookback(klineData, {
-          lookback: consolidationLookback,
-          consecutive: consolidationConsecutive,
-          threshold: consolidationThreshold,
-          requireClosesAboveMa10: consolidationRequireAboveMa10,
-        });
-
-        return {
-          ...item,
-          consolidation: recalculatedConsolidation,
-        };
-      } catch (error) {
-        console.warn(`[${item.code}] 重新计算横盘结果失败:`, error);
-        return item;
-      }
+  const { filteredData: filteredAnalysisData, filtering: filteringAnalysisData, skipped: filterSkippedItems } =
+    useOpportunityFilterEngine({
+      analysisData,
+      klineDataCache,
+      filters: filterSnapshot,
     });
-  }, [
-    analysisData,
-    klineDataCache,
-    consolidationLookback,
-    consolidationConsecutive,
-    consolidationThreshold,
-    consolidationRequireAboveMa10,
-  ]);
 
-  // 启用急跌/急涨筛选时：用 K 线缓存按当前幅度区间与横盘参数重算 volumeSurgePatterns（与服务端预计算解耦）
-  const analysisDataWithRecalculatedVolumeSurge = useMemo(() => {
-    if (analysisDataWithRecalculatedConsolidation.length === 0 || klineDataCache.size === 0) {
-      return analysisDataWithRecalculatedConsolidation;
+  useEffect(() => {
+    if (filterSkippedItems.length === 0) {
+      setFilterSkippedExpanded(false);
     }
-
-    if (!volumeSurgeDropEnabled && !volumeSurgeRiseEnabled) {
-      return analysisDataWithRecalculatedConsolidation;
-    }
-
-    const percentRange = parsePercentRangeOption(dropRisePercentRange);
-
-    return analysisDataWithRecalculatedConsolidation.map((item) => {
-      const klineData = klineDataCache.get(item.code);
-      if (!klineData || klineData.length === 0) {
-        return item;
-      }
-
-      try {
-        const volumeSurgePatterns = analyzeVolumeSurgePatterns(klineData, {
-          dropPercentRange: percentRange,
-          risePercentRange: percentRange,
-          consolidationOptions: {
-            period: volumeSurgePeriod,
-            threshold: consolidationThreshold,
-          },
-        });
-        return { ...item, volumeSurgePatterns };
-      } catch (error) {
-        console.warn(`[${item.code}] 急跌/急涨模式分析（按当前筛选参数重算）失败:`, error);
-        return item;
-      }
-    });
-  }, [
-    analysisDataWithRecalculatedConsolidation,
-    klineDataCache,
-    volumeSurgeDropEnabled,
-    volumeSurgeRiseEnabled,
-    volumeSurgePeriod,
-    consolidationThreshold,
-    dropRisePercentRange,
-  ]);
-
-  const analysisDataWithRecalculatedTrendLine = useMemo(() => {
-    if (analysisDataWithRecalculatedVolumeSurge.length === 0 || klineDataCache.size === 0) {
-      return analysisDataWithRecalculatedVolumeSurge;
-    }
-
-    return analysisDataWithRecalculatedVolumeSurge.map((item) => {
-      const klineData = klineDataCache.get(item.code);
-      if (!klineData || klineData.length === 0) {
-        return item;
-      }
-
-      try {
-        const trendLine = calculateTrendLineInLookback(klineData, {
-          lookback: trendLineLookback,
-          consecutive: trendLineConsecutive,
-        });
-        return { ...item, trendLine };
-      } catch (error) {
-        console.warn(`[${item.code}] 重新计算趋势线失败:`, error);
-        return item;
-      }
-    });
-  }, [
-    analysisDataWithRecalculatedVolumeSurge,
-    klineDataCache,
-    trendLineLookback,
-    trendLineConsecutive,
-  ]);
-
-  // 对分析数据进行二次筛选
-  const filteredAnalysisData = useMemo(() => {
-    if (analysisDataWithRecalculatedTrendLine.length === 0) {
-      return [];
-    }
-
-    return analysisDataWithRecalculatedTrendLine.filter((item) => {
-      // 价格范围筛选
-      if (priceRange.min !== undefined && item.price < priceRange.min) return false;
-      if (priceRange.max !== undefined && item.price > priceRange.max) return false;
-
-      // 总市值筛选
-      if (marketCapRange.min !== undefined && item.marketCap !== null && item.marketCap !== undefined) {
-        if (item.marketCap < marketCapRange.min) return false;
-      }
-      if (marketCapRange.max !== undefined && item.marketCap !== null && item.marketCap !== undefined) {
-        if (item.marketCap > marketCapRange.max) return false;
-      }
-
-      // 换手率筛选
-      if (turnoverRateRange.min !== undefined && item.turnoverRate !== null && item.turnoverRate !== undefined) {
-        if (item.turnoverRate < turnoverRateRange.min) return false;
-      }
-      if (turnoverRateRange.max !== undefined && item.turnoverRate !== null && item.turnoverRate !== undefined) {
-        if (item.turnoverRate > turnoverRateRange.max) return false;
-      }
-
-      // 市盈率筛选
-      if (peRatioRange.min !== undefined && item.peRatio !== null && item.peRatio !== undefined) {
-        if (item.peRatio < peRatioRange.min) return false;
-      }
-      if (peRatioRange.max !== undefined && item.peRatio !== null && item.peRatio !== undefined) {
-        if (item.peRatio > peRatioRange.max) return false;
-      }
-
-      // KDJ-J筛选：未计算出值时按需求保留
-      if (item.kdjJ !== null && item.kdjJ !== undefined) {
-        if (kdjJRange.min !== undefined && item.kdjJ < kdjJRange.min) return false;
-        if (kdjJRange.max !== undefined && item.kdjJ > kdjJRange.max) return false;
-      }
-
-      // 横盘筛选（启用且至少选一种类型时生效）
-      if (consolidationFilterEnabled && consolidationTypes.length > 0) {
-        if (!item.consolidation || !item.consolidation.isConsolidation) {
-          return false;
-        }
-
-        const matchedTypes = item.consolidation.matchedTypes ?? [];
-        const hasMatchedType = matchedTypes.some((type) => consolidationTypes.includes(type));
-
-        if (!hasMatchedType) {
-          return false;
-        }
-      }
-
-      if (trendLineFilterEnabled) {
-        if (!item.trendLine?.isHit) {
-          return false;
-        }
-      }
-
-      // 涨停/跌停筛选
-      if (recentLimitUpCount !== undefined || recentLimitDownCount !== undefined) {
-        const klineData = klineDataCache.get(item.code);
-        if (klineData && klineData.length > 0) {
-          const isST = item.name.includes('ST');
-
-          // 计算涨停数量
-          if (recentLimitUpCount !== undefined) {
-            const { limitUp } = countLimitUpDown(klineData, limitUpPeriod, isST);
-            if (limitUp < recentLimitUpCount) {
-              return false;
-            }
-          }
-
-          // 计算跌停数量
-          if (recentLimitDownCount !== undefined) {
-            const { limitDown } = countLimitUpDown(klineData, limitDownPeriod, isST);
-            if (limitDown < recentLimitDownCount) {
-              return false;
-            }
-          }
-        } else {
-          // 如果没有K线数据，且设置了涨停/跌停筛选，则过滤掉
-          if (recentLimitUpCount !== undefined || recentLimitDownCount !== undefined) {
-            return false;
-          }
-        }
-      }
-
-      // 急跌/急涨筛选（单日模式，去掉放量逻辑）
-      if (volumeSurgeDropEnabled || volumeSurgeRiseEnabled) {
-        const patterns = item.volumeSurgePatterns;
-        if (!patterns) {
-          return false;
-        }
-
-        const percentRange = parsePercentRangeOption(dropRisePercentRange);
-
-        // 急跌筛选
-        if (volumeSurgeDropEnabled) {
-          // 检查是否有符合条件的急跌周期（单日模式，只要有一天满足即可）
-          const matchingDrops = patterns.dropPeriods.filter((drop) => {
-            const percentMatch =
-              Math.abs(drop.changePercent) >= percentRange.min &&
-              (percentRange.max === undefined || Math.abs(drop.changePercent) <= percentRange.max);
-            return percentMatch;
-          });
-
-          if (matchingDrops.length === 0) {
-            return false;
-          }
-
-          // 如果设置了急跌后类型筛选
-          if (afterDropType !== 'all') {
-            const afterPercentRange = parsePercentRangeOption(afterDropPercentRange);
-            const hasMatchingAfterType = matchingDrops.some((drop) => {
-              const analysis = patterns.afterDropAnalyses.find(
-                (a) => a.period.startIndex === drop.startIndex && a.period.endIndex === drop.endIndex
-              );
-              if (!analysis) return false;
-
-              if (afterDropType === 'consolidation') {
-                return analysis.analysis.type === 'consolidation';
-              } else if (afterDropType === 'consolidation_with_rise') {
-                if (analysis.analysis.type !== 'consolidation_with_rise') return false;
-                // 检查幅度是否满足条件
-                if (analysis.analysis.reboundInfo) {
-                  const changePercent = analysis.analysis.reboundInfo.changePercent;
-                  return (
-                    changePercent >= afterPercentRange.min &&
-                    (afterPercentRange.max === undefined || changePercent <= afterPercentRange.max)
-                  );
-                }
-                return false;
-              } else if (afterDropType === 'consolidation_with_drop') {
-                if (analysis.analysis.type !== 'consolidation_with_drop') return false;
-                // 检查幅度是否满足条件
-                if (analysis.analysis.reboundInfo) {
-                  const changePercent = Math.abs(analysis.analysis.reboundInfo.changePercent);
-                  return (
-                    changePercent >= afterPercentRange.min &&
-                    (afterPercentRange.max === undefined || changePercent <= afterPercentRange.max)
-                  );
-                }
-                return false;
-              }
-              return false;
-            });
-
-            if (!hasMatchingAfterType) {
-              return false;
-            }
-          }
-        }
-
-        // 急涨筛选
-        if (volumeSurgeRiseEnabled) {
-          // 检查是否有符合条件的急涨周期（单日模式，只要有一天满足即可）
-          const matchingRises = patterns.risePeriods.filter((rise) => {
-            const percentMatch =
-              rise.changePercent >= percentRange.min &&
-              (percentRange.max === undefined || rise.changePercent <= percentRange.max);
-            return percentMatch;
-          });
-
-          if (matchingRises.length === 0) {
-            return false;
-          }
-
-          // 如果设置了急涨后类型筛选
-          if (afterRiseType !== 'all') {
-            const afterPercentRange = parsePercentRangeOption(afterRisePercentRange);
-            const hasMatchingAfterType = matchingRises.some((rise) => {
-              const analysis = patterns.afterRiseAnalyses.find(
-                (a) => a.period.startIndex === rise.startIndex && a.period.endIndex === rise.endIndex
-              );
-              if (!analysis) return false;
-
-              if (afterRiseType === 'consolidation') {
-                return analysis.analysis.type === 'consolidation';
-              } else if (afterRiseType === 'consolidation_with_rise') {
-                if (analysis.analysis.type !== 'consolidation_with_rise') return false;
-                // 检查幅度是否满足条件
-                if (analysis.analysis.reboundInfo) {
-                  const changePercent = analysis.analysis.reboundInfo.changePercent;
-                  return (
-                    changePercent >= afterPercentRange.min &&
-                    (afterPercentRange.max === undefined || changePercent <= afterPercentRange.max)
-                  );
-                }
-                return false;
-              } else if (afterRiseType === 'consolidation_with_drop') {
-                if (analysis.analysis.type !== 'consolidation_with_drop') return false;
-                // 检查幅度是否满足条件
-                if (analysis.analysis.reboundInfo) {
-                  const changePercent = Math.abs(analysis.analysis.reboundInfo.changePercent);
-                  return (
-                    changePercent >= afterPercentRange.min &&
-                    (afterPercentRange.max === undefined || changePercent <= afterPercentRange.max)
-                  );
-                }
-                return false;
-              }
-              return false;
-            });
-
-            if (!hasMatchingAfterType) {
-              return false;
-            }
-          }
-        }
-      }
-
-      return true;
-    });
-  }, [
-    analysisDataWithRecalculatedTrendLine,
-    priceRange,
-    marketCapRange,
-    turnoverRateRange,
-    peRatioRange,
-    kdjJRange,
-    consolidationFilterEnabled,
-    consolidationTypes,
-    trendLineFilterEnabled,
-    recentLimitUpCount,
-    recentLimitDownCount,
-    limitUpPeriod,
-    limitDownPeriod,
-    klineDataCache,
-    volumeSurgeDropEnabled,
-    volumeSurgeRiseEnabled,
-    volumeSurgePeriod,
-    dropRisePercentRange,
-    afterDropType,
-    afterRiseType,
-    afterDropPercentRange,
-    afterRisePercentRange,
-  ]);
+  }, [filterSkippedItems.length]);
 
   /** 仅重置顶部：市场、名称类型、周期、K 线数量 */
   const handleResetQueryBar = () => {
@@ -1665,13 +1336,13 @@ export function OpportunityPage() {
               </Card>
 
               {/* 筛选结果提示 */}
-              {analysisDataWithRecalculatedTrendLine.length > 0 && (
+              {analysisData.length > 0 && (
                 <div className={styles.filterResult}>
                   <span>
-                    {filteredAnalysisData.length !== analysisDataWithRecalculatedTrendLine.length ? (
+                    {filteredAnalysisData.length !== analysisData.length ? (
                       <>
                         筛选结果：<strong>{filteredAnalysisData.length}</strong> /{' '}
-                        {analysisDataWithRecalculatedTrendLine.length} 条
+                        {analysisData.length} 条
                       </>
                     ) : (
                       <>
@@ -1679,6 +1350,32 @@ export function OpportunityPage() {
                       </>
                     )}
                   </span>
+                  {filteringAnalysisData && <span className={styles.filteringTag}>筛选中...</span>}
+                  {filterSkippedItems.length > 0 && (
+                    <span className={styles.filterSkipSummary}>
+                      跳过 {filterSkippedItems.length} 条
+                      <Button
+                        type="link"
+                        size="small"
+                        onClick={() => setFilterSkippedExpanded((prev) => !prev)}
+                        className={styles.filterSkipToggle}
+                      >
+                        {filterSkippedExpanded ? '收起' : '展开'}
+                      </Button>
+                    </span>
+                  )}
+                </div>
+              )}
+              {filterSkippedExpanded && filterSkippedItems.length > 0 && (
+                <div className={styles.filterSkipList}>
+                  {filterSkippedItems.slice(0, 20).map((item) => (
+                    <div key={`${item.code}-${item.reason}`} className={styles.filterSkipItem}>
+                      {item.name} ({item.code})：{item.reason}
+                    </div>
+                  ))}
+                  {filterSkippedItems.length > 20 && (
+                    <div className={styles.filterSkipMore}>仅展示前 20 条，其余已折叠。</div>
+                  )}
                 </div>
               )}
             </div>

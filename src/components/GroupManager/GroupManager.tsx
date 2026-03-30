@@ -2,7 +2,7 @@
  * 分组管理弹窗组件
  */
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import {
   Modal,
   List,
@@ -10,7 +10,6 @@ import {
   Input,
   Form,
   Space,
-  Tag,
   Popconfirm,
   Checkbox,
   message,
@@ -43,7 +42,6 @@ export function GroupManager({ visible, onClose }: GroupManagerProps) {
     addGroup,
     updateGroup,
     deleteGroup,
-    moveGroup,
     reorderGroups,
     removeStockFromGroup,
   } = useStockStore();
@@ -276,7 +274,7 @@ export function GroupManager({ visible, onClose }: GroupManagerProps) {
                     </div>
                     <div
                       className={styles.groupInfo}
-                      onClick={(e) => {
+                      onClick={() => {
                         if (!isDragging) {
                           handleViewGroupDetail(group);
                         }

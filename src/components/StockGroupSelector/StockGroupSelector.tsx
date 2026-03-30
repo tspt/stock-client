@@ -2,7 +2,7 @@
  * 股票分组选择器组件
  */
 
-import { Checkbox, Space, Tag } from 'antd';
+import { Checkbox, Space } from 'antd';
 import type { Group } from '@/types/stock';
 import styles from './StockGroupSelector.module.css';
 

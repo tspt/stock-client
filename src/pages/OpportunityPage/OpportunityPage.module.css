@@ -174,13 +174,51 @@
   border-top: 1px solid var(--ant-color-border);
   font-size: 14px;
   color: var(--ant-color-text);
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .filterResult strong {
   color: var(--ant-color-primary);
   font-weight: 600;
   font-size: 16px;
+}
+
+.filteringTag {
+  color: var(--ant-color-text-secondary);
+  font-size: 12px;
+}
+
+.filterSkipSummary {
+  font-size: 12px;
+  color: var(--ant-color-warning-text);
+}
+
+.filterSkipToggle {
+  padding: 0 !important;
+  margin-left: 4px;
+  height: auto !important;
+}
+
+.filterSkipList {
+  max-height: 150px;
+  overflow: auto;
+  padding: 8px 16px 12px;
+  border-top: 1px dashed var(--ant-color-border);
+  background: var(--ant-color-warning-bg);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.filterSkipItem {
+  color: var(--ant-color-text-secondary);
+}
+
+.filterSkipMore {
+  color: var(--ant-color-text-tertiary);
 }
 
 

@@ -202,7 +202,6 @@ export const useAlertStore = create<AlertState>((set, get) => ({
 
   checkAlerts: (quotes) => {
     const { alerts } = get();
-    const now = Date.now();
 
     // 检查所有启用的提醒
     alerts.forEach((alert) => {
@@ -245,7 +244,7 @@ export const useAlertStore = create<AlertState>((set, get) => ({
             return sendAlertNotification(alert, quote);
           })
           .then(() => {})
-          .catch((error) => {});
+          .catch(() => {});
       } else {
         // 更新 lastTriggerPrice（用于回退机制判断）
         // 只有当价格回退到目标价格另一侧时才更新
