@@ -68,6 +68,16 @@ async function runFilterTask(message: Extract<OpportunityFilterWorkerMessage, { 
   const result: StockOpportunityData[] = [];
   const skipped: OpportunityFilterWorkerResponse['skipped'] = [];
 
+  const volumeSurgeEnabled = filters.volumeSurgeDropEnabled || filters.volumeSurgeRiseEnabled;
+  const parsedDropRiseRange = volumeSurgeEnabled ? parsePercentRangeOption(filters.dropRisePercentRange) : null;
+  const parsedAfterDropRange = volumeSurgeEnabled ? parsePercentRangeOption(filters.afterDropPercentRange) : null;
+  const parsedAfterRiseRange = volumeSurgeEnabled ? parsePercentRangeOption(filters.afterRisePercentRange) : null;
+
+  const consolidationTypesSet =
+    filters.consolidationFilterEnabled && filters.consolidationTypes.length > 0
+      ? new Set(filters.consolidationTypes)
+      : null;
+
   for (let index = 0; index < analysisData.length; index++) {
     if (shouldCancel(requestId)) {
       postCancelled(requestId);
@@ -104,12 +114,11 @@ async function runFilterTask(message: Extract<OpportunityFilterWorkerMessage, { 
           skipped.push({ code: item.code, name: item.name, reason: '横盘重算失败，已跳过重算' });
         }
 
-        if (filters.volumeSurgeDropEnabled || filters.volumeSurgeRiseEnabled) {
+        if (volumeSurgeEnabled && parsedDropRiseRange) {
           try {
-            const percentRange = parsePercentRangeOption(filters.dropRisePercentRange);
             const volumeSurgePatterns = analyzeVolumeSurgePatterns(klineData, {
-              dropPercentRange: percentRange,
-              risePercentRange: percentRange,
+              dropPercentRange: parsedDropRiseRange,
+              risePercentRange: parsedDropRiseRange,
               consolidationOptions: {
                 period: filters.volumeSurgePeriod,
                 threshold: filters.consolidationThreshold,
@@ -134,12 +143,12 @@ async function runFilterTask(message: Extract<OpportunityFilterWorkerMessage, { 
         }
       }
 
-      if (filters.consolidationFilterEnabled && filters.consolidationTypes.length > 0) {
+      if (consolidationTypesSet) {
         if (!nextItem.consolidation || !nextItem.consolidation.isConsolidation) {
           continue;
         }
         const matchedTypes = nextItem.consolidation.matchedTypes ?? [];
-        const hasMatchedType = matchedTypes.some((type) => filters.consolidationTypes.includes(type));
+        const hasMatchedType = matchedTypes.some((type) => consolidationTypesSet.has(type));
         if (!hasMatchedType) {
           continue;
         }
@@ -180,15 +189,15 @@ async function runFilterTask(message: Extract<OpportunityFilterWorkerMessage, { 
         }
       }
 
-      if (filters.volumeSurgeDropEnabled || filters.volumeSurgeRiseEnabled) {
+      if (volumeSurgeEnabled && parsedDropRiseRange && parsedAfterDropRange && parsedAfterRiseRange) {
         const patterns = nextItem.volumeSurgePatterns;
         if (!patterns) {
           continue;
         }
 
-        const percentRange = parsePercentRangeOption(filters.dropRisePercentRange);
-        const afterDropPercentRange = parsePercentRangeOption(filters.afterDropPercentRange);
-        const afterRisePercentRange = parsePercentRangeOption(filters.afterRisePercentRange);
+        const percentRange = parsedDropRiseRange;
+        const afterDropPercentRange = parsedAfterDropRange;
+        const afterRisePercentRange = parsedAfterRiseRange;
 
         const afterDropAnalysisMap = new Map(
           patterns.afterDropAnalyses.map((entry) => [`${entry.period.startIndex}-${entry.period.endIndex}`, entry.analysis])
