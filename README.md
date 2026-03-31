@@ -6,7 +6,7 @@
 
 ### 核心功能
 - 📊 股票列表管理（自选股）
-- 📈 K 线图展示（分时图、日 K、周 K、月 K、年 K）
+- 📈 K 线图展示（详情页支持 **日 / 周 / 月 / 年** 周期切换；数据层支持更多周期类型，界面未提供分时按钮）
 - 🔍 股票搜索功能（支持代码和名称搜索）
 - 📱 实时行情更新（10 秒轮询）
 - 🎨 深色/浅色主题切换
@@ -57,74 +57,119 @@ npm run electron:build:win
 
 ```
 stockClient/
-├── electron/              # Electron主进程代码
-│   ├── main.ts           # 主进程入口
-│   ├── preload.ts        # 预加载脚本
-│   └── tsconfig.json     # Electron TS配置
-├── src/                   # React应用源码
-│   ├── components/        # 组件
-│   │   ├── SearchBar/    # 搜索栏
-│   │   ├── StockList/    # 股票列表
-│   │   ├── KLineChart/   # K线图
-│   │   ├── ThemeToggle/  # 主题切换
-│   │   ├── GroupManager/ # 分组管理
-│   │   ├── GroupTabs/    # 分组标签
-│   │   ├── ColumnSettings/ # 通用列设置
-│   │   ├── OpportunityTable/ # 机会分析表格
-│   │   ├── OverviewTable/ # 概况表格
-│   │   └── StockGroupSelector/ # 股票分组选择器
-│   ├── pages/            # 页面
-│   │   ├── ListPage/     # 列表页
-│   │   ├── DetailPage/   # 详情页
-│   │   ├── AlertPage/    # 提醒管理
-│   │   ├── OverviewPage/ # 数据概况
-│   │   └── OpportunityPage/ # 机会分析
-│   ├── services/         # API服务
-│   │   ├── stockApi.ts   # 股票数据API
-│   │   ├── notificationService.ts # 通知服务
-│   │   ├── opportunityService.ts # 机会分析服务
-│   │   └── overviewService.ts # 概况服务
-│   ├── hooks/            # 自定义Hooks
-│   │   ├── usePolling.ts      # 轮询Hook
-│   │   ├── useStockList.ts    # 股票列表Hook
-│   │   ├── useKLineData.ts    # K线数据Hook
-│   │   ├── useTheme.ts        # 主题Hook
-│   │   ├── useStockDetail.ts  # 股票详情Hook
-│   │   └── useAllStocks.ts    # 全量股票Hook
-│   ├── stores/           # 状态管理
-│   │   ├── stockStore.ts     # 股票数据Store
-│   │   ├── themeStore.ts     # 主题Store
-│   │   ├── alertStore.ts     # 提醒Store
-│   │   ├── opportunityStore.ts # 机会分析Store
-│   │   └── overviewStore.ts   # 概况Store
-│   ├── utils/            # 工具函数
-│   │   ├── storage.ts           # LocalStorage封装
-│   │   ├── indexedDB.ts         # IndexedDB封装
-│   │   ├── opportunityIndexedDB.ts # 机会分析DB
-│   │   ├── format.ts            # 数据格式化
-│   │   ├── indicators.ts        # 技术指标计算
-│   │   ├── constants.ts         # 常量定义
-│   │   ├── exportUtils.ts       # 数据导出工具
-│   │   ├── opportunityExportUtils.ts # 机会导出工具
-│   │   ├── opportunityFilterPrefs.ts # 机会分析-查询/筛选偏好 localStorage
-│   │   ├── trendLineAnalysis.ts # 机会分析-趋势线判定
-│   │   ├── consolidationAnalysis.ts # 横盘等分析
-│   │   ├── groupUtils.ts        # 分组工具
-│   │   └── concurrencyManager.ts # 并发管理
-│   ├── types/            # 类型定义
-│   │   └── stock.ts      # 股票相关类型
-│   ├── App.tsx           # 主应用组件
-│   └── main.tsx          # 应用入口
-├── public/               # 静态资源
-└── index.html            # HTML模板
+├── docs/                    # 专题文档（见下文「文档索引」）
+├── electron/                # Electron 主进程与预加载
+│   ├── main.ts              # 主进程入口
+│   ├── preload.ts           # 预加载脚本
+│   ├── tsconfig.json
+│   └── tsconfig.preload.json
+├── public/                  # 静态资源
+├── server/
+│   └── proxy.js             # 开发环境 API 代理（npm run proxy）
+├── src/
+│   ├── App.tsx              # 根布局（左侧主 Tab、懒加载页面）
+│   ├── App.module.css
+│   ├── main.tsx             # React 入口
+│   ├── vite-env.d.ts        # Vite 类型声明
+│   ├── components/          # UI 组件（各目录含 .tsx / .module.css 等）
+│   │   ├── ColumnSettings/       # 通用列设置
+│   │   ├── GroupManager/         # 分组管理弹层
+│   │   ├── GroupTabs/            # 分组标签栏
+│   │   ├── KLineChart/           # K 线图（ECharts）
+│   │   ├── OpportunityTable/     # 机会分析结果表
+│   │   ├── OverviewColumnSettings/ # 数据概况专用列设置
+│   │   ├── OverviewTable/        # 数据概况表格
+│   │   ├── PriceAlert/           # 价格提醒设置（AlertSettingModal）
+│   │   ├── SearchBar/            # 股票搜索
+│   │   ├── StockGroupSelector/   # 分组选择器
+│   │   ├── StockList/            # 自选股列表
+│   │   └── ThemeToggle/          # 主题切换
+│   ├── pages/
+│   │   ├── ListPage/
+│   │   │   ├── ListPage.tsx
+│   │   │   └── ListPage.module.css
+│   │   ├── DetailPage/
+│   │   │   ├── DetailPage.tsx
+│   │   │   └── DetailPage.module.css
+│   │   ├── AlertPage/
+│   │   │   ├── AlertPage.tsx
+│   │   │   └── AlertPage.module.css
+│   │   ├── OverviewPage/
+│   │   │   ├── OverviewPage.tsx
+│   │   │   └── OverviewPage.module.css
+│   │   └── OpportunityPage/
+│   │       ├── OpportunityPage.tsx
+│   │       ├── OpportunityPage.module.css
+│   │       └── OpportunityFiltersPanel.tsx   # 筛选条件侧栏
+│   ├── workers/             # Web Worker
+│   │   ├── opportunityFilterWorker.ts
+│   │   └── opportunityFilterWorkerTypes.ts
+│   ├── services/            # 接口与桌面通知桥接
+│   │   ├── stockApi.ts
+│   │   ├── notificationService.ts    # 系统/托盘通知发送
+│   │   ├── notificationNavigation.ts # 通知点击跳转回股票 Tab
+│   │   ├── opportunityService.ts
+│   │   └── overviewService.ts
+│   ├── hooks/
+│   │   ├── usePolling.ts
+│   │   ├── useStockList.ts
+│   │   ├── useKLineData.ts
+│   │   ├── useTheme.ts
+│   │   ├── useStockDetail.ts
+│   │   ├── useAllStocks.ts
+│   │   └── useOpportunityFilterEngine.ts  # 机会筛选与 Worker 协作
+│   ├── stores/
+│   │   ├── stockStore.ts
+│   │   ├── themeStore.ts
+│   │   ├── alertStore.ts
+│   │   ├── opportunityStore.ts
+│   │   └── overviewStore.ts
+│   ├── utils/
+│   │   ├── storage.ts
+│   │   ├── indexedDB.ts
+│   │   ├── opportunityIndexedDB.ts
+│   │   ├── format.ts
+│   │   ├── indicators.ts
+│   │   ├── constants.ts
+│   │   ├── exportUtils.ts
+│   │   ├── opportunityExportUtils.ts
+│   │   ├── stockNamesExportUtils.ts    # 股票名称等导出辅助
+│   │   ├── opportunityFilterPrefs.ts
+│   │   ├── trendLineAnalysis.ts
+│   │   ├── consolidationAnalysis.ts
+│   │   ├── sharpMovePatterns.ts
+│   │   ├── groupUtils.ts
+│   │   └── concurrencyManager.ts
+│   └── types/
+│       ├── stock.ts
+│       ├── common.ts
+│       └── opportunityFilter.ts
+├── index.html
+├── package.json
+├── tsconfig.json
+├── tsconfig.node.json
+├── vite.config.ts
+└── .eslintrc.json           # ESLint 配置
 ```
+
+### 构建产物与资源目录
+
+以下目录由构建或打包命令生成，**已写入 `.gitignore`，一般不要提交到仓库**：
+
+| 目录 | 说明 |
+|------|------|
+| `dist/` | 运行 `npm run build` 时 Vite 输出的前端静态资源 |
+| `dist-electron/` | 运行 `npm run build:electron` 时编译得到的 Electron 主进程、`preload` 脚本（`.js`） |
+| `release/` | 运行 `electron:build` / `electron:build:win` 时 `electron-builder` 生成的安装包输出目录（与 `package.json` 中 `build.directories.output` 一致） |
+
+打包所需的 **图标等静态资源** 放在仓库中的 **`build/`** 目录（例如 `build/icon.ico`），与上述生成目录不同，**需自行维护并建议纳入版本控制**；若本地尚未添加图标，打包前请补齐（见下文「注意事项」）。
 
 ## 使用说明
 
 ### 基础操作
 1. **添加自选股**：在搜索栏输入股票代码或名称，选择后自动添加到列表
 2. **查看 K 线图**：点击列表中的股票，进入详情页查看 K 线图
-3. **切换周期**：在详情页点击"分时"、"日 K"、"周 K"、"月 K"、"年 K"按钮切换
+3. **切换 K 线周期**：在详情页点击 **日 / 周 / 月 / 年** 按钮切换
 4. **排序**：在列表页点击"排序"按钮，选择排序方式
 5. **删除股票**：在列表项右侧点击"删除"按钮
 6. **切换主题**：点击右上角主题切换按钮
@@ -149,7 +194,7 @@ stockClient/
 ### 性能优化
 - **并发控制**：使用并发管理器限制 API 请求频率
 - **数据缓存**：对 API 响应进行缓存，减少重复请求
-- **懒加载**：非关键组件延迟加载，提高应用启动速度
+- **懒加载**：页面级 `lazy` + `Suspense`，非当前主 Tab 内容可通过 `destroyOnHidden` 卸载，减轻后台轮询与内存占用
 - **机会分析**：趋势线等指标在工具函数中单次预计算（如 MA5 数组），避免滑动窗口内重复求和
 
 ### 文档索引（`docs/`）
@@ -169,7 +214,6 @@ stockClient/
 
 ## 待优化功能
 
-- [ ] 真实 API 接口集成
 - [ ] 自动更新功能完善
 - [ ] 系统托盘图标
 - [ ] 更多技术指标支持

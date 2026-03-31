@@ -46,6 +46,7 @@ interface OverviewState {
   updateSortConfig: (config: OverviewSortConfig) => void;
   clearData: () => void;
   resetColumnConfig: () => void;
+  setCurrentPeriod: (period: KLinePeriod) => void;
 }
 
 // 初始化列配置
@@ -208,6 +209,10 @@ export const useOverviewStore = create<OverviewState>((set, get) => ({
     } catch (error) {
       console.error('保存列配置失败:', error);
     }
+  },
+
+  setCurrentPeriod: (period: KLinePeriod) => {
+    set({ currentPeriod: period });
   },
 }));
 

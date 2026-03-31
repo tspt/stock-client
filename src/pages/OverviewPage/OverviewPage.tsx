@@ -2,7 +2,7 @@
  * 数据概况页面
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Layout, Card, Button, Space, Progress, Select, Collapse, message, InputNumber } from 'antd';
 import {
   PlayCircleOutlined,
@@ -47,12 +47,24 @@ export function OverviewPage() {
     updateColumnConfig,
     updateSortConfig,
     resetColumnConfig,
+    setCurrentPeriod,
   } = useOverviewStore();
 
   const { watchList, groups, loadWatchList } = useStockStore();
   const [columnSettingsVisible, setColumnSettingsVisible] = useState(false);
   const [selectedGroupId, setSelectedGroupId] = useState<string>(GROUP_ALL_ID);
   const [klineCount, setKlineCount] = useState<number>(300);
+
+  const groupSelectOptions = useMemo(
+    () => [
+      { label: '全部', value: GROUP_ALL_ID },
+      { label: BUILTIN_GROUP_SELF_NAME, value: BUILTIN_GROUP_SELF_ID },
+      ...[...groups]
+        .sort((a, b) => a.order - b.order)
+        .map((g) => ({ label: g.name, value: g.id })),
+    ],
+    [groups]
+  );
 
   // 加载缓存数据
   useEffect(() => {
@@ -132,13 +144,7 @@ export function OverviewPage() {
                     message.info('分组已更改，请重新分析');
                   }
                 }}
-                options={[
-                  { label: '全部', value: GROUP_ALL_ID },
-                  { label: BUILTIN_GROUP_SELF_NAME, value: BUILTIN_GROUP_SELF_ID },
-                  ...[...groups]
-                    .sort((a, b) => a.order - b.order)
-                    .map((g) => ({ label: g.name, value: g.id })),
-                ]}
+                options={groupSelectOptions}
                 style={{ width: 160 }}
                 disabled={loading}
               />
@@ -148,9 +154,7 @@ export function OverviewPage() {
               <Select
                 value={currentPeriod}
                 onChange={(value: KLinePeriod) => {
-                  // 更新周期（store中会自动更新）
-                  useOverviewStore.setState({ currentPeriod: value });
-                  // 如果已有数据，提示用户需要重新分析
+                  setCurrentPeriod(value);
                   if (analysisData.length > 0) {
                     message.info('周期已更改，请重新分析');
                   }

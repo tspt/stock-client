@@ -1,6 +1,8 @@
-import { analyzeVolumeSurgePatterns, calculateConsolidationInLookback } from '@/utils/consolidationAnalysis';
+import { calculateConsolidationInLookback } from '@/utils/consolidationAnalysis';
+import { analyzeSharpMovePatterns } from '@/utils/sharpMovePatterns';
 import { calculateTrendLineInLookback } from '@/utils/trendLineAnalysis';
-import type { KLineData, StockOpportunityData } from '@/types/stock';
+import type { KLineData, SharpMovePatternAnalysis, StockOpportunityData } from '@/types/stock';
+import type { OpportunityFilterSnapshot } from '@/types/opportunityFilter';
 import type { OpportunityFilterWorkerMessage, OpportunityFilterWorkerResponse } from './opportunityFilterWorkerTypes';
 
 let cancelledThroughRequestId = 0;
@@ -8,14 +10,35 @@ const YIELD_EVERY_ITEMS = 40;
 let klineDataMap = new Map<string, KLineData[]>();
 let latestRequestId = 0;
 
-function parsePercentRangeOption(range: string): { min: number; max?: number } {
-  if (range === '5-10') {
-    return { min: 5, max: 10 };
+function sharpMoveFilterActive(filters: OpportunityFilterSnapshot): boolean {
+  return (
+    filters.sharpMoveOnlyDrop ||
+    filters.sharpMoveOnlyRise ||
+    filters.sharpMoveDropThenRiseLoose ||
+    filters.sharpMoveRiseThenDropLoose ||
+    filters.sharpMoveDropFlatRise ||
+    filters.sharpMoveRiseFlatDrop
+  );
+}
+
+/** 勾选多项时，满足任一命中即通过（OR） */
+function passesSharpMoveFilter(
+  patterns: SharpMovePatternAnalysis | undefined,
+  filters: OpportunityFilterSnapshot
+): boolean {
+  if (!sharpMoveFilterActive(filters)) {
+    return true;
   }
-  if (range === '10+') {
-    return { min: 10 };
+  if (!patterns) {
+    return false;
   }
-  return { min: 5, max: 10 };
+  if (filters.sharpMoveOnlyDrop && patterns.onlyDrop) return true;
+  if (filters.sharpMoveOnlyRise && patterns.onlyRise) return true;
+  if (filters.sharpMoveDropThenRiseLoose && patterns.dropThenRiseLoose) return true;
+  if (filters.sharpMoveRiseThenDropLoose && patterns.riseThenDropLoose) return true;
+  if (filters.sharpMoveDropFlatRise && patterns.dropThenFlatThenRise) return true;
+  if (filters.sharpMoveRiseFlatDrop && patterns.riseThenFlatThenDrop) return true;
+  return false;
 }
 
 function countLimitUpDown(klineData: KLineData[], period: number, isST: boolean): { limitUp: number; limitDown: number } {
@@ -68,11 +91,14 @@ async function runFilterTask(message: Extract<OpportunityFilterWorkerMessage, { 
   const result: StockOpportunityData[] = [];
   const skipped: OpportunityFilterWorkerResponse['skipped'] = [];
 
-  const volumeSurgeEnabled = filters.volumeSurgeDropEnabled || filters.volumeSurgeRiseEnabled;
-  const parsedDropRiseRange = volumeSurgeEnabled ? parsePercentRangeOption(filters.dropRisePercentRange) : null;
-  const parsedAfterDropRange = volumeSurgeEnabled ? parsePercentRangeOption(filters.afterDropPercentRange) : null;
-  const parsedAfterRiseRange = volumeSurgeEnabled ? parsePercentRangeOption(filters.afterRisePercentRange) : null;
+  const rawWb = filters.sharpMoveWindowBars;
+  const sharpMoveWindowBars =
+    typeof rawWb === 'number' && Number.isFinite(rawWb) && rawWb > 0 ? Math.max(1, Math.floor(rawWb)) : 60;
+  const rawMag = filters.sharpMoveMagnitude;
+  const sharpMoveMagnitude =
+    typeof rawMag === 'number' && Number.isFinite(rawMag) && rawMag > 0 ? rawMag : 6;
 
+  /** 启用横盘且勾选至少一种类型时按类型过滤；启用但未选任何类型则视为不按类型过滤（与其它条件照常组合） */
   const consolidationTypesSet =
     filters.consolidationFilterEnabled && filters.consolidationTypes.length > 0
       ? new Set(filters.consolidationTypes)
@@ -84,7 +110,6 @@ async function runFilterTask(message: Extract<OpportunityFilterWorkerMessage, { 
       return;
     }
 
-    // 分片让出事件循环，确保 cancel 消息能及时被处理。
     if (index > 0 && index % YIELD_EVERY_ITEMS === 0) {
       await new Promise<void>((resolve) => {
         setTimeout(resolve, 0);
@@ -114,33 +139,26 @@ async function runFilterTask(message: Extract<OpportunityFilterWorkerMessage, { 
           skipped.push({ code: item.code, name: item.name, reason: '横盘重算失败，已跳过重算' });
         }
 
-        if (volumeSurgeEnabled && parsedDropRiseRange) {
-          try {
-            const volumeSurgePatterns = analyzeVolumeSurgePatterns(klineData, {
-              dropPercentRange: parsedDropRiseRange,
-              risePercentRange: parsedDropRiseRange,
-              consolidationOptions: {
-                period: filters.volumeSurgePeriod,
-                threshold: filters.consolidationThreshold,
-              },
-            });
-            nextItem = { ...nextItem, volumeSurgePatterns };
-          } catch {
-            skipped.push({ code: item.code, name: item.name, reason: '急跌/急涨重算失败，已跳过重算' });
-          }
+        try {
+          const sharpMovePatterns = analyzeSharpMovePatterns(klineData, sharpMoveWindowBars, sharpMoveMagnitude);
+          nextItem = { ...nextItem, sharpMovePatterns };
+        } catch {
+          skipped.push({ code: item.code, name: item.name, reason: '单日异动重算失败，已跳过重算' });
+          nextItem = { ...nextItem, sharpMovePatterns: undefined };
         }
 
-        if (filters.trendLineFilterEnabled) {
-          try {
-            const trendLine = calculateTrendLineInLookback(klineData, {
-              lookback: filters.trendLineLookback,
-              consecutive: filters.trendLineConsecutive,
-            });
-            nextItem = { ...nextItem, trendLine };
-          } catch {
-            skipped.push({ code: item.code, name: item.name, reason: '趋势线重算失败，已跳过重算' });
-          }
+        /** 与横盘、单日异动一致：有 K 线即用面板参数重算，便于列表与筛选条件一致；是否剔除行由 trendLineFilterEnabled 决定 */
+        try {
+          const trendLine = calculateTrendLineInLookback(klineData, {
+            lookback: filters.trendLineLookback,
+            consecutive: filters.trendLineConsecutive,
+          });
+          nextItem = { ...nextItem, trendLine };
+        } catch {
+          skipped.push({ code: item.code, name: item.name, reason: '趋势线重算失败，已跳过重算' });
         }
+      } else {
+        nextItem = { ...nextItem, sharpMovePatterns: undefined };
       }
 
       if (consolidationTypesSet) {
@@ -189,121 +207,8 @@ async function runFilterTask(message: Extract<OpportunityFilterWorkerMessage, { 
         }
       }
 
-      if (volumeSurgeEnabled && parsedDropRiseRange && parsedAfterDropRange && parsedAfterRiseRange) {
-        const patterns = nextItem.volumeSurgePatterns;
-        if (!patterns) {
-          continue;
-        }
-
-        const percentRange = parsedDropRiseRange;
-        const afterDropPercentRange = parsedAfterDropRange;
-        const afterRisePercentRange = parsedAfterRiseRange;
-
-        const afterDropAnalysisMap = new Map(
-          patterns.afterDropAnalyses.map((entry) => [`${entry.period.startIndex}-${entry.period.endIndex}`, entry.analysis])
-        );
-        const afterRiseAnalysisMap = new Map(
-          patterns.afterRiseAnalyses.map((entry) => [`${entry.period.startIndex}-${entry.period.endIndex}`, entry.analysis])
-        );
-
-        if (filters.volumeSurgeDropEnabled) {
-          let dropMatched = false;
-          for (const drop of patterns.dropPeriods) {
-            const absChange = Math.abs(drop.changePercent);
-            const percentMatch = absChange >= percentRange.min && (percentRange.max === undefined || absChange <= percentRange.max);
-            if (!percentMatch) {
-              continue;
-            }
-            if (filters.afterDropType === 'all') {
-              dropMatched = true;
-              break;
-            }
-            const analysis = afterDropAnalysisMap.get(`${drop.startIndex}-${drop.endIndex}`);
-            if (!analysis) {
-              continue;
-            }
-            if (filters.afterDropType === 'consolidation' && analysis.type === 'consolidation') {
-              dropMatched = true;
-              break;
-            }
-            if (filters.afterDropType === 'consolidation_with_rise' && analysis.type === 'consolidation_with_rise') {
-              const changePercent = analysis.reboundInfo?.changePercent;
-              if (
-                changePercent !== undefined &&
-                changePercent >= afterDropPercentRange.min &&
-                (afterDropPercentRange.max === undefined || changePercent <= afterDropPercentRange.max)
-              ) {
-                dropMatched = true;
-                break;
-              }
-            }
-            if (filters.afterDropType === 'consolidation_with_drop' && analysis.type === 'consolidation_with_drop') {
-              const changePercent = analysis.reboundInfo?.changePercent;
-              const absDrop = changePercent === undefined ? undefined : Math.abs(changePercent);
-              if (
-                absDrop !== undefined &&
-                absDrop >= afterDropPercentRange.min &&
-                (afterDropPercentRange.max === undefined || absDrop <= afterDropPercentRange.max)
-              ) {
-                dropMatched = true;
-                break;
-              }
-            }
-          }
-          if (!dropMatched) {
-            continue;
-          }
-        }
-
-        if (filters.volumeSurgeRiseEnabled) {
-          let riseMatched = false;
-          for (const rise of patterns.risePeriods) {
-            const percentMatch =
-              rise.changePercent >= percentRange.min &&
-              (percentRange.max === undefined || rise.changePercent <= percentRange.max);
-            if (!percentMatch) {
-              continue;
-            }
-            if (filters.afterRiseType === 'all') {
-              riseMatched = true;
-              break;
-            }
-            const analysis = afterRiseAnalysisMap.get(`${rise.startIndex}-${rise.endIndex}`);
-            if (!analysis) {
-              continue;
-            }
-            if (filters.afterRiseType === 'consolidation' && analysis.type === 'consolidation') {
-              riseMatched = true;
-              break;
-            }
-            if (filters.afterRiseType === 'consolidation_with_rise' && analysis.type === 'consolidation_with_rise') {
-              const changePercent = analysis.reboundInfo?.changePercent;
-              if (
-                changePercent !== undefined &&
-                changePercent >= afterRisePercentRange.min &&
-                (afterRisePercentRange.max === undefined || changePercent <= afterRisePercentRange.max)
-              ) {
-                riseMatched = true;
-                break;
-              }
-            }
-            if (filters.afterRiseType === 'consolidation_with_drop' && analysis.type === 'consolidation_with_drop') {
-              const changePercent = analysis.reboundInfo?.changePercent;
-              const absDrop = changePercent === undefined ? undefined : Math.abs(changePercent);
-              if (
-                absDrop !== undefined &&
-                absDrop >= afterRisePercentRange.min &&
-                (afterRisePercentRange.max === undefined || absDrop <= afterRisePercentRange.max)
-              ) {
-                riseMatched = true;
-                break;
-              }
-            }
-          }
-          if (!riseMatched) {
-            continue;
-          }
-        }
+      if (!passesSharpMoveFilter(nextItem.sharpMovePatterns, filters)) {
+        continue;
       }
 
       result.push(nextItem);
@@ -341,7 +246,6 @@ self.onmessage = (event: MessageEvent<OpportunityFilterWorkerMessage>) => {
     return;
   }
 
-  // worker 侧也保护“只保留最后一次”
   if (latestRequestId > 0) {
     cancelledThroughRequestId = Math.max(cancelledThroughRequestId, latestRequestId);
   }

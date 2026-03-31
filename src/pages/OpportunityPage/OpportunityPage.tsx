@@ -3,14 +3,13 @@
  */
 
 import { useEffect, useState, useMemo, useRef, useCallback, useLayoutEffect } from 'react';
-import { Layout, Card, Button, Space, Progress, Select, Collapse, message, InputNumber, Checkbox, Dropdown } from 'antd';
+import { Layout, Card, Button, Space, Progress, Select, Collapse, message, InputNumber, Dropdown } from 'antd';
 import {
   PlayCircleOutlined,
   StopOutlined,
   ExportOutlined,
   SettingOutlined,
   ExclamationCircleOutlined,
-  FilterOutlined,
   ClearOutlined,
   DownOutlined,
   OrderedListOutlined,
@@ -33,9 +32,11 @@ import {
   patchSavedPrefsFiltersToDefaults,
   patchSavedPrefsQueryToDefaults,
   saveOpportunityFilterPrefs,
+  visibilityFromActiveFilterPanelKey,
 } from '@/utils/opportunityFilterPrefs';
 import type { OpportunityFilterPrefs } from '@/utils/opportunityFilterPrefs';
 import type { OpportunityFilterSnapshot } from '@/types/opportunityFilter';
+import { OpportunityFiltersPanel } from './OpportunityFiltersPanel';
 import styles from './OpportunityPage.module.css';
 
 const { Header, Content } = Layout;
@@ -91,14 +92,14 @@ const INITIAL_FILTER_STATE = {
   trendLineLookback: 10,
   trendLineConsecutive: 3,
   trendLineFilterEnabled: false,
-  volumeSurgeDropEnabled: false,
-  volumeSurgeRiseEnabled: false,
-  volumeSurgePeriod: 10,
-  dropRisePercentRange: '5-10' as const,
-  afterDropType: 'all' as const,
-  afterRiseType: 'all' as const,
-  afterDropPercentRange: '5-10' as const,
-  afterRisePercentRange: '5-10' as const,
+  sharpMoveWindowBars: 60,
+  sharpMoveMagnitude: 6,
+  sharpMoveOnlyDrop: false,
+  sharpMoveOnlyRise: false,
+  sharpMoveDropThenRiseLoose: false,
+  sharpMoveRiseThenDropLoose: false,
+  sharpMoveDropFlatRise: false,
+  sharpMoveRiseFlatDrop: false,
 };
 
 /** 与 opportunityStore 初始值一致，用于「重置」恢复周期与 K 线数量 */
@@ -141,7 +142,8 @@ export function OpportunityPage() {
   );
   const [peRatioRange, setPeRatioRange] = useState<{ min?: number; max?: number }>(INITIAL_FILTER_STATE.peRatioRange);
   const [kdjJRange, setKdjJRange] = useState<{ min?: number; max?: number }>(INITIAL_FILTER_STATE.kdjJRange);
-  const [filterVisible, setFilterVisible] = useState(true);
+  /** 筛选手风琴当前展开的面板；undefined 表示全部收起。默认展开「数据筛选」便于首次使用 */
+  const [filterPanelActiveKey, setFilterPanelActiveKey] = useState<string | undefined>('data');
 
   // 涨停/跌停筛选状态
   const [recentLimitUpCount, setRecentLimitUpCount] = useState<number | undefined>(
@@ -170,7 +172,6 @@ export function OpportunityPage() {
   const [consolidationFilterEnabled, setConsolidationFilterEnabled] = useState<boolean>(
     INITIAL_FILTER_STATE.consolidationFilterEnabled
   );
-  const [consolidationFilterVisible, setConsolidationFilterVisible] = useState(true);
 
   const [trendLineLookback, setTrendLineLookback] = useState<number>(INITIAL_FILTER_STATE.trendLineLookback);
   const [trendLineConsecutive, setTrendLineConsecutive] = useState<number>(
@@ -179,27 +180,27 @@ export function OpportunityPage() {
   const [trendLineFilterEnabled, setTrendLineFilterEnabled] = useState<boolean>(
     INITIAL_FILTER_STATE.trendLineFilterEnabled
   );
-  const [trendLineFilterVisible, setTrendLineFilterVisible] = useState(true);
 
-  // 放量急跌/拉升筛选显示状态
-  const [volumeSurgeFilterVisible, setVolumeSurgeFilterVisible] = useState<boolean>(true);
   const [filterSkippedExpanded, setFilterSkippedExpanded] = useState(false);
   const [tableHeight, setTableHeight] = useState<number>(400); // 表格高度
   const tableCardRef = useRef<HTMLDivElement>(null); // 表格Card的引用
 
-  // 急跌/急涨筛选状态（单日模式，去掉放量逻辑）
-  const [volumeSurgeDropEnabled, setVolumeSurgeDropEnabled] = useState<boolean>(
-    INITIAL_FILTER_STATE.volumeSurgeDropEnabled
+  const [sharpMoveWindowBars, setSharpMoveWindowBars] = useState<number>(INITIAL_FILTER_STATE.sharpMoveWindowBars);
+  const [sharpMoveMagnitude, setSharpMoveMagnitude] = useState<number>(INITIAL_FILTER_STATE.sharpMoveMagnitude);
+  const [sharpMoveOnlyDrop, setSharpMoveOnlyDrop] = useState<boolean>(INITIAL_FILTER_STATE.sharpMoveOnlyDrop);
+  const [sharpMoveOnlyRise, setSharpMoveOnlyRise] = useState<boolean>(INITIAL_FILTER_STATE.sharpMoveOnlyRise);
+  const [sharpMoveDropThenRiseLoose, setSharpMoveDropThenRiseLoose] = useState<boolean>(
+    INITIAL_FILTER_STATE.sharpMoveDropThenRiseLoose
   );
-  const [volumeSurgeRiseEnabled, setVolumeSurgeRiseEnabled] = useState<boolean>(
-    INITIAL_FILTER_STATE.volumeSurgeRiseEnabled
+  const [sharpMoveRiseThenDropLoose, setSharpMoveRiseThenDropLoose] = useState<boolean>(
+    INITIAL_FILTER_STATE.sharpMoveRiseThenDropLoose
   );
-  const [volumeSurgePeriod, setVolumeSurgePeriod] = useState<number>(INITIAL_FILTER_STATE.volumeSurgePeriod);
-  const [dropRisePercentRange, setDropRisePercentRange] = useState<string>(INITIAL_FILTER_STATE.dropRisePercentRange);
-  const [afterDropType, setAfterDropType] = useState<string>(INITIAL_FILTER_STATE.afterDropType);
-  const [afterRiseType, setAfterRiseType] = useState<string>(INITIAL_FILTER_STATE.afterRiseType);
-  const [afterDropPercentRange, setAfterDropPercentRange] = useState<string>(INITIAL_FILTER_STATE.afterDropPercentRange);
-  const [afterRisePercentRange, setAfterRisePercentRange] = useState<string>(INITIAL_FILTER_STATE.afterRisePercentRange);
+  const [sharpMoveDropFlatRise, setSharpMoveDropFlatRise] = useState<boolean>(
+    INITIAL_FILTER_STATE.sharpMoveDropFlatRise
+  );
+  const [sharpMoveRiseFlatDrop, setSharpMoveRiseFlatDrop] = useState<boolean>(
+    INITIAL_FILTER_STATE.sharpMoveRiseFlatDrop
+  );
 
   // 先恢复 IndexedDB 中的分析结果与 K 线缓存，再套用 localStorage 中的查询/筛选偏好（纯前端筛选用缓存即可）
   useEffect(() => {
@@ -217,7 +218,7 @@ export function OpportunityPage() {
         setTurnoverRateRange,
         setPeRatioRange,
         setKdjJRange,
-        setFilterVisible,
+        setFilterPanelActiveKey,
         setRecentLimitUpCount,
         setRecentLimitDownCount,
         setLimitUpPeriod,
@@ -228,20 +229,17 @@ export function OpportunityPage() {
         setConsolidationThreshold,
         setConsolidationRequireAboveMa10,
         setConsolidationFilterEnabled,
-        setConsolidationFilterVisible,
         setTrendLineLookback,
         setTrendLineConsecutive,
         setTrendLineFilterEnabled,
-        setTrendLineFilterVisible,
-        setVolumeSurgeFilterVisible,
-        setVolumeSurgeDropEnabled,
-        setVolumeSurgeRiseEnabled,
-        setVolumeSurgePeriod,
-        setDropRisePercentRange,
-        setAfterDropType,
-        setAfterRiseType,
-        setAfterDropPercentRange,
-        setAfterRisePercentRange,
+        setSharpMoveWindowBars,
+        setSharpMoveMagnitude,
+        setSharpMoveOnlyDrop,
+        setSharpMoveOnlyRise,
+        setSharpMoveDropThenRiseLoose,
+        setSharpMoveRiseThenDropLoose,
+        setSharpMoveDropFlatRise,
+        setSharpMoveRiseFlatDrop,
       });
       const st = useOpportunityStore.getState();
       if (st.analysisData.length === 0) {
@@ -289,10 +287,7 @@ export function OpportunityPage() {
     updateTableHeight();
   }, [
     analysisData.length,
-    filterVisible,
-    consolidationFilterVisible,
-    trendLineFilterVisible,
-    volumeSurgeFilterVisible,
+    filterPanelActiveKey,
     loading,
     errors.length,
     updateTableHeight,
@@ -383,14 +378,14 @@ export function OpportunityPage() {
       trendLineLookback,
       trendLineConsecutive,
       trendLineFilterEnabled,
-      volumeSurgeDropEnabled,
-      volumeSurgeRiseEnabled,
-      volumeSurgePeriod,
-      dropRisePercentRange,
-      afterDropType,
-      afterRiseType,
-      afterDropPercentRange,
-      afterRisePercentRange,
+      sharpMoveWindowBars,
+      sharpMoveMagnitude,
+      sharpMoveOnlyDrop,
+      sharpMoveOnlyRise,
+      sharpMoveDropThenRiseLoose,
+      sharpMoveRiseThenDropLoose,
+      sharpMoveDropFlatRise,
+      sharpMoveRiseFlatDrop,
     }),
     [
       priceRange,
@@ -411,14 +406,14 @@ export function OpportunityPage() {
       trendLineLookback,
       trendLineConsecutive,
       trendLineFilterEnabled,
-      volumeSurgeDropEnabled,
-      volumeSurgeRiseEnabled,
-      volumeSurgePeriod,
-      dropRisePercentRange,
-      afterDropType,
-      afterRiseType,
-      afterDropPercentRange,
-      afterRisePercentRange,
+      sharpMoveWindowBars,
+      sharpMoveMagnitude,
+      sharpMoveOnlyDrop,
+      sharpMoveOnlyRise,
+      sharpMoveDropThenRiseLoose,
+      sharpMoveRiseThenDropLoose,
+      sharpMoveDropFlatRise,
+      sharpMoveRiseFlatDrop,
     ]
   );
 
@@ -456,7 +451,7 @@ export function OpportunityPage() {
     setTurnoverRateRange({ ...s.turnoverRateRange });
     setPeRatioRange({ ...s.peRatioRange });
     setKdjJRange({ ...s.kdjJRange });
-    setFilterVisible(true);
+    setFilterPanelActiveKey('data');
     setRecentLimitUpCount(s.recentLimitUpCount);
     setRecentLimitDownCount(s.recentLimitDownCount);
     setLimitUpPeriod(s.limitUpPeriod);
@@ -470,17 +465,14 @@ export function OpportunityPage() {
     setTrendLineLookback(s.trendLineLookback);
     setTrendLineConsecutive(s.trendLineConsecutive);
     setTrendLineFilterEnabled(s.trendLineFilterEnabled);
-    setConsolidationFilterVisible(true);
-    setTrendLineFilterVisible(true);
-    setVolumeSurgeFilterVisible(true);
-    setVolumeSurgeDropEnabled(s.volumeSurgeDropEnabled);
-    setVolumeSurgeRiseEnabled(s.volumeSurgeRiseEnabled);
-    setVolumeSurgePeriod(s.volumeSurgePeriod);
-    setDropRisePercentRange(s.dropRisePercentRange);
-    setAfterDropType(s.afterDropType);
-    setAfterRiseType(s.afterRiseType);
-    setAfterDropPercentRange(s.afterDropPercentRange);
-    setAfterRisePercentRange(s.afterRisePercentRange);
+    setSharpMoveWindowBars(s.sharpMoveWindowBars);
+    setSharpMoveMagnitude(s.sharpMoveMagnitude);
+    setSharpMoveOnlyDrop(s.sharpMoveOnlyDrop);
+    setSharpMoveOnlyRise(s.sharpMoveOnlyRise);
+    setSharpMoveDropThenRiseLoose(s.sharpMoveDropThenRiseLoose);
+    setSharpMoveRiseThenDropLoose(s.sharpMoveRiseThenDropLoose);
+    setSharpMoveDropFlatRise(s.sharpMoveDropFlatRise);
+    setSharpMoveRiseFlatDrop(s.sharpMoveRiseFlatDrop);
     patchSavedPrefsFiltersToDefaults();
     message.info('已恢复默认筛选条件');
   };
@@ -492,7 +484,7 @@ export function OpportunityPage() {
     }
 
     const prefs: OpportunityFilterPrefs = {
-      version: 1,
+      version: 2,
       selectedMarket,
       nameType,
       currentPeriod,
@@ -502,7 +494,7 @@ export function OpportunityPage() {
       turnoverRateRange: { ...turnoverRateRange },
       peRatioRange: { ...peRatioRange },
       kdjJRange: { ...kdjJRange },
-      filterVisible,
+      ...visibilityFromActiveFilterPanelKey(filterPanelActiveKey),
       recentLimitUpCount,
       recentLimitDownCount,
       limitUpPeriod,
@@ -513,20 +505,17 @@ export function OpportunityPage() {
       consolidationThreshold,
       consolidationRequireAboveMa10,
       consolidationFilterEnabled,
-      consolidationFilterVisible,
       trendLineLookback,
       trendLineConsecutive,
       trendLineFilterEnabled,
-      trendLineFilterVisible,
-      volumeSurgeFilterVisible,
-      volumeSurgeDropEnabled,
-      volumeSurgeRiseEnabled,
-      volumeSurgePeriod,
-      dropRisePercentRange,
-      afterDropType,
-      afterRiseType,
-      afterDropPercentRange,
-      afterRisePercentRange,
+      sharpMoveWindowBars,
+      sharpMoveMagnitude,
+      sharpMoveOnlyDrop,
+      sharpMoveOnlyRise,
+      sharpMoveDropThenRiseLoose,
+      sharpMoveRiseThenDropLoose,
+      sharpMoveDropFlatRise,
+      sharpMoveRiseFlatDrop,
     };
     saveOpportunityFilterPrefs(prefs);
 
@@ -753,587 +742,63 @@ export function OpportunityPage() {
           <>
             {/* 筛选区域容器 */}
             <div className={styles.filterContainer}>
-              {/* 筛选区域 */}
-              <Card className={styles.filterCard} size="small">
-                <div className={styles.filterHeader}>
-                  <Space>
-                    <FilterOutlined />
-                    <span>数据筛选</span>
-                    <Button
-                      type="text"
-                      size="small"
-                      icon={filterVisible ? <ExclamationCircleOutlined /> : null}
-                      onClick={() => setFilterVisible(!filterVisible)}
-                    >
-                      {filterVisible ? '收起' : '展开'}
-                    </Button>
-                  </Space>
-                </div>
-                {filterVisible && (
-                  <div className={styles.filterContent}>
-                    <div className={styles.filterRow}>
-                      <div className={styles.filterItem}>
-                        <span className={styles.filterLabel}>价格范围：</span>
-                        <InputNumber
-                          value={priceRange.min}
-                          min={0}
-                          step={0.01}
-                          precision={2}
-                          style={{ width: 100 }}
-                          placeholder="最低价"
-                          onChange={(v) => {
-                            setPriceRange((prev) => ({
-                              ...prev,
-                              min: typeof v === 'number' && isFinite(v) ? v : undefined,
-                            }));
-                          }}
-                        />
-                        <span style={{ margin: '0 4px' }}>~</span>
-                        <InputNumber
-                          value={priceRange.max}
-                          min={0}
-                          step={0.01}
-                          precision={2}
-                          style={{ width: 100 }}
-                          placeholder="最高价"
-                          onChange={(v) => {
-                            setPriceRange((prev) => ({
-                              ...prev,
-                              max: typeof v === 'number' && isFinite(v) ? v : undefined,
-                            }));
-                          }}
-                        />
-                      </div>
-                      <div className={styles.filterItem}>
-                        <span className={styles.filterLabel}>总市值(亿)：</span>
-                        <InputNumber
-                          value={marketCapRange.min}
-                          min={0}
-                          step={0.01}
-                          precision={2}
-                          style={{ width: 100 }}
-                          placeholder="最小值"
-                          onChange={(v) => {
-                            setMarketCapRange((prev) => ({
-                              ...prev,
-                              min: typeof v === 'number' && isFinite(v) ? v : undefined,
-                            }));
-                          }}
-                        />
-                        <span style={{ margin: '0 4px' }}>~</span>
-                        <InputNumber
-                          value={marketCapRange.max}
-                          min={0}
-                          step={0.01}
-                          precision={2}
-                          style={{ width: 100 }}
-                          placeholder="最大值"
-                          onChange={(v) => {
-                            setMarketCapRange((prev) => ({
-                              ...prev,
-                              max: typeof v === 'number' && isFinite(v) ? v : undefined,
-                            }));
-                          }}
-                        />
-                      </div>
-                      <div className={styles.filterItem}>
-                        <span className={styles.filterLabel}>换手率(%)：</span>
-                        <InputNumber
-                          value={turnoverRateRange.min}
-                          min={0}
-                          max={100}
-                          step={0.01}
-                          precision={2}
-                          style={{ width: 100 }}
-                          placeholder="最小值"
-                          onChange={(v) => {
-                            setTurnoverRateRange((prev) => ({
-                              ...prev,
-                              min: typeof v === 'number' && isFinite(v) ? v : undefined,
-                            }));
-                          }}
-                        />
-                        <span style={{ margin: '0 4px' }}>~</span>
-                        <InputNumber
-                          value={turnoverRateRange.max}
-                          min={0}
-                          max={100}
-                          step={0.01}
-                          precision={2}
-                          style={{ width: 100 }}
-                          placeholder="最大值"
-                          onChange={(v) => {
-                            setTurnoverRateRange((prev) => ({
-                              ...prev,
-                              max: typeof v === 'number' && isFinite(v) ? v : undefined,
-                            }));
-                          }}
-                        />
-                      </div>
-                      <div className={styles.filterItem}>
-                        <span className={styles.filterLabel}>市盈率：</span>
-                        <InputNumber
-                          value={peRatioRange.min}
-                          min={0}
-                          step={0.01}
-                          precision={2}
-                          style={{ width: 100 }}
-                          placeholder="最小值"
-                          onChange={(v) => {
-                            setPeRatioRange((prev) => ({
-                              ...prev,
-                              min: typeof v === 'number' && isFinite(v) ? v : undefined,
-                            }));
-                          }}
-                        />
-                        <span style={{ margin: '0 4px' }}>~</span>
-                        <InputNumber
-                          value={peRatioRange.max}
-                          min={0}
-                          step={0.01}
-                          precision={2}
-                          style={{ width: 100 }}
-                          placeholder="最大值"
-                          onChange={(v) => {
-                            setPeRatioRange((prev) => ({
-                              ...prev,
-                              max: typeof v === 'number' && isFinite(v) ? v : undefined,
-                            }));
-                          }}
-                        />
-                      </div>
-                      <div className={styles.filterItem}>
-                        <span className={styles.filterLabel}>KDJ-J：</span>
-                        <InputNumber
-                          value={kdjJRange.min}
-                          step={0.01}
-                          precision={2}
-                          style={{ width: 100 }}
-                          placeholder="最小值"
-                          onChange={(v) => {
-                            setKdjJRange((prev) => ({
-                              ...prev,
-                              min: typeof v === 'number' && isFinite(v) ? v : undefined,
-                            }));
-                          }}
-                        />
-                        <span style={{ margin: '0 4px' }}>~</span>
-                        <InputNumber
-                          value={kdjJRange.max}
-                          step={0.01}
-                          precision={2}
-                          style={{ width: 100 }}
-                          placeholder="最大值"
-                          onChange={(v) => {
-                            setKdjJRange((prev) => ({
-                              ...prev,
-                              max: typeof v === 'number' && isFinite(v) ? v : undefined,
-                            }));
-                          }}
-                        />
-                      </div>
-                    </div>
-                    <div className={styles.filterRow}>
-                      <div className={styles.filterItem}>
-                        <span className={styles.filterLabel}>最近涨停数：</span>
-                        <InputNumber
-                          value={recentLimitUpCount}
-                          min={0}
-                          step={1}
-                          style={{ width: 100 }}
-                          onChange={(v) => {
-                            setRecentLimitUpCount(typeof v === 'number' && isFinite(v) ? Math.floor(v) : undefined);
-                          }}
-                        />
-                      </div>
-                      <div className={styles.filterItem}>
-                        <span className={styles.filterLabel}>涨停周期范围：</span>
-                        <InputNumber
-                          value={limitUpPeriod}
-                          min={1}
-                          max={100}
-                          step={1}
-                          style={{ width: 100 }}
-                          onChange={(v) => {
-                            const next = typeof v === 'number' && isFinite(v) ? Math.floor(v) : 10;
-                            setLimitUpPeriod(next);
-                          }}
-                        />
-                        <span style={{ marginLeft: 4 }}>天</span>
-                      </div>
-                      <div className={styles.filterItem}>
-                        <span className={styles.filterLabel}>最近跌停数：</span>
-                        <InputNumber
-                          value={recentLimitDownCount}
-                          min={0}
-                          step={1}
-                          style={{ width: 100 }}
-                          onChange={(v) => {
-                            setRecentLimitDownCount(typeof v === 'number' && isFinite(v) ? Math.floor(v) : undefined);
-                          }}
-                        />
-                      </div>
-                      <div className={styles.filterItem}>
-                        <span className={styles.filterLabel}>跌停周期范围：</span>
-                        <InputNumber
-                          value={limitDownPeriod}
-                          min={1}
-                          max={100}
-                          step={1}
-                          style={{ width: 100 }}
-                          onChange={(v) => {
-                            const next = typeof v === 'number' && isFinite(v) ? Math.floor(v) : 10;
-                            setLimitDownPeriod(next);
-                          }}
-                        />
-                        <span style={{ marginLeft: 4 }}>天</span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </Card>
-
-              {/* 横盘筛选区域 */}
-              <Card className={styles.filterCard} size="small">
-                <div className={styles.filterHeader}>
-                  <Space>
-                    <FilterOutlined />
-                    <span>横盘筛选</span>
-                    <Button
-                      type="text"
-                      size="small"
-                      icon={consolidationFilterVisible ? <ExclamationCircleOutlined /> : null}
-                      onClick={() => setConsolidationFilterVisible(!consolidationFilterVisible)}
-                    >
-                      {consolidationFilterVisible ? '收起' : '展开'}
-                    </Button>
-                  </Space>
-                </div>
-                {consolidationFilterVisible && (
-                  <div className={styles.filterContent}>
-                    <div className={styles.filterRow}>
-                      <div className={styles.filterItem}>
-                        <Checkbox
-                          checked={consolidationFilterEnabled}
-                          onChange={(e) => setConsolidationFilterEnabled(e.target.checked)}
-                        >
-                          启用横盘筛选（关闭后不按横盘过滤列表）
-                        </Checkbox>
-                      </div>
-                    </div>
-                    <div className={styles.filterRow}>
-                      <div className={styles.filterItem}>
-                        <span className={styles.filterLabel}>横盘类型：</span>
-                        <Checkbox.Group
-                          value={consolidationTypes}
-                          onChange={(values) => {
-                            setConsolidationTypes(values as ConsolidationType[]);
-                          }}
-                        >
-                          {CONSOLIDATION_TYPE_OPTIONS.map((item) => (
-                            <Checkbox key={item.value} value={item.value}>
-                              {item.label}
-                            </Checkbox>
-                          ))}
-                        </Checkbox.Group>
-                      </div>
-                    </div>
-                    <div className={styles.filterRow}>
-                      <div className={styles.filterItem}>
-                        <span className={styles.filterLabel}>检索根数：</span>
-                        <InputNumber
-                          value={consolidationLookback}
-                          min={3}
-                          max={500}
-                          step={1}
-                          style={{ width: 100 }}
-                          onChange={(v) => {
-                            const next = typeof v === 'number' && isFinite(v) ? Math.floor(v) : 10;
-                            const clamped = Math.min(500, Math.max(3, next));
-                            setConsolidationLookback(clamped);
-                            if (consolidationConsecutive > clamped) {
-                              setConsolidationConsecutive(Math.max(3, clamped));
-                            }
-                          }}
-                        />
-                        <span style={{ marginLeft: 4 }}>根（从最新K线向前）</span>
-                      </div>
-                      <div className={styles.filterItem}>
-                        <span className={styles.filterLabel}>连续根数：</span>
-                        <InputNumber
-                          value={consolidationConsecutive}
-                          min={3}
-                          max={consolidationLookback}
-                          step={1}
-                          style={{ width: 100 }}
-                          onChange={(v) => {
-                            const next = typeof v === 'number' && isFinite(v) ? Math.floor(v) : 3;
-                            const maxN = Math.max(3, consolidationLookback);
-                            setConsolidationConsecutive(Math.min(maxN, Math.max(3, next)));
-                          }}
-                        />
-                      </div>
-                      <div className={styles.filterItem}>
-                        <span className={styles.filterLabel}>波动阈值(%)：</span>
-                        <InputNumber
-                          value={consolidationThreshold}
-                          min={0}
-                          max={20}
-                          step={0.1}
-                          precision={1}
-                          style={{ width: 100 }}
-                          onChange={(v) => {
-                            const next = typeof v === 'number' && isFinite(v) ? v : 2;
-                            setConsolidationThreshold(next);
-                          }}
-                        />
-                      </div>
-                    </div>
-                    <div className={styles.filterRow}>
-                      <div className={styles.filterItem}>
-                        <Checkbox
-                          checked={consolidationRequireAboveMa10}
-                          onChange={(e) => setConsolidationRequireAboveMa10(e.target.checked)}
-                        >
-                          连续根数段内每日收盘价均在MA10之上
-                        </Checkbox>
-                      </div>
-                    </div>
-                    <div className={styles.filterRow}>
-                      <div className={styles.filterItem}>
-                        <span className={styles.filterLabel}>命中说明：</span>
-                        <span>
-                          检索窗内任一段「连续根数」满足横盘即命中；勾选 MA10 则该段每日收盘≥当日 MA10。类型见左列，本列为简要波动与位置。
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </Card>
-
-              {/* 趋势线筛选 */}
-              <Card className={styles.filterCard} size="small">
-                <div className={styles.filterHeader}>
-                  <Space>
-                    <FilterOutlined />
-                    <span>趋势线筛选</span>
-                    <Button
-                      type="text"
-                      size="small"
-                      icon={trendLineFilterVisible ? <ExclamationCircleOutlined /> : null}
-                      onClick={() => setTrendLineFilterVisible(!trendLineFilterVisible)}
-                    >
-                      {trendLineFilterVisible ? '收起' : '展开'}
-                    </Button>
-                  </Space>
-                </div>
-                {trendLineFilterVisible && (
-                  <div className={styles.filterContent}>
-                    <div className={styles.filterRow}>
-                      <div className={styles.filterItem}>
-                        <Checkbox
-                          checked={trendLineFilterEnabled}
-                          onChange={(e) => setTrendLineFilterEnabled(e.target.checked)}
-                        >
-                          启用趋势线筛选（与横盘同时开启时为 AND）
-                        </Checkbox>
-                      </div>
-                    </div>
-                    <div className={styles.filterRow}>
-                      <div className={styles.filterItem}>
-                        <span className={styles.filterLabel}>检索根数：</span>
-                        <InputNumber
-                          value={trendLineLookback}
-                          min={3}
-                          max={500}
-                          step={1}
-                          style={{ width: 100 }}
-                          onChange={(v) => {
-                            const next = typeof v === 'number' && isFinite(v) ? Math.floor(v) : 10;
-                            const clamped = Math.min(500, Math.max(3, next));
-                            setTrendLineLookback(clamped);
-                            if (trendLineConsecutive > clamped) {
-                              setTrendLineConsecutive(Math.max(3, clamped));
-                            }
-                          }}
-                        />
-                        <span style={{ marginLeft: 4 }}>根</span>
-                      </div>
-                      <div className={styles.filterItem}>
-                        <span className={styles.filterLabel}>连续根数：</span>
-                        <InputNumber
-                          value={trendLineConsecutive}
-                          min={3}
-                          max={trendLineLookback}
-                          step={1}
-                          style={{ width: 100 }}
-                          onChange={(v) => {
-                            const next = typeof v === 'number' && isFinite(v) ? Math.floor(v) : 3;
-                            const maxN = Math.max(3, trendLineLookback);
-                            setTrendLineConsecutive(Math.min(maxN, Math.max(3, next)));
-                          }}
-                        />
-                      </div>
-                    </div>
-                    <div className={styles.filterRow}>
-                      <div className={styles.filterItem}>
-                        <span className={styles.filterLabel}>说明：</span>
-                        <span>
-                          窗内取<strong>最靠后</strong>一段连续 N 根：每日收盘≥昨收且≥当日 MA5（当前K线周期下的
-                          5 周期均线）。
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </Card>
-
-              {/* 急跌/急涨筛选区域（单日模式） */}
-              <Card className={styles.filterCard} size="small">
-                <div className={styles.filterHeader}>
-                  <Space>
-                    <FilterOutlined />
-                    <span>急跌/急涨筛选（单日模式）</span>
-                    <Button
-                      type="text"
-                      size="small"
-                      icon={volumeSurgeFilterVisible ? <ExclamationCircleOutlined /> : null}
-                      onClick={() => setVolumeSurgeFilterVisible(!volumeSurgeFilterVisible)}
-                    >
-                      {volumeSurgeFilterVisible ? '收起' : '展开'}
-                    </Button>
-                  </Space>
-                </div>
-                {volumeSurgeFilterVisible && (
-                  <div className={styles.filterContent}>
-                    <div className={styles.filterRow}>
-                      <div className={styles.filterItem}>
-                        <Checkbox
-                          checked={volumeSurgeDropEnabled}
-                          onChange={(e) => setVolumeSurgeDropEnabled(e.target.checked)}
-                        >
-                          启用急跌筛选
-                        </Checkbox>
-                        <Checkbox
-                          checked={volumeSurgeRiseEnabled}
-                          onChange={(e) => setVolumeSurgeRiseEnabled(e.target.checked)}
-                          style={{ marginLeft: 16 }}
-                        >
-                          启用急涨筛选
-                        </Checkbox>
-                      </div>
-                    </div>
-
-                    {(volumeSurgeDropEnabled || volumeSurgeRiseEnabled) && (
-                      <>
-                        <div className={styles.filterRow}>
-                          <div className={styles.filterItem}>
-                            <span className={styles.filterLabel}>周期：</span>
-                            <InputNumber
-                              value={volumeSurgePeriod}
-                              min={5}
-                              max={30}
-                              step={1}
-                              style={{ width: 100 }}
-                              onChange={(v) => {
-                                const next = typeof v === 'number' && isFinite(v) ? Math.floor(v) : 10;
-                                setVolumeSurgePeriod(next);
-                              }}
-                            />
-                            <span style={{ marginLeft: 4 }}>天</span>
-                          </div>
-                          <div className={styles.filterItem}>
-                            <span className={styles.filterLabel}>急跌/急涨幅度：</span>
-                            <Select
-                              value={dropRisePercentRange}
-                              onChange={(value) => setDropRisePercentRange(value)}
-                              style={{ width: 150 }}
-                              options={[
-                                { label: '5-10%', value: '5-10' },
-                                { label: '10%以上', value: '10+' },
-                              ]}
-                            />
-                          </div>
-                        </div>
-
-                        {volumeSurgeDropEnabled && (
-                          <>
-                            <div className={styles.filterRow}>
-                              <div className={styles.filterItem}>
-                                <span className={styles.filterLabel}>急跌后类型：</span>
-                                <Select
-                                  value={afterDropType}
-                                  onChange={(value) => setAfterDropType(value)}
-                                  style={{ width: 200 }}
-                                  options={[
-                                    { label: '不限', value: 'all' },
-                                    { label: '横盘', value: 'consolidation' },
-                                    { label: '横盘后上涨', value: 'consolidation_with_rise' },
-                                    { label: '横盘后下跌', value: 'consolidation_with_drop' },
-                                  ]}
-                                />
-                              </div>
-                            </div>
-                            {(afterDropType === 'consolidation_with_rise' || afterDropType === 'consolidation_with_drop') && (
-                              <div className={styles.filterRow}>
-                                <div className={styles.filterItem}>
-                                  <span className={styles.filterLabel}>横盘后幅度：</span>
-                                  <Select
-                                    value={afterDropPercentRange}
-                                    onChange={(value) => setAfterDropPercentRange(value)}
-                                    style={{ width: 150 }}
-                                    options={[
-                                      { label: '5-10%', value: '5-10' },
-                                      { label: '10%以上', value: '10+' },
-                                    ]}
-                                  />
-                                </div>
-                              </div>
-                            )}
-                          </>
-                        )}
-
-                        {volumeSurgeRiseEnabled && (
-                          <>
-                            <div className={styles.filterRow}>
-                              <div className={styles.filterItem}>
-                                <span className={styles.filterLabel}>急涨后类型：</span>
-                                <Select
-                                  value={afterRiseType}
-                                  onChange={(value) => setAfterRiseType(value)}
-                                  style={{ width: 200 }}
-                                  options={[
-                                    { label: '不限', value: 'all' },
-                                    { label: '横盘', value: 'consolidation' },
-                                    { label: '横盘后上涨', value: 'consolidation_with_rise' },
-                                    { label: '横盘后下跌', value: 'consolidation_with_drop' },
-                                  ]}
-                                />
-                              </div>
-                            </div>
-                            {(afterRiseType === 'consolidation_with_rise' || afterRiseType === 'consolidation_with_drop') && (
-                              <div className={styles.filterRow}>
-                                <div className={styles.filterItem}>
-                                  <span className={styles.filterLabel}>横盘后幅度：</span>
-                                  <Select
-                                    value={afterRisePercentRange}
-                                    onChange={(value) => setAfterRisePercentRange(value)}
-                                    style={{ width: 150 }}
-                                    options={[
-                                      { label: '5-10%', value: '5-10' },
-                                      { label: '10%以上', value: '10+' },
-                                    ]}
-                                  />
-                                </div>
-                              </div>
-                            )}
-                          </>
-                        )}
-                      </>
-                    )}
-                  </div>
-                )}
-              </Card>
+              <OpportunityFiltersPanel
+                filterPanelActiveKey={filterPanelActiveKey}
+                setFilterPanelActiveKey={setFilterPanelActiveKey}
+                priceRange={priceRange}
+                setPriceRange={setPriceRange}
+                marketCapRange={marketCapRange}
+                setMarketCapRange={setMarketCapRange}
+                turnoverRateRange={turnoverRateRange}
+                setTurnoverRateRange={setTurnoverRateRange}
+                peRatioRange={peRatioRange}
+                setPeRatioRange={setPeRatioRange}
+                kdjJRange={kdjJRange}
+                setKdjJRange={setKdjJRange}
+                recentLimitUpCount={recentLimitUpCount}
+                setRecentLimitUpCount={setRecentLimitUpCount}
+                recentLimitDownCount={recentLimitDownCount}
+                setRecentLimitDownCount={setRecentLimitDownCount}
+                limitUpPeriod={limitUpPeriod}
+                setLimitUpPeriod={setLimitUpPeriod}
+                limitDownPeriod={limitDownPeriod}
+                setLimitDownPeriod={setLimitDownPeriod}
+                consolidationTypes={consolidationTypes}
+                setConsolidationTypes={setConsolidationTypes}
+                consolidationLookback={consolidationLookback}
+                setConsolidationLookback={setConsolidationLookback}
+                consolidationConsecutive={consolidationConsecutive}
+                setConsolidationConsecutive={setConsolidationConsecutive}
+                consolidationThreshold={consolidationThreshold}
+                setConsolidationThreshold={setConsolidationThreshold}
+                consolidationRequireAboveMa10={consolidationRequireAboveMa10}
+                setConsolidationRequireAboveMa10={setConsolidationRequireAboveMa10}
+                consolidationFilterEnabled={consolidationFilterEnabled}
+                setConsolidationFilterEnabled={setConsolidationFilterEnabled}
+                trendLineLookback={trendLineLookback}
+                setTrendLineLookback={setTrendLineLookback}
+                trendLineConsecutive={trendLineConsecutive}
+                setTrendLineConsecutive={setTrendLineConsecutive}
+                trendLineFilterEnabled={trendLineFilterEnabled}
+                setTrendLineFilterEnabled={setTrendLineFilterEnabled}
+                sharpMoveWindowBars={sharpMoveWindowBars}
+                setSharpMoveWindowBars={setSharpMoveWindowBars}
+                sharpMoveMagnitude={sharpMoveMagnitude}
+                setSharpMoveMagnitude={setSharpMoveMagnitude}
+                sharpMoveOnlyDrop={sharpMoveOnlyDrop}
+                setSharpMoveOnlyDrop={setSharpMoveOnlyDrop}
+                sharpMoveOnlyRise={sharpMoveOnlyRise}
+                setSharpMoveOnlyRise={setSharpMoveOnlyRise}
+                sharpMoveDropThenRiseLoose={sharpMoveDropThenRiseLoose}
+                setSharpMoveDropThenRiseLoose={setSharpMoveDropThenRiseLoose}
+                sharpMoveRiseThenDropLoose={sharpMoveRiseThenDropLoose}
+                setSharpMoveRiseThenDropLoose={setSharpMoveRiseThenDropLoose}
+                sharpMoveDropFlatRise={sharpMoveDropFlatRise}
+                setSharpMoveDropFlatRise={setSharpMoveDropFlatRise}
+                sharpMoveRiseFlatDrop={sharpMoveRiseFlatDrop}
+                setSharpMoveRiseFlatDrop={setSharpMoveRiseFlatDrop}
+                consolidationTypeOptions={CONSOLIDATION_TYPE_OPTIONS}
+              />
 
               {/* 筛选结果提示 */}
               {analysisData.length > 0 && (

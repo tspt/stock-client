@@ -3,7 +3,7 @@
  */
 
 import { Suspense, lazy, useEffect, useState } from 'react';
-import { ConfigProvider, App as AntdApp, theme, Layout, Tabs } from 'antd';
+import { ConfigProvider, App as AntdApp, theme, Layout, Tabs, Spin } from 'antd';
 import { StockOutlined, BellOutlined, BarChartOutlined } from '@ant-design/icons';
 import zhCN from 'antd/locale/zh_CN';
 import { useTheme } from '@/hooks/useTheme';
@@ -105,6 +105,7 @@ function AppContent() {
                 activeKey={activeTab}
                 onChange={setActiveTab}
                 className={styles.mainTabs}
+                destroyOnHidden
                 items={[
                   {
                     key: 'stocks',
@@ -115,7 +116,13 @@ function AppContent() {
                       </span>
                     ),
                     children: (
-                      <Suspense fallback={<div>加载中...</div>}>
+                      <Suspense
+                        fallback={
+                          <div className={styles.suspenseFallback}>
+                            <Spin size="large" tip="加载中..." />
+                          </div>
+                        }
+                      >
                         <div className={styles.stocksLayout}>
                           <div className={styles.leftPanel}>
                             <ListPage />
@@ -136,7 +143,13 @@ function AppContent() {
                       </span>
                     ),
                     children: (
-                      <Suspense fallback={<div>加载中...</div>}>
+                      <Suspense
+                        fallback={
+                          <div className={styles.suspenseFallback}>
+                            <Spin size="large" tip="加载中..." />
+                          </div>
+                        }
+                      >
                         <div className={styles.alertsLayout}>
                           <AlertPage />
                         </div>
@@ -152,7 +165,13 @@ function AppContent() {
                       </span>
                     ),
                     children: (
-                      <Suspense fallback={<div>加载中...</div>}>
+                      <Suspense
+                        fallback={
+                          <div className={styles.suspenseFallback}>
+                            <Spin size="large" tip="加载中..." />
+                          </div>
+                        }
+                      >
                         <div className={styles.overviewLayout}>
                           <OverviewPage />
                         </div>
@@ -168,7 +187,13 @@ function AppContent() {
                       </span>
                     ),
                     children: (
-                      <Suspense fallback={<div>加载中...</div>}>
+                      <Suspense
+                        fallback={
+                          <div className={styles.suspenseFallback}>
+                            <Spin size="large" tip="加载中..." />
+                          </div>
+                        }
+                      >
                         <div className={styles.opportunityLayout}>
                           <OpportunityPage />
                         </div>

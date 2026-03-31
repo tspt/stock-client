@@ -392,8 +392,8 @@ export interface StockOpportunityData {
   consolidation?: ConsolidationAnalysis;
   /** 沿趋势线（收盘不跌 + 在 MA5 上）检索结果 */
   trendLine?: TrendLineAnalysis;
-  /** 放量急跌/拉升模式分析结果 */
-  volumeSurgePatterns?: VolumeSurgePatternAnalysis;
+  /** 单日异动形态（最近 N 根、阈值 M，见 sharpMovePatterns 模块） */
+  sharpMovePatterns?: SharpMovePatternAnalysis;
   /** 分析时间戳 */
   analyzedAt: number;
   /** 错误信息（如果获取失败） */
@@ -457,73 +457,30 @@ export interface ConsolidationAnalysis {
 }
 
 /**
- * 放量急跌/拉升周期
+ * 单日异动形态分析（S1/S2 单事件；P1/P2 宽松双段；P3/P4 中间为普通日）
  */
-export interface VolumeSurgePeriod {
-  /** 周期开始索引（在klineData中的位置） */
-  startIndex: number;
-  /** 周期结束索引 */
-  endIndex: number;
-  /** 起始价格 */
-  startPrice: number;
-  /** 结束价格 */
-  endPrice: number;
-  /** 跌幅/涨幅百分比 */
-  changePercent: number;
-  /** 周期天数（单日模式为1） */
-  days: number;
-}
-
-/**
- * 急跌/拉升后的分析结果
- */
-export interface AfterSurgeAnalysis {
-  /** 类型：'none' | 'consolidation' | 'consolidation_with_rise' | 'consolidation_with_drop' */
-  type: 'none' | 'consolidation' | 'consolidation_with_rise' | 'consolidation_with_drop';
-  /** 横盘信息（如果存在） */
-  consolidationInfo?: {
-    /** 横盘开始索引 */
-    startIndex: number;
-    /** 横盘结束索引 */
-    endIndex: number;
-    /** 横盘强度 */
-    strength: number;
-    /** 横盘天数 */
-    days: number;
-  };
-  /** 上涨/下跌信息（如果存在） */
-  reboundInfo?: {
-    /** 上涨/下跌开始索引 */
-    startIndex: number;
-    /** 上涨/下跌结束索引 */
-    endIndex: number;
-    /** 上涨/下跌幅度百分比 */
-    changePercent: number;
-  };
-}
-
-/**
- * 急跌/急涨模式分析结果（单日模式）
- */
-export interface VolumeSurgePatternAnalysis {
-  /** 急跌周期列表（单日模式） */
-  dropPeriods: VolumeSurgePeriod[];
-  /** 急涨周期列表（单日模式） */
-  risePeriods: VolumeSurgePeriod[];
-  /** 急跌后的分析结果（每个急跌周期对应一个分析） */
-  afterDropAnalyses: Array<{
-    period: VolumeSurgePeriod;
-    analysis: AfterSurgeAnalysis;
-  }>;
-  /** 急涨后的分析结果（每个急涨周期对应一个分析） */
-  afterRiseAnalyses: Array<{
-    period: VolumeSurgePeriod;
-    analysis: AfterSurgeAnalysis;
-  }>;
-  /** 急跌周期数量 */
-  dropCount: number;
-  /** 急涨周期数量 */
-  riseCount: number;
+export interface SharpMovePatternAnalysis {
+  windowBars: number;
+  magnitudePercent: number;
+  /** S1：窗口内存在急跌日 */
+  onlyDrop: boolean;
+  /** S2：窗口内存在急涨日 */
+  onlyRise: boolean;
+  /** P1：存在急跌后第一次急涨（中间无额外约束） */
+  dropThenRiseLoose: boolean;
+  /** P2：存在急涨后第一次急跌 */
+  riseThenDropLoose: boolean;
+  /** P3：急跌 → 中间均为普通日 → 急涨 */
+  dropThenFlatThenRise: boolean;
+  /** P4：急涨 → 中间均为普通日 → 急跌 */
+  riseThenFlatThenDrop: boolean;
+  /** 最近一次急跌日距最新一根 K 线的根数 */
+  lastDropBarsAgo?: number;
+  lastRiseBarsAgo?: number;
+  lastDropIndex?: number;
+  lastRiseIndex?: number;
+  /** 命中形态的简短标签，便于列表展示 */
+  labels: string[];
 }
 
 /**

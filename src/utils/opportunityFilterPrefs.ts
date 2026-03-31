@@ -7,7 +7,42 @@ import type { ConsolidationType, KLinePeriod } from '@/types/stock';
 
 export const OPPORTUNITY_FILTER_PREFS_KEY = 'opportunity_filter_prefs';
 
-const PREFS_VERSION = 1 as const;
+const PREFS_VERSION = 2 as const;
+
+/** 机会页筛选手风琴面板的 key（与 Collapse items 一致） */
+export const OPPORTUNITY_FILTER_PANEL_KEYS = {
+  data: 'data',
+  consolidation: 'consolidation',
+  trendLine: 'trendLine',
+  sharpMove: 'sharpMove',
+} as const;
+
+/** 由 localStorage 中四个「展开」布尔字段推导当前应展开的面板（兼容旧版多段同时展开：取固定顺序第一个为 true 的） */
+export function activeFilterPanelKeyFromPrefs(
+  prefs: Pick<
+    OpportunityFilterPrefs,
+    'filterVisible' | 'consolidationFilterVisible' | 'trendLineFilterVisible' | 'sharpMoveFilterVisible'
+  >
+): string | undefined {
+  if (prefs.filterVisible) return OPPORTUNITY_FILTER_PANEL_KEYS.data;
+  if (prefs.consolidationFilterVisible) return OPPORTUNITY_FILTER_PANEL_KEYS.consolidation;
+  if (prefs.trendLineFilterVisible) return OPPORTUNITY_FILTER_PANEL_KEYS.trendLine;
+  if (prefs.sharpMoveFilterVisible) return OPPORTUNITY_FILTER_PANEL_KEYS.sharpMove;
+  return undefined;
+}
+
+/** 将单一展开 key 写回偏好里的四个布尔字段（供「一键分析」保存） */
+export function visibilityFromActiveFilterPanelKey(activeKey: string | undefined): Pick<
+  OpportunityFilterPrefs,
+  'filterVisible' | 'consolidationFilterVisible' | 'trendLineFilterVisible' | 'sharpMoveFilterVisible'
+> {
+  return {
+    filterVisible: activeKey === OPPORTUNITY_FILTER_PANEL_KEYS.data,
+    consolidationFilterVisible: activeKey === OPPORTUNITY_FILTER_PANEL_KEYS.consolidation,
+    trendLineFilterVisible: activeKey === OPPORTUNITY_FILTER_PANEL_KEYS.trendLine,
+    sharpMoveFilterVisible: activeKey === OPPORTUNITY_FILTER_PANEL_KEYS.sharpMove,
+  };
+}
 
 const VALID_PERIODS: KLinePeriod[] = ['day', 'week', 'month', 'year'];
 const VALID_CONSOLIDATION_TYPES: ConsolidationType[] = ['low_stable', 'high_stable', 'box'];
@@ -39,15 +74,16 @@ export interface OpportunityFilterPrefs {
   trendLineConsecutive: number;
   trendLineFilterEnabled: boolean;
   trendLineFilterVisible: boolean;
-  volumeSurgeFilterVisible: boolean;
-  volumeSurgeDropEnabled: boolean;
-  volumeSurgeRiseEnabled: boolean;
-  volumeSurgePeriod: number;
-  dropRisePercentRange: string;
-  afterDropType: string;
-  afterRiseType: string;
-  afterDropPercentRange: string;
-  afterRisePercentRange: string;
+  /** 单日异动筛选卡片 */
+  sharpMoveFilterVisible: boolean;
+  sharpMoveWindowBars: number;
+  sharpMoveMagnitude: number;
+  sharpMoveOnlyDrop: boolean;
+  sharpMoveOnlyRise: boolean;
+  sharpMoveDropThenRiseLoose: boolean;
+  sharpMoveRiseThenDropLoose: boolean;
+  sharpMoveDropFlatRise: boolean;
+  sharpMoveRiseFlatDrop: boolean;
 }
 
 function isRecord(v: unknown): v is Record<string, unknown> {
@@ -84,7 +120,7 @@ export function loadOpportunityFilterPrefs(): OpportunityFilterPrefs | null {
     const raw = localStorage.getItem(OPPORTUNITY_FILTER_PREFS_KEY);
     if (!raw) return null;
     const p = JSON.parse(raw) as unknown;
-    if (!isRecord(p) || p.version !== PREFS_VERSION) return null;
+    if (!isRecord(p) || (p.version !== 1 && p.version !== 2)) return null;
     if (typeof p.selectedMarket !== 'string' || typeof p.nameType !== 'string') return null;
     if (typeof p.currentPeriod !== 'string' || !VALID_PERIODS.includes(p.currentPeriod as KLinePeriod)) {
       return null;
@@ -120,15 +156,38 @@ export function loadOpportunityFilterPrefs(): OpportunityFilterPrefs | null {
       trendLineConsecutive: isFiniteNumber(p.trendLineConsecutive) ? Math.floor(p.trendLineConsecutive) : 3,
       trendLineFilterEnabled: p.trendLineFilterEnabled === true,
       trendLineFilterVisible: p.trendLineFilterVisible === false ? false : true,
-      volumeSurgeFilterVisible: p.volumeSurgeFilterVisible === false ? false : true,
-      volumeSurgeDropEnabled: p.volumeSurgeDropEnabled === true,
-      volumeSurgeRiseEnabled: p.volumeSurgeRiseEnabled === true,
-      volumeSurgePeriod: isFiniteNumber(p.volumeSurgePeriod) ? Math.floor(p.volumeSurgePeriod) : 10,
-      dropRisePercentRange: typeof p.dropRisePercentRange === 'string' ? p.dropRisePercentRange : '5-10',
-      afterDropType: typeof p.afterDropType === 'string' ? p.afterDropType : 'all',
-      afterRiseType: typeof p.afterRiseType === 'string' ? p.afterRiseType : 'all',
-      afterDropPercentRange: typeof p.afterDropPercentRange === 'string' ? p.afterDropPercentRange : '5-10',
-      afterRisePercentRange: typeof p.afterRisePercentRange === 'string' ? p.afterRisePercentRange : '5-10',
+      sharpMoveFilterVisible:
+        p.sharpMoveFilterVisible === false
+          ? false
+          : p.volumeSurgeFilterVisible === false
+            ? false
+            : true,
+      sharpMoveWindowBars: (() => {
+        if (isFiniteNumber(p.sharpMoveWindowBars)) {
+          return Math.max(1, Math.floor(p.sharpMoveWindowBars as number));
+        }
+        if (isFiniteNumber(p.volumeSurgeLookback)) {
+          return Math.max(1, Math.floor(p.volumeSurgeLookback as number));
+        }
+        return 60;
+      })(),
+      sharpMoveMagnitude: (() => {
+        if (isFiniteNumber(p.sharpMoveMagnitude) && (p.sharpMoveMagnitude as number) > 0) {
+          return p.sharpMoveMagnitude as number;
+        }
+        if (isFiniteNumber(p.dropRiseMagnitude) && (p.dropRiseMagnitude as number) > 0) {
+          return p.dropRiseMagnitude as number;
+        }
+        const legacy = p.dropRisePercentRange;
+        if (legacy === '10+') return 10;
+        return 6;
+      })(),
+      sharpMoveOnlyDrop: p.sharpMoveOnlyDrop === true,
+      sharpMoveOnlyRise: p.sharpMoveOnlyRise === true,
+      sharpMoveDropThenRiseLoose: p.sharpMoveDropThenRiseLoose === true,
+      sharpMoveRiseThenDropLoose: p.sharpMoveRiseThenDropLoose === true,
+      sharpMoveDropFlatRise: p.sharpMoveDropFlatRise === true,
+      sharpMoveRiseFlatDrop: p.sharpMoveRiseFlatDrop === true,
     };
 
     return prefs;
@@ -180,15 +239,15 @@ export function getDefaultFilterPrefsFields(): Omit<
     trendLineConsecutive: 3,
     trendLineFilterEnabled: false,
     trendLineFilterVisible: true,
-    volumeSurgeFilterVisible: true,
-    volumeSurgeDropEnabled: false,
-    volumeSurgeRiseEnabled: false,
-    volumeSurgePeriod: 10,
-    dropRisePercentRange: '5-10',
-    afterDropType: 'all',
-    afterRiseType: 'all',
-    afterDropPercentRange: '5-10',
-    afterRisePercentRange: '5-10',
+    sharpMoveFilterVisible: true,
+    sharpMoveWindowBars: 60,
+    sharpMoveMagnitude: 6,
+    sharpMoveOnlyDrop: false,
+    sharpMoveOnlyRise: false,
+    sharpMoveDropThenRiseLoose: false,
+    sharpMoveRiseThenDropLoose: false,
+    sharpMoveDropFlatRise: false,
+    sharpMoveRiseFlatDrop: false,
   };
 }
 
@@ -231,7 +290,7 @@ export interface OpportunityFilterPrefsApplyActions {
   setTurnoverRateRange: (v: { min?: number; max?: number }) => void;
   setPeRatioRange: (v: { min?: number; max?: number }) => void;
   setKdjJRange: (v: { min?: number; max?: number }) => void;
-  setFilterVisible: (v: boolean) => void;
+  setFilterPanelActiveKey: (v: string | undefined) => void;
   setRecentLimitUpCount: (v: number | undefined) => void;
   setRecentLimitDownCount: (v: number | undefined) => void;
   setLimitUpPeriod: (v: number) => void;
@@ -242,20 +301,17 @@ export interface OpportunityFilterPrefsApplyActions {
   setConsolidationThreshold: (v: number) => void;
   setConsolidationRequireAboveMa10: (v: boolean) => void;
   setConsolidationFilterEnabled: (v: boolean) => void;
-  setConsolidationFilterVisible: (v: boolean) => void;
   setTrendLineLookback: (v: number) => void;
   setTrendLineConsecutive: (v: number) => void;
   setTrendLineFilterEnabled: (v: boolean) => void;
-  setTrendLineFilterVisible: (v: boolean) => void;
-  setVolumeSurgeFilterVisible: (v: boolean) => void;
-  setVolumeSurgeDropEnabled: (v: boolean) => void;
-  setVolumeSurgeRiseEnabled: (v: boolean) => void;
-  setVolumeSurgePeriod: (v: number) => void;
-  setDropRisePercentRange: (v: string) => void;
-  setAfterDropType: (v: string) => void;
-  setAfterRiseType: (v: string) => void;
-  setAfterDropPercentRange: (v: string) => void;
-  setAfterRisePercentRange: (v: string) => void;
+  setSharpMoveWindowBars: (v: number) => void;
+  setSharpMoveMagnitude: (v: number) => void;
+  setSharpMoveOnlyDrop: (v: boolean) => void;
+  setSharpMoveOnlyRise: (v: boolean) => void;
+  setSharpMoveDropThenRiseLoose: (v: boolean) => void;
+  setSharpMoveRiseThenDropLoose: (v: boolean) => void;
+  setSharpMoveDropFlatRise: (v: boolean) => void;
+  setSharpMoveRiseFlatDrop: (v: boolean) => void;
 }
 
 export function applyOpportunityFilterPrefsToState(
@@ -269,7 +325,7 @@ export function applyOpportunityFilterPrefsToState(
   actions.setTurnoverRateRange({ ...prefs.turnoverRateRange });
   actions.setPeRatioRange({ ...prefs.peRatioRange });
   actions.setKdjJRange({ ...prefs.kdjJRange });
-  actions.setFilterVisible(prefs.filterVisible);
+  actions.setFilterPanelActiveKey(activeFilterPanelKeyFromPrefs(prefs));
   actions.setRecentLimitUpCount(prefs.recentLimitUpCount);
   actions.setRecentLimitDownCount(prefs.recentLimitDownCount);
   actions.setLimitUpPeriod(prefs.limitUpPeriod);
@@ -280,18 +336,15 @@ export function applyOpportunityFilterPrefsToState(
   actions.setConsolidationThreshold(prefs.consolidationThreshold);
   actions.setConsolidationRequireAboveMa10(prefs.consolidationRequireAboveMa10);
   actions.setConsolidationFilterEnabled(prefs.consolidationFilterEnabled);
-  actions.setConsolidationFilterVisible(prefs.consolidationFilterVisible);
   actions.setTrendLineLookback(prefs.trendLineLookback);
   actions.setTrendLineConsecutive(prefs.trendLineConsecutive);
   actions.setTrendLineFilterEnabled(prefs.trendLineFilterEnabled);
-  actions.setTrendLineFilterVisible(prefs.trendLineFilterVisible);
-  actions.setVolumeSurgeFilterVisible(prefs.volumeSurgeFilterVisible);
-  actions.setVolumeSurgeDropEnabled(prefs.volumeSurgeDropEnabled);
-  actions.setVolumeSurgeRiseEnabled(prefs.volumeSurgeRiseEnabled);
-  actions.setVolumeSurgePeriod(prefs.volumeSurgePeriod);
-  actions.setDropRisePercentRange(prefs.dropRisePercentRange);
-  actions.setAfterDropType(prefs.afterDropType);
-  actions.setAfterRiseType(prefs.afterRiseType);
-  actions.setAfterDropPercentRange(prefs.afterDropPercentRange);
-  actions.setAfterRisePercentRange(prefs.afterRisePercentRange);
+  actions.setSharpMoveWindowBars(prefs.sharpMoveWindowBars);
+  actions.setSharpMoveMagnitude(prefs.sharpMoveMagnitude);
+  actions.setSharpMoveOnlyDrop(prefs.sharpMoveOnlyDrop);
+  actions.setSharpMoveOnlyRise(prefs.sharpMoveOnlyRise);
+  actions.setSharpMoveDropThenRiseLoose(prefs.sharpMoveDropThenRiseLoose);
+  actions.setSharpMoveRiseThenDropLoose(prefs.sharpMoveRiseThenDropLoose);
+  actions.setSharpMoveDropFlatRise(prefs.sharpMoveDropFlatRise);
+  actions.setSharpMoveRiseFlatDrop(prefs.sharpMoveRiseFlatDrop);
 }

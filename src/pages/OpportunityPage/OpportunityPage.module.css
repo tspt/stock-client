@@ -126,27 +126,44 @@
   z-index: 10;
   background: var(--ant-color-bg-container);
   border-bottom: 1px solid var(--ant-color-border);
-  margin-bottom: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  margin-bottom: 8px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
   padding: 0;
 }
 
-/* 筛选区域样式 */
+/* 筛选区域样式（单 Card + Collapse） */
 .filterCard {
   flex: none;
   border-radius: 0 !important;
-  border: none;
-  border-bottom: 1px solid var(--ant-color-border);
+  border: none !important;
 }
 
-.filterContainer .filterCard:last-child {
-  margin-bottom: 0;
+.filterCard :global(.ant-card-head) {
+  min-height: 40px;
+  padding: 0 12px;
 }
 
-.filterHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.filterCard :global(.ant-card-body) {
+  padding: 0 12px 8px;
+}
+
+.filterHint {
+  font-size: 12px;
+  color: var(--ant-color-text-secondary);
+  font-weight: normal;
+}
+
+.filterCollapse :global(.ant-collapse-item) {
+  border-bottom: 1px solid var(--ant-color-border-secondary);
+}
+
+.filterCollapse :global(.ant-collapse-header) {
+  padding: 8px 4px !important;
+  align-items: center !important;
+}
+
+.filterCollapse :global(.ant-collapse-content-box) {
+  padding: 4px 0 8px !important;
 }
 
 .filterContent {
@@ -160,7 +177,7 @@
 .filterItem {
   display: flex;
   align-items: center;
-  margin: 10px 16px 0 0;
+  margin: 6px 12px 0 0;
 }
 
 .filterLabel {

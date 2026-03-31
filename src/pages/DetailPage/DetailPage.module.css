@@ -53,3 +53,30 @@
   min-height: 0;
 }
 
+.orderBookRow {
+  display: flex;
+  gap: 24px;
+}
+
+.orderBookCol {
+  flex: 1;
+}
+
+.sellTitle {
+  margin-bottom: 12px;
+  color: var(--ant-color-error);
+}
+
+.buyTitle {
+  margin-bottom: 12px;
+  color: var(--ant-color-success);
+}
+
+.priceSell {
+  color: var(--ant-color-error);
+}
+
+.priceBuy {
+  color: var(--ant-color-success);
+}
+

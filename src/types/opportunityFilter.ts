@@ -24,14 +24,17 @@ export interface OpportunityFilterSnapshot {
   trendLineLookback: number;
   trendLineConsecutive: number;
   trendLineFilterEnabled: boolean;
-  volumeSurgeDropEnabled: boolean;
-  volumeSurgeRiseEnabled: boolean;
-  volumeSurgePeriod: number;
-  dropRisePercentRange: string;
-  afterDropType: string;
-  afterRiseType: string;
-  afterDropPercentRange: string;
-  afterRisePercentRange: string;
+  /** 单日异动筛选：最近 N 根 K 线 */
+  sharpMoveWindowBars: number;
+  /** 单日涨跌阈值 M（%） */
+  sharpMoveMagnitude: number;
+  /** 以下多选，满足任一即入选（OR） */
+  sharpMoveOnlyDrop: boolean;
+  sharpMoveOnlyRise: boolean;
+  sharpMoveDropThenRiseLoose: boolean;
+  sharpMoveRiseThenDropLoose: boolean;
+  sharpMoveDropFlatRise: boolean;
+  sharpMoveRiseFlatDrop: boolean;
 }
 
 export interface FilterSkippedItem {

@@ -48,6 +48,8 @@ export function OpportunityTable({ data, columns, sortConfig, onSortChange, tabl
         return record.trendLine?.isHit ? 1 : 0;
       case 'trendLineReason':
         return record.trendLine?.reasonText ?? '';
+      case 'sharpMoveLabels':
+        return record.sharpMovePatterns?.labels?.join('、') ?? '';
       default:
         return (record as any)[key];
     }
@@ -148,12 +150,11 @@ export function OpportunityTable({ data, columns, sortConfig, onSortChange, tabl
       case 'ma240':
       case 'ma360':
         return value !== undefined && value !== null ? `${Number(value).toFixed(2)}%` : '-';
-      case 'volumeSurgeDropCount':
-        if (!record?.volumeSurgePatterns) return '-';
-        return record.volumeSurgePatterns.dropCount || 0;
-      case 'volumeSurgeRiseCount':
-        if (!record?.volumeSurgePatterns) return '-';
-        return record.volumeSurgePatterns.riseCount || 0;
+      case 'sharpMoveLabels': {
+        const labels = record?.sharpMovePatterns?.labels;
+        if (!labels || labels.length === 0) return '-';
+        return labels.join('、');
+      }
       default:
         return String(value);
     }

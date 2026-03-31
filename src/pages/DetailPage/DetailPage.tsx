@@ -2,13 +2,14 @@
  * 详情页（K线图）
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Layout, Space, Card, Statistic, message, Table, Button } from 'antd';
+import type { ColumnsType } from 'antd/es/table';
 import { BellOutlined } from '@ant-design/icons';
 import { useStockStore } from '@/stores/stockStore';
 import { useKLineData } from '@/hooks/useKLineData';
 import { useStockDetail } from '@/hooks/useStockDetail';
-import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
+import { KLineChart } from '@/components/KLineChart/KLineChart';
 import { AlertSettingModal } from '@/components/PriceAlert/AlertSettingModal';
 import {
   formatPrice,
@@ -23,11 +24,67 @@ import styles from './DetailPage.module.css';
 
 const { Header, Content } = Layout;
 
+const PERIOD_OPTIONS: { label: string; value: KLinePeriod }[] = [
+  { label: '日', value: 'day' },
+  { label: '周', value: 'week' },
+  { label: '月', value: 'month' },
+  { label: '年', value: 'year' },
+];
+
+type OrderBookRow = {
+  key: string;
+  level: string;
+  price: number;
+  volume: number;
+};
+
+const SELL_ORDER_COLUMNS: ColumnsType<OrderBookRow> = [
+  {
+    title: '档位',
+    dataIndex: 'level',
+    key: 'level',
+    width: 60,
+  },
+  {
+    title: '价格',
+    dataIndex: 'price',
+    key: 'price',
+    render: (price: number) => <span className={styles.priceSell}>{formatPrice(price)}</span>,
+  },
+  {
+    title: '数量（手）',
+    dataIndex: 'volume',
+    key: 'volume',
+    render: (volume: number) => formatVolume(volume),
+  },
+];
+
+const BUY_ORDER_COLUMNS: ColumnsType<OrderBookRow> = [
+  {
+    title: '档位',
+    dataIndex: 'level',
+    key: 'level',
+    width: 60,
+  },
+  {
+    title: '价格',
+    dataIndex: 'price',
+    key: 'price',
+    render: (price: number) => <span className={styles.priceBuy}>{formatPrice(price)}</span>,
+  },
+  {
+    title: '数量（手）',
+    dataIndex: 'volume',
+    key: 'volume',
+    render: (volume: number) => formatVolume(volume),
+  },
+];
+
 export function DetailPage() {
   const { selectedStock, quotes, watchList } = useStockStore();
-  const [period] = useState<KLinePeriod>('day');
+  const [period, setPeriod] = useState<KLinePeriod>('day');
   const [alertModalVisible, setAlertModalVisible] = useState(false);
-  const { error } = useKLineData({
+  const { data: klineData, loading: klineLoading, error } = useKLineData({
     code: selectedStock,
     period,
     enablePolling: true,
@@ -36,6 +93,28 @@ export function DetailPage() {
 
   const quote = selectedStock ? quotes[selectedStock] : null;
   const stock = selectedStock ? watchList.find((s) => s.code === selectedStock) : null;
+
+  const sellOrderRows = useMemo<OrderBookRow[]>(
+    () =>
+      detail?.sellOrders?.map((order, index) => ({
+        key: `sell-${index}`,
+        level: `卖${index + 1}`,
+        price: order.price,
+        volume: order.volume,
+      })) ?? [],
+    [detail?.sellOrders]
+  );
+
+  const buyOrderRows = useMemo<OrderBookRow[]>(
+    () =>
+      detail?.buyOrders?.map((order, index) => ({
+        key: `buy-${index}`,
+        level: `买${index + 1}`,
+        price: order.price,
+        volume: order.volume,
+      })) ?? [],
+    [detail?.buyOrders]
+  );
 
   useEffect(() => {
     if (error) {
@@ -66,7 +145,6 @@ export function DetailPage() {
             >
               设置提醒
             </Button>
-            <ThemeToggle />
           </Space>
         </div>
       </Header>
@@ -145,84 +223,26 @@ export function DetailPage() {
                 </Card>
                 {(detail.buyOrders || detail.sellOrders) && (
                   <Card className={styles.quoteCard} title="买卖盘" loading={detailLoading}>
-                    <div style={{ display: 'flex', gap: '24px' }}>
-                      {/* 卖盘 */}
+                    <div className={styles.orderBookRow}>
                       {detail.sellOrders && detail.sellOrders.length > 0 && (
-                        <div style={{ flex: 1 }}>
-                          <h4 style={{ marginBottom: 12, color: '#ff4d4f' }}>卖盘</h4>
+                        <div className={styles.orderBookCol}>
+                          <h4 className={styles.sellTitle}>卖盘</h4>
                           <Table
                             size="small"
                             pagination={false}
-                            dataSource={detail.sellOrders.map((order, index) => ({
-                              key: `sell-${index}`,
-                              level: `卖${index + 1}`,
-                              price: order.price,
-                              volume: order.volume,
-                            }))}
-                            columns={[
-                              {
-                                title: '档位',
-                                dataIndex: 'level',
-                                key: 'level',
-                                width: 60,
-                              },
-                              {
-                                title: '价格',
-                                dataIndex: 'price',
-                                key: 'price',
-                                render: (price: number) => (
-                                  <span style={{ color: '#ff4d4f' }}>
-                                    {formatPrice(price)}
-                                  </span>
-                                ),
-                              },
-                              {
-                                title: '数量（手）',
-                                dataIndex: 'volume',
-                                key: 'volume',
-                                render: (volume: number) => formatVolume(volume),
-                              },
-                            ]}
+                            dataSource={sellOrderRows}
+                            columns={SELL_ORDER_COLUMNS}
                           />
                         </div>
                       )}
-                      {/* 买盘 */}
                       {detail.buyOrders && detail.buyOrders.length > 0 && (
-                        <div style={{ flex: 1 }}>
-                          <h4 style={{ marginBottom: 12, color: '#52c41a' }}>买盘</h4>
+                        <div className={styles.orderBookCol}>
+                          <h4 className={styles.buyTitle}>买盘</h4>
                           <Table
                             size="small"
                             pagination={false}
-                            dataSource={detail.buyOrders.map((order, index) => ({
-                              key: `buy-${index}`,
-                              level: `买${index + 1}`,
-                              price: order.price,
-                              volume: order.volume,
-                            }))}
-                            columns={[
-                              {
-                                title: '档位',
-                                dataIndex: 'level',
-                                key: 'level',
-                                width: 60,
-                              },
-                              {
-                                title: '价格',
-                                dataIndex: 'price',
-                                key: 'price',
-                                render: (price: number) => (
-                                  <span style={{ color: '#52c41a' }}>
-                                    {formatPrice(price)}
-                                  </span>
-                                ),
-                              },
-                              {
-                                title: '数量（手）',
-                                dataIndex: 'volume',
-                                key: 'volume',
-                                render: (volume: number) => formatVolume(volume),
-                              },
-                            ]}
+                            dataSource={buyOrderRows}
+                            columns={BUY_ORDER_COLUMNS}
                           />
                         </div>
                       )}
@@ -233,12 +253,13 @@ export function DetailPage() {
             )}
           </>
         )}
-        {/* <div className={styles.periodSelector}>
-          <Space>
-            {PERIODS.map((p) => (
+        <div className={styles.periodSelector}>
+          <Space wrap>
+            {PERIOD_OPTIONS.map((p) => (
               <Button
                 key={p.value}
                 type={period === p.value ? 'primary' : 'default'}
+                size="small"
                 onClick={() => setPeriod(p.value)}
               >
                 {p.label}
@@ -250,9 +271,9 @@ export function DetailPage() {
           <KLineChart
             data={klineData}
             period={period}
-            loading={loading}
+            loading={klineLoading}
           />
-        </div> */}
+        </div>
       </Content>
       {selectedStock && stock && (
         <AlertSettingModal
@@ -266,4 +287,3 @@ export function DetailPage() {
     </Layout>
   );
 }
-

@@ -7,7 +7,8 @@
 import type { KLinePeriod, StockInfo, StockOpportunityData, KLineData } from '@/types/stock';
 import { getKLineData, getStockDetail, getStockQuotes } from '@/services/stockApi';
 import { calcAllIndicators, formatKDJValues } from '@/utils/indicators';
-import { calculateConsolidationInLookback, analyzeVolumeSurgePatterns } from '@/utils/consolidationAnalysis';
+import { calculateConsolidationInLookback } from '@/utils/consolidationAnalysis';
+import { analyzeSharpMovePatterns } from '@/utils/sharpMovePatterns';
 import { calculateTrendLineInLookback } from '@/utils/trendLineAnalysis';
 import { ConcurrencyManager } from '@/utils/concurrencyManager';
 import {
@@ -86,20 +87,11 @@ async function analyzeOneStock(
     console.warn(`[${code}] 趋势线分析失败:`, error);
   }
 
-  // 急跌/急涨模式分析（单日模式，去掉放量逻辑）
-  let volumeSurgePatterns;
+  let sharpMovePatterns;
   try {
-    volumeSurgePatterns = analyzeVolumeSurgePatterns(klineData, {
-      dropPercentRange: { min: 5, max: 10 },
-      risePercentRange: { min: 5, max: 10 },
-      consolidationOptions: {
-        period: 3,
-        threshold: 2,
-      },
-    });
+    sharpMovePatterns = analyzeSharpMovePatterns(klineData, 60, 6);
   } catch (error) {
-    console.warn(`[${code}] 急跌/急涨模式分析失败:`, error);
-    // 分析失败不影响其他数据
+    console.warn(`[${code}] 单日异动分析失败:`, error);
   }
 
   // 与数据概况页保持一致：volume/amount 先转为"亿单位"再显示
@@ -137,7 +129,7 @@ async function analyzeOneStock(
       ma360: maFields.ma360,
       consolidation,
       trendLine,
-      volumeSurgePatterns,
+      sharpMovePatterns,
       analyzedAt,
     },
     klineData,
