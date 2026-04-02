@@ -18,7 +18,16 @@ import {
   getOpportunityData,
   saveOpportunityHistory,
 } from '@/utils/opportunityIndexedDB';
-import { OPPORTUNITY_DEFAULT_COLUMNS } from '@/utils/constants';
+import { MAX_OPPORTUNITY_KLINE_CACHE_ENTRIES, OPPORTUNITY_DEFAULT_COLUMNS } from '@/utils/constants';
+
+function trimKlineDataCache(map: Map<string, KLineData[]>) {
+  if (map.size <= MAX_OPPORTUNITY_KLINE_CACHE_ENTRIES) return;
+  const keys = [...map.keys()];
+  const overflow = map.size - MAX_OPPORTUNITY_KLINE_CACHE_ENTRIES;
+  for (let i = 0; i < overflow; i++) {
+    map.delete(keys[i]);
+  }
+}
 
 const OPPORTUNITY_COLUMN_CONFIG_KEY = 'opportunity_column_config';
 
@@ -141,6 +150,7 @@ export const useOpportunityStore = create<OpportunityState>((set, get) => ({
       klineDataMap.forEach((klineData, code) => {
         newCache.set(code, klineData);
       });
+      trimKlineDataCache(newCache);
 
       // 将 Map 序列化为数组格式以便保存到 IndexedDB
       const klineDataCacheArray: Array<[string, KLineData[]]> = Array.from(newCache.entries());
@@ -197,6 +207,7 @@ export const useOpportunityStore = create<OpportunityState>((set, get) => ({
             klineDataCache.set(code, klineData);
           });
         }
+        trimKlineDataCache(klineDataCache);
 
         set({
           analysisData: cached.data,

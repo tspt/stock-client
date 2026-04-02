@@ -3,7 +3,8 @@
  */
 
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { List, Button, Empty, Tooltip, Menu, Modal } from 'antd';
+import { Button, Empty, Tooltip, Menu, Modal } from 'antd';
+import VirtualList from 'rc-virtual-list';
 import {
   UpOutlined,
   DownOutlined,
@@ -26,6 +27,9 @@ import { AlertSettingModal } from '@/components/PriceAlert/AlertSettingModal';
 import { message } from 'antd';
 import { BUILTIN_GROUP_SELF_COLOR, BUILTIN_GROUP_SELF_ID, BUILTIN_GROUP_SELF_NAME } from '@/utils/constants';
 import styles from './StockList.module.css';
+
+/** 与 .listItem min-height + padding 对齐，供虚拟列表固定行高 */
+const LIST_ROW_HEIGHT = 48;
 
 export function StockList() {
   const { watchList, quotes } = useStockList();
@@ -60,6 +64,20 @@ export function StockList() {
   const [pendingStockCode, setPendingStockCode] = useState<string | null>(null);
   const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>([]);
   const contextMenuRef = useRef<HTMLDivElement>(null);
+  const listContainerRef = useRef<HTMLDivElement>(null);
+  const [listHeight, setListHeight] = useState(0);
+
+  useEffect(() => {
+    const el = listContainerRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver((entries) => {
+      const h = Math.floor(entries[0]?.contentRect.height ?? 0);
+      setListHeight(h);
+    });
+    ro.observe(el);
+    setListHeight(Math.floor(el.clientHeight));
+    return () => ro.disconnect();
+  }, []);
 
   const handleItemClick = (code: string) => {
     setSelectedStock(code);
@@ -180,182 +198,176 @@ export function StockList() {
 
   return (
     <div className={styles.stockList}>
-      <div className={styles.listContainer}>
-        <List
-          dataSource={watchList}
-          renderItem={(stock, index) => {
-            const quote = quotes[stock.code];
-            const isSelected = selectedStock === stock.code;
-            const changePercent = quote ? quote.changePercent : 0;
-            const isRise = changePercent >= 0;
-            const absChangePercent = Math.abs(changePercent);
-            const isFirst = index === 0;
-            const isLast = index === watchList.length - 1;
+      <div ref={listContainerRef} className={styles.listContainer} role="list">
+        {listHeight > 0 && (
+          <VirtualList
+            data={watchList}
+            height={listHeight}
+            itemHeight={LIST_ROW_HEIGHT}
+            itemKey="code"
+          >
+            {(stock, index, { style }) => {
+              const quote = quotes[stock.code];
+              const isSelected = selectedStock === stock.code;
+              const changePercent = quote ? quote.changePercent : 0;
+              const isRise = changePercent >= 0;
+              const absChangePercent = Math.abs(changePercent);
+              const isFirst = index === 0;
+              const isLast = index === watchList.length - 1;
 
-            // 根据涨跌幅范围选择图标
-            const getChangeIcon = () => {
-              if (isRise) {
-                // 上涨
-                if (absChangePercent <= 2) {
-                  return <UpOutlined />; // 0-2%
-                } else if (absChangePercent <= 5) {
-                  // 2-5%，使用DoubleLeftOutlined并旋转-90度（向上）
-                  return (
-                    <DoubleLeftOutlined
-                      style={{ transform: 'rotate(90deg)', display: 'inline-block' }}
-                    />
-                  );
+              const getChangeIcon = () => {
+                if (isRise) {
+                  if (absChangePercent <= 2) {
+                    return <UpOutlined />;
+                  } else if (absChangePercent <= 5) {
+                    return (
+                      <DoubleLeftOutlined
+                        style={{ transform: 'rotate(90deg)', display: 'inline-block' }}
+                      />
+                    );
+                  } else {
+                    return <CaretUpOutlined />;
+                  }
                 } else {
-                  return <CaretUpOutlined />; // >5%
+                  if (absChangePercent <= 2) {
+                    return <DownOutlined />;
+                  } else if (absChangePercent <= 5) {
+                    return (
+                      <DoubleLeftOutlined
+                        style={{ transform: 'rotate(-90deg)', display: 'inline-block' }}
+                      />
+                    );
+                  } else {
+                    return <CaretDownOutlined />;
+                  }
                 }
-              } else {
-                // 下跌
-                if (absChangePercent <= 2) {
-                  return <DownOutlined />; // 0-2%
-                } else if (absChangePercent <= 5) {
-                  // 2-5%，使用DoubleLeftOutlined并旋转90度（向下）
-                  return (
-                    <DoubleLeftOutlined
-                      style={{ transform: 'rotate(-90deg)', display: 'inline-block' }}
-                    />
-                  );
-                } else {
-                  return <CaretDownOutlined />; // >5%
+              };
+
+              const handleRowContextMenu = (e: React.MouseEvent) => {
+                e.preventDefault();
+                e.stopPropagation();
+
+                const menuWidth = 160;
+                const menuHeight = 150;
+                const windowWidth = window.innerWidth;
+                const windowHeight = window.innerHeight;
+                const padding = 10;
+
+                let menuX = e.clientX;
+                let menuY = e.clientY;
+
+                if (menuX + menuWidth > windowWidth - padding) {
+                  menuX = menuX - menuWidth + 30;
                 }
-              }
-            };
 
-            // 处理右键菜单
-            const handleContextMenu = (e: React.MouseEvent) => {
-              e.preventDefault();
-              e.stopPropagation();
+                if (menuX < padding) {
+                  menuX = padding;
+                }
 
-              // 估算菜单尺寸（菜单项高度30px，大约4-5个菜单项，加上padding）
-              const menuWidth = 160; // 菜单宽度
-              const menuHeight = 150; // 菜单高度（估算：4个菜单项 + 分隔线 + padding）
+                if (menuY + menuHeight > windowHeight - padding) {
+                  menuY = menuY - menuHeight + 30;
+                }
 
-              // 获取窗口尺寸
-              const windowWidth = window.innerWidth;
-              const windowHeight = window.innerHeight;
-              const padding = 10; // 边距
+                if (menuY < padding) {
+                  menuY = padding;
+                }
 
-              // 计算菜单位置，确保不超出屏幕
-              let menuX = e.clientX;
-              let menuY = e.clientY;
+                setContextMenu({
+                  visible: true,
+                  x: menuX,
+                  y: menuY,
+                  code: stock.code,
+                });
+              };
 
-              // 检查右边界：如果超出，向左移动
-              if (menuX + menuWidth > windowWidth - padding) {
-                menuX = menuX - menuWidth + 30;
-              }
-
-              // // 检查左边界：如果超出，移动到左边
-              if (menuX < padding) {
-                menuX = padding;
-              }
-
-              if (menuY + menuHeight > windowHeight - padding) {
-                menuY = menuY - menuHeight + 30;
-              }
-
-              // 检查上边界：如果超出，调整到顶部
-              if (menuY < padding) {
-                menuY = padding;
-              }
-
-              setContextMenu({
-                visible: true,
-                x: menuX,
-                y: menuY,
-                code: stock.code,
-              });
-            };
-
-            // Tooltip 内容（显示代码和交易量）
-            const tooltipContent = quote ? (
-              <div>
+              const tooltipContent = quote ? (
+                <div>
+                  <div>代码: {stock.code}</div>
+                  <div>交易量: {formatVolume(quote.volume)}</div>
+                </div>
+              ) : (
                 <div>代码: {stock.code}</div>
-                <div>交易量: {formatVolume(quote.volume)}</div>
-              </div>
-            ) : (
-              <div>代码: {stock.code}</div>
-            );
+              );
 
-            return (
-              <List.Item
-                className={`${styles.listItem} ${isSelected ? styles.selected : ''}`}
-                onClick={() => handleItemClick(stock.code)}
-                onContextMenu={handleContextMenu}
-              >
-                <div className={styles.stockInfo}>
-                  <Tooltip title={tooltipContent} placement="right">
-                    <div className={styles.stockName}>
-                      <span className={styles.name}>{stock.name}</span>
+              return (
+                <div style={style} key={stock.code}>
+                  <div
+                    className={`${styles.listItem} ${isSelected ? styles.selected : ''}`}
+                    onClick={() => handleItemClick(stock.code)}
+                    onContextMenu={handleRowContextMenu}
+                  >
+                    <div className={styles.stockInfo}>
+                      <Tooltip title={tooltipContent} placement="right">
+                        <div className={styles.stockName}>
+                          <span className={styles.name}>{stock.name}</span>
+                        </div>
+                      </Tooltip>
+                      {quote ? (
+                        <div className={styles.quote}>
+                          <div
+                            className={`${styles.change} ${isRise ? styles.rise : styles.fall}`}
+                          >
+                            {getChangeIcon()}
+                            {formatChangePercent(quote.changePercent)}
+                          </div>
+                          <div
+                            className={`${styles.price} ${isRise ? styles.rise : styles.fall}`}
+                          >
+                            {formatPrice(quote.price)}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className={styles.loading}>加载中...</div>
+                      )}
                     </div>
-                  </Tooltip>
-                  {quote ? (
-                    <div className={styles.quote}>
-                      <div
-                        className={`${styles.change} ${isRise ? styles.rise : styles.fall}`}
-                      >
-                        {getChangeIcon()}
-                        {formatChangePercent(quote.changePercent)}
-                      </div>
-                      <div
-                        className={`${styles.price} ${isRise ? styles.rise : styles.fall}`}
-                      >
-                        {formatPrice(quote.price)}
-                      </div>
+                    <div className={styles.actionButtons}>
+                      <Tooltip title="上移">
+                        <Button
+                          type="text"
+                          size="small"
+                          icon={<ArrowUpOutlined />}
+                          disabled={isFirst}
+                          onClick={(e) => handleMoveUp(stock.code, e)}
+                          className={styles.actionBtn}
+                        />
+                      </Tooltip>
+                      <Tooltip title="下移">
+                        <Button
+                          type="text"
+                          size="small"
+                          icon={<ArrowDownOutlined />}
+                          disabled={isLast}
+                          onClick={(e) => handleMoveDown(stock.code, e)}
+                          className={styles.actionBtn}
+                        />
+                      </Tooltip>
+                      <Tooltip title="置顶">
+                        <Button
+                          type="text"
+                          size="small"
+                          icon={<VerticalAlignTopOutlined />}
+                          disabled={isFirst}
+                          onClick={(e) => handleMoveToTop(stock.code, e)}
+                          className={styles.actionBtn}
+                        />
+                      </Tooltip>
+                      <Tooltip title="置尾">
+                        <Button
+                          type="text"
+                          size="small"
+                          icon={<VerticalAlignBottomOutlined />}
+                          disabled={isLast}
+                          onClick={(e) => handleMoveToBottom(stock.code, e)}
+                          className={styles.actionBtn}
+                        />
+                      </Tooltip>
                     </div>
-                  ) : (
-                    <div className={styles.loading}>加载中...</div>
-                  )}
+                  </div>
                 </div>
-                <div className={styles.actionButtons}>
-                  <Tooltip title="上移">
-                    <Button
-                      type="text"
-                      size="small"
-                      icon={<ArrowUpOutlined />}
-                      disabled={isFirst}
-                      onClick={(e) => handleMoveUp(stock.code, e)}
-                      className={styles.actionBtn}
-                    />
-                  </Tooltip>
-                  <Tooltip title="下移">
-                    <Button
-                      type="text"
-                      size="small"
-                      icon={<ArrowDownOutlined />}
-                      disabled={isLast}
-                      onClick={(e) => handleMoveDown(stock.code, e)}
-                      className={styles.actionBtn}
-                    />
-                  </Tooltip>
-                  <Tooltip title="置顶">
-                    <Button
-                      type="text"
-                      size="small"
-                      icon={<VerticalAlignTopOutlined />}
-                      disabled={isFirst}
-                      onClick={(e) => handleMoveToTop(stock.code, e)}
-                      className={styles.actionBtn}
-                    />
-                  </Tooltip>
-                  <Tooltip title="置尾">
-                    <Button
-                      type="text"
-                      size="small"
-                      icon={<VerticalAlignBottomOutlined />}
-                      disabled={isLast}
-                      onClick={(e) => handleMoveToBottom(stock.code, e)}
-                      className={styles.actionBtn}
-                    />
-                  </Tooltip>
-                </div>
-              </List.Item>
-            );
-          }}
-        />
+              );
+            }}
+          </VirtualList>
+        )}
       </div>
       {contextMenu && (
         <div

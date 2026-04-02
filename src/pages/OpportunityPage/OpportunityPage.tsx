@@ -142,8 +142,8 @@ export function OpportunityPage() {
   );
   const [peRatioRange, setPeRatioRange] = useState<{ min?: number; max?: number }>(INITIAL_FILTER_STATE.peRatioRange);
   const [kdjJRange, setKdjJRange] = useState<{ min?: number; max?: number }>(INITIAL_FILTER_STATE.kdjJRange);
-  /** 筛选手风琴当前展开的面板；undefined 表示全部收起。默认展开「数据筛选」便于首次使用 */
-  const [filterPanelActiveKey, setFilterPanelActiveKey] = useState<string | undefined>('data');
+  /** 筛选 Collapse 当前展开的面板 key 列表；[] 表示各组均收起。默认仅展开「数据筛选」 */
+  const [filterPanelActiveKey, setFilterPanelActiveKey] = useState<string[]>(['data']);
 
   // 涨停/跌停筛选状态
   const [recentLimitUpCount, setRecentLimitUpCount] = useState<number | undefined>(
@@ -451,7 +451,7 @@ export function OpportunityPage() {
     setTurnoverRateRange({ ...s.turnoverRateRange });
     setPeRatioRange({ ...s.peRatioRange });
     setKdjJRange({ ...s.kdjJRange });
-    setFilterPanelActiveKey('data');
+    setFilterPanelActiveKey(['data']);
     setRecentLimitUpCount(s.recentLimitUpCount);
     setRecentLimitDownCount(s.recentLimitDownCount);
     setLimitUpPeriod(s.limitUpPeriod);

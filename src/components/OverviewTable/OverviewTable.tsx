@@ -235,6 +235,7 @@ export function OverviewTable({
         dataSource={sortedData}
         rowKey="code"
         pagination={pagination}
+        virtual
         scroll={{ x: 'max-content', y: 'calc(100vh - 240px)' }}
         onChange={handleTableChange}
         size="small"

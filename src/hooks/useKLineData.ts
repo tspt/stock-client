@@ -4,6 +4,7 @@
 
 import { useState, useEffect } from 'react';
 import { getKLineData } from '@/services/stockApi';
+import { KLINE_POLLING_INTERVAL_MS } from '@/utils/constants';
 import { usePolling } from './usePolling';
 import type { KLineData, KLinePeriod } from '@/types/stock';
 
@@ -89,6 +90,7 @@ export function useKLineData(options: UseKLineDataOptions) {
     {
       enabled: enablePolling && code !== null,
       immediate: false,
+      interval: KLINE_POLLING_INTERVAL_MS,
     }
   );
 

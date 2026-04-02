@@ -2,7 +2,7 @@
  * K线图组件
  */
 
-import { useRef } from 'react';
+import { useMemo, useRef } from 'react';
 import ReactECharts from 'echarts-for-react';
 import type { EChartsOption } from 'echarts';
 import type { KLineData, KLinePeriod } from '@/types/stock';
@@ -19,33 +19,11 @@ interface KLineChartProps {
   loading?: boolean;
 }
 
-export function KLineChart({
-  data,
-  period,
-  loading = false,
-}: KLineChartProps) {
-  const chartRef = useRef<ReactECharts>(null);
-
-  // 如果没有数据，显示空状态
-  if (!data || data.length === 0) {
-    return (
-      <div className={styles.klineChart}>
-        {loading ? (
-          <div className={styles.loading}>加载中...</div>
-        ) : (
-          <div className={styles.loading}>暂无数据</div>
-        )}
-      </div>
-    );
-  }
-
-  // 计算技术指标
+function buildKLineChartOption(data: KLineData[], period: KLinePeriod): EChartsOption {
   const maData = calculateAllMA(data);
   const kdjData = calculateKDJ(data);
   const rsiData = calculateAllRSI(data);
 
-  // 准备K线数据
-  // ECharts candlestick 需要格式：[open, close, low, high]
   const klineData = data.map((item) => [
     item.open,
     item.close,
@@ -53,7 +31,6 @@ export function KLineChart({
     item.high,
   ]);
 
-  // 时间格式化（用于X轴显示）
   const timeFormatter = (time: number) => {
     const date = new Date(time);
     if (period === 'day' || period === 'week' || period === 'month' || period === 'year') {
@@ -62,7 +39,6 @@ export function KLineChart({
     return `${date.getHours()}:${date.getMinutes().toString().padStart(2, '0')}`;
   };
 
-  // 时间格式化（用于Tooltip显示，包含完整年月日）
   const timeFormatterFull = (time: number) => {
     const date = new Date(time);
     const year = date.getFullYear();
@@ -77,7 +53,7 @@ export function KLineChart({
     return `${year}-${month}-${day} ${hours}:${minutes}`;
   };
 
-  const option: EChartsOption = {
+  return {
     title: {
       text: 'K线图',
       left: 0,
@@ -87,9 +63,9 @@ export function KLineChart({
       axisPointer: {
         type: 'cross',
       },
-      formatter: (params: any) => {
+      formatter: (params: unknown) => {
         if (!Array.isArray(params)) return '';
-        const dataIndex = params[0].dataIndex;
+        const dataIndex = (params[0] as { dataIndex: number }).dataIndex;
         const item = data[dataIndex];
         if (!item) return '';
 
@@ -100,23 +76,20 @@ export function KLineChart({
         html += `<div>低: ${item.low.toFixed(2)}</div>`;
         html += `<div>量: ${formatVolume(item.volume)}</div>`;
 
-        // 添加所有MA数据
         const maPeriods = [5, 10, 20, 30, 60, 120, 240, 360];
-        for (const period of maPeriods) {
-          const maKey = `ma${period}` as keyof typeof maData;
+        for (const n of maPeriods) {
+          const maKey = `ma${n}` as keyof typeof maData;
           if (maData[maKey] && !isNaN(maData[maKey][dataIndex])) {
-            html += `<div>MA${period}: ${maData[maKey][dataIndex].toFixed(2)}</div>`;
+            html += `<div>MA${n}: ${maData[maKey][dataIndex].toFixed(2)}</div>`;
           }
         }
 
-        // 添加KDJ数据
         if (kdjData.k[dataIndex] !== undefined && !isNaN(kdjData.k[dataIndex])) {
           html += `<div>K: ${kdjData.k[dataIndex].toFixed(2)}</div>`;
           html += `<div>D: ${kdjData.d[dataIndex].toFixed(2)}</div>`;
           html += `<div>J: ${kdjData.j[dataIndex].toFixed(2)}</div>`;
         }
 
-        // 添加RSI数据
         if (rsiData.rsi6 && !isNaN(rsiData.rsi6[dataIndex])) {
           html += `<div>RSI6: ${rsiData.rsi6[dataIndex].toFixed(2)}</div>`;
         }
@@ -262,7 +235,6 @@ export function KLineChart({
           borderColor0: '#26a69a',
         },
       },
-      // MA线
       ...Object.entries(maData).map(([key, values]) => ({
         name: key.toUpperCase(),
         type: 'line' as const,
@@ -274,7 +246,6 @@ export function KLineChart({
         symbolSize: 0,
         animation: false,
       })),
-      // 成交量
       {
         name: '成交量',
         type: 'bar',
@@ -282,14 +253,13 @@ export function KLineChart({
         yAxisIndex: 1,
         data: data.map((item) => item.volume),
         itemStyle: {
-          color: (params: any) => {
+          color: (params: { dataIndex: number }) => {
             const dataIndex = params.dataIndex;
-            const item = data[dataIndex];
-            return item && item.close >= item.open ? '#ef5350' : '#26a69a';
+            const row = data[dataIndex];
+            return row && row.close >= row.open ? '#ef5350' : '#26a69a';
           },
         },
       },
-      // KDJ指标
       {
         name: 'K',
         type: 'line' as const,
@@ -329,7 +299,6 @@ export function KLineChart({
         symbolSize: 0,
         animation: false,
       },
-      // RSI指标
       {
         name: 'RSI6',
         type: 'line' as const,
@@ -371,17 +340,42 @@ export function KLineChart({
       },
     ],
   };
+}
+
+export function KLineChart({
+  data,
+  period,
+  loading = false,
+}: KLineChartProps) {
+  const chartRef = useRef<ReactECharts>(null);
+
+  const option = useMemo(
+    () => (data?.length ? buildKLineChartOption(data, period) : null),
+    [data, period]
+  );
+
+  if (!data || data.length === 0) {
+    return (
+      <div className={styles.klineChart}>
+        {loading ? (
+          <div className={styles.loading}>加载中...</div>
+        ) : (
+          <div className={styles.loading}>暂无数据</div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className={styles.klineChart}>
       {loading && <div className={styles.loading}>加载中...</div>}
       <ReactECharts
         ref={chartRef}
-        option={option}
+        option={option!}
+        lazyUpdate
         style={{ height: '100%', width: '100%' }}
         opts={{ renderer: 'canvas' }}
       />
     </div>
   );
 }
-

@@ -1,19 +1,85 @@
 /**
- * 机会分析页：筛选条件（单 Card + 手风琴 Collapse，节省纵向空间）
+ * 机会分析页：筛选条件（单行入口 + 右侧 Drawer，节省主区域高度）
  */
 
+import { useMemo, useState } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
-import { Card, Button, Space, Collapse, InputNumber, Checkbox } from 'antd';
+import { Button, Drawer, Space, Collapse, InputNumber, Checkbox } from 'antd';
 import { FilterOutlined } from '@ant-design/icons';
 import type { ConsolidationType } from '@/types/stock';
 import styles from './OpportunityPage.module.css';
 
+const ALL_FILTER_PANEL_KEYS = ['data', 'consolidation', 'trendLine', 'sharpMove'] as const;
+
+/** 筛选抽屉宽度：加宽以减少表单项折行与纵向滚动 */
+const FILTER_DRAWER_WIDTH = 'min(960px, calc(100vw - 24px))' as const;
+
 type NumRange = { min?: number; max?: number };
+
+function fmtNum(n?: number): string {
+  if (n == null || !Number.isFinite(n)) return '—';
+  return String(n);
+}
+
+function pushRange(parts: string[], label: string, r: NumRange, unit = '') {
+  if (r.min == null && r.max == null) return;
+  parts.push(`${label}${fmtNum(r.min)}~${fmtNum(r.max)}${unit}`);
+}
+
+function buildOpportunityFilterSummary(p: {
+  priceRange: NumRange;
+  marketCapRange: NumRange;
+  turnoverRateRange: NumRange;
+  peRatioRange: NumRange;
+  kdjJRange: NumRange;
+  recentLimitUpCount: number | undefined;
+  recentLimitDownCount: number | undefined;
+  consolidationFilterEnabled: boolean;
+  trendLineFilterEnabled: boolean;
+  sharpMoveWindowBars: number;
+  sharpMoveMagnitude: number;
+  sharpMoveOnlyDrop: boolean;
+  sharpMoveOnlyRise: boolean;
+  sharpMoveDropThenRiseLoose: boolean;
+  sharpMoveRiseThenDropLoose: boolean;
+  sharpMoveDropFlatRise: boolean;
+  sharpMoveRiseFlatDrop: boolean;
+}): string {
+  const parts: string[] = [];
+  pushRange(parts, '价', p.priceRange);
+  pushRange(parts, '市值', p.marketCapRange, '亿');
+  pushRange(parts, '换手', p.turnoverRateRange, '%');
+  if (p.peRatioRange.min != null || p.peRatioRange.max != null) {
+    pushRange(parts, '市盈', p.peRatioRange);
+  }
+  if (p.kdjJRange.min != null || p.kdjJRange.max != null) {
+    pushRange(parts, 'KDJ-J', p.kdjJRange);
+  }
+  if (p.recentLimitUpCount != null) {
+    parts.push(`涨停≥${p.recentLimitUpCount}`);
+  }
+  if (p.recentLimitDownCount != null) {
+    parts.push(`跌停≥${p.recentLimitDownCount}`);
+  }
+  parts.push(p.consolidationFilterEnabled ? '横盘开' : '横盘关');
+  if (p.trendLineFilterEnabled) {
+    parts.push('趋势线开');
+  }
+  const sharpOn =
+    p.sharpMoveOnlyDrop ||
+    p.sharpMoveOnlyRise ||
+    p.sharpMoveDropThenRiseLoose ||
+    p.sharpMoveRiseThenDropLoose ||
+    p.sharpMoveDropFlatRise ||
+    p.sharpMoveRiseFlatDrop;
+  parts.push(`异动${p.sharpMoveWindowBars}根/${p.sharpMoveMagnitude}%${sharpOn ? '·形态' : ''}`);
+  return parts.join(' · ');
+}
 type SetRange = Dispatch<SetStateAction<NumRange>>;
 
 export interface OpportunityFiltersPanelProps {
-  filterPanelActiveKey: string | undefined;
-  setFilterPanelActiveKey: (v: string | undefined) => void;
+  filterPanelActiveKey: string[];
+  setFilterPanelActiveKey: (v: string[]) => void;
   priceRange: { min?: number; max?: number };
   setPriceRange: SetRange;
   marketCapRange: { min?: number; max?: number };
@@ -126,32 +192,96 @@ export function OpportunityFiltersPanel({
   setSharpMoveRiseFlatDrop,
   consolidationTypeOptions,
 }: OpportunityFiltersPanelProps) {
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
+  const summaryText = useMemo(
+    () =>
+      buildOpportunityFilterSummary({
+        priceRange,
+        marketCapRange,
+        turnoverRateRange,
+        peRatioRange,
+        kdjJRange,
+        recentLimitUpCount,
+        recentLimitDownCount,
+        consolidationFilterEnabled,
+        trendLineFilterEnabled,
+        sharpMoveWindowBars,
+        sharpMoveMagnitude,
+        sharpMoveOnlyDrop,
+        sharpMoveOnlyRise,
+        sharpMoveDropThenRiseLoose,
+        sharpMoveRiseThenDropLoose,
+        sharpMoveDropFlatRise,
+        sharpMoveRiseFlatDrop,
+      }),
+    [
+      priceRange,
+      marketCapRange,
+      turnoverRateRange,
+      peRatioRange,
+      kdjJRange,
+      recentLimitUpCount,
+      recentLimitDownCount,
+      consolidationFilterEnabled,
+      trendLineFilterEnabled,
+      sharpMoveWindowBars,
+      sharpMoveMagnitude,
+      sharpMoveOnlyDrop,
+      sharpMoveOnlyRise,
+      sharpMoveDropThenRiseLoose,
+      sharpMoveRiseThenDropLoose,
+      sharpMoveDropFlatRise,
+      sharpMoveRiseFlatDrop,
+    ]
+  );
+
   return (
-    <Card
-      className={styles.filterCard}
-      size="small"
-      title={
-        <Space wrap size="small">
-          <FilterOutlined />
-          <span>筛选条件</span>
-          <span className={styles.filterHint}>手风琴模式，同时只展开一类</span>
-        </Space>
-      }
-      extra={
-        <Button type="link" size="small" onClick={() => setFilterPanelActiveKey(undefined)}>
-          全部收起
+    <>
+      <div className={styles.filterCompactBar}>
+        <Button type="primary" icon={<FilterOutlined />} onClick={() => setDrawerOpen(true)}>
+          筛选条件
         </Button>
-      }
-    >
-      <Collapse
-        accordion
+        <button
+          type="button"
+          className={styles.filterCompactSummaryBtn}
+          onClick={() => setDrawerOpen(true)}
+          title={summaryText}
+        >
+          {summaryText}
+        </button>
+      </div>
+      <Drawer
+        title="筛选条件"
+        placement="right"
+        width={FILTER_DRAWER_WIDTH}
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        destroyOnClose={false}
+        extra={
+          <Space size={0} wrap className={styles.filterCardExtra}>
+            <Button type="link" size="small" onClick={() => setFilterPanelActiveKey([...ALL_FILTER_PANEL_KEYS])}>
+              展开全部
+            </Button>
+            <Button type="link" size="small" onClick={() => setFilterPanelActiveKey([])}>
+              收起分组
+            </Button>
+          </Space>
+        }
+        styles={{ body: { paddingTop: 8 } }}
+        className={styles.filterDrawerWrap}
+      >
+        <div className={styles.filterDrawerBody}>
+          <Collapse
         bordered={false}
+        ghost
         size="small"
+        expandIconPosition="end"
         className={styles.filterCollapse}
         activeKey={filterPanelActiveKey}
         onChange={(key) => {
-          const k = Array.isArray(key) ? key[0] : key;
-          setFilterPanelActiveKey(k ?? undefined);
+          const keys = Array.isArray(key) ? key : key === undefined ? [] : [key];
+          setFilterPanelActiveKey(keys);
         }}
         items={[
           {
@@ -630,7 +760,9 @@ export function OpportunityFiltersPanel({
             ),
           },
         ]}
-      />
-    </Card>
+          />
+        </div>
+      </Drawer>
+    </>
   );
 }

@@ -17,30 +17,34 @@ export const OPPORTUNITY_FILTER_PANEL_KEYS = {
   sharpMove: 'sharpMove',
 } as const;
 
-/** 由 localStorage 中四个「展开」布尔字段推导当前应展开的面板（兼容旧版多段同时展开：取固定顺序第一个为 true 的） */
+/** 由 localStorage 中四个「展开」布尔字段推导当前应展开的面板（可多组同时展开） */
 export function activeFilterPanelKeyFromPrefs(
   prefs: Pick<
     OpportunityFilterPrefs,
     'filterVisible' | 'consolidationFilterVisible' | 'trendLineFilterVisible' | 'sharpMoveFilterVisible'
   >
-): string | undefined {
-  if (prefs.filterVisible) return OPPORTUNITY_FILTER_PANEL_KEYS.data;
-  if (prefs.consolidationFilterVisible) return OPPORTUNITY_FILTER_PANEL_KEYS.consolidation;
-  if (prefs.trendLineFilterVisible) return OPPORTUNITY_FILTER_PANEL_KEYS.trendLine;
-  if (prefs.sharpMoveFilterVisible) return OPPORTUNITY_FILTER_PANEL_KEYS.sharpMove;
-  return undefined;
+): string[] {
+  const keys: string[] = [];
+  if (prefs.filterVisible) keys.push(OPPORTUNITY_FILTER_PANEL_KEYS.data);
+  if (prefs.consolidationFilterVisible) keys.push(OPPORTUNITY_FILTER_PANEL_KEYS.consolidation);
+  if (prefs.trendLineFilterVisible) keys.push(OPPORTUNITY_FILTER_PANEL_KEYS.trendLine);
+  if (prefs.sharpMoveFilterVisible) keys.push(OPPORTUNITY_FILTER_PANEL_KEYS.sharpMove);
+  return keys.length > 0 ? keys : [OPPORTUNITY_FILTER_PANEL_KEYS.data];
 }
 
-/** 将单一展开 key 写回偏好里的四个布尔字段（供「一键分析」保存） */
-export function visibilityFromActiveFilterPanelKey(activeKey: string | undefined): Pick<
+/** 将当前展开的 key（单个或多个）写回偏好里的四个布尔字段（供「一键分析」保存） */
+export function visibilityFromActiveFilterPanelKey(activeKey: string | string[] | undefined): Pick<
   OpportunityFilterPrefs,
   'filterVisible' | 'consolidationFilterVisible' | 'trendLineFilterVisible' | 'sharpMoveFilterVisible'
 > {
+  const keys = new Set(
+    Array.isArray(activeKey) ? activeKey : activeKey ? [activeKey] : []
+  );
   return {
-    filterVisible: activeKey === OPPORTUNITY_FILTER_PANEL_KEYS.data,
-    consolidationFilterVisible: activeKey === OPPORTUNITY_FILTER_PANEL_KEYS.consolidation,
-    trendLineFilterVisible: activeKey === OPPORTUNITY_FILTER_PANEL_KEYS.trendLine,
-    sharpMoveFilterVisible: activeKey === OPPORTUNITY_FILTER_PANEL_KEYS.sharpMove,
+    filterVisible: keys.has(OPPORTUNITY_FILTER_PANEL_KEYS.data),
+    consolidationFilterVisible: keys.has(OPPORTUNITY_FILTER_PANEL_KEYS.consolidation),
+    trendLineFilterVisible: keys.has(OPPORTUNITY_FILTER_PANEL_KEYS.trendLine),
+    sharpMoveFilterVisible: keys.has(OPPORTUNITY_FILTER_PANEL_KEYS.sharpMove),
   };
 }
 
@@ -290,7 +294,7 @@ export interface OpportunityFilterPrefsApplyActions {
   setTurnoverRateRange: (v: { min?: number; max?: number }) => void;
   setPeRatioRange: (v: { min?: number; max?: number }) => void;
   setKdjJRange: (v: { min?: number; max?: number }) => void;
-  setFilterPanelActiveKey: (v: string | undefined) => void;
+  setFilterPanelActiveKey: (v: string[]) => void;
   setRecentLimitUpCount: (v: number | undefined) => void;
   setRecentLimitDownCount: (v: number | undefined) => void;
   setLimitUpPeriod: (v: number) => void;

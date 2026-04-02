@@ -5,6 +5,12 @@
 /** 轮询间隔（毫秒） */
 export const POLLING_INTERVAL = 10000; // 10秒
 
+/** K 线增量轮询间隔：略大于行情轮询，错峰请求 */
+export const KLINE_POLLING_INTERVAL_MS = 12000;
+
+/** 机会分析 K 线缓存 Map 最大条数（超出则删除最旧条目，控制内存） */
+export const MAX_OPPORTUNITY_KLINE_CACHE_ENTRIES = 400;
+
 /** LocalStorage键名 */
 export const STORAGE_KEYS = {
   /** 自选股列表 */

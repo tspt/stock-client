@@ -43,18 +43,24 @@ function AppContent() {
     });
 
     // 延迟检查，确保 preload 脚本已执行
-    const checkInterval = setInterval(() => {
+    let checkInterval: ReturnType<typeof setInterval> | undefined;
+    checkInterval = setInterval(() => {
       const api = checkElectronAPI();
       if (api) {
+        if (checkInterval !== undefined) {
+          clearInterval(checkInterval);
+          checkInterval = undefined;
+        }
         console.log('[App] electronAPI 已可用');
-        clearInterval(checkInterval);
       } else {
         console.warn('[App] electronAPI 仍然不可用，继续等待...');
       }
     }, 500);
 
     return () => {
-      clearInterval(checkInterval);
+      if (checkInterval !== undefined) {
+        clearInterval(checkInterval);
+      }
     };
   }, []);
 

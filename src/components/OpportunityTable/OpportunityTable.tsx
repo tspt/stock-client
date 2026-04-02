@@ -267,6 +267,7 @@ export function OpportunityTable({ data, columns, sortConfig, onSortChange, tabl
         dataSource={sortedData}
         rowKey="code"
         pagination={pagination}
+        virtual
         scroll={{ x: 'max-content', y: tableHeight }}
         onChange={handleTableChange}
         size="small"
