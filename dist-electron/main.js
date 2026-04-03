@@ -1,8 +1,8 @@
 import { app, BrowserWindow, Tray, Menu, nativeImage, session, ipcMain, Notification, } from 'electron';
 import { join, resolve } from 'path';
 import { fileURLToPath } from 'url';
-import { spawn } from 'child_process';
-import { existsSync } from 'fs';
+import { existsSync, appendFileSync } from 'fs';
+import { startEmbeddedApiProxy, stopEmbeddedApiProxy } from './localApiProxy.js';
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 // 开发环境判断
 const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
@@ -17,6 +17,21 @@ function getAppIconPath() {
 let mainWindow = null;
 let tray = null;
 let proxyServer = null;
+/** 供 did-finish-load 注入到渲染进程控制台；主进程 console 不会出现在 F12 里 */
+let lastProxyStartupMessage = '';
+function mainLog(msg, isError = false) {
+    const line = `[${new Date().toISOString()}] ${msg}\n`;
+    try {
+        appendFileSync(join(app.getPath('userData'), 'main-debug.log'), line, 'utf8');
+    }
+    catch {
+        // ignore
+    }
+    if (isError)
+        console.error(msg);
+    else
+        console.log(msg);
+}
 // 配置请求拦截，解决403和CORS问题
 function setupRequestInterceptor() {
     console.log('[主进程] 设置defaultSession请求拦截器');
@@ -27,11 +42,14 @@ function setupRequestInterceptor() {
         urls: ['*://*.sinajs.cn/*', '*://hq.sinajs.cn/*'],
     }, (details, callback) => {
         console.log('[defaultSession拦截器] 拦截新浪API请求:', details.url);
-        console.log('[defaultSession拦截器] 原始Referer:', details.requestHeaders['Referer']);
-        details.requestHeaders['Referer'] = 'https://finance.sina.com.cn';
-        details.requestHeaders['Origin'] = 'https://finance.sina.com.cn';
-        details.requestHeaders['User-Agent'] = defaultUserAgent;
-        console.log('[defaultSession拦截器] 修改后的Referer:', details.requestHeaders['Referer']);
+        console.log('[defaultSession拦截器] 原始Referer:', details.requestHeaders['referer']);
+        // Electron 文档：requestHeaders 的键一律为小写，用大写键不会覆盖实际发出的 referer，易导致新浪 403
+        details.requestHeaders['referer'] = 'https://finance.sina.com.cn/';
+        details.requestHeaders['origin'] = 'https://finance.sina.com.cn';
+        details.requestHeaders['user-agent'] = defaultUserAgent;
+        details.requestHeaders['accept'] = '*/*';
+        details.requestHeaders['accept-language'] = 'zh-CN,zh;q=0.9';
+        console.log('[defaultSession拦截器] 修改后的Referer:', details.requestHeaders['referer']);
         callback({
             requestHeaders: details.requestHeaders,
         });
@@ -64,9 +82,11 @@ function setupRequestInterceptor() {
         ],
     }, (details, callback) => {
         console.log('[拦截器] 拦截腾讯API请求:', details.url);
-        details.requestHeaders['Referer'] = 'https://finance.qq.com';
-        details.requestHeaders['Origin'] = 'https://finance.qq.com';
-        details.requestHeaders['User-Agent'] = defaultUserAgent;
+        details.requestHeaders['referer'] = 'https://finance.qq.com/';
+        details.requestHeaders['origin'] = 'https://finance.qq.com';
+        details.requestHeaders['user-agent'] = defaultUserAgent;
+        details.requestHeaders['accept'] = '*/*';
+        details.requestHeaders['accept-language'] = 'zh-CN,zh;q=0.9';
         callback({
             requestHeaders: details.requestHeaders,
         });
@@ -96,7 +116,7 @@ function setupRequestInterceptor() {
         // 只处理目标API的请求
         if (details.url.includes('sinajs.cn') || details.url.includes('gtimg.cn')) {
             console.log('[defaultSession全局拦截器] 检测到API请求:', details.url);
-            console.log('[defaultSession全局拦截器] 当前Referer:', details.requestHeaders['Referer']);
+            console.log('[defaultSession全局拦截器] 当前Referer:', details.requestHeaders['referer']);
         }
         callback({ requestHeaders: details.requestHeaders });
     });
@@ -171,6 +191,12 @@ function createWindow() {
     // 确保在窗口加载完成后拦截器已设置
     mainWindow.webContents.on('did-finish-load', () => {
         console.log('[主进程] 窗口加载完成，拦截器已设置');
+        if (mainWindow && lastProxyStartupMessage) {
+            const logPath = join(app.getPath('userData'), 'main-debug.log');
+            mainWindow.webContents
+                .executeJavaScript(`console.log('%c[主进程→渲染控制台]','color:#fa8c16;font-weight:bold', ${JSON.stringify(lastProxyStartupMessage)}); console.log('主进程日志文件(持续追加):', ${JSON.stringify(logPath)})`)
+                .catch(() => { });
+        }
         // 检查 preload 脚本是否成功加载
         if (mainWindow) {
             // 延迟一下，确保 preload 脚本已执行
@@ -247,11 +273,13 @@ function setupWindowRequestInterceptor(webSession) {
         urls: ['*://*.sinajs.cn/*', '*://hq.sinajs.cn/*'],
     }, (details, callback) => {
         console.log('[窗口拦截器] 拦截新浪API请求:', details.url);
-        console.log('[窗口拦截器] 原始Referer:', details.requestHeaders['Referer']);
-        details.requestHeaders['Referer'] = 'https://finance.sina.com.cn';
-        details.requestHeaders['Origin'] = 'https://finance.sina.com.cn';
-        details.requestHeaders['User-Agent'] = defaultUserAgent;
-        console.log('[窗口拦截器] 修改后的Referer:', details.requestHeaders['Referer']);
+        console.log('[窗口拦截器] 原始Referer:', details.requestHeaders['referer']);
+        details.requestHeaders['referer'] = 'https://finance.sina.com.cn/';
+        details.requestHeaders['origin'] = 'https://finance.sina.com.cn';
+        details.requestHeaders['user-agent'] = defaultUserAgent;
+        details.requestHeaders['accept'] = '*/*';
+        details.requestHeaders['accept-language'] = 'zh-CN,zh;q=0.9';
+        console.log('[窗口拦截器] 修改后的Referer:', details.requestHeaders['referer']);
         callback({
             requestHeaders: details.requestHeaders,
         });
@@ -274,9 +302,11 @@ function setupWindowRequestInterceptor(webSession) {
         urls: ['*://*.gtimg.cn/*', '*://qt.gtimg.cn/*'],
     }, (details, callback) => {
         console.log('[窗口拦截器] 拦截腾讯API请求:', details.url);
-        details.requestHeaders['Referer'] = 'https://finance.qq.com';
-        details.requestHeaders['Origin'] = 'https://finance.qq.com';
-        details.requestHeaders['User-Agent'] = defaultUserAgent;
+        details.requestHeaders['referer'] = 'https://finance.qq.com/';
+        details.requestHeaders['origin'] = 'https://finance.qq.com';
+        details.requestHeaders['user-agent'] = defaultUserAgent;
+        details.requestHeaders['accept'] = '*/*';
+        details.requestHeaders['accept-language'] = 'zh-CN,zh;q=0.9';
         callback({
             requestHeaders: details.requestHeaders,
         });
@@ -300,8 +330,8 @@ function setupWindowRequestInterceptor(webSession) {
     }, (details, callback) => {
         if (details.url.includes('sinajs.cn') || details.url.includes('gtimg.cn')) {
             console.log('[全局调试] URL:', details.url);
-            console.log('[全局调试] Referer:', details.requestHeaders['Referer']);
-            console.log('[全局调试] Origin:', details.requestHeaders['Origin']);
+            console.log('[全局调试] Referer:', details.requestHeaders['referer']);
+            console.log('[全局调试] Origin:', details.requestHeaders['origin']);
         }
         callback({ requestHeaders: details.requestHeaders });
     });
@@ -343,24 +373,22 @@ function createTray() {
         }
     });
 }
-// 启动代理服务器
-function startProxyServer() {
+// 主进程内嵌 HTTP 代理（与 server/proxy.js 行为一致，不依赖子进程）
+async function startProxyServer() {
     if (proxyServer) {
-        return; // 已经启动
+        return;
     }
-    const proxyPath = join(__dirname, '../server/proxy.js');
-    console.log('[主进程] 启动代理服务器:', proxyPath);
-    proxyServer = spawn('node', [proxyPath], {
-        cwd: join(__dirname, '..'),
-        stdio: 'inherit',
-    });
-    proxyServer.on('error', (err) => {
-        console.error('[主进程] 代理服务器启动失败:', err);
-    });
-    proxyServer.on('exit', (code) => {
-        console.log(`[主进程] 代理服务器退出，代码: ${code}`);
-        proxyServer = null;
-    });
+    try {
+        proxyServer = await startEmbeddedApiProxy(3000);
+    }
+    catch (e) {
+        const err = e;
+        const hint = err.code === 'EADDRINUSE'
+            ? '端口 3000 已被占用（请关闭占用进程或结束本机其它 stock-client 实例）'
+            : String(err.message || e);
+        mainLog(`[主进程] 内嵌本地代理启动失败: ${hint}`, true);
+        throw e;
+    }
 }
 // 设置IPC处理器
 function setupIpcHandlers() {
@@ -445,19 +473,26 @@ function setupIpcHandlers() {
     });
 }
 // 应用准备就绪
-app.whenReady().then(() => {
-    console.log('[主进程] 应用准备就绪');
+app.whenReady().then(async () => {
+    mainLog('[主进程] 应用准备就绪');
     if (process.platform === 'win32') {
         app.setAppUserModelId('com.stock.client');
     }
     // 设置IPC处理器
     setupIpcHandlers();
-    // 开发环境启动代理服务器
-    if (isDev) {
-        startProxyServer();
+    // 开发/打包均启动本地 proxy，渲染进程与 npm run dev 一致走 127.0.0.1:3000，不依赖 webRequest 改直连域名
+    lastProxyStartupMessage = '';
+    try {
+        await startProxyServer();
+        lastProxyStartupMessage = '本地代理已就绪 (127.0.0.1:3000)';
+        mainLog(`[主进程] ${lastProxyStartupMessage}`);
     }
-    else {
-        // 生产环境使用请求拦截
+    catch (e) {
+        const errText = e instanceof Error ? e.message : String(e);
+        lastProxyStartupMessage = `本地代理未启动: ${errText}`;
+        mainLog(`[主进程] ${lastProxyStartupMessage}（新浪/腾讯接口可能失败）`, true);
+    }
+    if (!isDev) {
         setupRequestInterceptor();
     }
     createWindow();
@@ -481,8 +516,8 @@ app.on('before-quit', () => {
     }
     // 关闭代理服务器
     if (proxyServer) {
-        console.log('[主进程] 关闭代理服务器');
-        proxyServer.kill();
+        mainLog('[主进程] 关闭内嵌代理');
+        stopEmbeddedApiProxy(proxyServer);
         proxyServer = null;
     }
 });

@@ -34,12 +34,16 @@ function readBiyingHsltListCache(): StockInfo[] | null {
 /** 并发时复用同一次拉取，避免缓存失效瞬间多次打满接口 */
 let biyingHsltListFetchPromise: Promise<StockInfo[]> | null = null;
 
-// 开发环境使用本地代理，生产环境直接使用API
+// 开发环境、Electron 打包版均走主进程拉起的本地 proxy（与 npm run dev 一致）；仅纯浏览器构建直连三方域名
 const isDev = import.meta.env?.DEV ?? process.env.NODE_ENV === 'development';
+const isElectronShell =
+  typeof window !== 'undefined' &&
+  (window as Window & { electronAPI?: unknown }).electronAPI != null;
+const useLocalProxy = isElectronShell || isDev;
 const API_BASE = {
-  SINA: isDev ? 'http://localhost:3000/api/sina' : 'https://hq.sinajs.cn',
-  TENCENT: isDev ? 'http://localhost:3000/api/tencent' : 'https://qt.gtimg.cn',
-  KLINE: isDev ? 'http://localhost:3000/api/kline' : 'https://proxy.finance.qq.com',
+  SINA: useLocalProxy ? 'http://127.0.0.1:3000/api/sina' : 'https://hq.sinajs.cn',
+  TENCENT: useLocalProxy ? 'http://127.0.0.1:3000/api/tencent' : 'https://qt.gtimg.cn',
+  KLINE: useLocalProxy ? 'http://127.0.0.1:3000/api/kline' : 'https://proxy.finance.qq.com',
 };
 
 /**
@@ -338,11 +342,9 @@ export async function getKLineData(
     // 转换为腾讯财经格式：sh600000 或 sz000001
     const marketCode = market === 'SH' ? `sh${pureCode}` : `sz${pureCode}`;
 
-    // 构建API URL
-    // 开发环境：通过代理服务器 /api/kline/ifzqgtimg/appstock/app/newfqkline/get
-    // 生产环境：直接请求 https://proxy.finance.qq.com/ifzqgtimg/appstock/app/newfqkline/get
+    // 构建API URL（Electron/开发走本地 proxy；纯浏览器直连）
     const apiPath = '/ifzqgtimg/appstock/app/newfqkline/get';
-    const baseUrl = isDev
+    const baseUrl = useLocalProxy
       ? `${API_BASE.KLINE}${apiPath}`
       : `https://proxy.finance.qq.com${apiPath}`;
 
