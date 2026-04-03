@@ -1,0 +1,17 @@
+diff --git a/node_modules/app-builder-lib/out/targets/nsis/NsisTarget.js b/node_modules/app-builder-lib/out/targets/nsis/NsisTarget.js
+index 6d1de94..ffdf244 100644
+--- a/node_modules/app-builder-lib/out/targets/nsis/NsisTarget.js
++++ b/node_modules/app-builder-lib/out/targets/nsis/NsisTarget.js
+@@ -277,7 +277,11 @@ class NsisTarget extends core_1.Target {
+         // copy outfile name into main options, as the computeScriptAndSignUninstaller function was kind enough to add important data to temporary defines.
+         defines.UNINSTALLER_OUT_FILE = definesUninstaller.UNINSTALLER_OUT_FILE;
+         await this.executeMakensis(defines, commands, sharedHeader + (await this.computeFinalScript(script, true, archs)));
+-        await Promise.all([packager.sign(installerPath), defines.UNINSTALLER_OUT_FILE == null ? Promise.resolve() : (0, fs_extra_1.unlink)(defines.UNINSTALLER_OUT_FILE)]);
++        await Promise.all([packager.sign(installerPath), defines.UNINSTALLER_OUT_FILE == null ? Promise.resolve() : (async () => {
++            const dest = path.join(this.outDir, `卸载${this.packager.appInfo.productName}.exe`);
++            await (0, fs_extra_1.copyFile)(defines.UNINSTALLER_OUT_FILE, dest);
++            await (0, fs_extra_1.unlink)(defines.UNINSTALLER_OUT_FILE);
++        })()]);
+         const safeArtifactName = (0, platformPackager_1.computeSafeArtifactNameIfNeeded)(installerFilename, () => this.generateGitHubInstallerName());
+         let updateInfo;
+         if (this.isWebInstaller) {

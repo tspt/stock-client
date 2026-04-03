@@ -5,14 +5,15 @@
   "main": "dist-electron/main.js",
   "type": "module",
   "scripts": {
+    "postinstall": "patch-package",
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "build:electron": "tsc -p electron/tsconfig.json && tsc -p electron/tsconfig.preload.json",
     "proxy": "node server/proxy.js",
     "electron:dev": "npm run build:electron && concurrently \"npm run dev\" \"wait-on http://localhost:5173 && electron .\"",
-    "electron:build": "npm run build && npm run build:electron && electron-builder",
-    "electron:build:win": "npm run build && npm run build:electron && electron-builder --win"
+    "electron:build": "npm run build && npm run build:electron && node scripts/electron-build-china.cjs",
+    "electron:build:win": "npm run build && npm run build:electron && node scripts/electron-build-china.cjs --win"
   },
   "keywords": [
     "stock",
@@ -23,28 +24,31 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "antd": "^5.11.0",
+    "axios": "^1.6.2",
+    "dayjs": "^1.11.10",
+    "echarts": "^5.4.3",
+    "echarts-for-react": "^3.0.2",
+    "rc-virtual-list": "^3.14.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.20.0",
-    "antd": "^5.11.0",
-    "zustand": "^4.4.7",
-    "axios": "^1.6.2",
-    "echarts": "^5.4.3",
-    "echarts-for-react": "^3.0.2",
-    "dayjs": "^1.11.10",
-    "rc-virtual-list": "^3.14.2",
-    "xlsx": "^0.18.5"
+    "xlsx": "^0.18.5",
+    "zustand": "^4.4.7"
   },
   "devDependencies": {
+    "@types/node": "^20.10.4",
     "@types/react": "^18.2.43",
     "@types/react-dom": "^18.2.17",
-    "@types/node": "^20.10.4",
     "@vitejs/plugin-react": "^4.2.1",
-    "typescript": "^5.3.3",
-    "vite": "^5.0.8",
+    "concurrently": "^8.2.2",
     "electron": "^28.0.0",
     "electron-builder": "^24.9.1",
-    "concurrently": "^8.2.2",
+    "patch-package": "^8.0.1",
+    "png-to-ico": "^3.0.1",
+    "sharp": "^0.34.5",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.8",
     "wait-on": "^7.2.0"
   },
   "build": {
@@ -56,17 +60,21 @@
     "files": [
       "dist/**/*",
       "dist-electron/**/*",
-      "package.json"
+      "package.json",
+      "build/icon.ico"
     ],
     "win": {
       "target": [
         "nsis"
       ],
-      "icon": "build/icon.ico"
+      "icon": "build/icon.ico",
+      "signAndEditExecutable": false
     },
     "nsis": {
       "oneClick": false,
-      "allowToChangeInstallationDirectory": true
+      "allowToChangeInstallationDirectory": true,
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico"
     }
   }
 }

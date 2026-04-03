@@ -362,7 +362,6 @@ export async function getKLineData(
 
     // 如果是字符串，提取JSON数据
     if (typeof data === 'string') {
-
       // 匹配 kline_xxx = {...} 格式（可能没有var关键字）
       const varName = `kline_${apiType}`;
       // 匹配格式：kline_day={...} 或 var kline_day = {...};
@@ -413,7 +412,6 @@ export async function getKLineData(
       if (!Array.isArray(klines)) {
         return [];
       }
-
 
       // 解析K线数组
       // 格式：[日期, 开盘, 收盘, 最高, 最低, 成交量, {}, 涨跌幅, 成交额, ...]

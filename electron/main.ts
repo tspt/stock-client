@@ -18,6 +18,15 @@ const __dirname = fileURLToPath(new URL('.', import.meta.url));
 // 开发环境判断
 const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
 
+/** 应用窗口/托盘用的图标（开发：项目根下 build；打包：app.asar 内 build） */
+function getAppIconPath(): string | undefined {
+  const relativeToApp = join('build', 'icon.ico');
+  const iconPath = app.isPackaged
+    ? join(app.getAppPath(), relativeToApp)
+    : join(process.cwd(), relativeToApp);
+  return existsSync(iconPath) ? iconPath : undefined;
+}
+
 let mainWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
 let proxyServer: ReturnType<typeof spawn> | null = null;
@@ -173,11 +182,13 @@ function createWindow() {
     console.log('[主进程] ✓ Preload 文件找到，路径正确');
   }
 
+  const appIcon = getAppIconPath();
   mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
     minWidth: 800,
     minHeight: 600,
+    ...(appIcon ? { icon: appIcon } : {}),
     webPreferences: {
       preload: preloadPath,
       nodeIntegration: false,
@@ -380,8 +391,10 @@ function setupWindowRequestInterceptor(webSession: Electron.Session) {
 }
 
 function createTray() {
-  // 创建托盘图标（暂时使用空图标，后续可以添加图标文件）
-  const icon = nativeImage.createEmpty();
+  const iconPath = getAppIconPath();
+  const icon = iconPath
+    ? nativeImage.createFromPath(iconPath)
+    : nativeImage.createEmpty();
   tray = new Tray(icon);
 
   const contextMenu = Menu.buildFromTemplate([
@@ -542,6 +555,10 @@ function setupIpcHandlers() {
 // 应用准备就绪
 app.whenReady().then(() => {
   console.log('[主进程] 应用准备就绪');
+
+  if (process.platform === 'win32') {
+    app.setAppUserModelId('com.stock.client');
+  }
 
   // 设置IPC处理器
   setupIpcHandlers();

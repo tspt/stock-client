@@ -7,22 +7,37 @@ import type { ConsolidationAnalysis, ConsolidationMatch, ConsolidationType, KLin
 const EPSILON = 1e-6;
 const MA10_PERIOD = 10;
 
-/** 在完整 K 线序列上计算下标 index 处的 SMA10（含当日共 10 根收盘价） */
-function sma10AtIndex(klineData: KLineData[], index: number): number | null {
-  if (index < MA10_PERIOD - 1 || index >= klineData.length) {
-    return null;
+/** 与逐点 sma 等价：下标 i 处为第 i 根收盘参与时的 SMA10，前 MA10_PERIOD-1 根为 null */
+function buildSma10Array(klineData: KLineData[]): (number | null)[] {
+  const len = klineData.length;
+  const out: (number | null)[] = new Array(len);
+  for (let i = 0; i < len; i++) {
+    out[i] = null;
+  }
+  if (len < MA10_PERIOD) {
+    return out;
   }
   let sum = 0;
-  for (let k = index - (MA10_PERIOD - 1); k <= index; k++) {
+  for (let k = 0; k < MA10_PERIOD; k++) {
     sum += klineData[k].close;
   }
-  return sum / MA10_PERIOD;
+  out[MA10_PERIOD - 1] = sum / MA10_PERIOD;
+  for (let i = MA10_PERIOD; i < len; i++) {
+    sum += klineData[i].close - klineData[i - MA10_PERIOD].close;
+    out[i] = sum / MA10_PERIOD;
+  }
+  return out;
 }
 
-/** 连续段 [startIndex, startIndex+length) 内每日收盘价是否均不低于当日 MA10 */
-function segmentClosesAllOnOrAboveMa10(klineData: KLineData[], startIndex: number, length: number): boolean {
+/** 连续段 [startIndex, startIndex+length) 内每日收盘价是否均不低于当日 MA10（sma10AtBar 须与 buildSma10Array 一致） */
+function segmentClosesAllOnOrAboveMa10(
+  klineData: KLineData[],
+  sma10AtBar: (number | null)[],
+  startIndex: number,
+  length: number
+): boolean {
   for (let j = startIndex; j < startIndex + length; j++) {
-    const ma = sma10AtIndex(klineData, j);
+    const ma = sma10AtBar[j];
     if (ma === null) {
       return false;
     }
@@ -233,6 +248,7 @@ export function calculateConsolidationInLookback(
 
   const m = Math.min(M, klineData.length);
   const windowStart = klineData.length - m;
+  const sma10AtBar = requireMa10 ? buildSma10Array(klineData) : null;
 
   let best: ConsolidationAnalysis | null = null;
   let bestStart = -1;
@@ -243,7 +259,7 @@ export function calculateConsolidationInLookback(
     if (!result.isConsolidation) {
       continue;
     }
-    if (requireMa10 && !segmentClosesAllOnOrAboveMa10(klineData, i, N)) {
+    if (requireMa10 && sma10AtBar && !segmentClosesAllOnOrAboveMa10(klineData, sma10AtBar, i, N)) {
       continue;
     }
     if (
