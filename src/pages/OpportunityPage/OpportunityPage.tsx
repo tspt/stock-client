@@ -37,6 +37,11 @@ import {
 import type { OpportunityFilterPrefs } from '@/utils/opportunityFilterPrefs';
 import type { OpportunityFilterSnapshot } from '@/types/opportunityFilter';
 import { OpportunityFiltersPanel } from './OpportunityFiltersPanel';
+import {
+  OPPORTUNITY_DEFAULT_CONSOLIDATION,
+  OPPORTUNITY_DEFAULT_SHARP_MOVE,
+  OPPORTUNITY_DEFAULT_TREND_LINE,
+} from '@/utils/opportunityAnalysisDefaults';
 import styles from './OpportunityPage.module.css';
 
 const { Header, Content } = Layout;
@@ -82,18 +87,18 @@ const INITIAL_FILTER_STATE = {
   limitUpPeriod: 20,
   limitDownPeriod: 20,
   consolidationTypes: DEFAULT_CONSOLIDATION_TYPES,
-  consolidationLookback: 10,
-  consolidationConsecutive: 3,
-  consolidationThreshold: 1.5,
+  consolidationLookback: OPPORTUNITY_DEFAULT_CONSOLIDATION.lookback,
+  consolidationConsecutive: OPPORTUNITY_DEFAULT_CONSOLIDATION.consecutive,
+  consolidationThreshold: OPPORTUNITY_DEFAULT_CONSOLIDATION.threshold,
   /** 连续 N 根横盘段内每日收盘价是否要求 ≥ 当日 MA10 */
-  consolidationRequireAboveMa10: false,
+  consolidationRequireAboveMa10: OPPORTUNITY_DEFAULT_CONSOLIDATION.requireClosesAboveMa10,
   /** 是否按横盘条件过滤列表（与趋势线可同时开启，关系为 AND） */
   consolidationFilterEnabled: true,
-  trendLineLookback: 10,
-  trendLineConsecutive: 3,
+  trendLineLookback: OPPORTUNITY_DEFAULT_TREND_LINE.lookback,
+  trendLineConsecutive: OPPORTUNITY_DEFAULT_TREND_LINE.consecutive,
   trendLineFilterEnabled: false,
-  sharpMoveWindowBars: 60,
-  sharpMoveMagnitude: 6,
+  sharpMoveWindowBars: OPPORTUNITY_DEFAULT_SHARP_MOVE.windowBars,
+  sharpMoveMagnitude: OPPORTUNITY_DEFAULT_SHARP_MOVE.magnitude,
   sharpMoveOnlyDrop: false,
   sharpMoveOnlyRise: false,
   sharpMoveDropThenRiseLoose: false,

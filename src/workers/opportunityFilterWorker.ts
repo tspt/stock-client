@@ -4,6 +4,7 @@ import { calculateTrendLineInLookback } from '@/utils/trendLineAnalysis';
 import type { KLineData, SharpMovePatternAnalysis, StockOpportunityData } from '@/types/stock';
 import type { OpportunityFilterSnapshot } from '@/types/opportunityFilter';
 import type { OpportunityFilterWorkerMessage, OpportunityFilterWorkerResponse } from './opportunityFilterWorkerTypes';
+import { MAX_OPPORTUNITY_KLINE_CACHE_ENTRIES } from '@/utils/constants';
 
 let cancelledThroughRequestId = 0;
 const YIELD_EVERY_ITEMS = 40;
@@ -86,10 +87,38 @@ function postCancelled(requestId: number): void {
   });
 }
 
+function mergeSkippedReason(
+  map: Map<string, { code: string; name: string; reasons: string[] }>,
+  code: string,
+  name: string,
+  reason: string
+): void {
+  const prev = map.get(code);
+  if (prev) {
+    prev.reasons.push(reason);
+  } else {
+    map.set(code, { code, name, reasons: [reason] });
+  }
+}
+
+function skippedMapToArray(
+  map: Map<string, { code: string; name: string; reasons: string[] }>
+): OpportunityFilterWorkerResponse['skipped'] {
+  return Array.from(map.values()).map(({ code, name, reasons }) => ({
+    code,
+    name,
+    reason: reasons.join('；'),
+  }));
+}
+
 async function runFilterTask(message: Extract<OpportunityFilterWorkerMessage, { type: 'filter' }>): Promise<void> {
-  const { requestId, analysisData, filters } = message;
+  const { requestId, filters } = message;
+  const analysisData =
+    message.analysisData.length > MAX_OPPORTUNITY_KLINE_CACHE_ENTRIES
+      ? message.analysisData.slice(0, MAX_OPPORTUNITY_KLINE_CACHE_ENTRIES)
+      : message.analysisData;
   const result: StockOpportunityData[] = [];
-  const skipped: OpportunityFilterWorkerResponse['skipped'] = [];
+  const skippedMap = new Map<string, { code: string; name: string; reasons: string[] }>();
 
   const rawWb = filters.sharpMoveWindowBars;
   const sharpMoveWindowBars =
@@ -136,14 +165,14 @@ async function runFilterTask(message: Extract<OpportunityFilterWorkerMessage, { 
           });
           nextItem = { ...nextItem, consolidation };
         } catch {
-          skipped.push({ code: item.code, name: item.name, reason: '横盘重算失败，已跳过重算' });
+          mergeSkippedReason(skippedMap, item.code, item.name, '横盘重算失败，已跳过重算');
         }
 
         try {
           const sharpMovePatterns = analyzeSharpMovePatterns(klineData, sharpMoveWindowBars, sharpMoveMagnitude);
           nextItem = { ...nextItem, sharpMovePatterns };
         } catch {
-          skipped.push({ code: item.code, name: item.name, reason: '单日异动重算失败，已跳过重算' });
+          mergeSkippedReason(skippedMap, item.code, item.name, '单日异动重算失败，已跳过重算');
           nextItem = { ...nextItem, sharpMovePatterns: undefined };
         }
 
@@ -155,7 +184,7 @@ async function runFilterTask(message: Extract<OpportunityFilterWorkerMessage, { 
           });
           nextItem = { ...nextItem, trendLine };
         } catch {
-          skipped.push({ code: item.code, name: item.name, reason: '趋势线重算失败，已跳过重算' });
+          mergeSkippedReason(skippedMap, item.code, item.name, '趋势线重算失败，已跳过重算');
         }
       } else {
         nextItem = { ...nextItem, sharpMovePatterns: undefined };
@@ -213,7 +242,7 @@ async function runFilterTask(message: Extract<OpportunityFilterWorkerMessage, { 
 
       result.push(nextItem);
     } catch {
-      skipped.push({ code: item.code, name: item.name, reason: '筛选计算异常，已跳过该股' });
+      mergeSkippedReason(skippedMap, item.code, item.name, '筛选计算异常，已跳过该股');
     }
   }
 
@@ -222,7 +251,7 @@ async function runFilterTask(message: Extract<OpportunityFilterWorkerMessage, { 
     requestId,
     cancelled: false,
     data: result,
-    skipped,
+    skipped: skippedMapToArray(skippedMap),
   });
 }
 

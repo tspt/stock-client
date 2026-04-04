@@ -4,6 +4,11 @@
  */
 
 import type { ConsolidationType, KLinePeriod } from '@/types/stock';
+import {
+  OPPORTUNITY_DEFAULT_CONSOLIDATION,
+  OPPORTUNITY_DEFAULT_SHARP_MOVE,
+  OPPORTUNITY_DEFAULT_TREND_LINE,
+} from '@/utils/opportunityAnalysisDefaults';
 
 export const OPPORTUNITY_FILTER_PREFS_KEY = 'opportunity_filter_prefs';
 
@@ -150,14 +155,24 @@ export function loadOpportunityFilterPrefs(): OpportunityFilterPrefs | null {
       limitUpPeriod: isFiniteNumber(p.limitUpPeriod) ? Math.floor(p.limitUpPeriod) : 20,
       limitDownPeriod: isFiniteNumber(p.limitDownPeriod) ? Math.floor(p.limitDownPeriod) : 20,
       consolidationTypes,
-      consolidationLookback: isFiniteNumber(p.consolidationLookback) ? Math.floor(p.consolidationLookback) : 10,
-      consolidationConsecutive: isFiniteNumber(p.consolidationConsecutive) ? Math.floor(p.consolidationConsecutive) : 3,
-      consolidationThreshold: isFiniteNumber(p.consolidationThreshold) ? p.consolidationThreshold : 1.5,
+      consolidationLookback: isFiniteNumber(p.consolidationLookback)
+        ? Math.floor(p.consolidationLookback)
+        : OPPORTUNITY_DEFAULT_CONSOLIDATION.lookback,
+      consolidationConsecutive: isFiniteNumber(p.consolidationConsecutive)
+        ? Math.floor(p.consolidationConsecutive)
+        : OPPORTUNITY_DEFAULT_CONSOLIDATION.consecutive,
+      consolidationThreshold: isFiniteNumber(p.consolidationThreshold)
+        ? p.consolidationThreshold
+        : OPPORTUNITY_DEFAULT_CONSOLIDATION.threshold,
       consolidationRequireAboveMa10: p.consolidationRequireAboveMa10 === true,
       consolidationFilterEnabled: p.consolidationFilterEnabled === false ? false : true,
       consolidationFilterVisible: p.consolidationFilterVisible === false ? false : true,
-      trendLineLookback: isFiniteNumber(p.trendLineLookback) ? Math.floor(p.trendLineLookback) : 10,
-      trendLineConsecutive: isFiniteNumber(p.trendLineConsecutive) ? Math.floor(p.trendLineConsecutive) : 3,
+      trendLineLookback: isFiniteNumber(p.trendLineLookback)
+        ? Math.floor(p.trendLineLookback)
+        : OPPORTUNITY_DEFAULT_TREND_LINE.lookback,
+      trendLineConsecutive: isFiniteNumber(p.trendLineConsecutive)
+        ? Math.floor(p.trendLineConsecutive)
+        : OPPORTUNITY_DEFAULT_TREND_LINE.consecutive,
       trendLineFilterEnabled: p.trendLineFilterEnabled === true,
       trendLineFilterVisible: p.trendLineFilterVisible === false ? false : true,
       sharpMoveFilterVisible:
@@ -173,7 +188,7 @@ export function loadOpportunityFilterPrefs(): OpportunityFilterPrefs | null {
         if (isFiniteNumber(p.volumeSurgeLookback)) {
           return Math.max(1, Math.floor(p.volumeSurgeLookback as number));
         }
-        return 60;
+        return OPPORTUNITY_DEFAULT_SHARP_MOVE.windowBars;
       })(),
       sharpMoveMagnitude: (() => {
         if (isFiniteNumber(p.sharpMoveMagnitude) && (p.sharpMoveMagnitude as number) > 0) {
@@ -184,7 +199,7 @@ export function loadOpportunityFilterPrefs(): OpportunityFilterPrefs | null {
         }
         const legacy = p.dropRisePercentRange;
         if (legacy === '10+') return 10;
-        return 6;
+        return OPPORTUNITY_DEFAULT_SHARP_MOVE.magnitude;
       })(),
       sharpMoveOnlyDrop: p.sharpMoveOnlyDrop === true,
       sharpMoveOnlyRise: p.sharpMoveOnlyRise === true,
@@ -233,19 +248,19 @@ export function getDefaultFilterPrefsFields(): Omit<
     limitUpPeriod: 20,
     limitDownPeriod: 20,
     consolidationTypes: [...VALID_CONSOLIDATION_TYPES],
-    consolidationLookback: 10,
-    consolidationConsecutive: 3,
-    consolidationThreshold: 1.5,
-    consolidationRequireAboveMa10: false,
+    consolidationLookback: OPPORTUNITY_DEFAULT_CONSOLIDATION.lookback,
+    consolidationConsecutive: OPPORTUNITY_DEFAULT_CONSOLIDATION.consecutive,
+    consolidationThreshold: OPPORTUNITY_DEFAULT_CONSOLIDATION.threshold,
+    consolidationRequireAboveMa10: OPPORTUNITY_DEFAULT_CONSOLIDATION.requireClosesAboveMa10,
     consolidationFilterEnabled: true,
     consolidationFilterVisible: true,
-    trendLineLookback: 10,
-    trendLineConsecutive: 3,
+    trendLineLookback: OPPORTUNITY_DEFAULT_TREND_LINE.lookback,
+    trendLineConsecutive: OPPORTUNITY_DEFAULT_TREND_LINE.consecutive,
     trendLineFilterEnabled: false,
     trendLineFilterVisible: true,
     sharpMoveFilterVisible: true,
-    sharpMoveWindowBars: 60,
-    sharpMoveMagnitude: 6,
+    sharpMoveWindowBars: OPPORTUNITY_DEFAULT_SHARP_MOVE.windowBars,
+    sharpMoveMagnitude: OPPORTUNITY_DEFAULT_SHARP_MOVE.magnitude,
     sharpMoveOnlyDrop: false,
     sharpMoveOnlyRise: false,
     sharpMoveDropThenRiseLoose: false,

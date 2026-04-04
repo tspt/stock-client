@@ -18,6 +18,11 @@ import {
   QUOTES_CONCURRENT_LIMIT,
   QUOTES_BATCH_SIZE,
 } from '@/utils/constants';
+import {
+  OPPORTUNITY_DEFAULT_CONSOLIDATION,
+  OPPORTUNITY_DEFAULT_SHARP_MOVE,
+  OPPORTUNITY_DEFAULT_TREND_LINE,
+} from '@/utils/opportunityAnalysisDefaults';
 
 async function analyzeOneStock(
   stock: StockInfo,
@@ -63,14 +68,14 @@ async function analyzeOneStock(
   const { avgPrice, highPrice, lowPrice } = priceStats;
   const formattedKDJ = formatKDJValues(kdj);
 
-  // 横盘分析：默认近10根内存在连续3根满足、2% 阈值
+  // 横盘分析：与机会页筛选面板默认（opportunityAnalysisDefaults）一致
   let consolidation;
   try {
     consolidation = calculateConsolidationInLookback(klineData, {
-      lookback: 10,
-      consecutive: 3,
-      threshold: 2,
-      requireClosesAboveMa10: false,
+      lookback: OPPORTUNITY_DEFAULT_CONSOLIDATION.lookback,
+      consecutive: OPPORTUNITY_DEFAULT_CONSOLIDATION.consecutive,
+      threshold: OPPORTUNITY_DEFAULT_CONSOLIDATION.threshold,
+      requireClosesAboveMa10: OPPORTUNITY_DEFAULT_CONSOLIDATION.requireClosesAboveMa10,
     });
   } catch (error) {
     console.warn(`[${code}] 横盘分析失败:`, error);
@@ -80,8 +85,8 @@ async function analyzeOneStock(
   let trendLine;
   try {
     trendLine = calculateTrendLineInLookback(klineData, {
-      lookback: 10,
-      consecutive: 3,
+      lookback: OPPORTUNITY_DEFAULT_TREND_LINE.lookback,
+      consecutive: OPPORTUNITY_DEFAULT_TREND_LINE.consecutive,
     });
   } catch (error) {
     console.warn(`[${code}] 趋势线分析失败:`, error);
@@ -89,7 +94,11 @@ async function analyzeOneStock(
 
   let sharpMovePatterns;
   try {
-    sharpMovePatterns = analyzeSharpMovePatterns(klineData, 60, 6);
+    sharpMovePatterns = analyzeSharpMovePatterns(
+      klineData,
+      OPPORTUNITY_DEFAULT_SHARP_MOVE.windowBars,
+      OPPORTUNITY_DEFAULT_SHARP_MOVE.magnitude
+    );
   } catch (error) {
     console.warn(`[${code}] 单日异动分析失败:`, error);
   }

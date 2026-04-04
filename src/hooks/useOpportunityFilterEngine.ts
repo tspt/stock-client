@@ -2,38 +2,71 @@ import { useEffect, useRef, useState } from 'react';
 import type { KLineData, StockOpportunityData } from '@/types/stock';
 import type { FilterSkippedItem, OpportunityFilterSnapshot } from '@/types/opportunityFilter';
 import type { OpportunityFilterWorkerResponse } from '@/workers/opportunityFilterWorkerTypes';
+import { MAX_OPPORTUNITY_KLINE_CACHE_ENTRIES } from '@/utils/constants';
 
 function passLightFilters(item: StockOpportunityData, filters: OpportunityFilterSnapshot): boolean {
   if (filters.priceRange.min !== undefined && item.price < filters.priceRange.min) return false;
   if (filters.priceRange.max !== undefined && item.price > filters.priceRange.max) return false;
 
-  if (filters.marketCapRange.min !== undefined && item.marketCap !== null && item.marketCap !== undefined) {
+  if (filters.marketCapRange.min !== undefined) {
+    if (item.marketCap === null || item.marketCap === undefined) return false;
     if (item.marketCap < filters.marketCapRange.min) return false;
   }
-  if (filters.marketCapRange.max !== undefined && item.marketCap !== null && item.marketCap !== undefined) {
+  if (filters.marketCapRange.max !== undefined) {
+    if (item.marketCap === null || item.marketCap === undefined) return false;
     if (item.marketCap > filters.marketCapRange.max) return false;
   }
 
-  if (filters.turnoverRateRange.min !== undefined && item.turnoverRate !== null && item.turnoverRate !== undefined) {
+  if (filters.turnoverRateRange.min !== undefined) {
+    if (item.turnoverRate === null || item.turnoverRate === undefined) return false;
     if (item.turnoverRate < filters.turnoverRateRange.min) return false;
   }
-  if (filters.turnoverRateRange.max !== undefined && item.turnoverRate !== null && item.turnoverRate !== undefined) {
+  if (filters.turnoverRateRange.max !== undefined) {
+    if (item.turnoverRate === null || item.turnoverRate === undefined) return false;
     if (item.turnoverRate > filters.turnoverRateRange.max) return false;
   }
 
-  if (filters.peRatioRange.min !== undefined && item.peRatio !== null && item.peRatio !== undefined) {
+  if (filters.peRatioRange.min !== undefined) {
+    if (item.peRatio === null || item.peRatio === undefined) return false;
     if (item.peRatio < filters.peRatioRange.min) return false;
   }
-  if (filters.peRatioRange.max !== undefined && item.peRatio !== null && item.peRatio !== undefined) {
+  if (filters.peRatioRange.max !== undefined) {
+    if (item.peRatio === null || item.peRatio === undefined) return false;
     if (item.peRatio > filters.peRatioRange.max) return false;
   }
 
-  if (item.kdjJ !== null && item.kdjJ !== undefined) {
+  if (filters.kdjJRange.min !== undefined || filters.kdjJRange.max !== undefined) {
+    if (item.kdjJ === null || item.kdjJ === undefined) return false;
     if (filters.kdjJRange.min !== undefined && item.kdjJ < filters.kdjJRange.min) return false;
     if (filters.kdjJRange.max !== undefined && item.kdjJ > filters.kdjJRange.max) return false;
   }
 
   return true;
+}
+
+/** 与 K 线缓存条数上限一致；超出时优先保留缓存命中的标的，再按原顺序补足 */
+function capAnalysisDataForWorker(
+  lightFiltered: StockOpportunityData[],
+  klineDataCache: Map<string, KLineData[]>,
+  max: number
+): StockOpportunityData[] {
+  if (lightFiltered.length <= max) {
+    return lightFiltered;
+  }
+  const withKline: StockOpportunityData[] = [];
+  const withoutKline: StockOpportunityData[] = [];
+  for (let i = 0; i < lightFiltered.length; i++) {
+    const item = lightFiltered[i];
+    if (klineDataCache.has(item.code)) {
+      withKline.push(item);
+    } else {
+      withoutKline.push(item);
+    }
+  }
+  if (withKline.length >= max) {
+    return withKline.slice(0, max);
+  }
+  return withKline.concat(withoutKline.slice(0, max - withKline.length));
 }
 
 interface UseOpportunityFilterEngineArgs {
@@ -185,6 +218,11 @@ export function useOpportunityFilterEngine({
     }
 
     const lightFiltered = analysisData.filter((item) => passLightFilters(item, filters));
+    const analysisDataForWorker = capAnalysisDataForWorker(
+      lightFiltered,
+      klineDataCache,
+      MAX_OPPORTUNITY_KLINE_CACHE_ENTRIES
+    );
     const requestId = ++requestIdRef.current;
     const previousRequestId = activeRequestIdRef.current;
     activeRequestIdRef.current = requestId;
@@ -198,10 +236,10 @@ export function useOpportunityFilterEngine({
     worker.postMessage({
       type: 'filter',
       requestId,
-      analysisData: lightFiltered,
+      analysisData: analysisDataForWorker,
       filters,
     });
-  }, [analysisData, filters, dataVersion]);
+  }, [analysisData, filters, dataVersion, klineDataCache]);
 
   return {
     filteredData,
