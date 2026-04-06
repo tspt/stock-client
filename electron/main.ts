@@ -219,6 +219,9 @@ function createWindow() {
     },
   });
 
+  // 移除顶部菜单栏
+  mainWindow.setMenu(null);
+
   // 为窗口的session设置请求拦截（重要：必须在窗口创建后设置）
   setupWindowRequestInterceptor(mainWindow.webContents.session);
 
@@ -426,9 +429,7 @@ function setupWindowRequestInterceptor(webSession: Electron.Session) {
 
 function createTray() {
   const iconPath = getAppIconPath();
-  const icon = iconPath
-    ? nativeImage.createFromPath(iconPath)
-    : nativeImage.createEmpty();
+  const icon = iconPath ? nativeImage.createFromPath(iconPath) : nativeImage.createEmpty();
   tray = new Tray(icon);
 
   const contextMenu = Menu.buildFromTemplate([

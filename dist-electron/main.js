@@ -173,6 +173,8 @@ function createWindow() {
             webSecurity: !isDev,
         },
     });
+    // 移除顶部菜单栏
+    mainWindow.setMenu(null);
     // 为窗口的session设置请求拦截（重要：必须在窗口创建后设置）
     setupWindowRequestInterceptor(mainWindow.webContents.session);
     // 加载应用

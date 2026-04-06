@@ -12,7 +12,7 @@ import {
 
 export const OPPORTUNITY_FILTER_PREFS_KEY = 'opportunity_filter_prefs';
 
-const PREFS_VERSION = 2 as const;
+const PREFS_VERSION = 1 as const;
 
 /** 机会页筛选手风琴面板的 key（与 Collapse items 一致） */
 export const OPPORTUNITY_FILTER_PANEL_KEYS = {
@@ -111,7 +111,7 @@ function parseRange(v: unknown): { min?: number; max?: number } {
   return out;
 }
 
-/** 解析失败或缺省时返回全部类型，避免旧数据无该字段时整份偏好被拒收 */
+/** 解析失败或缺省时返回全部类型 */
 function parseConsolidationTypes(v: unknown): ConsolidationType[] {
   if (!Array.isArray(v)) return [...VALID_CONSOLIDATION_TYPES];
   const out: ConsolidationType[] = [];
@@ -129,7 +129,7 @@ export function loadOpportunityFilterPrefs(): OpportunityFilterPrefs | null {
     const raw = localStorage.getItem(OPPORTUNITY_FILTER_PREFS_KEY);
     if (!raw) return null;
     const p = JSON.parse(raw) as unknown;
-    if (!isRecord(p) || (p.version !== 1 && p.version !== 2)) return null;
+    if (!isRecord(p) || p.version !== PREFS_VERSION) return null;
     if (typeof p.selectedMarket !== 'string' || typeof p.nameType !== 'string') return null;
     if (typeof p.currentPeriod !== 'string' || !VALID_PERIODS.includes(p.currentPeriod as KLinePeriod)) {
       return null;
@@ -175,32 +175,13 @@ export function loadOpportunityFilterPrefs(): OpportunityFilterPrefs | null {
         : OPPORTUNITY_DEFAULT_TREND_LINE.consecutive,
       trendLineFilterEnabled: p.trendLineFilterEnabled === true,
       trendLineFilterVisible: p.trendLineFilterVisible === false ? false : true,
-      sharpMoveFilterVisible:
-        p.sharpMoveFilterVisible === false
-          ? false
-          : p.volumeSurgeFilterVisible === false
-            ? false
-            : true,
-      sharpMoveWindowBars: (() => {
-        if (isFiniteNumber(p.sharpMoveWindowBars)) {
-          return Math.max(1, Math.floor(p.sharpMoveWindowBars as number));
-        }
-        if (isFiniteNumber(p.volumeSurgeLookback)) {
-          return Math.max(1, Math.floor(p.volumeSurgeLookback as number));
-        }
-        return OPPORTUNITY_DEFAULT_SHARP_MOVE.windowBars;
-      })(),
-      sharpMoveMagnitude: (() => {
-        if (isFiniteNumber(p.sharpMoveMagnitude) && (p.sharpMoveMagnitude as number) > 0) {
-          return p.sharpMoveMagnitude as number;
-        }
-        if (isFiniteNumber(p.dropRiseMagnitude) && (p.dropRiseMagnitude as number) > 0) {
-          return p.dropRiseMagnitude as number;
-        }
-        const legacy = p.dropRisePercentRange;
-        if (legacy === '10+') return 10;
-        return OPPORTUNITY_DEFAULT_SHARP_MOVE.magnitude;
-      })(),
+      sharpMoveFilterVisible: p.sharpMoveFilterVisible !== false,
+      sharpMoveWindowBars: isFiniteNumber(p.sharpMoveWindowBars)
+        ? Math.max(1, Math.floor(p.sharpMoveWindowBars))
+        : OPPORTUNITY_DEFAULT_SHARP_MOVE.windowBars,
+      sharpMoveMagnitude: isFiniteNumber(p.sharpMoveMagnitude) && p.sharpMoveMagnitude > 0
+        ? p.sharpMoveMagnitude
+        : OPPORTUNITY_DEFAULT_SHARP_MOVE.magnitude,
       sharpMoveOnlyDrop: p.sharpMoveOnlyDrop === true,
       sharpMoveOnlyRise: p.sharpMoveOnlyRise === true,
       sharpMoveDropThenRiseLoose: p.sharpMoveDropThenRiseLoose === true,

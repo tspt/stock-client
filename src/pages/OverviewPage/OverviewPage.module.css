@@ -38,6 +38,7 @@
 
 .content {
   flex: 1;
+  display: flex;
 }
 
 .progressCard {
@@ -90,6 +91,7 @@
 }
 
 .emptyCard {
+  flex: auto;
   display: flex;
   align-items: center;
   justify-content: center;

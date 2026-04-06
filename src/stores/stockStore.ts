@@ -12,8 +12,6 @@ import {
   BUILTIN_GROUP_SELF_NAME,
 } from '@/utils/constants';
 import {
-  migrateOldWatchList,
-  isOldFormat,
   generateGroupId,
   validateGroupName,
   ensureSelectedGroupIdForWatchList,
@@ -72,7 +70,6 @@ interface StockState {
   reorderGroups: (groups: Group[]) => void;
   loadGroups: () => void;
   saveGroups: () => void;
-  migrateWatchListData: () => void;
 }
 
 export const useStockStore = create<StockState>((set, get) => ({
@@ -154,51 +151,28 @@ export const useStockStore = create<StockState>((set, get) => ({
   },
 
   loadWatchList: () => {
-    // 先尝试迁移数据
-    get().migrateWatchListData();
-
-    // 加载新格式数据
-    const saved = getStorage<StockWatchListData | StockInfo[]>(STORAGE_KEYS.WATCH_LIST, {
+    // 加载数据
+    const saved = getStorage<StockWatchListData>(STORAGE_KEYS.WATCH_LIST, {
       groups: [],
       watchList: [],
     });
 
-    // 检查是否为旧格式
-    if (isOldFormat(saved)) {
-      // 如果还是旧格式，再次迁移
-      const migrated = migrateOldWatchList(saved);
-      const normalizedWatchList = migrated.watchList.map((s) => ({
-        ...s,
-        groupIds: s.groupIds && s.groupIds.length > 0 ? s.groupIds : [BUILTIN_GROUP_SELF_ID],
-      }));
-      const groups = migrated.groups;
-      const nextSelected = ensureSelectedGroupIdForWatchList(
-        normalizedWatchList,
-        groups,
-        BUILTIN_GROUP_SELF_ID
-      );
-      set({ groups, watchList: normalizedWatchList, selectedGroupId: nextSelected });
-      get().saveWatchList();
-    } else {
-      // 新格式
-      const data = saved as StockWatchListData;
-      const normalizedWatchList = (data.watchList || []).map((s) => ({
-        ...s,
-        groupIds: s.groupIds && s.groupIds.length > 0 ? s.groupIds : [BUILTIN_GROUP_SELF_ID],
-      }));
-      const groups = data.groups || [];
-      const persistedTab = data.selectedGroupId ?? BUILTIN_GROUP_SELF_ID;
-      const nextSelected = ensureSelectedGroupIdForWatchList(
-        normalizedWatchList,
-        groups,
-        persistedTab
-      );
-      set({
-        groups,
-        watchList: normalizedWatchList,
-        selectedGroupId: nextSelected,
-      });
-    }
+    const normalizedWatchList = (saved.watchList || []).map((s) => ({
+      ...s,
+      groupIds: s.groupIds && s.groupIds.length > 0 ? s.groupIds : [BUILTIN_GROUP_SELF_ID],
+    }));
+    const groups = saved.groups || [];
+    const persistedTab = saved.selectedGroupId ?? BUILTIN_GROUP_SELF_ID;
+    const nextSelected = ensureSelectedGroupIdForWatchList(
+      normalizedWatchList,
+      groups,
+      persistedTab
+    );
+    set({
+      groups,
+      watchList: normalizedWatchList,
+      selectedGroupId: nextSelected,
+    });
 
     // 加载排序类型
     get().loadSortType();
@@ -492,34 +466,5 @@ export const useStockStore = create<StockState>((set, get) => ({
 
   saveGroups: () => {
     get().saveWatchList();
-  },
-
-  migrateWatchListData: () => {
-    const saved = getStorage<StockWatchListData | StockInfo[]>(STORAGE_KEYS.WATCH_LIST, {
-      groups: [],
-      watchList: [],
-    });
-
-    if (!saved) {
-      // 如果没有数据，初始化为空
-      set({ groups: [], watchList: [], selectedGroupId: BUILTIN_GROUP_SELF_ID });
-      get().saveWatchList();
-      return;
-    }
-
-    // 如果是旧格式，进行迁移
-    if (isOldFormat(saved)) {
-      const migrated = migrateOldWatchList(saved);
-      const normalizedWatchList = migrated.watchList.map((s) => ({
-        ...s,
-        groupIds: s.groupIds && s.groupIds.length > 0 ? s.groupIds : [BUILTIN_GROUP_SELF_ID],
-      }));
-      set({
-        groups: migrated.groups,
-        watchList: normalizedWatchList,
-        selectedGroupId: BUILTIN_GROUP_SELF_ID,
-      });
-      get().saveWatchList();
-    }
   },
 }));
