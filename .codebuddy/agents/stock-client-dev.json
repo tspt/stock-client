@@ -1,0 +1,27 @@
+{
+  "name": "stock-client-dev",
+  "description": "股票客户端开发助手，专门处理stock-client项目的功能开发、bug修复和技术指标实现",
+  "capabilities": [
+    "新建UI组件",
+    "添加技术指标筛选",
+    "修改K线逻辑",
+    "机会分析功能开发",
+    "数据存储和状态管理"
+  ],
+  "knowledge": {
+    "skill": "stock-client",
+    "references": [
+      "technical-indicators",
+      "opportunity-filters"
+    ]
+  },
+  "tools": {
+    "allowed": ["read_file", "search_file", "search_content", "replace_in_file", "write_to_file", "execute_command", "list_dir", "read_lints"],
+    "allowedDirectories": ["d:/mySelfCode/gitCode/stock-client"]
+  },
+  "defaults": {
+    "language": "zh-CN",
+    "framework": "React + TypeScript",
+    "uiLibrary": "Ant Design 5"
+  }
+}

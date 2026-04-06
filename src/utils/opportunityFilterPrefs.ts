@@ -26,7 +26,10 @@ export const OPPORTUNITY_FILTER_PANEL_KEYS = {
 export function activeFilterPanelKeyFromPrefs(
   prefs: Pick<
     OpportunityFilterPrefs,
-    'filterVisible' | 'consolidationFilterVisible' | 'trendLineFilterVisible' | 'sharpMoveFilterVisible'
+    | 'filterVisible'
+    | 'consolidationFilterVisible'
+    | 'trendLineFilterVisible'
+    | 'sharpMoveFilterVisible'
   >
 ): string[] {
   const keys: string[] = [];
@@ -38,13 +41,16 @@ export function activeFilterPanelKeyFromPrefs(
 }
 
 /** 将当前展开的 key（单个或多个）写回偏好里的四个布尔字段（供「一键分析」保存） */
-export function visibilityFromActiveFilterPanelKey(activeKey: string | string[] | undefined): Pick<
+export function visibilityFromActiveFilterPanelKey(
+  activeKey: string | string[] | undefined
+): Pick<
   OpportunityFilterPrefs,
-  'filterVisible' | 'consolidationFilterVisible' | 'trendLineFilterVisible' | 'sharpMoveFilterVisible'
+  | 'filterVisible'
+  | 'consolidationFilterVisible'
+  | 'trendLineFilterVisible'
+  | 'sharpMoveFilterVisible'
 > {
-  const keys = new Set(
-    Array.isArray(activeKey) ? activeKey : activeKey ? [activeKey] : []
-  );
+  const keys = new Set(Array.isArray(activeKey) ? activeKey : activeKey ? [activeKey] : []);
   return {
     filterVisible: keys.has(OPPORTUNITY_FILTER_PANEL_KEYS.data),
     consolidationFilterVisible: keys.has(OPPORTUNITY_FILTER_PANEL_KEYS.consolidation),
@@ -93,6 +99,29 @@ export interface OpportunityFilterPrefs {
   sharpMoveRiseThenDropLoose: boolean;
   sharpMoveDropFlatRise: boolean;
   sharpMoveRiseFlatDrop: boolean;
+  /** RSI指标范围 */
+  rsiRange: { min?: number; max?: number };
+  /** MACD状态筛选 */
+  macdGoldenCross: boolean;
+  macdDeathCross: boolean;
+  macdDivergence: boolean;
+  /** 布林带位置筛选 */
+  bollingerUpper: boolean;
+  bollingerMiddle: boolean;
+  bollingerLower: boolean;
+  /** K线形态筛选 */
+  candlestickHammer: boolean;
+  candlestickShootingStar: boolean;
+  candlestickDoji: boolean;
+  candlestickEngulfing: boolean;
+  candlestickMorningStar: boolean;
+  candlestickEveningStar: boolean;
+  /** 趋势形态筛选 */
+  trendUptrend: boolean;
+  trendDowntrend: boolean;
+  trendSideways: boolean;
+  trendBreakout: boolean;
+  trendBreakdown: boolean;
 }
 
 function isRecord(v: unknown): v is Record<string, unknown> {
@@ -131,7 +160,10 @@ export function loadOpportunityFilterPrefs(): OpportunityFilterPrefs | null {
     const p = JSON.parse(raw) as unknown;
     if (!isRecord(p) || p.version !== PREFS_VERSION) return null;
     if (typeof p.selectedMarket !== 'string' || typeof p.nameType !== 'string') return null;
-    if (typeof p.currentPeriod !== 'string' || !VALID_PERIODS.includes(p.currentPeriod as KLinePeriod)) {
+    if (
+      typeof p.currentPeriod !== 'string' ||
+      !VALID_PERIODS.includes(p.currentPeriod as KLinePeriod)
+    ) {
       return null;
     }
     if (!isFiniteNumber(p.currentCount) || p.currentCount < 1) return null;
@@ -151,7 +183,9 @@ export function loadOpportunityFilterPrefs(): OpportunityFilterPrefs | null {
       kdjJRange: parseRange(p.kdjJRange),
       filterVisible: p.filterVisible === false ? false : true,
       recentLimitUpCount: isFiniteNumber(p.recentLimitUpCount) ? p.recentLimitUpCount : undefined,
-      recentLimitDownCount: isFiniteNumber(p.recentLimitDownCount) ? p.recentLimitDownCount : undefined,
+      recentLimitDownCount: isFiniteNumber(p.recentLimitDownCount)
+        ? p.recentLimitDownCount
+        : undefined,
       limitUpPeriod: isFiniteNumber(p.limitUpPeriod) ? Math.floor(p.limitUpPeriod) : 20,
       limitDownPeriod: isFiniteNumber(p.limitDownPeriod) ? Math.floor(p.limitDownPeriod) : 20,
       consolidationTypes,
@@ -179,15 +213,37 @@ export function loadOpportunityFilterPrefs(): OpportunityFilterPrefs | null {
       sharpMoveWindowBars: isFiniteNumber(p.sharpMoveWindowBars)
         ? Math.max(1, Math.floor(p.sharpMoveWindowBars))
         : OPPORTUNITY_DEFAULT_SHARP_MOVE.windowBars,
-      sharpMoveMagnitude: isFiniteNumber(p.sharpMoveMagnitude) && p.sharpMoveMagnitude > 0
-        ? p.sharpMoveMagnitude
-        : OPPORTUNITY_DEFAULT_SHARP_MOVE.magnitude,
+      sharpMoveMagnitude:
+        isFiniteNumber(p.sharpMoveMagnitude) && p.sharpMoveMagnitude > 0
+          ? p.sharpMoveMagnitude
+          : OPPORTUNITY_DEFAULT_SHARP_MOVE.magnitude,
       sharpMoveOnlyDrop: p.sharpMoveOnlyDrop === true,
       sharpMoveOnlyRise: p.sharpMoveOnlyRise === true,
       sharpMoveDropThenRiseLoose: p.sharpMoveDropThenRiseLoose === true,
       sharpMoveRiseThenDropLoose: p.sharpMoveRiseThenDropLoose === true,
       sharpMoveDropFlatRise: p.sharpMoveDropFlatRise === true,
       sharpMoveRiseFlatDrop: p.sharpMoveRiseFlatDrop === true,
+      // 新增技术指标筛选
+      rsiRange: parseRange(p.rsiRange),
+      macdGoldenCross: p.macdGoldenCross === true,
+      macdDeathCross: p.macdDeathCross === true,
+      macdDivergence: p.macdDivergence === true,
+      bollingerUpper: p.bollingerUpper === true,
+      bollingerMiddle: p.bollingerMiddle === true,
+      bollingerLower: p.bollingerLower === true,
+      // K线形态筛选
+      candlestickHammer: p.candlestickHammer === true,
+      candlestickShootingStar: p.candlestickShootingStar === true,
+      candlestickDoji: p.candlestickDoji === true,
+      candlestickEngulfing: p.candlestickEngulfing === true,
+      candlestickMorningStar: p.candlestickMorningStar === true,
+      candlestickEveningStar: p.candlestickEveningStar === true,
+      // 趋势形态筛选
+      trendUptrend: p.trendUptrend === true,
+      trendDowntrend: p.trendDowntrend === true,
+      trendSideways: p.trendSideways === true,
+      trendBreakout: p.trendBreakout === true,
+      trendBreakdown: p.trendBreakdown === true,
     };
 
     return prefs;
@@ -248,6 +304,27 @@ export function getDefaultFilterPrefsFields(): Omit<
     sharpMoveRiseThenDropLoose: false,
     sharpMoveDropFlatRise: false,
     sharpMoveRiseFlatDrop: false,
+    // 新增技术指标筛选默认值
+    rsiRange: {},
+    macdGoldenCross: false,
+    macdDeathCross: false,
+    macdDivergence: false,
+    bollingerUpper: false,
+    bollingerMiddle: false,
+    bollingerLower: false,
+    // K线形态筛选默认值
+    candlestickHammer: false,
+    candlestickShootingStar: false,
+    candlestickDoji: false,
+    candlestickEngulfing: false,
+    candlestickMorningStar: false,
+    candlestickEveningStar: false,
+    // 趋势形态筛选默认值
+    trendUptrend: false,
+    trendDowntrend: false,
+    trendSideways: false,
+    trendBreakout: false,
+    trendBreakdown: false,
   };
 }
 
@@ -312,6 +389,27 @@ export interface OpportunityFilterPrefsApplyActions {
   setSharpMoveRiseThenDropLoose: (v: boolean) => void;
   setSharpMoveDropFlatRise: (v: boolean) => void;
   setSharpMoveRiseFlatDrop: (v: boolean) => void;
+  // 新增技术指标筛选 actions
+  setRsiRange: (v: { min?: number; max?: number }) => void;
+  setMacdGoldenCross: (v: boolean) => void;
+  setMacdDeathCross: (v: boolean) => void;
+  setMacdDivergence: (v: boolean) => void;
+  setBollingerUpper: (v: boolean) => void;
+  setBollingerMiddle: (v: boolean) => void;
+  setBollingerLower: (v: boolean) => void;
+  // K线形态筛选 actions
+  setCandlestickHammer: (v: boolean) => void;
+  setCandlestickShootingStar: (v: boolean) => void;
+  setCandlestickDoji: (v: boolean) => void;
+  setCandlestickEngulfing: (v: boolean) => void;
+  setCandlestickMorningStar: (v: boolean) => void;
+  setCandlestickEveningStar: (v: boolean) => void;
+  // 趋势形态筛选 actions
+  setTrendUptrend: (v: boolean) => void;
+  setTrendDowntrend: (v: boolean) => void;
+  setTrendSideways: (v: boolean) => void;
+  setTrendBreakout: (v: boolean) => void;
+  setTrendBreakdown: (v: boolean) => void;
 }
 
 export function applyOpportunityFilterPrefsToState(
@@ -347,4 +445,25 @@ export function applyOpportunityFilterPrefsToState(
   actions.setSharpMoveRiseThenDropLoose(prefs.sharpMoveRiseThenDropLoose);
   actions.setSharpMoveDropFlatRise(prefs.sharpMoveDropFlatRise);
   actions.setSharpMoveRiseFlatDrop(prefs.sharpMoveRiseFlatDrop);
+  // 应用新增技术指标筛选
+  actions.setRsiRange({ ...prefs.rsiRange });
+  actions.setMacdGoldenCross(prefs.macdGoldenCross);
+  actions.setMacdDeathCross(prefs.macdDeathCross);
+  actions.setMacdDivergence(prefs.macdDivergence);
+  actions.setBollingerUpper(prefs.bollingerUpper);
+  actions.setBollingerMiddle(prefs.bollingerMiddle);
+  actions.setBollingerLower(prefs.bollingerLower);
+  // 应用K线形态筛选
+  actions.setCandlestickHammer(prefs.candlestickHammer);
+  actions.setCandlestickShootingStar(prefs.candlestickShootingStar);
+  actions.setCandlestickDoji(prefs.candlestickDoji);
+  actions.setCandlestickEngulfing(prefs.candlestickEngulfing);
+  actions.setCandlestickMorningStar(prefs.candlestickMorningStar);
+  actions.setCandlestickEveningStar(prefs.candlestickEveningStar);
+  // 应用趋势形态筛选
+  actions.setTrendUptrend(prefs.trendUptrend);
+  actions.setTrendDowntrend(prefs.trendDowntrend);
+  actions.setTrendSideways(prefs.trendSideways);
+  actions.setTrendBreakout(prefs.trendBreakout);
+  actions.setTrendBreakdown(prefs.trendBreakdown);
 }

@@ -105,6 +105,29 @@ const INITIAL_FILTER_STATE = {
   sharpMoveRiseThenDropLoose: false,
   sharpMoveDropFlatRise: false,
   sharpMoveRiseFlatDrop: false,
+  /** RSI指标范围 */
+  rsiRange: {} as { min?: number; max?: number },
+  /** MACD状态筛选 */
+  macdGoldenCross: false,
+  macdDeathCross: false,
+  macdDivergence: false,
+  /** 布林带位置筛选 */
+  bollingerUpper: false,
+  bollingerMiddle: false,
+  bollingerLower: false,
+  /** K线形态筛选 */
+  candlestickHammer: false,
+  candlestickShootingStar: false,
+  candlestickDoji: false,
+  candlestickEngulfing: false,
+  candlestickMorningStar: false,
+  candlestickEveningStar: false,
+  /** 趋势形态筛选 */
+  trendUptrend: false,
+  trendDowntrend: false,
+  trendSideways: false,
+  trendBreakout: false,
+  trendBreakdown: false,
 };
 
 /** 与 opportunityStore 初始值一致，用于「重置」恢复周期与 K 线数量 */
@@ -207,6 +230,30 @@ export function OpportunityPage() {
     INITIAL_FILTER_STATE.sharpMoveRiseFlatDrop
   );
 
+  // 新增技术指标筛选状态
+  const [rsiRange, setRsiRange] = useState<{ min?: number; max?: number }>(INITIAL_FILTER_STATE.rsiRange);
+  const [macdGoldenCross, setMacdGoldenCross] = useState<boolean>(INITIAL_FILTER_STATE.macdGoldenCross);
+  const [macdDeathCross, setMacdDeathCross] = useState<boolean>(INITIAL_FILTER_STATE.macdDeathCross);
+  const [macdDivergence, setMacdDivergence] = useState<boolean>(INITIAL_FILTER_STATE.macdDivergence);
+  const [bollingerUpper, setBollingerUpper] = useState<boolean>(INITIAL_FILTER_STATE.bollingerUpper);
+  const [bollingerMiddle, setBollingerMiddle] = useState<boolean>(INITIAL_FILTER_STATE.bollingerMiddle);
+  const [bollingerLower, setBollingerLower] = useState<boolean>(INITIAL_FILTER_STATE.bollingerLower);
+
+  // K线形态筛选状态
+  const [candlestickHammer, setCandlestickHammer] = useState<boolean>(INITIAL_FILTER_STATE.candlestickHammer);
+  const [candlestickShootingStar, setCandlestickShootingStar] = useState<boolean>(INITIAL_FILTER_STATE.candlestickShootingStar);
+  const [candlestickDoji, setCandlestickDoji] = useState<boolean>(INITIAL_FILTER_STATE.candlestickDoji);
+  const [candlestickEngulfing, setCandlestickEngulfing] = useState<boolean>(INITIAL_FILTER_STATE.candlestickEngulfing);
+  const [candlestickMorningStar, setCandlestickMorningStar] = useState<boolean>(INITIAL_FILTER_STATE.candlestickMorningStar);
+  const [candlestickEveningStar, setCandlestickEveningStar] = useState<boolean>(INITIAL_FILTER_STATE.candlestickEveningStar);
+
+  // 趋势形态筛选状态
+  const [trendUptrend, setTrendUptrend] = useState<boolean>(INITIAL_FILTER_STATE.trendUptrend);
+  const [trendDowntrend, setTrendDowntrend] = useState<boolean>(INITIAL_FILTER_STATE.trendDowntrend);
+  const [trendSideways, setTrendSideways] = useState<boolean>(INITIAL_FILTER_STATE.trendSideways);
+  const [trendBreakout, setTrendBreakout] = useState<boolean>(INITIAL_FILTER_STATE.trendBreakout);
+  const [trendBreakdown, setTrendBreakdown] = useState<boolean>(INITIAL_FILTER_STATE.trendBreakdown);
+
   // 先恢复 IndexedDB 中的分析结果与 K 线缓存，再套用 localStorage 中的查询/筛选偏好（纯前端筛选用缓存即可）
   useEffect(() => {
     let cancelled = false;
@@ -245,6 +292,27 @@ export function OpportunityPage() {
         setSharpMoveRiseThenDropLoose,
         setSharpMoveDropFlatRise,
         setSharpMoveRiseFlatDrop,
+        // 新增技术指标筛选 actions
+        setRsiRange,
+        setMacdGoldenCross,
+        setMacdDeathCross,
+        setMacdDivergence,
+        setBollingerUpper,
+        setBollingerMiddle,
+        setBollingerLower,
+        // K线形态筛选 actions
+        setCandlestickHammer,
+        setCandlestickShootingStar,
+        setCandlestickDoji,
+        setCandlestickEngulfing,
+        setCandlestickMorningStar,
+        setCandlestickEveningStar,
+        // 趋势形态筛选 actions
+        setTrendUptrend,
+        setTrendDowntrend,
+        setTrendSideways,
+        setTrendBreakout,
+        setTrendBreakdown,
       });
       const st = useOpportunityStore.getState();
       if (st.analysisData.length === 0) {
@@ -385,6 +453,24 @@ export function OpportunityPage() {
       sharpMoveRiseThenDropLoose,
       sharpMoveDropFlatRise,
       sharpMoveRiseFlatDrop,
+      rsiRange,
+      macdGoldenCross,
+      macdDeathCross,
+      macdDivergence,
+      bollingerUpper,
+      bollingerMiddle,
+      bollingerLower,
+      candlestickHammer,
+      candlestickShootingStar,
+      candlestickDoji,
+      candlestickEngulfing,
+      candlestickMorningStar,
+      candlestickEveningStar,
+      trendUptrend,
+      trendDowntrend,
+      trendSideways,
+      trendBreakout,
+      trendBreakdown,
     }),
     [
       priceRange,
@@ -413,6 +499,24 @@ export function OpportunityPage() {
       sharpMoveRiseThenDropLoose,
       sharpMoveDropFlatRise,
       sharpMoveRiseFlatDrop,
+      rsiRange,
+      macdGoldenCross,
+      macdDeathCross,
+      macdDivergence,
+      bollingerUpper,
+      bollingerMiddle,
+      bollingerLower,
+      candlestickHammer,
+      candlestickShootingStar,
+      candlestickDoji,
+      candlestickEngulfing,
+      candlestickMorningStar,
+      candlestickEveningStar,
+      trendUptrend,
+      trendDowntrend,
+      trendSideways,
+      trendBreakout,
+      trendBreakdown,
     ]
   );
 
@@ -472,6 +576,27 @@ export function OpportunityPage() {
     setSharpMoveRiseThenDropLoose(s.sharpMoveRiseThenDropLoose);
     setSharpMoveDropFlatRise(s.sharpMoveDropFlatRise);
     setSharpMoveRiseFlatDrop(s.sharpMoveRiseFlatDrop);
+    // 重置新增的技术指标筛选
+    setRsiRange({ ...s.rsiRange });
+    setMacdGoldenCross(s.macdGoldenCross);
+    setMacdDeathCross(s.macdDeathCross);
+    setMacdDivergence(s.macdDivergence);
+    setBollingerUpper(s.bollingerUpper);
+    setBollingerMiddle(s.bollingerMiddle);
+    setBollingerLower(s.bollingerLower);
+    // 重置K线形态筛选
+    setCandlestickHammer(s.candlestickHammer);
+    setCandlestickShootingStar(s.candlestickShootingStar);
+    setCandlestickDoji(s.candlestickDoji);
+    setCandlestickEngulfing(s.candlestickEngulfing);
+    setCandlestickMorningStar(s.candlestickMorningStar);
+    setCandlestickEveningStar(s.candlestickEveningStar);
+    // 重置趋势形态筛选
+    setTrendUptrend(s.trendUptrend);
+    setTrendDowntrend(s.trendDowntrend);
+    setTrendSideways(s.trendSideways);
+    setTrendBreakout(s.trendBreakout);
+    setTrendBreakdown(s.trendBreakdown);
     patchSavedPrefsFiltersToDefaults();
     message.info('已恢复默认筛选条件');
   };
@@ -515,6 +640,27 @@ export function OpportunityPage() {
       sharpMoveRiseThenDropLoose,
       sharpMoveDropFlatRise,
       sharpMoveRiseFlatDrop,
+      // 新增技术指标筛选
+      rsiRange: { ...rsiRange },
+      macdGoldenCross,
+      macdDeathCross,
+      macdDivergence,
+      bollingerUpper,
+      bollingerMiddle,
+      bollingerLower,
+      // K线形态筛选
+      candlestickHammer,
+      candlestickShootingStar,
+      candlestickDoji,
+      candlestickEngulfing,
+      candlestickMorningStar,
+      candlestickEveningStar,
+      // 趋势形态筛选
+      trendUptrend,
+      trendDowntrend,
+      trendSideways,
+      trendBreakout,
+      trendBreakdown,
     };
     saveOpportunityFilterPrefs(prefs);
 
@@ -797,6 +943,45 @@ export function OpportunityPage() {
                 sharpMoveRiseFlatDrop={sharpMoveRiseFlatDrop}
                 setSharpMoveRiseFlatDrop={setSharpMoveRiseFlatDrop}
                 consolidationTypeOptions={CONSOLIDATION_TYPE_OPTIONS}
+                // 新增技术指标筛选 props
+                rsiRange={rsiRange}
+                setRsiRange={setRsiRange}
+                macdGoldenCross={macdGoldenCross}
+                setMacdGoldenCross={setMacdGoldenCross}
+                macdDeathCross={macdDeathCross}
+                setMacdDeathCross={setMacdDeathCross}
+                macdDivergence={macdDivergence}
+                setMacdDivergence={setMacdDivergence}
+                bollingerUpper={bollingerUpper}
+                setBollingerUpper={setBollingerUpper}
+                bollingerMiddle={bollingerMiddle}
+                setBollingerMiddle={setBollingerMiddle}
+                bollingerLower={bollingerLower}
+                setBollingerLower={setBollingerLower}
+                // K线形态筛选 props
+                candlestickHammer={candlestickHammer}
+                setCandlestickHammer={setCandlestickHammer}
+                candlestickShootingStar={candlestickShootingStar}
+                setCandlestickShootingStar={setCandlestickShootingStar}
+                candlestickDoji={candlestickDoji}
+                setCandlestickDoji={setCandlestickDoji}
+                candlestickEngulfing={candlestickEngulfing}
+                setCandlestickEngulfing={setCandlestickEngulfing}
+                candlestickMorningStar={candlestickMorningStar}
+                setCandlestickMorningStar={setCandlestickMorningStar}
+                candlestickEveningStar={candlestickEveningStar}
+                setCandlestickEveningStar={setCandlestickEveningStar}
+                // 趋势形态筛选 props
+                trendUptrend={trendUptrend}
+                setTrendUptrend={setTrendUptrend}
+                trendDowntrend={trendDowntrend}
+                setTrendDowntrend={setTrendDowntrend}
+                trendSideways={trendSideways}
+                setTrendSideways={setTrendSideways}
+                trendBreakout={trendBreakout}
+                setTrendBreakout={setTrendBreakout}
+                trendBreakdown={trendBreakdown}
+                setTrendBreakdown={setTrendBreakdown}
               />
 
               {/* 筛选结果提示 */}

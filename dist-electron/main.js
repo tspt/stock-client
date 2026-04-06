@@ -341,9 +341,7 @@ function setupWindowRequestInterceptor(webSession) {
 }
 function createTray() {
     const iconPath = getAppIconPath();
-    const icon = iconPath
-        ? nativeImage.createFromPath(iconPath)
-        : nativeImage.createEmpty();
+    const icon = iconPath ? nativeImage.createFromPath(iconPath) : nativeImage.createEmpty();
     tray = new Tray(icon);
     const contextMenu = Menu.buildFromTemplate([
         {

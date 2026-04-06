@@ -35,6 +35,29 @@ export interface OpportunityFilterSnapshot {
   sharpMoveRiseThenDropLoose: boolean;
   sharpMoveDropFlatRise: boolean;
   sharpMoveRiseFlatDrop: boolean;
+  /** RSI指标范围 */
+  rsiRange: NumberRange;
+  /** MACD状态筛选 */
+  macdGoldenCross: boolean;
+  macdDeathCross: boolean;
+  macdDivergence: boolean;
+  /** 布林带位置筛选 */
+  bollingerUpper: boolean;
+  bollingerMiddle: boolean;
+  bollingerLower: boolean;
+  /** K线形态筛选 */
+  candlestickHammer: boolean;
+  candlestickShootingStar: boolean;
+  candlestickDoji: boolean;
+  candlestickEngulfing: boolean;
+  candlestickMorningStar: boolean;
+  candlestickEveningStar: boolean;
+  /** 趋势形态筛选 */
+  trendUptrend: boolean;
+  trendDowntrend: boolean;
+  trendSideways: boolean;
+  trendBreakout: boolean;
+  trendBreakdown: boolean;
 }
 
 export interface FilterSkippedItem {

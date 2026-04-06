@@ -1,6 +1,19 @@
 import { calculateConsolidationInLookback } from '@/utils/consolidationAnalysis';
 import { analyzeSharpMovePatterns } from '@/utils/sharpMovePatterns';
 import { calculateTrendLineInLookback } from '@/utils/trendLineAnalysis';
+import {
+  calculateRSI,
+  calculateMACD,
+  isMACDGoldenCross,
+  isMACDDeathCross,
+  hasMACDDivergence,
+  calculateBollingerBands,
+  isNearUpperBand,
+  isNearMiddleBand,
+  isNearLowerBand,
+} from '@/utils/technicalIndicators';
+import { detectCandlestickPatternsInWindow } from '@/utils/candlestickPatterns';
+import { detectTrendPatterns } from '@/utils/trendPatterns';
 import type { KLineData, SharpMovePatternAnalysis, StockOpportunityData } from '@/types/stock';
 import type { OpportunityFilterSnapshot } from '@/types/opportunityFilter';
 import type {
@@ -43,6 +56,175 @@ function passesSharpMoveFilter(
   if (filters.sharpMoveDropFlatRise && patterns.dropThenFlatThenRise) return true;
   if (filters.sharpMoveRiseFlatDrop && patterns.riseThenFlatThenDrop) return true;
   return false;
+}
+
+/** 检查技术指标筛选是否激活 */
+function technicalIndicatorsFilterActive(filters: OpportunityFilterSnapshot): boolean {
+  return (
+    filters.rsiRange.min !== undefined ||
+    filters.rsiRange.max !== undefined ||
+    filters.macdGoldenCross ||
+    filters.macdDeathCross ||
+    filters.macdDivergence ||
+    filters.bollingerUpper ||
+    filters.bollingerMiddle ||
+    filters.bollingerLower ||
+    filters.candlestickHammer ||
+    filters.candlestickShootingStar ||
+    filters.candlestickDoji ||
+    filters.candlestickEngulfing ||
+    filters.candlestickMorningStar ||
+    filters.candlestickEveningStar ||
+    filters.trendUptrend ||
+    filters.trendDowntrend ||
+    filters.trendSideways ||
+    filters.trendBreakout ||
+    filters.trendBreakdown
+  );
+}
+
+/** 检查是否通过技术指标筛选 */
+function passesTechnicalIndicatorsFilter(
+  klineData: KLineData[],
+  filters: OpportunityFilterSnapshot
+): boolean {
+  // 如果没有激活任何技术指标筛选，直接通过
+  if (!technicalIndicatorsFilterActive(filters)) {
+    return true;
+  }
+
+  if (!klineData || klineData.length === 0) {
+    return false;
+  }
+
+  const len = klineData.length;
+  const lastClose = klineData[len - 1].close;
+
+  // RSI筛选
+  if (filters.rsiRange.min !== undefined || filters.rsiRange.max !== undefined) {
+    const rsi = calculateRSI(klineData, 14);
+    const lastRSI = rsi[len - 1];
+
+    if (lastRSI === null) {
+      return false;
+    }
+
+    if (filters.rsiRange.min !== undefined && lastRSI < filters.rsiRange.min) {
+      return false;
+    }
+    if (filters.rsiRange.max !== undefined && lastRSI > filters.rsiRange.max) {
+      return false;
+    }
+  }
+
+  // MACD筛选
+  if (filters.macdGoldenCross || filters.macdDeathCross || filters.macdDivergence) {
+    const macd = calculateMACD(klineData);
+
+    if (filters.macdGoldenCross && !isMACDGoldenCross(macd.dif, macd.dea, len - 1)) {
+      // 如果只要求金叉但不是金叉，继续检查其他条件
+      if (!filters.macdDeathCross && !filters.macdDivergence) {
+        return false;
+      }
+    }
+
+    if (filters.macdDeathCross && !isMACDDeathCross(macd.dif, macd.dea, len - 1)) {
+      // 如果只要求死叉但不是死叉，继续检查其他条件
+      if (!filters.macdGoldenCross && !filters.macdDivergence) {
+        return false;
+      }
+    }
+
+    if (filters.macdDivergence && !hasMACDDivergence(klineData, macd.dif, 20)) {
+      // 如果只要求背离但没有背离，继续检查其他条件
+      if (!filters.macdGoldenCross && !filters.macdDeathCross) {
+        return false;
+      }
+    }
+
+    // 如果至少有一个MACD条件满足，则通过
+    const macdMatched =
+      (filters.macdGoldenCross && isMACDGoldenCross(macd.dif, macd.dea, len - 1)) ||
+      (filters.macdDeathCross && isMACDDeathCross(macd.dif, macd.dea, len - 1)) ||
+      (filters.macdDivergence && hasMACDDivergence(klineData, macd.dif, 20));
+
+    if (
+      !macdMatched &&
+      (filters.macdGoldenCross || filters.macdDeathCross || filters.macdDivergence)
+    ) {
+      return false;
+    }
+  }
+
+  // 布林带筛选
+  if (filters.bollingerUpper || filters.bollingerMiddle || filters.bollingerLower) {
+    const bb = calculateBollingerBands(klineData, 20, 2);
+    const lastUpper = bb.upper[len - 1];
+    const lastMiddle = bb.middle[len - 1];
+    const lastLower = bb.lower[len - 1];
+
+    const nearUpper = isNearUpperBand(lastClose, lastUpper, lastMiddle, lastLower);
+    const nearMiddle = isNearMiddleBand(lastClose, lastUpper, lastMiddle, lastLower);
+    const nearLower = isNearLowerBand(lastClose, lastUpper, lastMiddle, lastLower);
+
+    // 至少满足一个布林带条件
+    const bbMatched =
+      (filters.bollingerUpper && nearUpper) ||
+      (filters.bollingerMiddle && nearMiddle) ||
+      (filters.bollingerLower && nearLower);
+
+    if (!bbMatched) {
+      return false;
+    }
+  }
+
+  // K线形态筛选（回溯窗口内任一位置存在即通过）
+  if (
+    filters.candlestickHammer ||
+    filters.candlestickShootingStar ||
+    filters.candlestickDoji ||
+    filters.candlestickEngulfing ||
+    filters.candlestickMorningStar ||
+    filters.candlestickEveningStar
+  ) {
+    const patterns = detectCandlestickPatternsInWindow(klineData, 20);
+
+    const patternMatched =
+      (filters.candlestickHammer && patterns.hammer) ||
+      (filters.candlestickShootingStar && patterns.shootingStar) ||
+      (filters.candlestickDoji && patterns.doji) ||
+      (filters.candlestickEngulfing && patterns.engulfing) ||
+      (filters.candlestickMorningStar && patterns.morningStar) ||
+      (filters.candlestickEveningStar && patterns.eveningStar);
+
+    if (!patternMatched) {
+      return false;
+    }
+  }
+
+  // 趋势形态筛选
+  if (
+    filters.trendUptrend ||
+    filters.trendDowntrend ||
+    filters.trendSideways ||
+    filters.trendBreakout ||
+    filters.trendBreakdown
+  ) {
+    const trends = detectTrendPatterns(klineData, 20);
+
+    const trendMatched =
+      (filters.trendUptrend && trends.uptrend) ||
+      (filters.trendDowntrend && trends.downtrend) ||
+      (filters.trendSideways && trends.sideways) ||
+      (filters.trendBreakout && trends.breakout) ||
+      (filters.trendBreakdown && trends.breakdown);
+
+    if (!trendMatched) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 function countLimitUpDown(
@@ -265,6 +447,11 @@ async function runFilterTask(
       }
 
       if (!passesSharpMoveFilter(nextItem.sharpMovePatterns, filters)) {
+        continue;
+      }
+
+      // 新增：技术指标与形态筛选
+      if (!passesTechnicalIndicatorsFilter(klineData || [], filters)) {
         continue;
       }
 
