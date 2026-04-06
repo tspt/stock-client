@@ -34,8 +34,25 @@
   height: 100%;
 }
 
+.tableContainer :global(.ant-table-cell) {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tableContainer :global(.ant-table-thead > tr > th) {
+  white-space: nowrap;
+}
+
+.opportunityTable :global(.ant-table-tbody > tr > td) {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .stockName {
   font-weight: 500;
+  white-space: nowrap;
 }
 
 .positiveValue {
@@ -61,10 +78,12 @@
 }
 
 .consolidationTypes {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 6px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .consolidationTag {
@@ -74,4 +93,5 @@
   color: #1677ff;
   white-space: nowrap;
   line-height: 20px;
+  flex-shrink: 0;
 }

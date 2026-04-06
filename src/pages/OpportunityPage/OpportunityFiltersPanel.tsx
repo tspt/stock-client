@@ -34,8 +34,18 @@ function buildOpportunityFilterSummary(p: {
   kdjJRange: NumRange;
   recentLimitUpCount: number | undefined;
   recentLimitDownCount: number | undefined;
+  limitUpPeriod: number;
+  limitDownPeriod: number;
   consolidationFilterEnabled: boolean;
+  consolidationTypes: ConsolidationType[];
+  consolidationLookback: number;
+  consolidationConsecutive: number;
+  consolidationThreshold: number;
+  consolidationRequireAboveMa10: boolean;
+  consolidationTypeOptions: { label: string; value: ConsolidationType }[];
   trendLineFilterEnabled: boolean;
+  trendLineLookback: number;
+  trendLineConsecutive: number;
   sharpMoveWindowBars: number;
   sharpMoveMagnitude: number;
   sharpMoveOnlyDrop: boolean;
@@ -56,14 +66,38 @@ function buildOpportunityFilterSummary(p: {
     pushRange(parts, 'KDJ-J', p.kdjJRange);
   }
   if (p.recentLimitUpCount != null) {
-    parts.push(`涨停≥${p.recentLimitUpCount}`);
+    parts.push(`涨停≥${p.recentLimitUpCount}·${p.limitUpPeriod}天`);
   }
   if (p.recentLimitDownCount != null) {
-    parts.push(`跌停≥${p.recentLimitDownCount}`);
+    parts.push(`跌停≥${p.recentLimitDownCount}·${p.limitDownPeriod}天`);
   }
-  parts.push(p.consolidationFilterEnabled ? '横盘开' : '横盘关');
-  if (p.trendLineFilterEnabled) {
-    parts.push('趋势线开');
+  if (!p.consolidationFilterEnabled) {
+    parts.push('横盘关');
+  } else {
+    let typePart: string;
+    if (p.consolidationTypes.length === 0) {
+      typePart = '类型无';
+    } else if (
+      p.consolidationTypeOptions.length > 0 &&
+      p.consolidationTypes.length === p.consolidationTypeOptions.length
+    ) {
+      typePart = '全类型';
+    } else {
+      const labels = p.consolidationTypes.map((t) => {
+        const o = p.consolidationTypeOptions.find((x) => x.value === t);
+        return o ? o.label : t;
+      });
+      typePart = `类型${labels.join('、')}`;
+    }
+    const ma10 = p.consolidationRequireAboveMa10 ? '·MA10上' : '';
+    parts.push(
+      `横盘开·${typePart}·检索${p.consolidationLookback}根·连续${p.consolidationConsecutive}根·阈值${fmtNum(p.consolidationThreshold)}%${ma10}`,
+    );
+  }
+  if (!p.trendLineFilterEnabled) {
+    parts.push('趋势线关');
+  } else {
+    parts.push(`趋势线开·检索${p.trendLineLookback}根·连续${p.trendLineConsecutive}根`);
   }
   const sharpOn =
     p.sharpMoveOnlyDrop ||
@@ -204,8 +238,18 @@ export function OpportunityFiltersPanel({
         kdjJRange,
         recentLimitUpCount,
         recentLimitDownCount,
+        limitUpPeriod,
+        limitDownPeriod,
         consolidationFilterEnabled,
+        consolidationTypes,
+        consolidationLookback,
+        consolidationConsecutive,
+        consolidationThreshold,
+        consolidationRequireAboveMa10,
+        consolidationTypeOptions,
         trendLineFilterEnabled,
+        trendLineLookback,
+        trendLineConsecutive,
         sharpMoveWindowBars,
         sharpMoveMagnitude,
         sharpMoveOnlyDrop,
@@ -223,8 +267,18 @@ export function OpportunityFiltersPanel({
       kdjJRange,
       recentLimitUpCount,
       recentLimitDownCount,
+      limitUpPeriod,
+      limitDownPeriod,
       consolidationFilterEnabled,
+      consolidationTypes,
+      consolidationLookback,
+      consolidationConsecutive,
+      consolidationThreshold,
+      consolidationRequireAboveMa10,
+      consolidationTypeOptions,
       trendLineFilterEnabled,
+      trendLineLookback,
+      trendLineConsecutive,
       sharpMoveWindowBars,
       sharpMoveMagnitude,
       sharpMoveOnlyDrop,

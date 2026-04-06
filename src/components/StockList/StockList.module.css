@@ -49,6 +49,9 @@
   transition: all 0.2s;
   border-bottom: 1px solid var(--ant-color-border-secondary);
   min-height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .listItem:hover {
@@ -73,6 +76,8 @@
   display: flex;
   flex-direction: row;
   align-items: center;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .stockName {
@@ -80,6 +85,7 @@
   align-items: center;
   flex: none;
   cursor: pointer;
+  white-space: nowrap;
 }
 
 .name {
@@ -96,6 +102,8 @@
   align-items: center;
   flex: 1;
   padding-left: 6px;
+  white-space: nowrap;
+  min-width: 0;
 }
 
 .price {
@@ -133,6 +141,7 @@
   opacity: 0;
   transition: opacity 0.2s;
   flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .listItem:hover .actionButtons {

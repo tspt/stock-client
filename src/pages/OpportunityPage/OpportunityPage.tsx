@@ -316,50 +316,44 @@ export function OpportunityPage() {
   }, [updateTableHeight, analysisData.length]);
 
   // 根据选择的市场类型和名称类型筛选股票
+  // 优化：简化过滤逻辑，减少分支判断
   const filteredStocks = useMemo<StockInfo[]>(() => {
     if (allStocks.length === 0) {
       return [];
     }
 
+    // 预先确定市场匹配函数，避免在循环中重复 switch
+    let marketMatchFn: (code: string) => boolean;
+    switch (selectedMarket) {
+      case 'hs_main':
+        marketMatchFn = (pureCode: string) => pureCode.startsWith('60') || pureCode.startsWith('00');
+        break;
+      case 'sz_gem':
+        marketMatchFn = (pureCode: string) => pureCode.startsWith('30');
+        break;
+      default:
+        marketMatchFn = () => false;
+    }
+
+    // 预先确定名称类型匹配函数
+    let nameTypeMatchFn: (isST: boolean) => boolean;
+    switch (nameType) {
+      case 'st':
+        nameTypeMatchFn = (isST: boolean) => isST;
+        break;
+      case 'non_st':
+        nameTypeMatchFn = (isST: boolean) => !isST;
+        break;
+      case 'all':
+      default:
+        nameTypeMatchFn = () => true;
+    }
+
+    // 单次遍历，使用预定义的匹配函数
     return allStocks.filter((stock) => {
       const pureCode = getPureCode(stock.code);
       const isST = stock.name.includes('ST');
-
-      // 市场类型过滤
-      let marketMatch = false;
-      switch (selectedMarket) {
-        case 'hs_main':
-          // 沪深主板：60开头或00开头
-          marketMatch = pureCode.startsWith('60') || pureCode.startsWith('00');
-          break;
-        case 'sz_gem':
-          // 创业板：30开头
-          marketMatch = pureCode.startsWith('30');
-          break;
-        default:
-          marketMatch = false;
-      }
-
-      // 名称类型过滤
-      let nameTypeMatch = false;
-      switch (nameType) {
-        case 'all':
-          // 不限
-          nameTypeMatch = true;
-          break;
-        case 'st':
-          // ST股票
-          nameTypeMatch = isST;
-          break;
-        case 'non_st':
-          // 非ST股票
-          nameTypeMatch = !isST;
-          break;
-        default:
-          nameTypeMatch = true;
-      }
-
-      return marketMatch && nameTypeMatch;
+      return marketMatchFn(pureCode) && nameTypeMatchFn(isST);
     });
   }, [allStocks, selectedMarket, nameType]);
 

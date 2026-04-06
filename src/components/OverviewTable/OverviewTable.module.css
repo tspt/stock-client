@@ -3,8 +3,25 @@
   height: 100%;
 }
 
+.tableContainer :global(.ant-table-cell) {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tableContainer :global(.ant-table-thead > tr > th) {
+  white-space: nowrap;
+}
+
+.tableContainer :global(.ant-table-tbody > tr > td) {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .stockName {
   font-weight: 500;
+  white-space: nowrap;
 }
 
 .positiveValue {

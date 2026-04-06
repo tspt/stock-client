@@ -3,7 +3,10 @@ import { analyzeSharpMovePatterns } from '@/utils/sharpMovePatterns';
 import { calculateTrendLineInLookback } from '@/utils/trendLineAnalysis';
 import type { KLineData, SharpMovePatternAnalysis, StockOpportunityData } from '@/types/stock';
 import type { OpportunityFilterSnapshot } from '@/types/opportunityFilter';
-import type { OpportunityFilterWorkerMessage, OpportunityFilterWorkerResponse } from './opportunityFilterWorkerTypes';
+import type {
+  OpportunityFilterWorkerMessage,
+  OpportunityFilterWorkerResponse,
+} from './opportunityFilterWorkerTypes';
 import { MAX_OPPORTUNITY_KLINE_CACHE_ENTRIES } from '@/utils/constants';
 
 let cancelledThroughRequestId = 0;
@@ -42,7 +45,11 @@ function passesSharpMoveFilter(
   return false;
 }
 
-function countLimitUpDown(klineData: KLineData[], period: number, isST: boolean): { limitUp: number; limitDown: number } {
+function countLimitUpDown(
+  klineData: KLineData[],
+  period: number,
+  isST: boolean
+): { limitUp: number; limitDown: number } {
   if (!klineData || klineData.length < 2 || period <= 0) {
     return { limitUp: 0, limitDown: 0 };
   }
@@ -111,7 +118,9 @@ function skippedMapToArray(
   }));
 }
 
-async function runFilterTask(message: Extract<OpportunityFilterWorkerMessage, { type: 'filter' }>): Promise<void> {
+async function runFilterTask(
+  message: Extract<OpportunityFilterWorkerMessage, { type: 'filter' }>
+): Promise<void> {
   const { requestId, filters } = message;
   const analysisData =
     message.analysisData.length > MAX_OPPORTUNITY_KLINE_CACHE_ENTRIES
@@ -122,7 +131,9 @@ async function runFilterTask(message: Extract<OpportunityFilterWorkerMessage, { 
 
   const rawWb = filters.sharpMoveWindowBars;
   const sharpMoveWindowBars =
-    typeof rawWb === 'number' && Number.isFinite(rawWb) && rawWb > 0 ? Math.max(1, Math.floor(rawWb)) : 60;
+    typeof rawWb === 'number' && Number.isFinite(rawWb) && rawWb > 0
+      ? Math.max(1, Math.floor(rawWb))
+      : 60;
   const rawMag = filters.sharpMoveMagnitude;
   const sharpMoveMagnitude =
     typeof rawMag === 'number' && Number.isFinite(rawMag) && rawMag > 0 ? rawMag : 6;
@@ -155,36 +166,53 @@ async function runFilterTask(message: Extract<OpportunityFilterWorkerMessage, { 
       let nextItem: StockOpportunityData = item;
       const klineData = klineDataMap.get(item.code);
 
+      // 智能判断是否需要重算各指标（仅在有K线数据且筛选条件启用时重算）
+      const needConsolidationRecalc = consolidationTypesSet !== null;
+      const needTrendLineRecalc = filters.trendLineFilterEnabled;
+      const needSharpMoveRecalc = sharpMoveFilterActive(filters);
+
       if (klineData && klineData.length > 0) {
-        try {
-          const consolidation = calculateConsolidationInLookback(klineData, {
-            lookback: filters.consolidationLookback,
-            consecutive: filters.consolidationConsecutive,
-            threshold: filters.consolidationThreshold,
-            requireClosesAboveMa10: filters.consolidationRequireAboveMa10,
-          });
-          nextItem = { ...nextItem, consolidation };
-        } catch {
-          mergeSkippedReason(skippedMap, item.code, item.name, '横盘重算失败，已跳过重算');
+        // 仅在需要时重算横盘分析
+        if (needConsolidationRecalc) {
+          try {
+            const consolidation = calculateConsolidationInLookback(klineData, {
+              lookback: filters.consolidationLookback,
+              consecutive: filters.consolidationConsecutive,
+              threshold: filters.consolidationThreshold,
+              requireClosesAboveMa10: filters.consolidationRequireAboveMa10,
+            });
+            nextItem = { ...nextItem, consolidation };
+          } catch {
+            mergeSkippedReason(skippedMap, item.code, item.name, '横盘重算失败，已跳过重算');
+          }
         }
 
-        try {
-          const sharpMovePatterns = analyzeSharpMovePatterns(klineData, sharpMoveWindowBars, sharpMoveMagnitude);
-          nextItem = { ...nextItem, sharpMovePatterns };
-        } catch {
-          mergeSkippedReason(skippedMap, item.code, item.name, '单日异动重算失败，已跳过重算');
-          nextItem = { ...nextItem, sharpMovePatterns: undefined };
+        // 仅在需要时重算单日异动
+        if (needSharpMoveRecalc) {
+          try {
+            const sharpMovePatterns = analyzeSharpMovePatterns(
+              klineData,
+              sharpMoveWindowBars,
+              sharpMoveMagnitude
+            );
+            nextItem = { ...nextItem, sharpMovePatterns };
+          } catch {
+            mergeSkippedReason(skippedMap, item.code, item.name, '单日异动重算失败，已跳过重算');
+            nextItem = { ...nextItem, sharpMovePatterns: undefined };
+          }
         }
 
-        /** 与横盘、单日异动一致：有 K 线即用面板参数重算，便于列表与筛选条件一致；是否剔除行由 trendLineFilterEnabled 决定 */
-        try {
-          const trendLine = calculateTrendLineInLookback(klineData, {
-            lookback: filters.trendLineLookback,
-            consecutive: filters.trendLineConsecutive,
-          });
-          nextItem = { ...nextItem, trendLine };
-        } catch {
-          mergeSkippedReason(skippedMap, item.code, item.name, '趋势线重算失败，已跳过重算');
+        // 仅在需要时重算趋势线
+        if (needTrendLineRecalc) {
+          try {
+            const trendLine = calculateTrendLineInLookback(klineData, {
+              lookback: filters.trendLineLookback,
+              consecutive: filters.trendLineConsecutive,
+            });
+            nextItem = { ...nextItem, trendLine };
+          } catch {
+            mergeSkippedReason(skippedMap, item.code, item.name, '趋势线重算失败，已跳过重算');
+          }
         }
       } else {
         nextItem = { ...nextItem, sharpMovePatterns: undefined };

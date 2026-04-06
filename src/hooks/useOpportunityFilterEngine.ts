@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import type { KLineData, StockOpportunityData } from '@/types/stock';
 import type { FilterSkippedItem, OpportunityFilterSnapshot } from '@/types/opportunityFilter';
 import type { OpportunityFilterWorkerResponse } from '@/workers/opportunityFilterWorkerTypes';
@@ -94,6 +94,9 @@ export function useOpportunityFilterEngine({
   const activeRequestIdRef = useRef(0);
   const requestIdRef = useRef(0);
   const previousKlineCacheRef = useRef<Map<string, KLineData[]> | null>(null);
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const pendingFiltersRef = useRef<OpportunityFilterSnapshot | null>(null);
+  const pendingAnalysisDataRef = useRef<StockOpportunityData[] | null>(null);
 
   useEffect(() => {
     const worker = new Worker(new URL('../workers/opportunityFilterWorker.ts', import.meta.url), {
@@ -198,13 +201,21 @@ export function useOpportunityFilterEngine({
     setDataVersion((prev) => prev + 1);
   }, [klineDataCache]);
 
-  useEffect(() => {
+  // 防抖执行筛选任务
+  const executeFilterTask = useCallback(() => {
     const worker = workerRef.current;
     if (!worker) {
       return;
     }
 
-    if (analysisData.length === 0) {
+    const currentAnalysisData = pendingAnalysisDataRef.current;
+    const currentFilters = pendingFiltersRef.current;
+
+    if (!currentAnalysisData || !currentFilters) {
+      return;
+    }
+
+    if (currentAnalysisData.length === 0) {
       const previousRequestId = activeRequestIdRef.current;
       if (previousRequestId > 0) {
         worker.postMessage({ type: 'cancel', requestId: previousRequestId });
@@ -217,7 +228,9 @@ export function useOpportunityFilterEngine({
       return;
     }
 
-    const lightFiltered = analysisData.filter((item) => passLightFilters(item, filters));
+    const lightFiltered = currentAnalysisData.filter((item) =>
+      passLightFilters(item, currentFilters)
+    );
     const analysisDataForWorker = capAnalysisDataForWorker(
       lightFiltered,
       klineDataCache,
@@ -237,9 +250,43 @@ export function useOpportunityFilterEngine({
       type: 'filter',
       requestId,
       analysisData: analysisDataForWorker,
-      filters,
+      filters: currentFilters,
     });
-  }, [analysisData, filters, dataVersion, klineDataCache]);
+  }, [klineDataCache]);
+
+  // 触发防抖筛选
+  const triggerDebouncedFilter = useCallback(() => {
+    // 清除之前的定时器
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+
+    // 设置新的定时器，300ms 后执行
+    debounceTimerRef.current = setTimeout(() => {
+      executeFilterTask();
+    }, 300);
+  }, [executeFilterTask]);
+
+  useEffect(() => {
+    const worker = workerRef.current;
+    if (!worker) {
+      return;
+    }
+
+    // 更新待处理的筛选参数
+    pendingFiltersRef.current = filters;
+    pendingAnalysisDataRef.current = analysisData;
+
+    // 触发防抖筛选
+    triggerDebouncedFilter();
+
+    // 清理函数
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, [analysisData, filters, dataVersion, triggerDebouncedFilter]);
 
   return {
     filteredData,

@@ -244,33 +244,18 @@ export function OpportunityTable({ data, columns, sortConfig, onSortChange, tabl
     }
   };
 
-  const sortedData = useMemo(() => {
-    if (!sortConfig.key || !sortConfig.direction) {
-      return data;
-    }
-
-    const sorted = [...data].sort((a, b) => {
-      const aVal = getSortValue(a, sortConfig.key!);
-      const bVal = getSortValue(b, sortConfig.key!);
-      const comparison = compareSortValue(aVal, bVal);
-
-      return sortConfig.direction === 'asc' ? comparison : -comparison;
-    });
-
-    return sorted;
-  }, [data, sortConfig]);
-
   return (
     <div className={styles.tableContainer}>
       <Table
         columns={tableColumns}
-        dataSource={sortedData}
+        dataSource={data}
         rowKey="code"
         pagination={pagination}
         virtual
         scroll={{ x: 'max-content', y: tableHeight }}
         onChange={handleTableChange}
         size="small"
+        className={styles.opportunityTable}
       />
     </div>
   );
