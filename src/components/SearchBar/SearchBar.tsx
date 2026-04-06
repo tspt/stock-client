@@ -19,7 +19,7 @@ export function SearchBar() {
   const [groupSelectorVisible, setGroupSelectorVisible] = useState(false);
   const [pendingStock, setPendingStock] = useState<StockInfo | null>(null);
   const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>([]);
-  const { addStock, allStocks, groups } = useStockStore();
+  const { addStock, allStocks, groups, setSelectedGroupId } = useStockStore();
   const { sortType, setSortType } = useStockList();
 
   // 分组选择列表：内置“自选” + 用户分组（自选不出现在分组管理，但可用于选择）
@@ -62,6 +62,14 @@ export function SearchBar() {
     }
 
     addStock(pendingStock, selectedGroupIds);
+    const orderedTabIds = [
+      BUILTIN_GROUP_SELF_ID,
+      ...[...groups].sort((a, b) => a.order - b.order).map((g) => g.id),
+    ];
+    const nextTab = orderedTabIds.find((gid) => selectedGroupIds.includes(gid));
+    if (nextTab) {
+      setSelectedGroupId(nextTab);
+    }
     message.success(`已添加：${pendingStock.name}`);
     setOptions([]);
     setSearchValue('');

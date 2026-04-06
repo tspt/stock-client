@@ -34,6 +34,7 @@ const LIST_ROW_HEIGHT = 48;
 export function StockList() {
   const { watchList, quotes } = useStockList();
   const {
+    watchList: allWatchList,
     removeStock,
     setSelectedStock,
     selectedStock,
@@ -188,7 +189,7 @@ export function StockList() {
     setSelectedGroupIds([]);
   };
 
-  if (watchList.length === 0) {
+  if (allWatchList.length === 0) {
     return (
       <div className={styles.emptyContainer}>
         <Empty description="暂无自选股，请搜索添加" />
@@ -196,13 +197,22 @@ export function StockList() {
     );
   }
 
+  if (watchList.length === 0) {
+    return (
+      <div className={styles.emptyContainer}>
+        <Empty description="当前分组下暂无自选股，请切换上方分组标签或搜索添加" />
+      </div>
+    );
+  }
+
+  const virtualListHeight = listHeight > 0 ? listHeight : 320;
+
   return (
     <div className={styles.stockList}>
       <div ref={listContainerRef} className={styles.listContainer} role="list">
-        {listHeight > 0 && (
-          <VirtualList
+        <VirtualList
             data={watchList}
-            height={listHeight}
+            height={virtualListHeight}
             itemHeight={LIST_ROW_HEIGHT}
             itemKey="code"
           >
@@ -367,7 +377,6 @@ export function StockList() {
               );
             }}
           </VirtualList>
-        )}
       </div>
       {contextMenu && (
         <div

@@ -16,6 +16,7 @@ import {
   isOldFormat,
   generateGroupId,
   validateGroupName,
+  ensureSelectedGroupIdForWatchList,
 } from '@/utils/groupUtils';
 import { message, Modal } from 'antd';
 
@@ -170,7 +171,13 @@ export const useStockStore = create<StockState>((set, get) => ({
         ...s,
         groupIds: s.groupIds && s.groupIds.length > 0 ? s.groupIds : [BUILTIN_GROUP_SELF_ID],
       }));
-      set({ groups: migrated.groups, watchList: normalizedWatchList });
+      const groups = migrated.groups;
+      const nextSelected = ensureSelectedGroupIdForWatchList(
+        normalizedWatchList,
+        groups,
+        BUILTIN_GROUP_SELF_ID
+      );
+      set({ groups, watchList: normalizedWatchList, selectedGroupId: nextSelected });
       get().saveWatchList();
     } else {
       // 新格式
@@ -179,9 +186,17 @@ export const useStockStore = create<StockState>((set, get) => ({
         ...s,
         groupIds: s.groupIds && s.groupIds.length > 0 ? s.groupIds : [BUILTIN_GROUP_SELF_ID],
       }));
+      const groups = data.groups || [];
+      const persistedTab = data.selectedGroupId ?? BUILTIN_GROUP_SELF_ID;
+      const nextSelected = ensureSelectedGroupIdForWatchList(
+        normalizedWatchList,
+        groups,
+        persistedTab
+      );
       set({
-        groups: data.groups || [],
+        groups,
         watchList: normalizedWatchList,
+        selectedGroupId: nextSelected,
       });
     }
 
@@ -190,10 +205,11 @@ export const useStockStore = create<StockState>((set, get) => ({
   },
 
   saveWatchList: () => {
-    const { watchList, groups } = get();
+    const { watchList, groups, selectedGroupId } = get();
     const data: StockWatchListData = {
       groups: groups || [],
       watchList: watchList || [],
+      selectedGroupId,
     };
     setStorage(STORAGE_KEYS.WATCH_LIST, data);
   },
@@ -366,7 +382,12 @@ export const useStockStore = create<StockState>((set, get) => ({
             .map((g, index) => ({ ...g, order: index }))
             .sort((a, b) => a.order - b.order);
 
-          set({ groups: reorderedGroups, watchList: newWatchList });
+          const { selectedGroupId: curTab } = get();
+          const nextTab =
+            curTab === id
+              ? ensureSelectedGroupIdForWatchList(newWatchList, reorderedGroups, BUILTIN_GROUP_SELF_ID)
+              : ensureSelectedGroupIdForWatchList(newWatchList, reorderedGroups, curTab);
+          set({ groups: reorderedGroups, watchList: newWatchList, selectedGroupId: nextTab });
           get().saveWatchList();
 
           hide();
@@ -384,7 +405,12 @@ export const useStockStore = create<StockState>((set, get) => ({
             .map((g, index) => ({ ...g, order: index }))
             .sort((a, b) => a.order - b.order);
 
-          set({ groups: reorderedGroups, watchList: newWatchList });
+          const { selectedGroupId: curTab } = get();
+          const nextTab =
+            curTab === id
+              ? ensureSelectedGroupIdForWatchList(newWatchList, reorderedGroups, BUILTIN_GROUP_SELF_ID)
+              : ensureSelectedGroupIdForWatchList(newWatchList, reorderedGroups, curTab);
+          set({ groups: reorderedGroups, watchList: newWatchList, selectedGroupId: nextTab });
           get().saveWatchList();
           message.success(`已删除分组"${group.name}"及 ${stocksInGroup.length} 只股票`);
         }

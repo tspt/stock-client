@@ -2,7 +2,7 @@
  * 分组工具函数
  */
 
-import type { StockInfo, StockWatchListData } from '@/types/stock';
+import type { Group, StockInfo, StockWatchListData } from '@/types/stock';
 import { MAX_GROUP_NAME_LENGTH } from './constants';
 import { BUILTIN_GROUP_SELF_ID } from './constants';
 
@@ -53,4 +53,36 @@ export function migrateOldWatchList(oldList: StockInfo[]): StockWatchListData {
  */
 export function isOldFormat(data: unknown): data is StockInfo[] {
   return Array.isArray(data) && data.length > 0 && 'code' in data[0] && !('groups' in data);
+}
+
+/**
+ * 当前选中的分组标签下若没有任何自选股，则切换到第一个「能看到股票」的分组，
+ * 避免默认停在「自选」而股票只加入了自定义分组时列表长期为空。
+ */
+export function ensureSelectedGroupIdForWatchList(
+  watchList: StockInfo[],
+  groups: Group[],
+  selectedGroupId: string
+): string {
+  if (watchList.length === 0) {
+    return selectedGroupId;
+  }
+  const hasStockInGroup = (groupId: string) =>
+    watchList.some((s) => s.groupIds && s.groupIds.includes(groupId));
+  if (hasStockInGroup(selectedGroupId)) {
+    return selectedGroupId;
+  }
+  if (hasStockInGroup(BUILTIN_GROUP_SELF_ID)) {
+    return BUILTIN_GROUP_SELF_ID;
+  }
+  const orderedTabIds = [
+    BUILTIN_GROUP_SELF_ID,
+    ...[...groups].sort((a, b) => a.order - b.order).map((g) => g.id),
+  ];
+  const matched = orderedTabIds.find((id) => hasStockInGroup(id));
+  if (matched) {
+    return matched;
+  }
+  const fallback = watchList[0]?.groupIds?.[0];
+  return fallback ?? BUILTIN_GROUP_SELF_ID;
 }

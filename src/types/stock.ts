@@ -172,6 +172,8 @@ export interface StockWatchListData {
   groups: Group[];
   /** 自选股列表 */
   watchList: StockInfo[];
+  /** 当前选中的分组标签（列表页）；缺省时由加载逻辑推导 */
+  selectedGroupId?: string;
 }
 
 /**
