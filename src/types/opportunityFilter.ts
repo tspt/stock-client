@@ -37,21 +37,24 @@ export interface OpportunityFilterSnapshot {
   sharpMoveRiseFlatDrop: boolean;
   /** RSI指标范围 */
   rsiRange: NumberRange;
-  /** MACD状态筛选 */
-  macdGoldenCross: boolean;
-  macdDeathCross: boolean;
-  macdDivergence: boolean;
-  /** 布林带位置筛选 */
-  bollingerUpper: boolean;
-  bollingerMiddle: boolean;
-  bollingerLower: boolean;
-  /** K线形态筛选 */
+  /** RSI周期 */
+  rsiPeriod: number;
+  /** K线形态筛选 - 单根 */
   candlestickHammer: boolean;
   candlestickShootingStar: boolean;
   candlestickDoji: boolean;
-  candlestickEngulfing: boolean;
+  /** K线形态筛选 - 双根 */
+  candlestickEngulfingBullish: boolean;
+  candlestickEngulfingBearish: boolean;
+  candlestickHaramiBullish: boolean;
+  candlestickHaramiBearish: boolean;
+  /** K线形态筛选 - 三根 */
   candlestickMorningStar: boolean;
   candlestickEveningStar: boolean;
+  candlestickDarkCloudCover: boolean;
+  candlestickPiercing: boolean;
+  candlestickThreeBlackCrows: boolean;
+  candlestickThreeWhiteSoldiers: boolean;
   /** 趋势形态筛选 */
   trendUptrend: boolean;
   trendDowntrend: boolean;

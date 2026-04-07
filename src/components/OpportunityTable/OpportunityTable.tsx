@@ -105,7 +105,14 @@ export function OpportunityTable({ data, columns, sortConfig, onSortChange, tabl
     }
 
     if (key === 'trendLineReason') {
-      return record?.trendLine?.reasonText || '-';
+      if (!record?.trendLine) return '-';
+      const { lookback, consecutive, reasonText } = record.trendLine;
+      return (
+        <span>
+          <strong style={{ color: '#1890ff' }}>M={lookback}, N={consecutive}</strong>
+          <span style={{ marginLeft: 8 }}>{reasonText}</span>
+        </span>
+      );
     }
 
     if (value === null || value === undefined || value === '') {

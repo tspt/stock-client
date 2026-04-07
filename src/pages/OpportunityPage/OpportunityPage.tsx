@@ -107,21 +107,24 @@ const INITIAL_FILTER_STATE = {
   sharpMoveRiseFlatDrop: false,
   /** RSI指标范围 */
   rsiRange: {} as { min?: number; max?: number },
-  /** MACD状态筛选 */
-  macdGoldenCross: false,
-  macdDeathCross: false,
-  macdDivergence: false,
-  /** 布林带位置筛选 */
-  bollingerUpper: false,
-  bollingerMiddle: false,
-  bollingerLower: false,
-  /** K线形态筛选 */
+  /** RSI周期 */
+  rsiPeriod: 6,
+  /** K线形态筛选 - 单根 */
   candlestickHammer: false,
   candlestickShootingStar: false,
   candlestickDoji: false,
-  candlestickEngulfing: false,
+  /** K线形态筛选 - 双根 */
+  candlestickEngulfingBullish: false,
+  candlestickEngulfingBearish: false,
+  candlestickHaramiBullish: false,
+  candlestickHaramiBearish: false,
+  /** K线形态筛选 - 三根 */
   candlestickMorningStar: false,
   candlestickEveningStar: false,
+  candlestickDarkCloudCover: false,
+  candlestickPiercing: false,
+  candlestickThreeBlackCrows: false,
+  candlestickThreeWhiteSoldiers: false,
   /** 趋势形态筛选 */
   trendUptrend: false,
   trendDowntrend: false,
@@ -232,20 +235,24 @@ export function OpportunityPage() {
 
   // 新增技术指标筛选状态
   const [rsiRange, setRsiRange] = useState<{ min?: number; max?: number }>(INITIAL_FILTER_STATE.rsiRange);
-  const [macdGoldenCross, setMacdGoldenCross] = useState<boolean>(INITIAL_FILTER_STATE.macdGoldenCross);
-  const [macdDeathCross, setMacdDeathCross] = useState<boolean>(INITIAL_FILTER_STATE.macdDeathCross);
-  const [macdDivergence, setMacdDivergence] = useState<boolean>(INITIAL_FILTER_STATE.macdDivergence);
-  const [bollingerUpper, setBollingerUpper] = useState<boolean>(INITIAL_FILTER_STATE.bollingerUpper);
-  const [bollingerMiddle, setBollingerMiddle] = useState<boolean>(INITIAL_FILTER_STATE.bollingerMiddle);
-  const [bollingerLower, setBollingerLower] = useState<boolean>(INITIAL_FILTER_STATE.bollingerLower);
+  const [rsiPeriod, setRsiPeriod] = useState<number>(INITIAL_FILTER_STATE.rsiPeriod);
 
-  // K线形态筛选状态
+  // K线形态筛选状态 - 单根
   const [candlestickHammer, setCandlestickHammer] = useState<boolean>(INITIAL_FILTER_STATE.candlestickHammer);
   const [candlestickShootingStar, setCandlestickShootingStar] = useState<boolean>(INITIAL_FILTER_STATE.candlestickShootingStar);
   const [candlestickDoji, setCandlestickDoji] = useState<boolean>(INITIAL_FILTER_STATE.candlestickDoji);
-  const [candlestickEngulfing, setCandlestickEngulfing] = useState<boolean>(INITIAL_FILTER_STATE.candlestickEngulfing);
+  // K线形态筛选状态 - 双根
+  const [candlestickEngulfingBullish, setCandlestickEngulfingBullish] = useState<boolean>(INITIAL_FILTER_STATE.candlestickEngulfingBullish);
+  const [candlestickEngulfingBearish, setCandlestickEngulfingBearish] = useState<boolean>(INITIAL_FILTER_STATE.candlestickEngulfingBearish);
+  const [candlestickHaramiBullish, setCandlestickHaramiBullish] = useState<boolean>(INITIAL_FILTER_STATE.candlestickHaramiBullish);
+  const [candlestickHaramiBearish, setCandlestickHaramiBearish] = useState<boolean>(INITIAL_FILTER_STATE.candlestickHaramiBearish);
+  // K线形态筛选状态 - 三根
   const [candlestickMorningStar, setCandlestickMorningStar] = useState<boolean>(INITIAL_FILTER_STATE.candlestickMorningStar);
   const [candlestickEveningStar, setCandlestickEveningStar] = useState<boolean>(INITIAL_FILTER_STATE.candlestickEveningStar);
+  const [candlestickDarkCloudCover, setCandlestickDarkCloudCover] = useState<boolean>(INITIAL_FILTER_STATE.candlestickDarkCloudCover);
+  const [candlestickPiercing, setCandlestickPiercing] = useState<boolean>(INITIAL_FILTER_STATE.candlestickPiercing);
+  const [candlestickThreeBlackCrows, setCandlestickThreeBlackCrows] = useState<boolean>(INITIAL_FILTER_STATE.candlestickThreeBlackCrows);
+  const [candlestickThreeWhiteSoldiers, setCandlestickThreeWhiteSoldiers] = useState<boolean>(INITIAL_FILTER_STATE.candlestickThreeWhiteSoldiers);
 
   // 趋势形态筛选状态
   const [trendUptrend, setTrendUptrend] = useState<boolean>(INITIAL_FILTER_STATE.trendUptrend);
@@ -294,19 +301,23 @@ export function OpportunityPage() {
         setSharpMoveRiseFlatDrop,
         // 新增技术指标筛选 actions
         setRsiRange,
-        setMacdGoldenCross,
-        setMacdDeathCross,
-        setMacdDivergence,
-        setBollingerUpper,
-        setBollingerMiddle,
-        setBollingerLower,
-        // K线形态筛选 actions
+        setRsiPeriod,
+        // K线形态筛选 actions - 单根
         setCandlestickHammer,
         setCandlestickShootingStar,
         setCandlestickDoji,
-        setCandlestickEngulfing,
+        // K线形态筛选 actions - 双根
+        setCandlestickEngulfingBullish,
+        setCandlestickEngulfingBearish,
+        setCandlestickHaramiBullish,
+        setCandlestickHaramiBearish,
+        // K线形态筛选 actions - 三根
         setCandlestickMorningStar,
         setCandlestickEveningStar,
+        setCandlestickDarkCloudCover,
+        setCandlestickPiercing,
+        setCandlestickThreeBlackCrows,
+        setCandlestickThreeWhiteSoldiers,
         // 趋势形态筛选 actions
         setTrendUptrend,
         setTrendDowntrend,
@@ -454,18 +465,20 @@ export function OpportunityPage() {
       sharpMoveDropFlatRise,
       sharpMoveRiseFlatDrop,
       rsiRange,
-      macdGoldenCross,
-      macdDeathCross,
-      macdDivergence,
-      bollingerUpper,
-      bollingerMiddle,
-      bollingerLower,
+      rsiPeriod,
       candlestickHammer,
       candlestickShootingStar,
       candlestickDoji,
-      candlestickEngulfing,
+      candlestickEngulfingBullish,
+      candlestickEngulfingBearish,
+      candlestickHaramiBullish,
+      candlestickHaramiBearish,
       candlestickMorningStar,
       candlestickEveningStar,
+      candlestickDarkCloudCover,
+      candlestickPiercing,
+      candlestickThreeBlackCrows,
+      candlestickThreeWhiteSoldiers,
       trendUptrend,
       trendDowntrend,
       trendSideways,
@@ -500,18 +513,20 @@ export function OpportunityPage() {
       sharpMoveDropFlatRise,
       sharpMoveRiseFlatDrop,
       rsiRange,
-      macdGoldenCross,
-      macdDeathCross,
-      macdDivergence,
-      bollingerUpper,
-      bollingerMiddle,
-      bollingerLower,
+      rsiPeriod,
       candlestickHammer,
       candlestickShootingStar,
       candlestickDoji,
-      candlestickEngulfing,
+      candlestickEngulfingBullish,
+      candlestickEngulfingBearish,
+      candlestickHaramiBullish,
+      candlestickHaramiBearish,
       candlestickMorningStar,
       candlestickEveningStar,
+      candlestickDarkCloudCover,
+      candlestickPiercing,
+      candlestickThreeBlackCrows,
+      candlestickThreeWhiteSoldiers,
       trendUptrend,
       trendDowntrend,
       trendSideways,
@@ -578,19 +593,21 @@ export function OpportunityPage() {
     setSharpMoveRiseFlatDrop(s.sharpMoveRiseFlatDrop);
     // 重置新增的技术指标筛选
     setRsiRange({ ...s.rsiRange });
-    setMacdGoldenCross(s.macdGoldenCross);
-    setMacdDeathCross(s.macdDeathCross);
-    setMacdDivergence(s.macdDivergence);
-    setBollingerUpper(s.bollingerUpper);
-    setBollingerMiddle(s.bollingerMiddle);
-    setBollingerLower(s.bollingerLower);
+    setRsiPeriod(s.rsiPeriod);
     // 重置K线形态筛选
     setCandlestickHammer(s.candlestickHammer);
     setCandlestickShootingStar(s.candlestickShootingStar);
     setCandlestickDoji(s.candlestickDoji);
-    setCandlestickEngulfing(s.candlestickEngulfing);
+    setCandlestickEngulfingBullish(s.candlestickEngulfingBullish);
+    setCandlestickEngulfingBearish(s.candlestickEngulfingBearish);
+    setCandlestickHaramiBullish(s.candlestickHaramiBullish);
+    setCandlestickHaramiBearish(s.candlestickHaramiBearish);
     setCandlestickMorningStar(s.candlestickMorningStar);
     setCandlestickEveningStar(s.candlestickEveningStar);
+    setCandlestickDarkCloudCover(s.candlestickDarkCloudCover);
+    setCandlestickPiercing(s.candlestickPiercing);
+    setCandlestickThreeBlackCrows(s.candlestickThreeBlackCrows);
+    setCandlestickThreeWhiteSoldiers(s.candlestickThreeWhiteSoldiers);
     // 重置趋势形态筛选
     setTrendUptrend(s.trendUptrend);
     setTrendDowntrend(s.trendDowntrend);
@@ -608,7 +625,7 @@ export function OpportunityPage() {
     }
 
     const prefs: OpportunityFilterPrefs = {
-      version: 2,
+      version: 1,
       selectedMarket,
       nameType,
       currentPeriod,
@@ -642,19 +659,21 @@ export function OpportunityPage() {
       sharpMoveRiseFlatDrop,
       // 新增技术指标筛选
       rsiRange: { ...rsiRange },
-      macdGoldenCross,
-      macdDeathCross,
-      macdDivergence,
-      bollingerUpper,
-      bollingerMiddle,
-      bollingerLower,
+      rsiPeriod,
       // K线形态筛选
       candlestickHammer,
       candlestickShootingStar,
       candlestickDoji,
-      candlestickEngulfing,
+      candlestickEngulfingBullish,
+      candlestickEngulfingBearish,
+      candlestickHaramiBullish,
+      candlestickHaramiBearish,
       candlestickMorningStar,
       candlestickEveningStar,
+      candlestickDarkCloudCover,
+      candlestickPiercing,
+      candlestickThreeBlackCrows,
+      candlestickThreeWhiteSoldiers,
       // 趋势形态筛选
       trendUptrend,
       trendDowntrend,
@@ -883,163 +902,167 @@ export function OpportunityPage() {
           </Card>
         )}
 
-        {analysisData.length > 0 ? (
-          <>
-            {/* 筛选区域容器 */}
-            <div className={styles.filterContainer}>
-              <OpportunityFiltersPanel
-                filterPanelActiveKey={filterPanelActiveKey}
-                setFilterPanelActiveKey={setFilterPanelActiveKey}
-                priceRange={priceRange}
-                setPriceRange={setPriceRange}
-                marketCapRange={marketCapRange}
-                setMarketCapRange={setMarketCapRange}
-                turnoverRateRange={turnoverRateRange}
-                setTurnoverRateRange={setTurnoverRateRange}
-                peRatioRange={peRatioRange}
-                setPeRatioRange={setPeRatioRange}
-                kdjJRange={kdjJRange}
-                setKdjJRange={setKdjJRange}
-                recentLimitUpCount={recentLimitUpCount}
-                setRecentLimitUpCount={setRecentLimitUpCount}
-                recentLimitDownCount={recentLimitDownCount}
-                setRecentLimitDownCount={setRecentLimitDownCount}
-                limitUpPeriod={limitUpPeriod}
-                setLimitUpPeriod={setLimitUpPeriod}
-                limitDownPeriod={limitDownPeriod}
-                setLimitDownPeriod={setLimitDownPeriod}
-                consolidationTypes={consolidationTypes}
-                setConsolidationTypes={setConsolidationTypes}
-                consolidationLookback={consolidationLookback}
-                setConsolidationLookback={setConsolidationLookback}
-                consolidationConsecutive={consolidationConsecutive}
-                setConsolidationConsecutive={setConsolidationConsecutive}
-                consolidationThreshold={consolidationThreshold}
-                setConsolidationThreshold={setConsolidationThreshold}
-                consolidationRequireAboveMa10={consolidationRequireAboveMa10}
-                setConsolidationRequireAboveMa10={setConsolidationRequireAboveMa10}
-                consolidationFilterEnabled={consolidationFilterEnabled}
-                setConsolidationFilterEnabled={setConsolidationFilterEnabled}
-                trendLineLookback={trendLineLookback}
-                setTrendLineLookback={setTrendLineLookback}
-                trendLineConsecutive={trendLineConsecutive}
-                setTrendLineConsecutive={setTrendLineConsecutive}
-                trendLineFilterEnabled={trendLineFilterEnabled}
-                setTrendLineFilterEnabled={setTrendLineFilterEnabled}
-                sharpMoveWindowBars={sharpMoveWindowBars}
-                setSharpMoveWindowBars={setSharpMoveWindowBars}
-                sharpMoveMagnitude={sharpMoveMagnitude}
-                setSharpMoveMagnitude={setSharpMoveMagnitude}
-                sharpMoveOnlyDrop={sharpMoveOnlyDrop}
-                setSharpMoveOnlyDrop={setSharpMoveOnlyDrop}
-                sharpMoveOnlyRise={sharpMoveOnlyRise}
-                setSharpMoveOnlyRise={setSharpMoveOnlyRise}
-                sharpMoveDropThenRiseLoose={sharpMoveDropThenRiseLoose}
-                setSharpMoveDropThenRiseLoose={setSharpMoveDropThenRiseLoose}
-                sharpMoveRiseThenDropLoose={sharpMoveRiseThenDropLoose}
-                setSharpMoveRiseThenDropLoose={setSharpMoveRiseThenDropLoose}
-                sharpMoveDropFlatRise={sharpMoveDropFlatRise}
-                setSharpMoveDropFlatRise={setSharpMoveDropFlatRise}
-                sharpMoveRiseFlatDrop={sharpMoveRiseFlatDrop}
-                setSharpMoveRiseFlatDrop={setSharpMoveRiseFlatDrop}
-                consolidationTypeOptions={CONSOLIDATION_TYPE_OPTIONS}
-                // 新增技术指标筛选 props
-                rsiRange={rsiRange}
-                setRsiRange={setRsiRange}
-                macdGoldenCross={macdGoldenCross}
-                setMacdGoldenCross={setMacdGoldenCross}
-                macdDeathCross={macdDeathCross}
-                setMacdDeathCross={setMacdDeathCross}
-                macdDivergence={macdDivergence}
-                setMacdDivergence={setMacdDivergence}
-                bollingerUpper={bollingerUpper}
-                setBollingerUpper={setBollingerUpper}
-                bollingerMiddle={bollingerMiddle}
-                setBollingerMiddle={setBollingerMiddle}
-                bollingerLower={bollingerLower}
-                setBollingerLower={setBollingerLower}
-                // K线形态筛选 props
-                candlestickHammer={candlestickHammer}
-                setCandlestickHammer={setCandlestickHammer}
-                candlestickShootingStar={candlestickShootingStar}
-                setCandlestickShootingStar={setCandlestickShootingStar}
-                candlestickDoji={candlestickDoji}
-                setCandlestickDoji={setCandlestickDoji}
-                candlestickEngulfing={candlestickEngulfing}
-                setCandlestickEngulfing={setCandlestickEngulfing}
-                candlestickMorningStar={candlestickMorningStar}
-                setCandlestickMorningStar={setCandlestickMorningStar}
-                candlestickEveningStar={candlestickEveningStar}
-                setCandlestickEveningStar={setCandlestickEveningStar}
-                // 趋势形态筛选 props
-                trendUptrend={trendUptrend}
-                setTrendUptrend={setTrendUptrend}
-                trendDowntrend={trendDowntrend}
-                setTrendDowntrend={setTrendDowntrend}
-                trendSideways={trendSideways}
-                setTrendSideways={setTrendSideways}
-                trendBreakout={trendBreakout}
-                setTrendBreakout={setTrendBreakout}
-                trendBreakdown={trendBreakdown}
-                setTrendBreakdown={setTrendBreakdown}
-              />
+        {/* 筛选入口 - 始终显示 */}
+        <div className={styles.filterContainer}>
+          <OpportunityFiltersPanel
+            filterPanelActiveKey={filterPanelActiveKey}
+            setFilterPanelActiveKey={setFilterPanelActiveKey}
+            priceRange={priceRange}
+            setPriceRange={setPriceRange}
+            marketCapRange={marketCapRange}
+            setMarketCapRange={setMarketCapRange}
+            turnoverRateRange={turnoverRateRange}
+            setTurnoverRateRange={setTurnoverRateRange}
+            peRatioRange={peRatioRange}
+            setPeRatioRange={setPeRatioRange}
+            kdjJRange={kdjJRange}
+            setKdjJRange={setKdjJRange}
+            recentLimitUpCount={recentLimitUpCount}
+            setRecentLimitUpCount={setRecentLimitUpCount}
+            recentLimitDownCount={recentLimitDownCount}
+            setRecentLimitDownCount={setRecentLimitDownCount}
+            limitUpPeriod={limitUpPeriod}
+            setLimitUpPeriod={setLimitUpPeriod}
+            limitDownPeriod={limitDownPeriod}
+            setLimitDownPeriod={setLimitDownPeriod}
+            consolidationTypes={consolidationTypes}
+            setConsolidationTypes={setConsolidationTypes}
+            consolidationLookback={consolidationLookback}
+            setConsolidationLookback={setConsolidationLookback}
+            consolidationConsecutive={consolidationConsecutive}
+            setConsolidationConsecutive={setConsolidationConsecutive}
+            consolidationThreshold={consolidationThreshold}
+            setConsolidationThreshold={setConsolidationThreshold}
+            consolidationRequireAboveMa10={consolidationRequireAboveMa10}
+            setConsolidationRequireAboveMa10={setConsolidationRequireAboveMa10}
+            consolidationFilterEnabled={consolidationFilterEnabled}
+            setConsolidationFilterEnabled={setConsolidationFilterEnabled}
+            trendLineLookback={trendLineLookback}
+            setTrendLineLookback={setTrendLineLookback}
+            trendLineConsecutive={trendLineConsecutive}
+            setTrendLineConsecutive={setTrendLineConsecutive}
+            trendLineFilterEnabled={trendLineFilterEnabled}
+            setTrendLineFilterEnabled={setTrendLineFilterEnabled}
+            sharpMoveWindowBars={sharpMoveWindowBars}
+            setSharpMoveWindowBars={setSharpMoveWindowBars}
+            sharpMoveMagnitude={sharpMoveMagnitude}
+            setSharpMoveMagnitude={setSharpMoveMagnitude}
+            sharpMoveOnlyDrop={sharpMoveOnlyDrop}
+            setSharpMoveOnlyDrop={setSharpMoveOnlyDrop}
+            sharpMoveOnlyRise={sharpMoveOnlyRise}
+            setSharpMoveOnlyRise={setSharpMoveOnlyRise}
+            sharpMoveDropThenRiseLoose={sharpMoveDropThenRiseLoose}
+            setSharpMoveDropThenRiseLoose={setSharpMoveDropThenRiseLoose}
+            sharpMoveRiseThenDropLoose={sharpMoveRiseThenDropLoose}
+            setSharpMoveRiseThenDropLoose={setSharpMoveRiseThenDropLoose}
+            sharpMoveDropFlatRise={sharpMoveDropFlatRise}
+            setSharpMoveDropFlatRise={setSharpMoveDropFlatRise}
+            sharpMoveRiseFlatDrop={sharpMoveRiseFlatDrop}
+            setSharpMoveRiseFlatDrop={setSharpMoveRiseFlatDrop}
+            consolidationTypeOptions={CONSOLIDATION_TYPE_OPTIONS}
+            // 新增技术指标筛选 props
+            rsiRange={rsiRange}
+            setRsiRange={setRsiRange}
+            rsiPeriod={rsiPeriod}
+            setRsiPeriod={setRsiPeriod}
+            // K线形态筛选 props
+            candlestickHammer={candlestickHammer}
+            setCandlestickHammer={setCandlestickHammer}
+            candlestickShootingStar={candlestickShootingStar}
+            setCandlestickShootingStar={setCandlestickShootingStar}
+            candlestickDoji={candlestickDoji}
+            setCandlestickDoji={setCandlestickDoji}
+            candlestickEngulfingBullish={candlestickEngulfingBullish}
+            setCandlestickEngulfingBullish={setCandlestickEngulfingBullish}
+            candlestickEngulfingBearish={candlestickEngulfingBearish}
+            setCandlestickEngulfingBearish={setCandlestickEngulfingBearish}
+            candlestickHaramiBullish={candlestickHaramiBullish}
+            setCandlestickHaramiBullish={setCandlestickHaramiBullish}
+            candlestickHaramiBearish={candlestickHaramiBearish}
+            setCandlestickHaramiBearish={setCandlestickHaramiBearish}
+            candlestickMorningStar={candlestickMorningStar}
+            setCandlestickMorningStar={setCandlestickMorningStar}
+            candlestickEveningStar={candlestickEveningStar}
+            setCandlestickEveningStar={setCandlestickEveningStar}
+            candlestickDarkCloudCover={candlestickDarkCloudCover}
+            setCandlestickDarkCloudCover={setCandlestickDarkCloudCover}
+            candlestickPiercing={candlestickPiercing}
+            setCandlestickPiercing={setCandlestickPiercing}
+            candlestickThreeBlackCrows={candlestickThreeBlackCrows}
+            setCandlestickThreeBlackCrows={setCandlestickThreeBlackCrows}
+            candlestickThreeWhiteSoldiers={candlestickThreeWhiteSoldiers}
+            setCandlestickThreeWhiteSoldiers={setCandlestickThreeWhiteSoldiers}
+            // 趋势形态筛选 props
+            trendUptrend={trendUptrend}
+            setTrendUptrend={setTrendUptrend}
+            trendDowntrend={trendDowntrend}
+            setTrendDowntrend={setTrendDowntrend}
+            trendSideways={trendSideways}
+            setTrendSideways={setTrendSideways}
+            trendBreakout={trendBreakout}
+            setTrendBreakout={setTrendBreakout}
+            trendBreakdown={trendBreakdown}
+            setTrendBreakdown={setTrendBreakdown}
+          />
+        </div>
 
-              {/* 筛选结果提示 */}
-              {analysisData.length > 0 && (
-                <div className={styles.filterResult}>
-                  <span>
-                    {filteredAnalysisData.length !== analysisData.length ? (
-                      <>
-                        筛选结果：<strong>{filteredAnalysisData.length}</strong> /{' '}
-                        {analysisData.length} 条
-                      </>
-                    ) : (
-                      <>
-                        共 <strong>{filteredAnalysisData.length}</strong> 条数据
-                      </>
-                    )}
-                  </span>
-                  {filteringAnalysisData && <span className={styles.filteringTag}>筛选中...</span>}
-                  {filterSkippedItems.length > 0 && (
-                    <span className={styles.filterSkipSummary}>
-                      跳过 {filterSkippedItems.length} 条
-                      <Button
-                        type="link"
-                        size="small"
-                        onClick={() => setFilterSkippedExpanded((prev) => !prev)}
-                        className={styles.filterSkipToggle}
-                      >
-                        {filterSkippedExpanded ? '收起' : '展开'}
-                      </Button>
-                    </span>
-                  )}
-                </div>
-              )}
-              {filterSkippedExpanded && filterSkippedItems.length > 0 && (
-                <div className={styles.filterSkipList}>
-                  {filterSkippedItems.slice(0, 20).map((item) => (
-                    <div key={`${item.code}-${item.reason}`} className={styles.filterSkipItem}>
-                      {item.name} ({item.code})：{item.reason}
-                    </div>
-                  ))}
-                  {filterSkippedItems.length > 20 && (
-                    <div className={styles.filterSkipMore}>仅展示前 20 条，其余已折叠。</div>
-                  )}
-                </div>
+        {/* 筛选结果提示 - 仅在有数据时显示 */}
+        {analysisData.length > 0 && (
+          <>
+            <div className={styles.filterResult}>
+              <span>
+                {filteredAnalysisData.length !== analysisData.length ? (
+                  <>
+                    筛选结果：<strong>{filteredAnalysisData.length}</strong> /{' '}
+                    {analysisData.length} 条
+                  </>
+                ) : (
+                  <>
+                    共 <strong>{filteredAnalysisData.length}</strong> 条数据
+                  </>
+                )}
+              </span>
+              {filteringAnalysisData && <span className={styles.filteringTag}>筛选中...</span>}
+              {filterSkippedItems.length > 0 && (
+                <span className={styles.filterSkipSummary}>
+                  跳过 {filterSkippedItems.length} 条
+                  <Button
+                    type="link"
+                    size="small"
+                    onClick={() => setFilterSkippedExpanded((prev) => !prev)}
+                    className={styles.filterSkipToggle}
+                  >
+                    {filterSkippedExpanded ? '收起' : '展开'}
+                  </Button>
+                </span>
               )}
             </div>
-
-            {/* 表格区域 */}
-            <Card className={styles.tableCard} ref={tableCardRef}>
-              <OpportunityTable
-                data={filteredAnalysisData}
-                columns={columnConfig}
-                sortConfig={sortConfig}
-                onSortChange={updateSortConfig}
-                tableHeight={tableHeight}
-              />
-            </Card>
+            {filterSkippedExpanded && filterSkippedItems.length > 0 && (
+              <div className={styles.filterSkipList}>
+                {filterSkippedItems.slice(0, 20).map((item) => (
+                  <div key={`${item.code}-${item.reason}`} className={styles.filterSkipItem}>
+                    {item.name} ({item.code})：{item.reason}
+                  </div>
+                ))}
+                {filterSkippedItems.length > 20 && (
+                  <div className={styles.filterSkipMore}>仅展示前 20 条，其余已折叠。</div>
+                )}
+              </div>
+            )}
           </>
+        )}
+
+        {/* 表格区域 */}
+        {analysisData.length > 0 ? (
+          <Card className={styles.tableCard} ref={tableCardRef}>
+            <OpportunityTable
+              data={filteredAnalysisData}
+              columns={columnConfig}
+              sortConfig={sortConfig}
+              onSortChange={updateSortConfig}
+              tableHeight={tableHeight}
+            />
+          </Card>
         ) : (
           <Card className={styles.emptyCard}>
             <div className={styles.emptyText}>

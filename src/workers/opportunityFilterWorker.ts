@@ -69,12 +69,23 @@ function technicalIndicatorsFilterActive(filters: OpportunityFilterSnapshot): bo
     filters.bollingerUpper ||
     filters.bollingerMiddle ||
     filters.bollingerLower ||
+    // 单根形态
     filters.candlestickHammer ||
     filters.candlestickShootingStar ||
     filters.candlestickDoji ||
-    filters.candlestickEngulfing ||
+    // 双根形态
+    filters.candlestickEngulfingBullish ||
+    filters.candlestickEngulfingBearish ||
+    filters.candlestickHaramiBullish ||
+    filters.candlestickHaramiBearish ||
+    // 三根形态
     filters.candlestickMorningStar ||
     filters.candlestickEveningStar ||
+    filters.candlestickDarkCloudCover ||
+    filters.candlestickPiercing ||
+    filters.candlestickThreeBlackCrows ||
+    filters.candlestickThreeWhiteSoldiers ||
+    // 趋势形态
     filters.trendUptrend ||
     filters.trendDowntrend ||
     filters.trendSideways ||
@@ -102,7 +113,8 @@ function passesTechnicalIndicatorsFilter(
 
   // RSI筛选
   if (filters.rsiRange.min !== undefined || filters.rsiRange.max !== undefined) {
-    const rsi = calculateRSI(klineData, 14);
+    const rsiPeriod = filters.rsiPeriod || 6;
+    const rsi = calculateRSI(klineData, rsiPeriod);
     const lastRSI = rsi[len - 1];
 
     if (lastRSI === null) {
@@ -183,19 +195,43 @@ function passesTechnicalIndicatorsFilter(
     filters.candlestickHammer ||
     filters.candlestickShootingStar ||
     filters.candlestickDoji ||
-    filters.candlestickEngulfing ||
+    filters.candlestickEngulfingBullish ||
+    filters.candlestickEngulfingBearish ||
+    filters.candlestickHaramiBullish ||
+    filters.candlestickHaramiBearish ||
     filters.candlestickMorningStar ||
-    filters.candlestickEveningStar
+    filters.candlestickEveningStar ||
+    filters.candlestickDarkCloudCover ||
+    filters.candlestickPiercing ||
+    filters.candlestickThreeBlackCrows ||
+    filters.candlestickThreeWhiteSoldiers
   ) {
     const patterns = detectCandlestickPatternsInWindow(klineData, 20);
 
-    const patternMatched =
+    // 单根形态
+    const singlePatternMatched =
       (filters.candlestickHammer && patterns.hammer) ||
       (filters.candlestickShootingStar && patterns.shootingStar) ||
-      (filters.candlestickDoji && patterns.doji) ||
-      (filters.candlestickEngulfing && patterns.engulfing) ||
+      (filters.candlestickDoji && patterns.doji);
+
+    // 双根形态
+    const doublePatternMatched =
+      (filters.candlestickEngulfingBullish && patterns.engulfingBullish) ||
+      (filters.candlestickEngulfingBearish && patterns.engulfingBearish) ||
+      (filters.candlestickHaramiBullish && patterns.haramiBullish) ||
+      (filters.candlestickHaramiBearish && patterns.haramiBearish);
+
+    // 三根形态
+    const triplePatternMatched =
       (filters.candlestickMorningStar && patterns.morningStar) ||
-      (filters.candlestickEveningStar && patterns.eveningStar);
+      (filters.candlestickEveningStar && patterns.eveningStar) ||
+      (filters.candlestickDarkCloudCover && patterns.darkCloudCover) ||
+      (filters.candlestickPiercing && patterns.piercing) ||
+      (filters.candlestickThreeBlackCrows && patterns.threeBlackCrows) ||
+      (filters.candlestickThreeWhiteSoldiers && patterns.threeWhiteSoldiers);
+
+    // 任一形态匹配即通过
+    const patternMatched = singlePatternMatched || doublePatternMatched || triplePatternMatched;
 
     if (!patternMatched) {
       return false;

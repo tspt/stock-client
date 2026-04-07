@@ -101,21 +101,24 @@ export interface OpportunityFilterPrefs {
   sharpMoveRiseFlatDrop: boolean;
   /** RSI指标范围 */
   rsiRange: { min?: number; max?: number };
-  /** MACD状态筛选 */
-  macdGoldenCross: boolean;
-  macdDeathCross: boolean;
-  macdDivergence: boolean;
-  /** 布林带位置筛选 */
-  bollingerUpper: boolean;
-  bollingerMiddle: boolean;
-  bollingerLower: boolean;
-  /** K线形态筛选 */
+  /** RSI周期 */
+  rsiPeriod: number;
+  /** K线形态筛选 - 单根 */
   candlestickHammer: boolean;
   candlestickShootingStar: boolean;
   candlestickDoji: boolean;
-  candlestickEngulfing: boolean;
+  /** K线形态筛选 - 双根 */
+  candlestickEngulfingBullish: boolean;
+  candlestickEngulfingBearish: boolean;
+  candlestickHaramiBullish: boolean;
+  candlestickHaramiBearish: boolean;
+  /** K线形态筛选 - 三根 */
   candlestickMorningStar: boolean;
   candlestickEveningStar: boolean;
+  candlestickDarkCloudCover: boolean;
+  candlestickPiercing: boolean;
+  candlestickThreeBlackCrows: boolean;
+  candlestickThreeWhiteSoldiers: boolean;
   /** 趋势形态筛选 */
   trendUptrend: boolean;
   trendDowntrend: boolean;
@@ -225,19 +228,23 @@ export function loadOpportunityFilterPrefs(): OpportunityFilterPrefs | null {
       sharpMoveRiseFlatDrop: p.sharpMoveRiseFlatDrop === true,
       // 新增技术指标筛选
       rsiRange: parseRange(p.rsiRange),
-      macdGoldenCross: p.macdGoldenCross === true,
-      macdDeathCross: p.macdDeathCross === true,
-      macdDivergence: p.macdDivergence === true,
-      bollingerUpper: p.bollingerUpper === true,
-      bollingerMiddle: p.bollingerMiddle === true,
-      bollingerLower: p.bollingerLower === true,
-      // K线形态筛选
+      rsiPeriod: isFiniteNumber(p.rsiPeriod) ? Math.floor(p.rsiPeriod) : 6,
+      // K线形态筛选 - 单根
       candlestickHammer: p.candlestickHammer === true,
       candlestickShootingStar: p.candlestickShootingStar === true,
       candlestickDoji: p.candlestickDoji === true,
-      candlestickEngulfing: p.candlestickEngulfing === true,
+      // K线形态筛选 - 双根
+      candlestickEngulfingBullish: p.candlestickEngulfingBullish === true,
+      candlestickEngulfingBearish: p.candlestickEngulfingBearish === true,
+      candlestickHaramiBullish: p.candlestickHaramiBullish === true,
+      candlestickHaramiBearish: p.candlestickHaramiBearish === true,
+      // K线形态筛选 - 三根
       candlestickMorningStar: p.candlestickMorningStar === true,
       candlestickEveningStar: p.candlestickEveningStar === true,
+      candlestickDarkCloudCover: p.candlestickDarkCloudCover === true,
+      candlestickPiercing: p.candlestickPiercing === true,
+      candlestickThreeBlackCrows: p.candlestickThreeBlackCrows === true,
+      candlestickThreeWhiteSoldiers: p.candlestickThreeWhiteSoldiers === true,
       // 趋势形态筛选
       trendUptrend: p.trendUptrend === true,
       trendDowntrend: p.trendDowntrend === true,
@@ -306,19 +313,23 @@ export function getDefaultFilterPrefsFields(): Omit<
     sharpMoveRiseFlatDrop: false,
     // 新增技术指标筛选默认值
     rsiRange: {},
-    macdGoldenCross: false,
-    macdDeathCross: false,
-    macdDivergence: false,
-    bollingerUpper: false,
-    bollingerMiddle: false,
-    bollingerLower: false,
-    // K线形态筛选默认值
+    rsiPeriod: 6,
+    // K线形态筛选默认值 - 单根
     candlestickHammer: false,
     candlestickShootingStar: false,
     candlestickDoji: false,
-    candlestickEngulfing: false,
+    // K线形态筛选默认值 - 双根
+    candlestickEngulfingBullish: false,
+    candlestickEngulfingBearish: false,
+    candlestickHaramiBullish: false,
+    candlestickHaramiBearish: false,
+    // K线形态筛选默认值 - 三根
     candlestickMorningStar: false,
     candlestickEveningStar: false,
+    candlestickDarkCloudCover: false,
+    candlestickPiercing: false,
+    candlestickThreeBlackCrows: false,
+    candlestickThreeWhiteSoldiers: false,
     // 趋势形态筛选默认值
     trendUptrend: false,
     trendDowntrend: false,
@@ -391,19 +402,23 @@ export interface OpportunityFilterPrefsApplyActions {
   setSharpMoveRiseFlatDrop: (v: boolean) => void;
   // 新增技术指标筛选 actions
   setRsiRange: (v: { min?: number; max?: number }) => void;
-  setMacdGoldenCross: (v: boolean) => void;
-  setMacdDeathCross: (v: boolean) => void;
-  setMacdDivergence: (v: boolean) => void;
-  setBollingerUpper: (v: boolean) => void;
-  setBollingerMiddle: (v: boolean) => void;
-  setBollingerLower: (v: boolean) => void;
-  // K线形态筛选 actions
+  setRsiPeriod: (v: number) => void;
+  // K线形态筛选 actions - 单根
   setCandlestickHammer: (v: boolean) => void;
   setCandlestickShootingStar: (v: boolean) => void;
   setCandlestickDoji: (v: boolean) => void;
-  setCandlestickEngulfing: (v: boolean) => void;
+  // K线形态筛选 actions - 双根
+  setCandlestickEngulfingBullish: (v: boolean) => void;
+  setCandlestickEngulfingBearish: (v: boolean) => void;
+  setCandlestickHaramiBullish: (v: boolean) => void;
+  setCandlestickHaramiBearish: (v: boolean) => void;
+  // K线形态筛选 actions - 三根
   setCandlestickMorningStar: (v: boolean) => void;
   setCandlestickEveningStar: (v: boolean) => void;
+  setCandlestickDarkCloudCover: (v: boolean) => void;
+  setCandlestickPiercing: (v: boolean) => void;
+  setCandlestickThreeBlackCrows: (v: boolean) => void;
+  setCandlestickThreeWhiteSoldiers: (v: boolean) => void;
   // 趋势形态筛选 actions
   setTrendUptrend: (v: boolean) => void;
   setTrendDowntrend: (v: boolean) => void;
@@ -447,19 +462,23 @@ export function applyOpportunityFilterPrefsToState(
   actions.setSharpMoveRiseFlatDrop(prefs.sharpMoveRiseFlatDrop);
   // 应用新增技术指标筛选
   actions.setRsiRange({ ...prefs.rsiRange });
-  actions.setMacdGoldenCross(prefs.macdGoldenCross);
-  actions.setMacdDeathCross(prefs.macdDeathCross);
-  actions.setMacdDivergence(prefs.macdDivergence);
-  actions.setBollingerUpper(prefs.bollingerUpper);
-  actions.setBollingerMiddle(prefs.bollingerMiddle);
-  actions.setBollingerLower(prefs.bollingerLower);
-  // 应用K线形态筛选
+  actions.setRsiPeriod(prefs.rsiPeriod);
+  // 应用K线形态筛选 - 单根
   actions.setCandlestickHammer(prefs.candlestickHammer);
   actions.setCandlestickShootingStar(prefs.candlestickShootingStar);
   actions.setCandlestickDoji(prefs.candlestickDoji);
-  actions.setCandlestickEngulfing(prefs.candlestickEngulfing);
+  // 应用K线形态筛选 - 双根
+  actions.setCandlestickEngulfingBullish(prefs.candlestickEngulfingBullish);
+  actions.setCandlestickEngulfingBearish(prefs.candlestickEngulfingBearish);
+  actions.setCandlestickHaramiBullish(prefs.candlestickHaramiBullish);
+  actions.setCandlestickHaramiBearish(prefs.candlestickHaramiBearish);
+  // 应用K线形态筛选 - 三根
   actions.setCandlestickMorningStar(prefs.candlestickMorningStar);
   actions.setCandlestickEveningStar(prefs.candlestickEveningStar);
+  actions.setCandlestickDarkCloudCover(prefs.candlestickDarkCloudCover);
+  actions.setCandlestickPiercing(prefs.candlestickPiercing);
+  actions.setCandlestickThreeBlackCrows(prefs.candlestickThreeBlackCrows);
+  actions.setCandlestickThreeWhiteSoldiers(prefs.candlestickThreeWhiteSoldiers);
   // 应用趋势形态筛选
   actions.setTrendUptrend(prefs.trendUptrend);
   actions.setTrendDowntrend(prefs.trendDowntrend);

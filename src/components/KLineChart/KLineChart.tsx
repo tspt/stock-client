@@ -8,6 +8,8 @@ import type { EChartsOption } from 'echarts';
 import type { KLineData, KLinePeriod } from '@/types/stock';
 import { calculateAllMA, calculateKDJ, calculateAllRSI } from '@/utils/indicators';
 import { formatVolume } from '@/utils/format';
+import { detectCandlestickPatternsInWindow, type CandlestickPatternResult } from '@/utils/candlestickPatterns';
+import { getMultiplePatternsSVG, type CandlestickPatternType } from '@/utils/candlestickPatternSVGs';
 import styles from './KLineChart.module.css';
 
 interface KLineChartProps {
@@ -19,10 +21,251 @@ interface KLineChartProps {
   loading?: boolean;
 }
 
+/**
+ * 获取指定位置检测到的形态列表
+ * 针对当前位置进行形态检测，而不是使用全局预计算结果
+ */
+function getPatternsAtIndex(
+  patterns: CandlestickPatternResult,
+  index: number,
+  data: KLineData[]
+): CandlestickPatternType[] {
+  const result: CandlestickPatternType[] = [];
+
+  if (index < 0 || index >= data.length) {
+    return result;
+  }
+
+  // 单根形态：检查当前K线是否符合形态特征
+  if (patterns.hammer) {
+    const kline = data[index];
+    const body = Math.abs(kline.close - kline.open);
+    const lowerShadow = Math.min(kline.close, kline.open) - kline.low;
+    const upperShadow = kline.high - Math.max(kline.close, kline.open);
+    const range = kline.high - kline.low;
+
+    if (range > 0 && body < range * 0.33 && lowerShadow >= body * 2 && upperShadow < range * 0.33) {
+      result.push('hammer');
+    }
+  }
+
+  if (patterns.shootingStar) {
+    const kline = data[index];
+    const body = Math.abs(kline.close - kline.open);
+    const lowerShadow = Math.min(kline.close, kline.open) - kline.low;
+    const upperShadow = kline.high - Math.max(kline.close, kline.open);
+    const range = kline.high - kline.low;
+
+    if (range > 0 && body < range * 0.33 && upperShadow >= body * 2 && lowerShadow < range * 0.33) {
+      result.push('shootingStar');
+    }
+  }
+
+  if (patterns.doji) {
+    const kline = data[index];
+    const body = Math.abs(kline.close - kline.open);
+    const range = kline.high - kline.low;
+
+    if (range > 0 && body / range < 0.1) {
+      result.push('doji');
+    }
+  }
+
+  // 新增形态检测
+  if (patterns.invertedHammer) {
+    const kline = data[index];
+    const body = Math.abs(kline.close - kline.open);
+    const lowerShadow = Math.min(kline.close, kline.open) - kline.low;
+    const upperShadow = kline.high - Math.max(kline.close, kline.open);
+    const range = kline.high - kline.low;
+
+    if (range > 0 && body < range * 0.33 && upperShadow >= body * 2 && lowerShadow < range * 0.33) {
+      result.push('invertedHammer');
+    }
+  }
+
+  if (patterns.hangingMan) {
+    const kline = data[index];
+    const body = Math.abs(kline.close - kline.open);
+    const lowerShadow = Math.min(kline.close, kline.open) - kline.low;
+    const upperShadow = kline.high - Math.max(kline.close, kline.open);
+    const range = kline.high - kline.low;
+
+    if (range > 0 && body < range * 0.33 && lowerShadow >= body * 2 && upperShadow < range * 0.33) {
+      result.push('hangingMan');
+    }
+  }
+
+  if (patterns.dragonflyDoji) {
+    const kline = data[index];
+    const body = Math.abs(kline.close - kline.open);
+    const range = kline.high - kline.low;
+    const openCloseAvg = (kline.open + kline.close) / 2;
+
+    if (range > 0 && body / range < 0.05 &&
+      kline.high - openCloseAvg <= range * 0.1 &&
+      (openCloseAvg - kline.low) >= range * 0.5) {
+      result.push('dragonflyDoji');
+    }
+  }
+
+  if (patterns.gravestoneDoji) {
+    const kline = data[index];
+    const body = Math.abs(kline.close - kline.open);
+    const range = kline.high - kline.low;
+    const openCloseAvg = (kline.open + kline.close) / 2;
+
+    if (range > 0 && body / range < 0.05 &&
+      openCloseAvg - kline.low <= range * 0.1 &&
+      (kline.high - openCloseAvg) >= range * 0.5) {
+      result.push('gravestoneDoji');
+    }
+  }
+
+  // 双根形态：检查当前K线和前一根K线
+  if (index >= 1) {
+    const prev = data[index - 1];
+    const curr = data[index];
+
+    if (patterns.engulfingBullish) {
+      const prevIsBearish = prev.close < prev.open;
+      const currIsBullish = curr.close > curr.open;
+      const currBody = Math.abs(curr.close - curr.open);
+      const prevBody = Math.abs(prev.close - prev.open);
+
+      if (prevIsBearish && currIsBullish && currBody > prevBody &&
+        curr.open <= prev.close && curr.close >= prev.open) {
+        result.push('engulfingBullish');
+      }
+    }
+
+    if (patterns.engulfingBearish) {
+      const prevIsBullish = prev.close > prev.open;
+      const currIsBearish = curr.close < curr.open;
+      const currBody = Math.abs(curr.close - curr.open);
+      const prevBody = Math.abs(prev.close - prev.open);
+
+      if (prevIsBullish && currIsBearish && currBody > prevBody &&
+        curr.open >= prev.close && curr.close <= prev.open) {
+        result.push('engulfingBearish');
+      }
+    }
+
+    if (patterns.haramiBullish) {
+      const prevIsBullish = prev.close > prev.open;
+      const currIsBearish = curr.close < curr.open;
+      const currBody = Math.abs(curr.close - curr.open);
+      const prevBody = Math.abs(prev.close - prev.open);
+
+      if (prevIsBullish && currIsBearish && currBody < prevBody * 0.5) {
+        result.push('haramiBullish');
+      }
+    }
+
+    if (patterns.haramiBearish) {
+      const prevIsBearish = prev.close < prev.open;
+      const currIsBullish = curr.close > curr.open;
+      const currBody = Math.abs(curr.close - curr.open);
+      const prevBody = Math.abs(prev.close - prev.open);
+
+      if (prevIsBearish && currIsBullish && currBody < prevBody * 0.5) {
+        result.push('haramiBearish');
+      }
+    }
+
+    if (patterns.darkCloudCover) {
+      const prevIsBullish = prev.close > prev.open;
+      const currIsBearish = curr.close < curr.open;
+      const prevMidpoint = (prev.open + prev.close) / 2;
+
+      if (prevIsBullish && currIsBearish && curr.open > prev.high && curr.close < prevMidpoint) {
+        result.push('darkCloudCover');
+      }
+    }
+
+    if (patterns.piercing) {
+      const prevIsBearish = prev.close < prev.open;
+      const currIsBullish = curr.close > curr.open;
+      const prevMidpoint = (prev.open + prev.close) / 2;
+
+      if (prevIsBearish && currIsBullish && curr.open < prev.low && curr.close > prevMidpoint) {
+        result.push('piercing');
+      }
+    }
+  }
+
+  // 三根形态：检查当前K线和前两根K线
+  if (index >= 2) {
+    const first = data[index - 2];
+    const second = data[index - 1];
+    const third = data[index];
+
+    if (patterns.morningStar) {
+      const firstIsBearish = first.close < first.open;
+      const secondBody = Math.abs(second.close - second.open);
+      const firstBody = Math.abs(first.close - first.open);
+      const secondIsSmall = secondBody < firstBody * 0.5;
+      const thirdIsBullish = third.close > third.open;
+      const firstMidpoint = (first.open + first.close) / 2;
+      const thirdAboveMid = third.close > firstMidpoint;
+
+      if (firstIsBearish && secondIsSmall && thirdIsBullish && thirdAboveMid) {
+        result.push('morningStar');
+      }
+    }
+
+    if (patterns.eveningStar) {
+      const firstIsBullish = first.close > first.open;
+      const secondBody = Math.abs(second.close - second.open);
+      const firstBody = Math.abs(first.close - first.open);
+      const secondIsSmall = secondBody < firstBody * 0.5;
+      const thirdIsBearish = third.close < third.open;
+      const firstMidpoint = (first.open + first.close) / 2;
+      const thirdBelowMid = third.close < firstMidpoint;
+
+      if (firstIsBullish && secondIsSmall && thirdIsBearish && thirdBelowMid) {
+        result.push('eveningStar');
+      }
+    }
+
+    if (patterns.threeBlackCrows) {
+      const allBearish = first.close < first.open && second.close < second.open && third.close < third.open;
+      const descendingClose = first.close > second.close && second.close > third.close;
+
+      if (allBearish && descendingClose) {
+        result.push('threeBlackCrows');
+      }
+    }
+
+    if (patterns.threeWhiteSoldiers) {
+      const allBullish = first.close > first.open && second.close > second.open && third.close > third.open;
+      const ascendingClose = first.close < second.close && second.close < third.close;
+
+      if (allBullish && ascendingClose) {
+        result.push('threeWhiteSoldiers');
+      }
+    }
+  }
+
+  return result;
+}
+
 function buildKLineChartOption(data: KLineData[], period: KLinePeriod): EChartsOption {
   const maData = calculateAllMA(data);
   const kdjData = calculateKDJ(data);
   const rsiData = calculateAllRSI(data);
+
+  // 预计算形态检测结果（回溯窗口20根）
+  const patterns = detectCandlestickPatternsInWindow(data, 20);
+
+  // 为每个位置预计算形态结果，避免重复计算
+  const patternsCache = useMemo(() => {
+    const cache = new Map<number, CandlestickPatternType[]>();
+    for (let i = 0; i < data.length; i++) {
+      cache.set(i, getPatternsAtIndex(patterns, i, data));
+    }
+    return cache;
+  }, [data, patterns]);
 
   const klineData = data.map((item) => [
     item.open,
@@ -98,6 +341,12 @@ function buildKLineChartOption(data: KLineData[], period: KLinePeriod): EChartsO
         }
         if (rsiData.rsi24 && !isNaN(rsiData.rsi24[dataIndex])) {
           html += `<div>RSI24: ${rsiData.rsi24[dataIndex].toFixed(2)}</div>`;
+        }
+
+        // 形态检测 - 使用预计算缓存，提高性能
+        const detectedPatterns = patternsCache.get(dataIndex);
+        if (detectedPatterns && detectedPatterns.length > 0) {
+          html += getMultiplePatternsSVG(detectedPatterns);
         }
 
         return html;
