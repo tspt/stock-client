@@ -691,6 +691,8 @@ export function OpportunityFiltersPanel({
                           }}
                         />
                       </div>
+                    </div>
+                    <div className={styles.filterRow}>
                       <div className={styles.filterItem}>
                         <span className={styles.filterLabel}>RSI：</span>
                         <InputNumber

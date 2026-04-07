@@ -214,18 +214,10 @@
   padding: 6px 12px !important;
 }
 
-.filterContent {
-}
-
 .filterRow {
   display: flex;
   flex-wrap: wrap;
-  margin-bottom: 10px;
-  gap: 8px 16px;
-}
-
-.filterRow:last-child {
-  margin-bottom: 0;
+  gap: 2px 16px;
 }
 
 .filterItem {

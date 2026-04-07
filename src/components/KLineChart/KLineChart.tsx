@@ -250,7 +250,7 @@ function getPatternsAtIndex(
   return result;
 }
 
-function buildKLineChartOption(data: KLineData[], period: KLinePeriod): EChartsOption {
+function buildKLineChartOption(data: KLineData[], period: KLinePeriod, patternsCache?: Map<number, CandlestickPatternType[]>): EChartsOption {
   const maData = calculateAllMA(data);
   const kdjData = calculateKDJ(data);
   const rsiData = calculateAllRSI(data);
@@ -258,14 +258,13 @@ function buildKLineChartOption(data: KLineData[], period: KLinePeriod): EChartsO
   // 预计算形态检测结果（回溯窗口20根）
   const patterns = detectCandlestickPatternsInWindow(data, 20);
 
-  // 为每个位置预计算形态结果，避免重复计算
-  const patternsCache = useMemo(() => {
-    const cache = new Map<number, CandlestickPatternType[]>();
+  // 如果没有传入缓存，则创建新的缓存
+  const cache = patternsCache || new Map<number, CandlestickPatternType[]>();
+  if (!patternsCache) {
     for (let i = 0; i < data.length; i++) {
       cache.set(i, getPatternsAtIndex(patterns, i, data));
     }
-    return cache;
-  }, [data, patterns]);
+  }
 
   const klineData = data.map((item) => [
     item.open,
@@ -344,7 +343,7 @@ function buildKLineChartOption(data: KLineData[], period: KLinePeriod): EChartsO
         }
 
         // 形态检测 - 使用预计算缓存，提高性能
-        const detectedPatterns = patternsCache.get(dataIndex);
+        const detectedPatterns = cache.get(dataIndex);
         if (detectedPatterns && detectedPatterns.length > 0) {
           html += getMultiplePatternsSVG(detectedPatterns);
         }
@@ -598,9 +597,25 @@ export function KLineChart({
 }: KLineChartProps) {
   const chartRef = useRef<ReactECharts>(null);
 
+  // 预计算形态检测结果（回溯窗口20根）
+  const patterns = useMemo(() =>
+    data?.length ? detectCandlestickPatternsInWindow(data, 20) : null,
+    [data]
+  );
+
+  // 为每个位置预计算形态结果，避免重复计算
+  const patternsCache = useMemo(() => {
+    if (!data || !patterns) return undefined;
+    const cache = new Map<number, CandlestickPatternType[]>();
+    for (let i = 0; i < data.length; i++) {
+      cache.set(i, getPatternsAtIndex(patterns, i, data));
+    }
+    return cache;
+  }, [data, patterns]);
+
   const option = useMemo(
-    () => (data?.length ? buildKLineChartOption(data, period) : null),
-    [data, period]
+    () => (data?.length ? buildKLineChartOption(data, period, patternsCache) : null),
+    [data, period, patternsCache]
   );
 
   if (!data || data.length === 0) {
