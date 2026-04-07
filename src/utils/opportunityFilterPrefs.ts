@@ -119,12 +119,16 @@ export interface OpportunityFilterPrefs {
   candlestickPiercing: boolean;
   candlestickThreeBlackCrows: boolean;
   candlestickThreeWhiteSoldiers: boolean;
+  /** K线形态回溯窗口大小（根数） */
+  candlestickLookback: number;
   /** 趋势形态筛选 */
   trendUptrend: boolean;
   trendDowntrend: boolean;
   trendSideways: boolean;
   trendBreakout: boolean;
   trendBreakdown: boolean;
+  /** 趋势形态回溯窗口大小（根数） */
+  trendLookback: number;
 }
 
 function isRecord(v: unknown): v is Record<string, unknown> {
@@ -245,12 +249,16 @@ export function loadOpportunityFilterPrefs(): OpportunityFilterPrefs | null {
       candlestickPiercing: p.candlestickPiercing === true,
       candlestickThreeBlackCrows: p.candlestickThreeBlackCrows === true,
       candlestickThreeWhiteSoldiers: p.candlestickThreeWhiteSoldiers === true,
+      candlestickLookback: isFiniteNumber(p.candlestickLookback)
+        ? Math.floor(p.candlestickLookback)
+        : 20,
       // 趋势形态筛选
       trendUptrend: p.trendUptrend === true,
       trendDowntrend: p.trendDowntrend === true,
       trendSideways: p.trendSideways === true,
       trendBreakout: p.trendBreakout === true,
       trendBreakdown: p.trendBreakdown === true,
+      trendLookback: isFiniteNumber(p.trendLookback) ? Math.floor(p.trendLookback) : 20,
     };
 
     return prefs;
@@ -330,12 +338,14 @@ export function getDefaultFilterPrefsFields(): Omit<
     candlestickPiercing: false,
     candlestickThreeBlackCrows: false,
     candlestickThreeWhiteSoldiers: false,
+    candlestickLookback: 20,
     // 趋势形态筛选默认值
     trendUptrend: false,
     trendDowntrend: false,
     trendSideways: false,
     trendBreakout: false,
     trendBreakdown: false,
+    trendLookback: 20,
   };
 }
 
@@ -419,12 +429,14 @@ export interface OpportunityFilterPrefsApplyActions {
   setCandlestickPiercing: (v: boolean) => void;
   setCandlestickThreeBlackCrows: (v: boolean) => void;
   setCandlestickThreeWhiteSoldiers: (v: boolean) => void;
+  setCandlestickLookback: (v: number) => void;
   // 趋势形态筛选 actions
   setTrendUptrend: (v: boolean) => void;
   setTrendDowntrend: (v: boolean) => void;
   setTrendSideways: (v: boolean) => void;
   setTrendBreakout: (v: boolean) => void;
   setTrendBreakdown: (v: boolean) => void;
+  setTrendLookback: (v: number) => void;
 }
 
 export function applyOpportunityFilterPrefsToState(
@@ -479,10 +491,12 @@ export function applyOpportunityFilterPrefsToState(
   actions.setCandlestickPiercing(prefs.candlestickPiercing);
   actions.setCandlestickThreeBlackCrows(prefs.candlestickThreeBlackCrows);
   actions.setCandlestickThreeWhiteSoldiers(prefs.candlestickThreeWhiteSoldiers);
+  actions.setCandlestickLookback(prefs.candlestickLookback);
   // 应用趋势形态筛选
   actions.setTrendUptrend(prefs.trendUptrend);
   actions.setTrendDowntrend(prefs.trendDowntrend);
   actions.setTrendSideways(prefs.trendSideways);
   actions.setTrendBreakout(prefs.trendBreakout);
   actions.setTrendBreakdown(prefs.trendBreakdown);
+  actions.setTrendLookback(prefs.trendLookback);
 }

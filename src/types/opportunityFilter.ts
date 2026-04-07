@@ -39,6 +39,18 @@ export interface OpportunityFilterSnapshot {
   rsiRange: NumberRange;
   /** RSI周期 */
   rsiPeriod: number;
+  /** MACD金叉 */
+  macdGoldenCross: boolean;
+  /** MACD死叉 */
+  macdDeathCross: boolean;
+  /** MACD背离 */
+  macdDivergence: boolean;
+  /** 布林带上轨 */
+  bollingerUpper: boolean;
+  /** 布林带中轨 */
+  bollingerMiddle: boolean;
+  /** 布林带下轨 */
+  bollingerLower: boolean;
   /** K线形态筛选 - 单根 */
   candlestickHammer: boolean;
   candlestickShootingStar: boolean;
@@ -55,12 +67,16 @@ export interface OpportunityFilterSnapshot {
   candlestickPiercing: boolean;
   candlestickThreeBlackCrows: boolean;
   candlestickThreeWhiteSoldiers: boolean;
+  /** K线形态回溯窗口大小（根数） */
+  candlestickLookback: number;
   /** 趋势形态筛选 */
   trendUptrend: boolean;
   trendDowntrend: boolean;
   trendSideways: boolean;
   trendBreakout: boolean;
   trendBreakdown: boolean;
+  /** 趋势形态回溯窗口大小（根数） */
+  trendLookback: number;
 }
 
 export interface FilterSkippedItem {

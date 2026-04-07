@@ -109,6 +109,18 @@ const INITIAL_FILTER_STATE = {
   rsiRange: {} as { min?: number; max?: number },
   /** RSI周期 */
   rsiPeriod: 6,
+  /** MACD金叉 */
+  macdGoldenCross: false,
+  /** MACD死叉 */
+  macdDeathCross: false,
+  /** MACD背离 */
+  macdDivergence: false,
+  /** 布林带上轨 */
+  bollingerUpper: false,
+  /** 布林带中轨 */
+  bollingerMiddle: false,
+  /** 布林带下轨 */
+  bollingerLower: false,
   /** K线形态筛选 - 单根 */
   candlestickHammer: false,
   candlestickShootingStar: false,
@@ -125,12 +137,16 @@ const INITIAL_FILTER_STATE = {
   candlestickPiercing: false,
   candlestickThreeBlackCrows: false,
   candlestickThreeWhiteSoldiers: false,
+  /** K线形态回溯窗口大小（根数） */
+  candlestickLookback: 20,
   /** 趋势形态筛选 */
   trendUptrend: false,
   trendDowntrend: false,
   trendSideways: false,
   trendBreakout: false,
   trendBreakdown: false,
+  /** 趋势形态回溯窗口大小（根数） */
+  trendLookback: 20,
 };
 
 /** 与 opportunityStore 初始值一致，用于「重置」恢复周期与 K 线数量 */
@@ -236,6 +252,12 @@ export function OpportunityPage() {
   // 新增技术指标筛选状态
   const [rsiRange, setRsiRange] = useState<{ min?: number; max?: number }>(INITIAL_FILTER_STATE.rsiRange);
   const [rsiPeriod, setRsiPeriod] = useState<number>(INITIAL_FILTER_STATE.rsiPeriod);
+  const [macdGoldenCross, setMacdGoldenCross] = useState<boolean>(INITIAL_FILTER_STATE.macdGoldenCross);
+  const [macdDeathCross, setMacdDeathCross] = useState<boolean>(INITIAL_FILTER_STATE.macdDeathCross);
+  const [macdDivergence, setMacdDivergence] = useState<boolean>(INITIAL_FILTER_STATE.macdDivergence);
+  const [bollingerUpper, setBollingerUpper] = useState<boolean>(INITIAL_FILTER_STATE.bollingerUpper);
+  const [bollingerMiddle, setBollingerMiddle] = useState<boolean>(INITIAL_FILTER_STATE.bollingerMiddle);
+  const [bollingerLower, setBollingerLower] = useState<boolean>(INITIAL_FILTER_STATE.bollingerLower);
 
   // K线形态筛选状态 - 单根
   const [candlestickHammer, setCandlestickHammer] = useState<boolean>(INITIAL_FILTER_STATE.candlestickHammer);
@@ -253,6 +275,7 @@ export function OpportunityPage() {
   const [candlestickPiercing, setCandlestickPiercing] = useState<boolean>(INITIAL_FILTER_STATE.candlestickPiercing);
   const [candlestickThreeBlackCrows, setCandlestickThreeBlackCrows] = useState<boolean>(INITIAL_FILTER_STATE.candlestickThreeBlackCrows);
   const [candlestickThreeWhiteSoldiers, setCandlestickThreeWhiteSoldiers] = useState<boolean>(INITIAL_FILTER_STATE.candlestickThreeWhiteSoldiers);
+  const [candlestickLookback, setCandlestickLookback] = useState<number>(INITIAL_FILTER_STATE.candlestickLookback);
 
   // 趋势形态筛选状态
   const [trendUptrend, setTrendUptrend] = useState<boolean>(INITIAL_FILTER_STATE.trendUptrend);
@@ -260,6 +283,7 @@ export function OpportunityPage() {
   const [trendSideways, setTrendSideways] = useState<boolean>(INITIAL_FILTER_STATE.trendSideways);
   const [trendBreakout, setTrendBreakout] = useState<boolean>(INITIAL_FILTER_STATE.trendBreakout);
   const [trendBreakdown, setTrendBreakdown] = useState<boolean>(INITIAL_FILTER_STATE.trendBreakdown);
+  const [trendLookback, setTrendLookback] = useState<number>(INITIAL_FILTER_STATE.trendLookback);
 
   // 先恢复 IndexedDB 中的分析结果与 K 线缓存，再套用 localStorage 中的查询/筛选偏好（纯前端筛选用缓存即可）
   useEffect(() => {
@@ -318,12 +342,14 @@ export function OpportunityPage() {
         setCandlestickPiercing,
         setCandlestickThreeBlackCrows,
         setCandlestickThreeWhiteSoldiers,
+        setCandlestickLookback,
         // 趋势形态筛选 actions
         setTrendUptrend,
         setTrendDowntrend,
         setTrendSideways,
         setTrendBreakout,
         setTrendBreakdown,
+        setTrendLookback,
       });
       const st = useOpportunityStore.getState();
       if (st.analysisData.length === 0) {
@@ -466,6 +492,12 @@ export function OpportunityPage() {
       sharpMoveRiseFlatDrop,
       rsiRange,
       rsiPeriod,
+      macdGoldenCross,
+      macdDeathCross,
+      macdDivergence,
+      bollingerUpper,
+      bollingerMiddle,
+      bollingerLower,
       candlestickHammer,
       candlestickShootingStar,
       candlestickDoji,
@@ -479,11 +511,13 @@ export function OpportunityPage() {
       candlestickPiercing,
       candlestickThreeBlackCrows,
       candlestickThreeWhiteSoldiers,
+      candlestickLookback,
       trendUptrend,
       trendDowntrend,
       trendSideways,
       trendBreakout,
       trendBreakdown,
+      trendLookback,
     }),
     [
       priceRange,
@@ -514,6 +548,12 @@ export function OpportunityPage() {
       sharpMoveRiseFlatDrop,
       rsiRange,
       rsiPeriod,
+      macdGoldenCross,
+      macdDeathCross,
+      macdDivergence,
+      bollingerUpper,
+      bollingerMiddle,
+      bollingerLower,
       candlestickHammer,
       candlestickShootingStar,
       candlestickDoji,
@@ -527,11 +567,13 @@ export function OpportunityPage() {
       candlestickPiercing,
       candlestickThreeBlackCrows,
       candlestickThreeWhiteSoldiers,
+      candlestickLookback,
       trendUptrend,
       trendDowntrend,
       trendSideways,
       trendBreakout,
       trendBreakdown,
+      trendLookback,
     ]
   );
 
@@ -608,12 +650,14 @@ export function OpportunityPage() {
     setCandlestickPiercing(s.candlestickPiercing);
     setCandlestickThreeBlackCrows(s.candlestickThreeBlackCrows);
     setCandlestickThreeWhiteSoldiers(s.candlestickThreeWhiteSoldiers);
+    setCandlestickLookback(s.candlestickLookback);
     // 重置趋势形态筛选
     setTrendUptrend(s.trendUptrend);
     setTrendDowntrend(s.trendDowntrend);
     setTrendSideways(s.trendSideways);
     setTrendBreakout(s.trendBreakout);
     setTrendBreakdown(s.trendBreakdown);
+    setTrendLookback(s.trendLookback);
     patchSavedPrefsFiltersToDefaults();
     message.info('已恢复默认筛选条件');
   };
@@ -674,12 +718,14 @@ export function OpportunityPage() {
       candlestickPiercing,
       candlestickThreeBlackCrows,
       candlestickThreeWhiteSoldiers,
+      candlestickLookback,
       // 趋势形态筛选
       trendUptrend,
       trendDowntrend,
       trendSideways,
       trendBreakout,
       trendBreakdown,
+      trendLookback,
     };
     saveOpportunityFilterPrefs(prefs);
 
@@ -992,6 +1038,8 @@ export function OpportunityPage() {
             setCandlestickThreeBlackCrows={setCandlestickThreeBlackCrows}
             candlestickThreeWhiteSoldiers={candlestickThreeWhiteSoldiers}
             setCandlestickThreeWhiteSoldiers={setCandlestickThreeWhiteSoldiers}
+            candlestickLookback={candlestickLookback}
+            setCandlestickLookback={setCandlestickLookback}
             // 趋势形态筛选 props
             trendUptrend={trendUptrend}
             setTrendUptrend={setTrendUptrend}
@@ -1003,6 +1051,8 @@ export function OpportunityPage() {
             setTrendBreakout={setTrendBreakout}
             trendBreakdown={trendBreakdown}
             setTrendBreakdown={setTrendBreakdown}
+            trendLookback={trendLookback}
+            setTrendLookback={setTrendLookback}
           />
         </div>
 

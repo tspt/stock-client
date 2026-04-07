@@ -13,7 +13,7 @@ import styles from './OpportunityPage.module.css';
 const ALL_FILTER_PANEL_KEYS = ['data', 'consolidation', 'trendLine', 'sharpMove', 'technicalIndicators'] as const;
 
 /** 筛选抽屉宽度：加宽以减少表单项折行与纵向滚动 */
-const FILTER_DRAWER_WIDTH = 'min(960px, calc(100vw - 24px))' as const;
+const FILTER_DRAWER_WIDTH = 'min(1000px, calc(100vw - 24px))' as const;
 
 type NumRange = { min?: number; max?: number };
 
@@ -73,12 +73,14 @@ function buildOpportunityFilterSummary(p: {
   candlestickPiercing: boolean;
   candlestickThreeBlackCrows: boolean;
   candlestickThreeWhiteSoldiers: boolean;
+  candlestickLookback: number;
   // 趋势形态筛选
   trendUptrend: boolean;
   trendDowntrend: boolean;
   trendSideways: boolean;
   trendBreakout: boolean;
   trendBreakdown: boolean;
+  trendLookback: number;
 }): string {
   const parts: string[] = [];
   pushRange(parts, '价', p.priceRange);
@@ -246,6 +248,8 @@ export interface OpportunityFiltersPanelProps {
   setCandlestickThreeBlackCrows: (v: boolean) => void;
   candlestickThreeWhiteSoldiers: boolean;
   setCandlestickThreeWhiteSoldiers: (v: boolean) => void;
+  candlestickLookback: number;
+  setCandlestickLookback: (v: number) => void;
   // 趋势形态筛选 props
   trendUptrend: boolean;
   setTrendUptrend: (v: boolean) => void;
@@ -257,6 +261,8 @@ export interface OpportunityFiltersPanelProps {
   setTrendBreakout: (v: boolean) => void;
   trendBreakdown: boolean;
   setTrendBreakdown: (v: boolean) => void;
+  trendLookback: number;
+  setTrendLookback: (v: number) => void;
 }
 
 export function OpportunityFiltersPanel({
@@ -349,6 +355,8 @@ export function OpportunityFiltersPanel({
   setCandlestickThreeBlackCrows,
   candlestickThreeWhiteSoldiers,
   setCandlestickThreeWhiteSoldiers,
+  candlestickLookback,
+  setCandlestickLookback,
   // 趋势形态筛选
   trendUptrend,
   setTrendUptrend,
@@ -360,6 +368,8 @@ export function OpportunityFiltersPanel({
   setTrendBreakout,
   trendBreakdown,
   setTrendBreakdown,
+  trendLookback,
+  setTrendLookback,
 }: OpportunityFiltersPanelProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
 
@@ -407,11 +417,13 @@ export function OpportunityFiltersPanel({
         candlestickPiercing,
         candlestickThreeBlackCrows,
         candlestickThreeWhiteSoldiers,
+        candlestickLookback,
         trendUptrend,
         trendDowntrend,
         trendSideways,
         trendBreakout,
         trendBreakdown,
+        trendLookback,
       }),
     [
       priceRange,
@@ -455,11 +467,13 @@ export function OpportunityFiltersPanel({
       candlestickPiercing,
       candlestickThreeBlackCrows,
       candlestickThreeWhiteSoldiers,
+      candlestickLookback,
       trendUptrend,
       trendDowntrend,
       trendSideways,
       trendBreakout,
       trendBreakdown,
+      trendLookback,
     ]
   );
 
@@ -582,6 +596,38 @@ export function OpportunityFiltersPanel({
                         />
                       </div>
                       <div className={styles.filterItem}>
+                        <span className={styles.filterLabel}>市盈率：</span>
+                        <InputNumber
+                          value={peRatioRange.min}
+                          min={0}
+                          step={0.01}
+                          precision={2}
+                          style={{ width: 100 }}
+                          placeholder="最小值"
+                          onChange={(v) => {
+                            setPeRatioRange((prev) => ({
+                              ...prev,
+                              min: typeof v === 'number' && isFinite(v) ? v : undefined,
+                            }));
+                          }}
+                        />
+                        <span style={{ margin: '0 4px' }}>~</span>
+                        <InputNumber
+                          value={peRatioRange.max}
+                          min={0}
+                          step={0.01}
+                          precision={2}
+                          style={{ width: 100 }}
+                          placeholder="最大值"
+                          onChange={(v) => {
+                            setPeRatioRange((prev) => ({
+                              ...prev,
+                              max: typeof v === 'number' && isFinite(v) ? v : undefined,
+                            }));
+                          }}
+                        />
+                      </div>
+                      <div className={styles.filterItem}>
                         <span className={styles.filterLabel}>换手率(%)：</span>
                         <InputNumber
                           value={turnoverRateRange.min}
@@ -609,38 +655,6 @@ export function OpportunityFiltersPanel({
                           placeholder="最大值"
                           onChange={(v) => {
                             setTurnoverRateRange((prev) => ({
-                              ...prev,
-                              max: typeof v === 'number' && isFinite(v) ? v : undefined,
-                            }));
-                          }}
-                        />
-                      </div>
-                      <div className={styles.filterItem}>
-                        <span className={styles.filterLabel}>市盈率：</span>
-                        <InputNumber
-                          value={peRatioRange.min}
-                          min={0}
-                          step={0.01}
-                          precision={2}
-                          style={{ width: 100 }}
-                          placeholder="最小值"
-                          onChange={(v) => {
-                            setPeRatioRange((prev) => ({
-                              ...prev,
-                              min: typeof v === 'number' && isFinite(v) ? v : undefined,
-                            }));
-                          }}
-                        />
-                        <span style={{ margin: '0 4px' }}>~</span>
-                        <InputNumber
-                          value={peRatioRange.max}
-                          min={0}
-                          step={0.01}
-                          precision={2}
-                          style={{ width: 100 }}
-                          placeholder="最大值"
-                          onChange={(v) => {
-                            setPeRatioRange((prev) => ({
                               ...prev,
                               max: typeof v === 'number' && isFinite(v) ? v : undefined,
                             }));
@@ -677,8 +691,6 @@ export function OpportunityFiltersPanel({
                           }}
                         />
                       </div>
-                    </div>
-                    <div className={styles.filterRow}>
                       <div className={styles.filterItem}>
                         <span className={styles.filterLabel}>RSI：</span>
                         <InputNumber
@@ -795,7 +807,7 @@ export function OpportunityFiltersPanel({
                           checked={consolidationFilterEnabled}
                           onChange={(e) => setConsolidationFilterEnabled(e.target.checked)}
                         >
-                          启用横盘筛选（关闭后不按横盘过滤列表）
+                          启用横盘筛选
                         </Checkbox>
                       </div>
                     </div>
@@ -899,13 +911,13 @@ export function OpportunityFiltersPanel({
                           checked={trendLineFilterEnabled}
                           onChange={(e) => setTrendLineFilterEnabled(e.target.checked)}
                         >
-                          启用趋势线筛选（与横盘同时开启时为 AND）
+                          启用趋势线筛选
                         </Checkbox>
                       </div>
                     </div>
                     <div className={styles.filterRow}>
                       <div className={styles.filterItem}>
-                        <span className={styles.filterLabel} style={{ fontWeight: 'bold', color: '#1890ff' }}>M - 检索根数：</span>
+                        <span className={styles.filterLabel}>检索根数：</span>
                         <InputNumber
                           value={trendLineLookback}
                           min={3}
@@ -921,10 +933,10 @@ export function OpportunityFiltersPanel({
                             }
                           }}
                         />
-                        <span style={{ marginLeft: 4, color: '#666' }}>根（从最新K线向前）</span>
+                        <span style={{ marginLeft: 4 }}>根（从最新K线向前）</span>
                       </div>
                       <div className={styles.filterItem}>
-                        <span className={styles.filterLabel} style={{ fontWeight: 'bold', color: '#1890ff' }}>N - 连续根数：</span>
+                        <span className={styles.filterLabel}>连续根数：</span>
                         <InputNumber
                           value={trendLineConsecutive}
                           min={3}
@@ -937,17 +949,16 @@ export function OpportunityFiltersPanel({
                             setTrendLineConsecutive(Math.min(maxN, Math.max(3, next)));
                           }}
                         />
-                        <span style={{ marginLeft: 4, color: '#666' }}>根（需连续满足条件）</span>
+                        <span>根（需连续满足条件）</span>
                       </div>
                     </div>
                     <div className={styles.filterRow}>
                       <div className={styles.filterItem}>
                         <span className={styles.filterLabel}>判定规则：</span>
                         <span style={{ lineHeight: '1.8' }}>
-                          在最近的 <strong style={{ color: '#1890ff' }}>M</strong> 根K线中，寻找连续 <strong style={{ color: '#1890ff' }}>N</strong> 根满足：<br />
                           1️⃣ 每日收盘价 ≥ 前一日收盘价（不跌）<br />
                           2️⃣ 每日收盘价 ≥ 当日MA5均线<br />
-                          ✅ 若找到，取<strong>最靠近最新K线</strong>的一段
+                          ✅ 若找到，取最靠近最新K线的一段
                         </span>
                       </div>
                     </div>
@@ -961,7 +972,7 @@ export function OpportunityFiltersPanel({
                   <div className={styles.filterContent}>
                     <div className={styles.filterRow}>
                       <div className={styles.filterItem}>
-                        <span className={styles.filterLabel}>最近：</span>
+                        <span className={styles.filterLabel}>检索根数：</span>
                         <InputNumber
                           value={sharpMoveWindowBars}
                           min={5}
@@ -969,11 +980,11 @@ export function OpportunityFiltersPanel({
                           step={1}
                           style={{ width: 100 }}
                           onChange={(v) => {
-                            const next = typeof v === 'number' && isFinite(v) ? Math.max(1, Math.floor(v)) : 60;
+                            const next = typeof v === 'number' && isFinite(v) ? Math.max(1, Math.floor(v)) : 20;
                             setSharpMoveWindowBars(next);
                           }}
                         />
-                        <span style={{ marginLeft: 4 }}>根K线</span>
+                        <span style={{ marginLeft: 4 }}>根（从最新K线向前）</span>
                         <span className={styles.filterLabel} style={{ marginLeft: 16 }}>
                           阈值 M：
                         </span>
@@ -1028,7 +1039,7 @@ export function OpportunityFiltersPanel({
                     <div className={styles.filterRow}>
                       <div className={styles.filterItem}>
                         <span style={{ color: 'var(--ant-color-text-secondary)' }}>
-                          勾选多项时满足<strong>任一</strong>即保留；未勾选任何形态则不按本项筛选。横盘指中间日涨跌幅绝对值小于
+                          勾选多项时满足任一即保留；未勾选任何形态则不按本项筛选。横盘指中间日涨跌幅绝对值小于
                           M。
                         </span>
                       </div>
@@ -1041,6 +1052,25 @@ export function OpportunityFiltersPanel({
                 label: '形态筛选',
                 children: (
                   <div className={styles.filterContent}>
+                    {/* K线形态回溯窗口 */}
+                    <div className={styles.filterRow}>
+                      <div className={styles.filterItem}>
+                        <span className={styles.filterLabel}>K线形态检索根数：</span>
+                        <InputNumber
+                          value={candlestickLookback}
+                          min={5}
+                          max={200}
+                          step={5}
+                          style={{ width: 100 }}
+                          onChange={(v) => {
+                            const next = typeof v === 'number' && isFinite(v) ? Math.floor(v) : 20;
+                            setCandlestickLookback(Math.min(200, Math.max(5, next)));
+                          }}
+                        />
+                        <span style={{ marginLeft: 4 }}>根（从最新K线向前）</span>
+                      </div>
+                    </div>
+
                     {/* K线形态筛选 - 单根 */}
                     <div className={styles.filterRow}>
                       <div className={styles.filterItem} style={{ flexWrap: 'wrap', gap: 8 }}>
@@ -1127,6 +1157,26 @@ export function OpportunityFiltersPanel({
                       </div>
                     </div>
 
+
+                    {/* 趋势形态回溯窗口 */}
+                    <div className={styles.filterRow}>
+                      <div className={styles.filterItem}>
+                        <span className={styles.filterLabel}>趋势形态检索根数：</span>
+                        <InputNumber
+                          value={trendLookback}
+                          min={5}
+                          max={200}
+                          step={5}
+                          style={{ width: 100 }}
+                          onChange={(v) => {
+                            const next = typeof v === 'number' && isFinite(v) ? Math.floor(v) : 20;
+                            setTrendLookback(Math.min(200, Math.max(5, next)));
+                          }}
+                        />
+                        <span style={{ marginLeft: 4 }}>根（从最新K线向前）</span>
+                      </div>
+                    </div>
+
                     {/* 趋势形态筛选 */}
                     <div className={styles.filterRow}>
                       <div className={styles.filterItem} style={{ flexWrap: 'wrap', gap: 8 }}>
@@ -1151,8 +1201,8 @@ export function OpportunityFiltersPanel({
 
                     <div className={styles.filterRow}>
                       <div className={styles.filterItem}>
-                        <span style={{ color: 'var(--ant-color-text-secondary)', fontSize: 12 }}>
-                          勾选多项时满足<strong>任一</strong>即保留；未勾选任何项则不按本类筛选。
+                        <span style={{ color: 'var(--ant-color-text-secondary)' }}>
+                          勾选多项时满足任一即保留；未勾选任何项则不按本类筛选。
                         </span>
                       </div>
                     </div>

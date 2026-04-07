@@ -206,7 +206,8 @@ function passesTechnicalIndicatorsFilter(
     filters.candlestickThreeBlackCrows ||
     filters.candlestickThreeWhiteSoldiers
   ) {
-    const patterns = detectCandlestickPatternsInWindow(klineData, 20);
+    const candlestickLookback = filters.candlestickLookback || 20;
+    const patterns = detectCandlestickPatternsInWindow(klineData, candlestickLookback);
 
     // 单根形态
     const singlePatternMatched =
@@ -246,7 +247,8 @@ function passesTechnicalIndicatorsFilter(
     filters.trendBreakout ||
     filters.trendBreakdown
   ) {
-    const trends = detectTrendPatterns(klineData, 20);
+    const trendLookback = filters.trendLookback || 20;
+    const trends = detectTrendPatterns(klineData, trendLookback);
 
     const trendMatched =
       (filters.trendUptrend && trends.uptrend) ||

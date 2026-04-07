@@ -188,7 +188,7 @@
 }
 
 .filterCollapse :global(.ant-collapse-item) {
-  margin-bottom: 8px;
+  margin-bottom: 16px;
   border: 1px solid var(--ant-color-border-secondary) !important;
   border-radius: 8px;
   overflow: hidden;
@@ -211,7 +211,7 @@
 }
 
 .filterCollapse :global(.ant-collapse-content-box) {
-  padding: 10px 12px 12px !important;
+  padding: 6px 12px !important;
 }
 
 .filterContent {
@@ -220,7 +220,12 @@
 .filterRow {
   display: flex;
   flex-wrap: wrap;
+  margin-bottom: 10px;
   gap: 8px 16px;
+}
+
+.filterRow:last-child {
+  margin-bottom: 0;
 }
 
 .filterItem {
