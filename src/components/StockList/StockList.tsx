@@ -2,7 +2,7 @@
  * 股票列表组件（垂直布局）
  */
 
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, memo } from 'react';
 import { Button, Empty, Tooltip, Menu, Modal } from 'antd';
 import VirtualList from 'rc-virtual-list';
 import {
@@ -31,7 +31,7 @@ import styles from './StockList.module.css';
 /** 与 .listItem min-height + padding 对齐，供虚拟列表固定行高 */
 const LIST_ROW_HEIGHT = 48;
 
-export function StockList() {
+export const StockList = memo(function StockList() {
   const { watchList, quotes } = useStockList();
   const {
     watchList: allWatchList,
@@ -211,172 +211,172 @@ export function StockList() {
     <div className={styles.stockList}>
       <div ref={listContainerRef} className={styles.listContainer} role="list">
         <VirtualList
-            data={watchList}
-            height={virtualListHeight}
-            itemHeight={LIST_ROW_HEIGHT}
-            itemKey="code"
-          >
-            {(stock, index, { style }) => {
-              const quote = quotes[stock.code];
-              const isSelected = selectedStock === stock.code;
-              const changePercent = quote ? quote.changePercent : 0;
-              const isRise = changePercent >= 0;
-              const absChangePercent = Math.abs(changePercent);
-              const isFirst = index === 0;
-              const isLast = index === watchList.length - 1;
+          data={watchList}
+          height={virtualListHeight}
+          itemHeight={LIST_ROW_HEIGHT}
+          itemKey="code"
+        >
+          {(stock, index, { style }) => {
+            const quote = quotes[stock.code];
+            const isSelected = selectedStock === stock.code;
+            const changePercent = quote ? quote.changePercent : 0;
+            const isRise = changePercent >= 0;
+            const absChangePercent = Math.abs(changePercent);
+            const isFirst = index === 0;
+            const isLast = index === watchList.length - 1;
 
-              const getChangeIcon = () => {
-                if (isRise) {
-                  if (absChangePercent <= 2) {
-                    return <UpOutlined />;
-                  } else if (absChangePercent <= 5) {
-                    return (
-                      <DoubleLeftOutlined
-                        style={{ transform: 'rotate(90deg)', display: 'inline-block' }}
-                      />
-                    );
-                  } else {
-                    return <CaretUpOutlined />;
-                  }
+            const getChangeIcon = () => {
+              if (isRise) {
+                if (absChangePercent <= 2) {
+                  return <UpOutlined />;
+                } else if (absChangePercent <= 5) {
+                  return (
+                    <DoubleLeftOutlined
+                      style={{ transform: 'rotate(90deg)', display: 'inline-block' }}
+                    />
+                  );
                 } else {
-                  if (absChangePercent <= 2) {
-                    return <DownOutlined />;
-                  } else if (absChangePercent <= 5) {
-                    return (
-                      <DoubleLeftOutlined
-                        style={{ transform: 'rotate(-90deg)', display: 'inline-block' }}
-                      />
-                    );
-                  } else {
-                    return <CaretDownOutlined />;
-                  }
+                  return <CaretUpOutlined />;
                 }
-              };
-
-              const handleRowContextMenu = (e: React.MouseEvent) => {
-                e.preventDefault();
-                e.stopPropagation();
-
-                const menuWidth = 160;
-                const menuHeight = 150;
-                const windowWidth = window.innerWidth;
-                const windowHeight = window.innerHeight;
-                const padding = 10;
-
-                let menuX = e.clientX;
-                let menuY = e.clientY;
-
-                if (menuX + menuWidth > windowWidth - padding) {
-                  menuX = menuX - menuWidth + 30;
+              } else {
+                if (absChangePercent <= 2) {
+                  return <DownOutlined />;
+                } else if (absChangePercent <= 5) {
+                  return (
+                    <DoubleLeftOutlined
+                      style={{ transform: 'rotate(-90deg)', display: 'inline-block' }}
+                    />
+                  );
+                } else {
+                  return <CaretDownOutlined />;
                 }
+              }
+            };
 
-                if (menuX < padding) {
-                  menuX = padding;
-                }
+            const handleRowContextMenu = (e: React.MouseEvent) => {
+              e.preventDefault();
+              e.stopPropagation();
 
-                if (menuY + menuHeight > windowHeight - padding) {
-                  menuY = menuY - menuHeight + 30;
-                }
+              const menuWidth = 160;
+              const menuHeight = 150;
+              const windowWidth = window.innerWidth;
+              const windowHeight = window.innerHeight;
+              const padding = 10;
 
-                if (menuY < padding) {
-                  menuY = padding;
-                }
+              let menuX = e.clientX;
+              let menuY = e.clientY;
 
-                setContextMenu({
-                  visible: true,
-                  x: menuX,
-                  y: menuY,
-                  code: stock.code,
-                });
-              };
+              if (menuX + menuWidth > windowWidth - padding) {
+                menuX = menuX - menuWidth + 30;
+              }
 
-              const tooltipContent = quote ? (
-                <div>
-                  <div>代码: {stock.code}</div>
-                  <div>交易量: {formatVolume(quote.volume)}</div>
-                </div>
-              ) : (
+              if (menuX < padding) {
+                menuX = padding;
+              }
+
+              if (menuY + menuHeight > windowHeight - padding) {
+                menuY = menuY - menuHeight + 30;
+              }
+
+              if (menuY < padding) {
+                menuY = padding;
+              }
+
+              setContextMenu({
+                visible: true,
+                x: menuX,
+                y: menuY,
+                code: stock.code,
+              });
+            };
+
+            const tooltipContent = quote ? (
+              <div>
                 <div>代码: {stock.code}</div>
-              );
+                <div>交易量: {formatVolume(quote.volume)}</div>
+              </div>
+            ) : (
+              <div>代码: {stock.code}</div>
+            );
 
-              return (
-                <div style={style} key={stock.code}>
-                  <div
-                    className={`${styles.listItem} ${isSelected ? styles.selected : ''}`}
-                    onClick={() => handleItemClick(stock.code)}
-                    onContextMenu={handleRowContextMenu}
-                  >
-                    <div className={styles.stockInfo}>
-                      <Tooltip title={tooltipContent} placement="right">
-                        <div className={styles.stockName}>
-                          <span className={styles.name}>{stock.name}</span>
+            return (
+              <div style={style} key={stock.code}>
+                <div
+                  className={`${styles.listItem} ${isSelected ? styles.selected : ''}`}
+                  onClick={() => handleItemClick(stock.code)}
+                  onContextMenu={handleRowContextMenu}
+                >
+                  <div className={styles.stockInfo}>
+                    <Tooltip title={tooltipContent} placement="right">
+                      <div className={styles.stockName}>
+                        <span className={styles.name}>{stock.name}</span>
+                      </div>
+                    </Tooltip>
+                    {quote ? (
+                      <div className={styles.quote}>
+                        <div
+                          className={`${styles.change} ${isRise ? styles.rise : styles.fall}`}
+                        >
+                          {getChangeIcon()}
+                          {formatChangePercent(quote.changePercent)}
                         </div>
-                      </Tooltip>
-                      {quote ? (
-                        <div className={styles.quote}>
-                          <div
-                            className={`${styles.change} ${isRise ? styles.rise : styles.fall}`}
-                          >
-                            {getChangeIcon()}
-                            {formatChangePercent(quote.changePercent)}
-                          </div>
-                          <div
-                            className={`${styles.price} ${isRise ? styles.rise : styles.fall}`}
-                          >
-                            {formatPrice(quote.price)}
-                          </div>
+                        <div
+                          className={`${styles.price} ${isRise ? styles.rise : styles.fall}`}
+                        >
+                          {formatPrice(quote.price)}
                         </div>
-                      ) : (
-                        <div className={styles.loading}>加载中...</div>
-                      )}
-                    </div>
-                    <div className={styles.actionButtons}>
-                      <Tooltip title="上移">
-                        <Button
-                          type="text"
-                          size="small"
-                          icon={<ArrowUpOutlined />}
-                          disabled={isFirst}
-                          onClick={(e) => handleMoveUp(stock.code, e)}
-                          className={styles.actionBtn}
-                        />
-                      </Tooltip>
-                      <Tooltip title="下移">
-                        <Button
-                          type="text"
-                          size="small"
-                          icon={<ArrowDownOutlined />}
-                          disabled={isLast}
-                          onClick={(e) => handleMoveDown(stock.code, e)}
-                          className={styles.actionBtn}
-                        />
-                      </Tooltip>
-                      <Tooltip title="置顶">
-                        <Button
-                          type="text"
-                          size="small"
-                          icon={<VerticalAlignTopOutlined />}
-                          disabled={isFirst}
-                          onClick={(e) => handleMoveToTop(stock.code, e)}
-                          className={styles.actionBtn}
-                        />
-                      </Tooltip>
-                      <Tooltip title="置尾">
-                        <Button
-                          type="text"
-                          size="small"
-                          icon={<VerticalAlignBottomOutlined />}
-                          disabled={isLast}
-                          onClick={(e) => handleMoveToBottom(stock.code, e)}
-                          className={styles.actionBtn}
-                        />
-                      </Tooltip>
-                    </div>
+                      </div>
+                    ) : (
+                      <div className={styles.loading}>加载中...</div>
+                    )}
+                  </div>
+                  <div className={styles.actionButtons}>
+                    <Tooltip title="上移">
+                      <Button
+                        type="text"
+                        size="small"
+                        icon={<ArrowUpOutlined />}
+                        disabled={isFirst}
+                        onClick={(e) => handleMoveUp(stock.code, e)}
+                        className={styles.actionBtn}
+                      />
+                    </Tooltip>
+                    <Tooltip title="下移">
+                      <Button
+                        type="text"
+                        size="small"
+                        icon={<ArrowDownOutlined />}
+                        disabled={isLast}
+                        onClick={(e) => handleMoveDown(stock.code, e)}
+                        className={styles.actionBtn}
+                      />
+                    </Tooltip>
+                    <Tooltip title="置顶">
+                      <Button
+                        type="text"
+                        size="small"
+                        icon={<VerticalAlignTopOutlined />}
+                        disabled={isFirst}
+                        onClick={(e) => handleMoveToTop(stock.code, e)}
+                        className={styles.actionBtn}
+                      />
+                    </Tooltip>
+                    <Tooltip title="置尾">
+                      <Button
+                        type="text"
+                        size="small"
+                        icon={<VerticalAlignBottomOutlined />}
+                        disabled={isLast}
+                        onClick={(e) => handleMoveToBottom(stock.code, e)}
+                        className={styles.actionBtn}
+                      />
+                    </Tooltip>
                   </div>
                 </div>
-              );
-            }}
-          </VirtualList>
+              </div>
+            );
+          }}
+        </VirtualList>
       </div>
       {contextMenu && (
         <div
@@ -469,5 +469,5 @@ export function StockList() {
       </Modal>
     </div>
   );
-}
+});
 

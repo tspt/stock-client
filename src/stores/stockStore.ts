@@ -16,6 +16,7 @@ import {
   validateGroupName,
   ensureSelectedGroupIdForWatchList,
 } from '@/utils/groupUtils';
+import { debounce } from '@/utils/helpers';
 import { message, Modal } from 'antd';
 
 interface StockState {
@@ -71,6 +72,11 @@ interface StockState {
   loadGroups: () => void;
   saveGroups: () => void;
 }
+
+// 创建防抖保存函数（500ms）
+const debouncedSaveWatchList = debounce((data: StockWatchListData) => {
+  setStorage(STORAGE_KEYS.WATCH_LIST, data);
+}, 500);
 
 export const useStockStore = create<StockState>((set, get) => ({
   watchList: [],
@@ -185,7 +191,8 @@ export const useStockStore = create<StockState>((set, get) => ({
       watchList: watchList || [],
       selectedGroupId,
     };
-    setStorage(STORAGE_KEYS.WATCH_LIST, data);
+    // 使用防抖保存，减少频繁的磁盘 I/O
+    debouncedSaveWatchList(data);
   },
 
   setAllStocks: (stocks) => {
@@ -359,7 +366,11 @@ export const useStockStore = create<StockState>((set, get) => ({
           const { selectedGroupId: curTab } = get();
           const nextTab =
             curTab === id
-              ? ensureSelectedGroupIdForWatchList(newWatchList, reorderedGroups, BUILTIN_GROUP_SELF_ID)
+              ? ensureSelectedGroupIdForWatchList(
+                  newWatchList,
+                  reorderedGroups,
+                  BUILTIN_GROUP_SELF_ID
+                )
               : ensureSelectedGroupIdForWatchList(newWatchList, reorderedGroups, curTab);
           set({ groups: reorderedGroups, watchList: newWatchList, selectedGroupId: nextTab });
           get().saveWatchList();
@@ -382,7 +393,11 @@ export const useStockStore = create<StockState>((set, get) => ({
           const { selectedGroupId: curTab } = get();
           const nextTab =
             curTab === id
-              ? ensureSelectedGroupIdForWatchList(newWatchList, reorderedGroups, BUILTIN_GROUP_SELF_ID)
+              ? ensureSelectedGroupIdForWatchList(
+                  newWatchList,
+                  reorderedGroups,
+                  BUILTIN_GROUP_SELF_ID
+                )
               : ensureSelectedGroupIdForWatchList(newWatchList, reorderedGroups, curTab);
           set({ groups: reorderedGroups, watchList: newWatchList, selectedGroupId: nextTab });
           get().saveWatchList();

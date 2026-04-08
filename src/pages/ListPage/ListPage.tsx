@@ -3,9 +3,10 @@
  */
 
 import { useEffect } from 'react';
-import { Layout } from 'antd';
+import { Layout, Spin } from 'antd';
 import { SearchBar } from '@/components/SearchBar/SearchBar';
 import { StockList } from '@/components/StockList/StockList';
+import { StockListSkeleton } from '@/components/StockList/StockListSkeleton';
 import { GroupTabs } from '@/components/GroupTabs/GroupTabs';
 import { GroupManager } from '@/components/GroupManager/GroupManager';
 import { useAllStocks } from '@/hooks/useAllStocks';
@@ -16,7 +17,7 @@ const { Content } = Layout;
 
 export function ListPage() {
   // 加载所有股票列表
-  useAllStocks();
+  const { loadingAllStocks } = useAllStocks();
 
   const {
     groups,
@@ -43,7 +44,11 @@ export function ListPage() {
           onSelect={setSelectedGroupId}
           onManageClick={() => setGroupManagerVisible(true)}
         />
-        <StockList />
+        {loadingAllStocks ? (
+          <StockListSkeleton />
+        ) : (
+          <StockList />
+        )}
       </Content>
       <GroupManager
         visible={groupManagerVisible}

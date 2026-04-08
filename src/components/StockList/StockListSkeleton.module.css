@@ -1,0 +1,28 @@
+.skeletonContainer {
+  padding: 8px;
+}
+
+.skeletonItem {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  min-height: 48px;
+  border-bottom: 1px solid var(--ant-color-border-secondary);
+}
+
+.skeletonItem:last-child {
+  border-bottom: none;
+}
+
+.skeletonContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.skeletonActions {
+  display: flex;
+  gap: 4px;
+  margin-left: 8px;
+}

@@ -19,9 +19,11 @@ export default defineConfig({
     rollupOptions: {
       output: {
         /**
-         * 平衡型分包：保留 xlsx/echarts/axios/zustand 独立缓存。
-         * 其余 node_modules 统一进 vendor-react-ui，避免 react / antd / react-is 等与 helper
-         * 拆到不同 chunk 产生循环依赖，导致生产环境 undefined.useState。
+         * 更细粒度的分包策略：
+         * - xlsx/echarts/axios/zustand 独立缓存
+         * - antd 单独分包（体积大）
+         * - react/react-dom 单独分包
+         * - 其余 node_modules 统一进 vendor
          */
         manualChunks(id) {
           if (!id.includes('node_modules')) {
@@ -29,6 +31,7 @@ export default defineConfig({
           }
           const n = id.replace(/\\/g, '/');
 
+          // 大型库独立分包
           if (n.includes('/xlsx/') || n.endsWith('/xlsx')) {
             return 'vendor-xlsx';
           }
@@ -41,11 +44,17 @@ export default defineConfig({
           if (n.includes('/zustand/')) {
             return 'vendor-zustand';
           }
+          if (n.includes('antd') || n.includes('@ant-design')) {
+            return 'vendor-antd';
+          }
+          if (n.includes('/react/') || n.includes('/react-dom/') || n.includes('/scheduler/')) {
+            return 'vendor-react';
+          }
 
-          return 'vendor-react-ui';
+          // 其他第三方库
+          return 'vendor';
         },
       },
     },
   },
 });
-

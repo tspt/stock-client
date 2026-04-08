@@ -2,7 +2,7 @@
  * 数据概况表格组件
  */
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, memo } from 'react';
 import { Table } from 'antd';
 import type { ColumnsType, TablePaginationConfig } from 'antd/es/table';
 import type { StockOverviewData, OverviewSortConfig } from '@/types/stock';
@@ -25,7 +25,7 @@ interface OverviewTableProps {
   onSortChange: (config: OverviewSortConfig) => void;
 }
 
-export function OverviewTable({
+export const OverviewTable = memo(function OverviewTable({
   data,
   columns,
   sortConfig,
@@ -242,5 +242,5 @@ export function OverviewTable({
       />
     </div>
   );
-}
+});
 

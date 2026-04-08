@@ -10,6 +10,8 @@ import { useTheme } from '@/hooks/useTheme';
 import { useStockStore } from '@/stores/stockStore';
 import { initNotificationNavigation } from '@/services/notificationNavigation';
 import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
+import { ErrorBoundary } from '@/components/ErrorBoundary/ErrorBoundary';
+import { logger } from '@/utils/logger';
 import styles from './App.module.css';
 
 const ListPage = lazy(() => import('@/pages/ListPage/ListPage').then((m) => ({ default: m.ListPage })));
@@ -30,13 +32,11 @@ function AppContent() {
   // 检查 electronAPI 是否可用
   useEffect(() => {
     const checkElectronAPI = () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const win = window as any;
-      return win.electronAPI;
+      return window.electronAPI;
     };
 
     const electronAPI = checkElectronAPI();
-    console.log('[App] 应用启动，检查 electronAPI:', {
+    logger.debug('[App] 应用启动，检查 electronAPI:', {
       hasWindow: typeof window !== 'undefined',
       hasElectronAPI: !!electronAPI,
       electronAPIKeys: electronAPI ? Object.keys(electronAPI) : [],
@@ -51,9 +51,9 @@ function AppContent() {
           clearInterval(checkInterval);
           checkInterval = undefined;
         }
-        console.log('[App] electronAPI 已可用');
+        logger.info('[App] electronAPI 已可用');
       } else {
-        console.warn('[App] electronAPI 仍然不可用，继续等待...');
+        logger.warn('[App] electronAPI 仍然不可用，继续等待...');
       }
     }, 500);
 
@@ -66,10 +66,9 @@ function AppContent() {
 
   // 初始化通知导航监听
   useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const electronAPI = (window as any).electronAPI;
+    const electronAPI = window.electronAPI;
     if (!electronAPI) {
-      console.warn('[App] electronAPI 不可用，跳过通知导航初始化');
+      logger.warn('[App] electronAPI 不可用，跳过通知导航初始化');
       return;
     }
     const cleanup = initNotificationNavigation((code: string) => {
@@ -97,120 +96,122 @@ function AppContent() {
       }}
     >
       <AntdApp>
-        <div className={styles.app} data-theme={currentTheme}>
-          <Layout className={styles.mainLayout}>
-            <Header className={styles.header}>
-              <div className={styles.headerContent}>
-                <h1 className={styles.title}>破忒头工具</h1>
-                <ThemeToggle />
-              </div>
-            </Header>
-            <Content className={styles.content}>
-              <Tabs
-                tabPosition={"left"}
-                activeKey={activeTab}
-                onChange={setActiveTab}
-                className={styles.mainTabs}
-                destroyOnHidden
-                items={[
-                  {
-                    key: 'stocks',
-                    label: (
-                      <span>
-                        <StockOutlined className={styles.mgr6} />
-                        股票列表
-                      </span>
-                    ),
-                    children: (
-                      <Suspense
-                        fallback={
-                          <div className={styles.suspenseFallback}>
-                            <Spin size="large" tip="加载中..." />
+        <ErrorBoundary>
+          <div className={styles.app} data-theme={currentTheme}>
+            <Layout className={styles.mainLayout}>
+              <Header className={styles.header}>
+                <div className={styles.headerContent}>
+                  <h1 className={styles.title}>破忒头工具</h1>
+                  <ThemeToggle />
+                </div>
+              </Header>
+              <Content className={styles.content}>
+                <Tabs
+                  tabPosition={"left"}
+                  activeKey={activeTab}
+                  onChange={setActiveTab}
+                  className={styles.mainTabs}
+                  destroyOnHidden
+                  items={[
+                    {
+                      key: 'stocks',
+                      label: (
+                        <span>
+                          <StockOutlined className={styles.mgr6} />
+                          股票列表
+                        </span>
+                      ),
+                      children: (
+                        <Suspense
+                          fallback={
+                            <div className={styles.suspenseFallback}>
+                              <Spin size="large" tip="加载中..." />
+                            </div>
+                          }
+                        >
+                          <div className={styles.stocksLayout}>
+                            <div className={styles.leftPanel}>
+                              <ListPage />
+                            </div>
+                            <div className={styles.rightPanel}>
+                              <DetailPage />
+                            </div>
                           </div>
-                        }
-                      >
-                        <div className={styles.stocksLayout}>
-                          <div className={styles.leftPanel}>
-                            <ListPage />
+                        </Suspense>
+                      ),
+                    },
+                    {
+                      key: 'alerts',
+                      label: (
+                        <span>
+                          <BellOutlined className={styles.mgr6} />
+                          提醒管理
+                        </span>
+                      ),
+                      children: (
+                        <Suspense
+                          fallback={
+                            <div className={styles.suspenseFallback}>
+                              <Spin size="large" tip="加载中..." />
+                            </div>
+                          }
+                        >
+                          <div className={styles.alertsLayout}>
+                            <AlertPage />
                           </div>
-                          <div className={styles.rightPanel}>
-                            <DetailPage />
+                        </Suspense>
+                      ),
+                    },
+                    {
+                      key: 'overview',
+                      label: (
+                        <span>
+                          <BarChartOutlined className={styles.mgr6} />
+                          列表数据概况
+                        </span>
+                      ),
+                      children: (
+                        <Suspense
+                          fallback={
+                            <div className={styles.suspenseFallback}>
+                              <Spin size="large" tip="加载中..." />
+                            </div>
+                          }
+                        >
+                          <div className={styles.overviewLayout}>
+                            <OverviewPage />
                           </div>
-                        </div>
-                      </Suspense>
-                    ),
-                  },
-                  {
-                    key: 'alerts',
-                    label: (
-                      <span>
-                        <BellOutlined className={styles.mgr6} />
-                        提醒管理
-                      </span>
-                    ),
-                    children: (
-                      <Suspense
-                        fallback={
-                          <div className={styles.suspenseFallback}>
-                            <Spin size="large" tip="加载中..." />
+                        </Suspense>
+                      ),
+                    },
+                    {
+                      key: 'opportunity',
+                      label: (
+                        <span>
+                          <BarChartOutlined className={styles.mgr6} />
+                          机会分析
+                        </span>
+                      ),
+                      children: (
+                        <Suspense
+                          fallback={
+                            <div className={styles.suspenseFallback}>
+                              <Spin size="large" tip="加载中..." />
+                            </div>
+                          }
+                        >
+                          <div className={styles.opportunityLayout}>
+                            <OpportunityPage />
                           </div>
-                        }
-                      >
-                        <div className={styles.alertsLayout}>
-                          <AlertPage />
-                        </div>
-                      </Suspense>
-                    ),
-                  },
-                  {
-                    key: 'overview',
-                    label: (
-                      <span>
-                        <BarChartOutlined className={styles.mgr6} />
-                        列表数据概况
-                      </span>
-                    ),
-                    children: (
-                      <Suspense
-                        fallback={
-                          <div className={styles.suspenseFallback}>
-                            <Spin size="large" tip="加载中..." />
-                          </div>
-                        }
-                      >
-                        <div className={styles.overviewLayout}>
-                          <OverviewPage />
-                        </div>
-                      </Suspense>
-                    ),
-                  },
-                  {
-                    key: 'opportunity',
-                    label: (
-                      <span>
-                        <BarChartOutlined className={styles.mgr6} />
-                        机会分析
-                      </span>
-                    ),
-                    children: (
-                      <Suspense
-                        fallback={
-                          <div className={styles.suspenseFallback}>
-                            <Spin size="large" tip="加载中..." />
-                          </div>
-                        }
-                      >
-                        <div className={styles.opportunityLayout}>
-                          <OpportunityPage />
-                        </div>
-                      </Suspense>
-                    ),
-                  },
-                ]}
-              />
-            </Content>
-          </Layout>
-        </div>
+                        </Suspense>
+                      ),
+                    },
+                  ]}
+                />
+              </Content>
+            </Layout>
+          </div>
+        </ErrorBoundary>
       </AntdApp>
     </ConfigProvider>
   );

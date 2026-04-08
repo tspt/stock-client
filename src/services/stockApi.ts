@@ -7,6 +7,7 @@ import axios from 'axios';
 import type { StockInfo, StockQuote, KLineData, StockDetail } from '@/types/stock';
 import { getPureCode, getMarketFromCode } from '@/utils/format';
 import { getStorage, setStorage } from '@/utils/storage';
+import { apiCache } from '@/utils/apiCache';
 
 /** biyingapi 全量股票列表本地缓存（默认约 1 个月过期） */
 const BIYING_HSLT_LIST_CACHE_KEY = 'biying_hslt_stock_list_v1';
@@ -142,7 +143,13 @@ export async function getStockQuotes(codes: string[]): Promise<StockQuote[]> {
 
   // 生成缓存 key：排序后的代码数组（确保相同代码列表的请求被去重）
   const sortedCodes = [...codes].sort();
-  const cacheKey = sortedCodes.join(',');
+  const cacheKey = `quotes:${sortedCodes.join(',')}`;
+
+  // 尝试从缓存获取（30秒 TTL，适合实时行情）
+  const cached = apiCache.get<StockQuote[]>(cacheKey);
+  if (cached) {
+    return cached;
+  }
 
   // 如果相同的请求正在进行，返回同一个 Promise
   if (quotesRequestCache.has(cacheKey)) {
@@ -200,6 +207,11 @@ export async function getStockQuotes(codes: string[]): Promise<StockQuote[]> {
             }
           }
         });
+      }
+
+      // 将结果存入缓存（30秒 TTL）
+      if (quotes.length > 0) {
+        apiCache.set(cacheKey, quotes, 30 * 1000);
       }
 
       return quotes;
@@ -321,6 +333,15 @@ export async function getKLineData(
   period: string,
   count: number = 300
 ): Promise<KLineData[]> {
+  // 生成缓存 key
+  const cacheKey = `kline:${code}:${period}:${count}`;
+
+  // 尝试从缓存获取（根据周期设置不同的 TTL）
+  const cached = apiCache.get<KLineData[]>(cacheKey);
+  if (cached) {
+    return cached;
+  }
+
   try {
     const pureCode = getPureCode(code);
     const market = getMarketFromCode(code);
@@ -474,8 +495,22 @@ export async function getKLineData(
     // 按时间排序（从旧到新）
     klineData.sort((a, b) => a.time - b.time);
 
-    // 如果解析到数据，返回解析的数据；否则返回空数组
+    // 如果解析到数据，存入缓存并返回
     if (klineData.length > 0) {
+      // 根据周期设置不同的 TTL：分时数据 1 分钟，日K及以上 5 分钟
+      const ttlMap: Record<string, number> = {
+        '1min': 60 * 1000,
+        '5min': 2 * 60 * 1000,
+        '15min': 3 * 60 * 1000,
+        '30min': 3 * 60 * 1000,
+        '60min': 5 * 60 * 1000,
+        day: 5 * 60 * 1000,
+        week: 10 * 60 * 1000,
+        month: 10 * 60 * 1000,
+        year: 10 * 60 * 1000,
+      };
+      const ttl = ttlMap[period] || 5 * 60 * 1000;
+      apiCache.set(cacheKey, klineData, ttl);
       return klineData;
     } else {
       return [];

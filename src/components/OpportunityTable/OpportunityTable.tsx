@@ -2,7 +2,7 @@
  * 机会分析表格组件
  */
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, memo } from 'react';
 import { Table } from 'antd';
 import type React from 'react';
 import type { ColumnsType, TablePaginationConfig } from 'antd/es/table';
@@ -27,7 +27,7 @@ interface OpportunityTableProps {
   tableHeight?: number;
 }
 
-export function OpportunityTable({ data, columns, sortConfig, onSortChange, tableHeight = 600 }: OpportunityTableProps) {
+export const OpportunityTable = memo(function OpportunityTable({ data, columns, sortConfig, onSortChange, tableHeight = 600 }: OpportunityTableProps) {
   const [pagination, setPagination] = useState<TablePaginationConfig>({
     current: 1,
     pageSize: 50,
@@ -266,6 +266,6 @@ export function OpportunityTable({ data, columns, sortConfig, onSortChange, tabl
       />
     </div>
   );
-}
+});
 
 

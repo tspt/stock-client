@@ -1,0 +1,31 @@
+/**
+ * Electron API 类型定义
+ */
+
+export interface NotificationOptions {
+  title: string;
+  body: string;
+  code?: string;
+}
+
+export interface ElectronAPI {
+  /** 显示系统托盘通知 */
+  showTrayNotification: (options: NotificationOptions) => Promise<void>;
+
+  /** 显示桌面通知 */
+  showDesktopNotification: (options: NotificationOptions) => Promise<void>;
+
+  /** 监听股票导航事件 */
+  onNavigateToStock: (callback: (code: string) => void) => void;
+
+  /** 移除股票导航监听 */
+  removeNavigateToStockListener: () => void;
+}
+
+declare global {
+  interface Window {
+    electronAPI?: ElectronAPI;
+  }
+}
+
+export {};

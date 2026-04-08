@@ -2,8 +2,8 @@
  * 详情页（K线图）
  */
 
-import { useState, useEffect, useMemo } from 'react';
-import { Layout, Space, Card, Statistic, message, Table, Button } from 'antd';
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { Layout, Space, Card, message, Table, Button, Select } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { BellOutlined } from '@ant-design/icons';
 import { useStockStore } from '@/stores/stockStore';
@@ -23,8 +23,14 @@ import type { KLinePeriod } from '@/types/stock';
 import styles from './DetailPage.module.css';
 
 const { Header, Content } = Layout;
+const { Option } = Select;
 
 const PERIOD_OPTIONS: { label: string; value: KLinePeriod }[] = [
+  { label: '分时', value: '1min' },
+  { label: '5分', value: '5min' },
+  { label: '15分', value: '15min' },
+  { label: '30分', value: '30min' },
+  { label: '60分', value: '60min' },
   { label: '日', value: 'day' },
   { label: '周', value: 'week' },
   { label: '月', value: 'month' },
@@ -43,7 +49,7 @@ const SELL_ORDER_COLUMNS: ColumnsType<OrderBookRow> = [
     title: '档位',
     dataIndex: 'level',
     key: 'level',
-    width: 60,
+    width: 50,
   },
   {
     title: '价格',
@@ -52,7 +58,7 @@ const SELL_ORDER_COLUMNS: ColumnsType<OrderBookRow> = [
     render: (price: number) => <span className={styles.priceSell}>{formatPrice(price)}</span>,
   },
   {
-    title: '数量（手）',
+    title: '数量',
     dataIndex: 'volume',
     key: 'volume',
     render: (volume: number) => formatVolume(volume),
@@ -64,7 +70,7 @@ const BUY_ORDER_COLUMNS: ColumnsType<OrderBookRow> = [
     title: '档位',
     dataIndex: 'level',
     key: 'level',
-    width: 60,
+    width: 50,
   },
   {
     title: '价格',
@@ -73,7 +79,7 @@ const BUY_ORDER_COLUMNS: ColumnsType<OrderBookRow> = [
     render: (price: number) => <span className={styles.priceBuy}>{formatPrice(price)}</span>,
   },
   {
-    title: '数量（手）',
+    title: '数量',
     dataIndex: 'volume',
     key: 'volume',
     render: (volume: number) => formatVolume(volume),
@@ -82,8 +88,22 @@ const BUY_ORDER_COLUMNS: ColumnsType<OrderBookRow> = [
 
 export function DetailPage() {
   const { selectedStock, quotes, watchList } = useStockStore();
-  const [period, setPeriod] = useState<KLinePeriod>('day');
+
+  // 从localStorage恢复上次选择的周期，默认为'day'
+  const [period, setPeriod] = useState<KLinePeriod>(() => {
+    try {
+      const saved = localStorage.getItem('detail_kline_period');
+      if (saved && ['1min', '5min', '15min', '30min', '60min', 'day', 'week', 'month', 'year'].includes(saved)) {
+        return saved as KLinePeriod;
+      }
+    } catch (e) {
+      console.warn('读取周期偏好失败:', e);
+    }
+    return 'day';
+  });
+
   const [alertModalVisible, setAlertModalVisible] = useState(false);
+
   const { data: klineData, loading: klineLoading, error } = useKLineData({
     code: selectedStock,
     period,
@@ -91,8 +111,16 @@ export function DetailPage() {
   });
   const { detail, loading: detailLoading } = useStockDetail(selectedStock, true);
 
-  const quote = selectedStock ? quotes[selectedStock] : null;
-  const stock = selectedStock ? watchList.find((s) => s.code === selectedStock) : null;
+  // 使用useMemo缓存计算结果，避免重复渲染
+  const quote = useMemo(() =>
+    selectedStock ? quotes[selectedStock] : null,
+    [selectedStock, quotes]
+  );
+
+  const stock = useMemo(() =>
+    selectedStock ? watchList.find((s) => s.code === selectedStock) : null,
+    [selectedStock, watchList]
+  );
 
   const sellOrderRows = useMemo<OrderBookRow[]>(
     () =>
@@ -116,6 +144,25 @@ export function DetailPage() {
     [detail?.buyOrders]
   );
 
+  // 使用useCallback优化事件处理函数
+  const handlePeriodChange = useCallback((value: KLinePeriod) => {
+    setPeriod(value);
+    // 保存周期偏好到localStorage
+    try {
+      localStorage.setItem('detail_kline_period', value);
+    } catch (e) {
+      console.warn('保存周期偏好失败:', e);
+    }
+  }, []);
+
+  const handleAlertCancel = useCallback(() => {
+    setAlertModalVisible(false);
+  }, []);
+
+  const handleAlertOpen = useCallback(() => {
+    setAlertModalVisible(true);
+  }, []);
+
   useEffect(() => {
     if (error) {
       message.error('加载K线数据失败');
@@ -137,11 +184,12 @@ export function DetailPage() {
           <h2 className={styles.title}>
             {quote?.name || selectedStock}
           </h2>
-          <Space>
+          <Space size="small">
             <Button
               type="primary"
+              size="small"
               icon={<BellOutlined />}
-              onClick={() => setAlertModalVisible(true)}
+              onClick={handleAlertOpen}
             >
               设置提醒
             </Button>
@@ -149,130 +197,107 @@ export function DetailPage() {
         </div>
       </Header>
       <Content className={styles.content}>
-        {quote && (
-          <>
-            <Card className={styles.quoteCard}>
-              <Space size="large">
-                <Statistic
-                  title="当前价"
-                  value={formatPrice(quote.price)}
-                  valueStyle={{
+        <div className={styles.topSection}>
+          {quote && (
+            <Card className={styles.quoteCard} bodyStyle={{ padding: '12px 16px' }}>
+              <div className={styles.quoteInfo}>
+                <div className={styles.priceBlock}>
+                  <span className={styles.currentPrice} style={{
                     color: quote.changePercent >= 0 ? '#ff4d4f' : '#52c41a',
-                    fontSize: 24,
-                    fontWeight: 600,
-                  }}
-                />
-                <Statistic
-                  title="涨跌额"
-                  value={quote.change}
-                  precision={2}
-                  valueStyle={{
+                  }}>
+                    {formatPrice(quote.price)}
+                  </span>
+                  <span className={styles.changeInfo} style={{
                     color: quote.changePercent >= 0 ? '#ff4d4f' : '#52c41a',
-                  }}
-                  prefix={quote.change >= 0 ? '+' : ''}
-                />
-                <Statistic
-                  title="涨跌幅"
-                  value={quote.changePercent}
-                  precision={2}
-                  suffix="%"
-                  valueStyle={{
-                    color: quote.changePercent >= 0 ? '#ff4d4f' : '#52c41a',
-                  }}
-                  prefix={quote.changePercent >= 0 ? '+' : ''}
-                />
-                <Statistic
-                  title="成交量"
-                  value={formatVolume(quote.volume)}
-                />
-                <Statistic
-                  title="成交额"
-                  value={formatAmount(quote.amount)}
-                />
-              </Space>
+                  }}>
+                    {quote.change >= 0 ? '+' : ''}{quote.change.toFixed(2)} ({quote.changePercent >= 0 ? '+' : ''}{quote.changePercent.toFixed(2)}%)
+                  </span>
+                </div>
+                <div className={styles.quoteDetails}>
+                  <span>开:{formatPrice(quote.open)}</span>
+                  <span>高:{formatPrice(quote.high)}</span>
+                  <span>低:{formatPrice(quote.low)}</span>
+                  <span>量:{formatVolume(quote.volume)}</span>
+                  <span>额:{formatAmount(quote.amount)}</span>
+                </div>
+              </div>
             </Card>
-            {detail && (
-              <>
-                <Card className={styles.quoteCard} title="基本面信息" loading={detailLoading}>
-                  <Space size="large" wrap>
-                    {detail.marketCap !== undefined && (
-                      <Statistic
-                        title="总市值"
-                        value={formatMarketCap(detail.marketCap)}
-                      />
-                    )}
-                    {detail.circulatingMarketCap !== undefined && (
-                      <Statistic
-                        title="流通市值"
-                        value={formatMarketCap(detail.circulatingMarketCap)}
-                      />
-                    )}
-                    {detail.peRatio !== undefined && (
-                      <Statistic
-                        title="市盈率(PE)"
-                        value={formatRatio(detail.peRatio)}
-                      />
-                    )}
-                    {detail.turnoverRate !== undefined && (
-                      <Statistic
-                        title="换手率"
-                        value={formatTurnoverRate(detail.turnoverRate)}
-                      />
-                    )}
-                  </Space>
-                </Card>
-                {(detail.buyOrders || detail.sellOrders) && (
-                  <Card className={styles.quoteCard} title="买卖盘" loading={detailLoading}>
-                    <div className={styles.orderBookRow}>
-                      {detail.sellOrders && detail.sellOrders.length > 0 && (
-                        <div className={styles.orderBookCol}>
-                          <h4 className={styles.sellTitle}>卖盘</h4>
-                          <Table
-                            size="small"
-                            pagination={false}
-                            dataSource={sellOrderRows}
-                            columns={SELL_ORDER_COLUMNS}
-                          />
-                        </div>
-                      )}
-                      {detail.buyOrders && detail.buyOrders.length > 0 && (
-                        <div className={styles.orderBookCol}>
-                          <h4 className={styles.buyTitle}>买盘</h4>
-                          <Table
-                            size="small"
-                            pagination={false}
-                            dataSource={buyOrderRows}
-                            columns={BUY_ORDER_COLUMNS}
-                          />
-                        </div>
-                      )}
-                    </div>
-                  </Card>
+          )}
+
+          {detail && (
+            <Card className={styles.infoCard} bodyStyle={{ padding: '8px 16px' }}>
+              <div className={styles.fundamentalInfo}>
+                {detail.marketCap !== undefined && (
+                  <span>总市值:{formatMarketCap(detail.marketCap)}</span>
                 )}
-              </>
-            )}
-          </>
-        )}
-        <div className={styles.periodSelector}>
-          <Space wrap>
-            {PERIOD_OPTIONS.map((p) => (
-              <Button
-                key={p.value}
-                type={period === p.value ? 'primary' : 'default'}
-                size="small"
-                onClick={() => setPeriod(p.value)}
-              >
-                {p.label}
-              </Button>
-            ))}
-          </Space>
+                {detail.circulatingMarketCap !== undefined && (
+                  <span>流通:{formatMarketCap(detail.circulatingMarketCap)}</span>
+                )}
+                {detail.peRatio !== undefined && (
+                  <span>PE:{formatRatio(detail.peRatio)}</span>
+                )}
+                {detail.turnoverRate !== undefined && (
+                  <span>换手:{formatTurnoverRate(detail.turnoverRate)}</span>
+                )}
+                {detail.volumeRatio !== undefined && (
+                  <span>量比:{detail.volumeRatio.toFixed(2)}</span>
+                )}
+              </div>
+            </Card>
+          )}
+
+          {(detail?.buyOrders || detail?.sellOrders) && (
+            <Card className={styles.orderBookCard} bodyStyle={{ padding: '8px 16px' }} loading={detailLoading}>
+              <div className={styles.orderBookCompact}>
+                {detail.sellOrders && detail.sellOrders.length > 0 && (
+                  <div className={styles.orderSide}>
+                    <Table
+                      size="small"
+                      pagination={false}
+                      dataSource={sellOrderRows}
+                      columns={SELL_ORDER_COLUMNS}
+                      showHeader={false}
+                    />
+                  </div>
+                )}
+                {detail.buyOrders && detail.buyOrders.length > 0 && (
+                  <div className={styles.orderSide}>
+                    <Table
+                      size="small"
+                      pagination={false}
+                      dataSource={buyOrderRows}
+                      columns={BUY_ORDER_COLUMNS}
+                      showHeader={false}
+                    />
+                  </div>
+                )}
+              </div>
+            </Card>
+          )}
         </div>
-        <div className={styles.chartContainer}>
-          <KLineChart
-            data={klineData}
-            period={period}
-            loading={klineLoading}
-          />
+
+        <div className={styles.chartSection}>
+          <div className={styles.periodBar}>
+            <Select
+              value={period}
+              onChange={handlePeriodChange}
+              size="small"
+              style={{ width: 100 }}
+            >
+              {PERIOD_OPTIONS.map((p) => (
+                <Option key={p.value} value={p.value}>
+                  {p.label}
+                </Option>
+              ))}
+            </Select>
+          </div>
+          <div className={styles.chartContainer}>
+            <KLineChart
+              data={klineData}
+              period={period}
+              loading={klineLoading}
+            />
+          </div>
         </div>
       </Content>
       {selectedStock && stock && (
@@ -281,7 +306,7 @@ export function DetailPage() {
           code={selectedStock}
           name={stock.name}
           basePrice={quote?.prevClose || quote?.price || 0}
-          onCancel={() => setAlertModalVisible(false)}
+          onCancel={handleAlertCancel}
         />
       )}
     </Layout>
