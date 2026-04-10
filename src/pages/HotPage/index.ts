@@ -1,0 +1,1 @@
+export { HotPage } from './HotPage';

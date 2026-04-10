@@ -4,7 +4,7 @@
 
 import { Suspense, lazy, useEffect, useState } from 'react';
 import { ConfigProvider, App as AntdApp, theme, Layout, Tabs, Spin } from 'antd';
-import { StockOutlined, BellOutlined, BarChartOutlined } from '@ant-design/icons';
+import { StockOutlined, BellOutlined, BarChartOutlined, FireOutlined } from '@ant-design/icons';
 import zhCN from 'antd/locale/zh_CN';
 import { useTheme } from '@/hooks/useTheme';
 import { useStockStore } from '@/stores/stockStore';
@@ -21,13 +21,14 @@ const OverviewPage = lazy(() => import('@/pages/OverviewPage/OverviewPage').then
 const OpportunityPage = lazy(() =>
   import('@/pages/OpportunityPage/OpportunityPage').then((m) => ({ default: m.OpportunityPage }))
 );
+const HotPage = lazy(() => import('@/pages/HotPage/HotPage').then((m) => ({ default: m.HotPage })));
 
 const { Header, Content } = Layout;
 
 function AppContent() {
   const { theme: currentTheme } = useTheme();
   const { setSelectedStock } = useStockStore();
-  const [activeTab, setActiveTab] = useState('stocks');
+  const [activeTab, setActiveTab] = useState('hot');
 
   // 检查 electronAPI 是否可用
   useEffect(() => {
@@ -113,6 +114,28 @@ function AppContent() {
                   className={styles.mainTabs}
                   destroyOnHidden
                   items={[
+                    {
+                      key: 'hot',
+                      label: (
+                        <span>
+                          <FireOutlined className={styles.mgr6} />
+                          热门行情
+                        </span>
+                      ),
+                      children: (
+                        <Suspense
+                          fallback={
+                            <div className={styles.suspenseFallback}>
+                              <Spin size="large" tip="加载中..." />
+                            </div>
+                          }
+                        >
+                          <div className={styles.hotLayout}>
+                            <HotPage />
+                          </div>
+                        </Suspense>
+                      ),
+                    },
                     {
                       key: 'stocks',
                       label: (
