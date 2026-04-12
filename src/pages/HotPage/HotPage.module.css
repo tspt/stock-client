@@ -13,8 +13,79 @@
   line-height: normal;
 }
 
+/* 市场概览卡片样式 */
+.marketOverviewContainer {
+  display: flex;
+  gap: 32px;
+  justify-content: flex-start;
+}
+
+.marketColumn {
+  width: 300px;
+  flex-shrink: 0;
+}
+
+.indexInfo {
+  padding: 4px 0;
+}
+
+.indexName {
+  font-size: 13px;
+  display: block;
+  margin-bottom: 6px;
+  color: var(--ant-color-text-secondary);
+}
+
+.indexPrice {
+  font-size: 24px;
+  font-weight: bold;
+  line-height: 1.2;
+  margin-bottom: 4px;
+}
+
+.indexChange {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.4;
+  margin-bottom: 8px;
+}
+
+.indexDetail {
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--ant-color-text-secondary);
+}
+
+.rankInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--ant-color-border);
+}
+
+.rankUp {
+  color: #ff4d4f;
+  font-weight: 500;
+  font-size: 13px;
+}
+
+.rankFlat {
+  color: #999;
+  font-weight: 500;
+  font-size: 13px;
+}
+
+.rankDown {
+  color: #52c41a;
+  font-weight: 500;
+  font-size: 13px;
+}
+
 .content {
   flex: 1;
   overflow: auto;
   padding: 16px;
+  background: var(--ant-color-bg-container);
 }

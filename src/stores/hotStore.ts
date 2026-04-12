@@ -10,6 +10,7 @@ import {
   getFundFlows,
   getMarketSentiment,
 } from '@/services/hotApi';
+import { getLeadingSectors, getLaggingSectors, getMarketOverview } from '@/services/tencentApi';
 import type {
   HotSector,
   HotStock,
@@ -19,14 +20,18 @@ import type {
   HotCategory,
   HotStockSortType,
 } from '@/types/hot';
+import type { MarketOverview } from '@/services/tencentApi';
 
 interface HotState {
   // 数据状态
   sectors: HotSector[];
+  leadingSectors: HotSector[]; // 领涨板块
+  laggingSectors: HotSector[]; // 领跌板块
   stocks: HotStock[];
   concepts: HotConcept[];
   funds: FundFlow[];
   sentiment: MarketSentiment | null;
+  marketOverview: MarketOverview | null; // 市场概览
 
   // 加载状态
   loading: boolean;
@@ -38,10 +43,13 @@ interface HotState {
 
   // Actions
   loadSectors: (sortBy?: 'changePercent' | 'volume' | 'amount') => Promise<void>;
+  loadLeadingSectors: (limit?: number) => Promise<void>; // 加载领涨板块
+  loadLaggingSectors: (limit?: number) => Promise<void>; // 加载领跌板块
   loadStocks: (sortType?: HotStockSortType, limit?: number) => Promise<void>;
   loadConcepts: (limit?: number) => Promise<void>;
   loadFunds: (sortType?: 'mainNetInflow' | 'superLarge' | 'large', limit?: number) => Promise<void>;
   loadSentiment: () => Promise<void>;
+  loadMarketOverview: () => Promise<void>; // 加载市场概览
   setCurrentCategory: (category: HotCategory) => void;
   setStockSortType: (sortType: HotStockSortType) => void;
   clearError: () => void;
@@ -50,12 +58,15 @@ interface HotState {
 export const useHotStore = create<HotState>((set, get) => ({
   // 初始状态
   sectors: [],
+  leadingSectors: [],
+  laggingSectors: [],
   stocks: [],
   concepts: [],
   funds: [],
   sentiment: null,
+  marketOverview: null,
   loading: false,
-  currentCategory: 'sectors',
+  currentCategory: 'leading-sectors',
   stockSortType: 'changePercent',
   error: null,
 
@@ -69,6 +80,32 @@ export const useHotStore = create<HotState>((set, get) => ({
       const errorMessage = error instanceof Error ? error.message : '加载热门板块失败';
       set({ error: errorMessage, loading: false });
       console.error('加载热门板块失败:', error);
+    }
+  },
+
+  // 加载领涨板块
+  loadLeadingSectors: async (limit = 10) => {
+    set({ loading: true, error: null });
+    try {
+      const data = await getLeadingSectors(limit);
+      set({ leadingSectors: data, loading: false });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : '加载领涨板块失败';
+      set({ error: errorMessage, loading: false });
+      console.error('加载领涨板块失败:', error);
+    }
+  },
+
+  // 加载领跌板块
+  loadLaggingSectors: async (limit = 10) => {
+    set({ loading: true, error: null });
+    try {
+      const data = await getLaggingSectors(limit);
+      set({ laggingSectors: data, loading: false });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : '加载领跌板块失败';
+      set({ error: errorMessage, loading: false });
+      console.error('加载领跌板块失败:', error);
     }
   },
 
@@ -118,6 +155,16 @@ export const useHotStore = create<HotState>((set, get) => ({
       set({ sentiment: data });
     } catch (error) {
       console.error('加载市场情绪失败:', error);
+    }
+  },
+
+  // 加载市场概览
+  loadMarketOverview: async () => {
+    try {
+      const data = await getMarketOverview();
+      set({ marketOverview: data });
+    } catch (error) {
+      console.error('加载市场概览失败:', error);
     }
   },
 

@@ -5,10 +5,7 @@ import http, { type Server } from 'http';
 import https from 'https';
 import { URL } from 'url';
 
-const PROXY_CONFIG: Record<
-  string,
-  { target: string; referer: string; origin: string }
-> = {
+const PROXY_CONFIG: Record<string, { target: string; referer: string; origin: string }> = {
   '/api/sina': {
     target: 'https://hq.sinajs.cn',
     referer: 'https://finance.sina.com.cn',
@@ -23,6 +20,11 @@ const PROXY_CONFIG: Record<
     target: 'https://proxy.finance.qq.com',
     referer: 'https://proxy.finance.qq.com',
     origin: 'https://proxy.finance.qq.com',
+  },
+  '/api/tencent-sector-rank': {
+    target: 'https://proxy.finance.qq.com',
+    referer: 'https://finance.qq.com',
+    origin: 'https://finance.qq.com',
   },
 };
 

@@ -130,10 +130,8 @@ export interface MarketSentiment {
  * 热门分类类型
  */
 export type HotCategory =
-  | 'sectors' // 热门板块
-  | 'stocks' // 热门股票
-  | 'concepts' // 热门概念
-  | 'funds'; // 资金动向
+  | 'leading-sectors' // 领涨板块
+  | 'lagging-sectors'; // 领跌板块
 
 /**
  * 热门股票排序类型

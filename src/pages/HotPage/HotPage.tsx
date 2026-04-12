@@ -2,22 +2,16 @@
  * 热门行情页面
  */
 
-import { useEffect, useState } from 'react';
-import { Layout, Tabs, Card, Statistic, Row, Col, Space, Tag } from 'antd';
+import { useEffect } from 'react';
+import { Layout, Tabs, Card } from 'antd';
 import {
   RiseOutlined,
-  FallOutlined,
-  FireOutlined,
-  DollarOutlined,
-  BarChartOutlined,
-  ThunderboltOutlined
+  FallOutlined
 } from '@ant-design/icons';
 import { useHotStore } from '@/stores/hotStore';
-import { HotSectorTable } from './components/HotSectorTable';
-import { HotStockTable } from './components/HotStockTable';
-import { HotConceptTable } from './components/HotConceptTable';
-import { FundFlowTable } from './components/FundFlowTable';
 import { MarketSentimentCard } from './components/MarketSentimentCard';
+import { LeadingSectorTable } from './components/LeadingSectorTable';
+import { LaggingSectorTable } from './components/LaggingSectorTable';
 import styles from './HotPage.module.css';
 
 const { Header, Content } = Layout;
@@ -26,49 +20,37 @@ export function HotPage() {
   const {
     currentCategory,
     setCurrentCategory,
-    loadSectors,
-    loadStocks,
-    loadConcepts,
-    loadFunds,
-    loadSentiment,
-    sentiment
+    loadLeadingSectors,
+    loadLaggingSectors,
+    loadMarketOverview,
+    marketOverview
   } = useHotStore();
 
-  const [sectorSortBy, setSectorSortBy] = useState<'changePercent' | 'volume' | 'amount'>('changePercent');
-
-  // 加载市场情绪数据
+  // 加载市场概览数据
   useEffect(() => {
-    loadSentiment();
+    loadMarketOverview();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // 根据当前分类加载对应数据
   useEffect(() => {
     switch (currentCategory) {
-      case 'sectors':
-        loadSectors(sectorSortBy);
+      case 'leading-sectors':
+        loadLeadingSectors();
         break;
-      case 'stocks':
-        loadStocks();
-        break;
-      case 'concepts':
-        loadConcepts();
-        break;
-      case 'funds':
-        loadFunds();
+      case 'lagging-sectors':
+        loadLaggingSectors();
         break;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentCategory, sectorSortBy]);
+  }, [currentCategory]);
 
   return (
     <Layout className={styles.hotPage}>
-      {/* 市场情绪概览 */}
-      {sentiment && (
-        <Header className={styles.sentimentHeader}>
-          <MarketSentimentCard sentiment={sentiment} />
-        </Header>
-      )}
+      {/* 市场概览 */}
+      <Header className={styles.sentimentHeader}>
+        <MarketSentimentCard marketOverview={marketOverview} />
+      </Header>
 
       <Content className={styles.content}>
         <Tabs
@@ -76,82 +58,30 @@ export function HotPage() {
           onChange={(key) => setCurrentCategory(key as any)}
           items={[
             {
-              key: 'sectors',
+              key: 'leading-sectors',
               label: (
                 <span>
-                  <BarChartOutlined />
-                  热门板块
+                  <RiseOutlined />
+                  领涨板块
                 </span>
               ),
               children: (
-                <Card title="热门板块排行" extra={
-                  <Space>
-                    <Tag
-                      color={sectorSortBy === 'changePercent' ? 'blue' : 'default'}
-                      style={{ cursor: 'pointer' }}
-                      onClick={() => setSectorSortBy('changePercent')}
-                    >
-                      涨跌幅
-                    </Tag>
-                    <Tag
-                      color={sectorSortBy === 'volume' ? 'blue' : 'default'}
-                      style={{ cursor: 'pointer' }}
-                      onClick={() => setSectorSortBy('volume')}
-                    >
-                      成交量
-                    </Tag>
-                    <Tag
-                      color={sectorSortBy === 'amount' ? 'blue' : 'default'}
-                      style={{ cursor: 'pointer' }}
-                      onClick={() => setSectorSortBy('amount')}
-                    >
-                      成交额
-                    </Tag>
-                  </Space>
-                }>
-                  <HotSectorTable sortBy={sectorSortBy} />
+                <Card title="今日领涨板块">
+                  <LeadingSectorTable />
                 </Card>
               ),
             },
             {
-              key: 'stocks',
+              key: 'lagging-sectors',
               label: (
                 <span>
-                  <FireOutlined />
-                  热门股票
+                  <FallOutlined />
+                  领跌板块
                 </span>
               ),
               children: (
-                <Card title="热门股票排行">
-                  <HotStockTable />
-                </Card>
-              ),
-            },
-            {
-              key: 'concepts',
-              label: (
-                <span>
-                  <ThunderboltOutlined />
-                  热门概念
-                </span>
-              ),
-              children: (
-                <Card title="热门概念排行">
-                  <HotConceptTable />
-                </Card>
-              ),
-            },
-            {
-              key: 'funds',
-              label: (
-                <span>
-                  <DollarOutlined />
-                  资金动向
-                </span>
-              ),
-              children: (
-                <Card title="主力资金流向">
-                  <FundFlowTable />
+                <Card title="今日领跌板块">
+                  <LaggingSectorTable />
                 </Card>
               ),
             },
