@@ -25,9 +25,10 @@ interface OpportunityTableProps {
   sortConfig: OverviewSortConfig;
   onSortChange: (config: OverviewSortConfig) => void;
   tableHeight?: number;
+  onShowAIAnalysis?: (record: StockOpportunityData) => void;
 }
 
-export const OpportunityTable = memo(function OpportunityTable({ data, columns, sortConfig, onSortChange, tableHeight = 600 }: OpportunityTableProps) {
+export const OpportunityTable = memo(function OpportunityTable({ data, columns, sortConfig, onSortChange, tableHeight = 600, onShowAIAnalysis }: OpportunityTableProps) {
   const [pagination, setPagination] = useState<TablePaginationConfig>({
     current: 1,
     pageSize: 50,
@@ -170,7 +171,7 @@ export const OpportunityTable = memo(function OpportunityTable({ data, columns, 
   const tableColumns: ColumnsType<StockOpportunityData> = useMemo(() => {
     const visibleColumns = columns.filter((c) => c.visible).sort((a, b) => a.order - b.order);
 
-    return visibleColumns.map((col) => {
+    const cols = visibleColumns.map((col) => {
       const column: ColumnsType<StockOpportunityData>[0] = {
         title: col.title,
         dataIndex: col.key,
@@ -230,7 +231,35 @@ export const OpportunityTable = memo(function OpportunityTable({ data, columns, 
 
       return column;
     });
-  }, [columns, sortConfig]);
+
+    // 添加操作列（如果有AI分析回调）
+    if (onShowAIAnalysis) {
+      cols.push({
+        title: 'AI分析',
+        key: 'aiAction',
+        width: 100,
+        fixed: 'right',
+        render: (_: any, record: StockOpportunityData) => {
+          if (!record.aiAnalysis) {
+            return <span style={{ color: '#d9d9d9' }}>-</span>;
+          }
+          return (
+            <a
+              onClick={(e) => {
+                e.stopPropagation();
+                onShowAIAnalysis(record);
+              }}
+              style={{ cursor: 'pointer' }}
+            >
+              查看
+            </a>
+          );
+        },
+      });
+    }
+
+    return cols;
+  }, [columns, sortConfig, onShowAIAnalysis]);
 
   const handleTableChange = (paginationConfig: TablePaginationConfig, _filters: any, sorter: any) => {
     if (paginationConfig) {

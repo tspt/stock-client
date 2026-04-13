@@ -10,6 +10,7 @@ import { calcAllIndicators, formatKDJValues } from '@/utils/indicators';
 import { calculateConsolidationInLookback } from '@/utils/consolidationAnalysis';
 import { analyzeSharpMovePatterns } from '@/utils/sharpMovePatterns';
 import { calculateTrendLineInLookback } from '@/utils/trendLineAnalysis';
+import { performAIAnalysis } from '@/services/aiAnalysisService';
 import { ConcurrencyManager } from '@/utils/concurrencyManager';
 import {
   OPPORTUNITY_BATCH_DELAY,
@@ -103,6 +104,35 @@ async function analyzeOneStock(
     console.warn(`[${code}] 单日异动分析失败:`, error);
   }
 
+  // AI辅助分析（可选，避免影响主要流程）
+  let aiAnalysis;
+  try {
+    const tempOpportunityData: StockOpportunityData = {
+      code,
+      name: quote.name || stock.name,
+      price: quote.price,
+      change: quote.change,
+      changePercent: quote.changePercent,
+      volume: Number((quote.volume / 100000000).toFixed(2)),
+      amount: Number((quote.amount / 100000000).toFixed(2)),
+      marketCap: detail?.marketCap,
+      circulatingMarketCap: detail?.circulatingMarketCap,
+      peRatio: detail?.peRatio,
+      turnoverRate: detail?.turnoverRate,
+      kdjJ: formattedKDJ.kdjJ,
+      ma5: maFields.ma5,
+      ma10: maFields.ma10,
+      ma20: maFields.ma20,
+      consolidation,
+      trendLine,
+      sharpMovePatterns,
+      analyzedAt,
+    };
+    aiAnalysis = performAIAnalysis(klineData, tempOpportunityData);
+  } catch (error) {
+    console.warn(`[${code}] AI分析失败:`, error);
+  }
+
   // 与数据概况页保持一致：volume/amount 先转为"亿单位"再显示
   const volume = Number((quote.volume / 100000000).toFixed(2));
   const amount = Number((quote.amount / 100000000).toFixed(2));
@@ -139,6 +169,7 @@ async function analyzeOneStock(
       consolidation,
       trendLine,
       sharpMovePatterns,
+      aiAnalysis,
       analyzedAt,
     },
     klineData,

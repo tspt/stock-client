@@ -1,0 +1,222 @@
+.modal {
+  :global(.ant-modal-body) {
+    padding: 16px;
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.section {
+  :global(.ant-card-head) {
+    min-height: 40px;
+    padding: 0 12px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  :global(.ant-card-body) {
+    padding: 12px;
+  }
+}
+
+/* 趋势预测样式 */
+.trendPrediction {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.trendHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.trendDirection {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.trendText {
+  color: #262626;
+}
+
+.confidence {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.priceLevels {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.reasoning {
+  background: #f5f5f5;
+  padding: 12px;
+  border-radius: 4px;
+  
+  .reasoningTitle {
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #595959;
+  }
+
+  ul {
+    margin: 0;
+    padding-left: 20px;
+    
+    li {
+      margin-bottom: 4px;
+      color: #595959;
+      line-height: 1.6;
+    }
+  }
+}
+
+/* 智能推荐评分样式 */
+.recommendation {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.totalScore {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 8px;
+  color: white;
+}
+
+.scoreLabel {
+  font-size: 14px;
+  opacity: 0.9;
+  margin-bottom: 8px;
+}
+
+.scoreValue {
+  font-size: 48px;
+  font-weight: bold;
+  line-height: 1;
+}
+
+.scoreDetails {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.scoreItem {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.scoreItemLabel {
+  font-size: 13px;
+  color: #595959;
+  font-weight: 500;
+}
+
+.reasonsSection,
+.warningsSection {
+  margin-top: 8px;
+}
+
+.sectionTitle {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #262626;
+}
+
+.reasonList,
+.warningList {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.reasonItem {
+  margin-bottom: 6px;
+  color: #52c41a;
+  line-height: 1.6;
+}
+
+.warningItem {
+  margin-bottom: 6px;
+  color: #ff4d4f;
+  line-height: 1.6;
+}
+
+/* 相似形态样式 */
+.similarPatterns {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.patternItem {
+  padding: 12px;
+  background: #fafafa;
+  border-radius: 4px;
+  border: 1px solid #e8e8e8;
+  transition: all 0.3s;
+
+  &:hover {
+    background: #f0f0f0;
+    border-color: #d9d9d9;
+  }
+}
+
+.patternHeader {
+  margin-bottom: 8px;
+}
+
+.stockName {
+  font-weight: 600;
+  color: #262626;
+}
+
+.stockCode {
+  color: #8c8c8c;
+  font-size: 12px;
+}
+
+.performance {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #595959;
+}
+
+.period {
+  color: #8c8c8c;
+  font-size: 12px;
+}
+
+/* 分析时间 */
+.analysisTime {
+  text-align: right;
+  font-size: 12px;
+  color: #8c8c8c;
+  padding-top: 8px;
+  border-top: 1px solid #e8e8e8;
+}

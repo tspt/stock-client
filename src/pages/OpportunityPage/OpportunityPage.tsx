@@ -20,6 +20,7 @@ import {
 } from '@/utils/consolidationAnalysis';
 import { OpportunityTable } from '@/components/OpportunityTable/OpportunityTable';
 import { ColumnSettings } from '@/components/ColumnSettings/ColumnSettings';
+import { AIAnalysisModal } from '@/components/AIAnalysisModal';
 import { exportOpportunityToExcel } from '@/utils/opportunityExportUtils';
 import { exportStockNamesToExcel, exportStockNamesToPng } from '@/utils/stockNamesExportUtils';
 import type { ConsolidationType, KLinePeriod, StockInfo } from '@/types/stock';
@@ -231,6 +232,8 @@ export function OpportunityPage() {
   const [filterSkippedExpanded, setFilterSkippedExpanded] = useState(false);
   const [tableHeight, setTableHeight] = useState<number>(400); // 表格高度
   const tableCardRef = useRef<HTMLDivElement>(null); // 表格Card的引用
+  const [aiAnalysisVisible, setAiAnalysisVisible] = useState(false);
+  const [selectedStockForAI, setSelectedStockForAI] = useState<{ code: string; name: string } | null>(null);
 
   const [sharpMoveWindowBars, setSharpMoveWindowBars] = useState<number>(INITIAL_FILTER_STATE.sharpMoveWindowBars);
   const [sharpMoveMagnitude, setSharpMoveMagnitude] = useState<number>(INITIAL_FILTER_STATE.sharpMoveMagnitude);
@@ -786,6 +789,15 @@ export function OpportunityPage() {
     setColumnSettingsVisible(false);
   };
 
+  const handleShowAIAnalysis = (record: StockOpportunityData) => {
+    if (!record.aiAnalysis) {
+      message.warning('该股票暂无AI分析数据');
+      return;
+    }
+    setSelectedStockForAI({ code: record.code, name: record.name });
+    setAiAnalysisVisible(true);
+  };
+
   return (
     <Layout className={styles.opportunityPage}>
       <Header className={styles.header}>
@@ -1111,6 +1123,7 @@ export function OpportunityPage() {
               sortConfig={sortConfig}
               onSortChange={updateSortConfig}
               tableHeight={tableHeight}
+              onShowAIAnalysis={handleShowAIAnalysis}
             />
           </Card>
         ) : (
@@ -1129,6 +1142,17 @@ export function OpportunityPage() {
         onCancel={() => setColumnSettingsVisible(false)}
         onReset={resetColumnConfig}
         title="机会列表列设置"
+      />
+
+      <AIAnalysisModal
+        visible={aiAnalysisVisible}
+        analysis={selectedStockForAI ? analysisData.find(d => d.code === selectedStockForAI.code)?.aiAnalysis || null : null}
+        stockName={selectedStockForAI?.name || ''}
+        stockCode={selectedStockForAI?.code || ''}
+        onClose={() => {
+          setAiAnalysisVisible(false);
+          setSelectedStockForAI(null);
+        }}
       />
     </Layout >
   );

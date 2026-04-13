@@ -396,6 +396,8 @@ export interface StockOpportunityData {
   trendLine?: TrendLineAnalysis;
   /** 单日异动形态（最近 N 根、阈值 M，见 sharpMovePatterns 模块） */
   sharpMovePatterns?: SharpMovePatternAnalysis;
+  /** AI辅助分析结果 */
+  aiAnalysis?: AIAnalysisResult;
   /** 分析时间戳 */
   analyzedAt: number;
   /** 错误信息（如果获取失败） */
@@ -483,6 +485,84 @@ export interface SharpMovePatternAnalysis {
   lastRiseIndex?: number;
   /** 命中形态的简短标签，便于列表展示 */
   labels: string[];
+}
+
+/**
+ * 趋势预测结果
+ */
+export interface TrendPrediction {
+  /** 预测方向：up(上涨), down(下跌), sideways(横盘) */
+  direction: 'up' | 'down' | 'sideways';
+  /** 置信度 (0-1) */
+  confidence: number;
+  /** 预测目标价 */
+  targetPrice?: number;
+  /** 预测周期（天） */
+  period: number;
+  /** 支撑位 */
+  supportLevel?: number;
+  /** 阻力位 */
+  resistanceLevel?: number;
+  /** 预测依据 */
+  reasoning: string[];
+}
+
+/**
+ * 相似形态匹配结果
+ */
+export interface SimilarPatternMatch {
+  /** 匹配的股票代码 */
+  code: string;
+  /** 匹配的股票名称 */
+  name: string;
+  /** 相似度 (0-1) */
+  similarity: number;
+  /** 历史表现 */
+  historicalPerformance?: {
+    /** 后续N天涨跌幅 */
+    changePercent: number;
+    /** 观察周期（天） */
+    period: number;
+  };
+  /** 匹配的时间段 */
+  matchPeriod: {
+    start: number;
+    end: number;
+  };
+}
+
+/**
+ * 智能选股推荐评分
+ */
+export interface SmartRecommendationScore {
+  /** 综合评分 (0-100) */
+  totalScore: number;
+  /** 技术面评分 */
+  technicalScore: number;
+  /** 形态评分 */
+  patternScore: number;
+  /** 趋势评分 */
+  trendScore: number;
+  /** 风险评分 */
+  riskScore: number;
+  /** 推荐理由 */
+  reasons: string[];
+  /** 风险提示 */
+  warnings: string[];
+}
+
+/**
+ * AI辅助分析结果
+ */
+export interface AIAnalysisResult {
+  /** 趋势预测 */
+  trendPrediction?: TrendPrediction;
+  /** 相似形态匹配列表 */
+  similarPatterns?: SimilarPatternMatch[];
+  /** 智能推荐评分 */
+  recommendation?: SmartRecommendationScore;
+  /** 分析时间戳 */
+  analyzedAt: number;
 }
 
 /**
