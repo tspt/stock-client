@@ -82,10 +82,3 @@
   font-weight: 500;
   font-size: 13px;
 }
-
-.content {
-  flex: 1;
-  overflow: auto;
-  padding: 16px;
-  background: var(--ant-color-bg-container);
-}

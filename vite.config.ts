@@ -22,15 +22,6 @@ export default defineConfig({
           Origin: 'https://finance.qq.com',
         },
       },
-      '/api/tencent-sector-rank': {
-        target: 'https://proxy.finance.qq.com',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/tencent-sector-rank/, ''),
-        headers: {
-          Referer: 'https://finance.qq.com',
-          Origin: 'https://finance.qq.com',
-        },
-      },
     },
   },
   base: './',

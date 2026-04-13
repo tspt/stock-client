@@ -21,11 +21,6 @@ const PROXY_CONFIG: Record<string, { target: string; referer: string; origin: st
     referer: 'https://proxy.finance.qq.com',
     origin: 'https://proxy.finance.qq.com',
   },
-  '/api/tencent-sector-rank': {
-    target: 'https://proxy.finance.qq.com',
-    referer: 'https://finance.qq.com',
-    origin: 'https://finance.qq.com',
-  },
 };
 
 const UA =
