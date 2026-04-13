@@ -94,6 +94,19 @@ function technicalIndicatorsFilterActive(filters: OpportunityFilterSnapshot): bo
   );
 }
 
+/** 检查AI分析筛选是否激活 */
+function aiAnalysisFilterActive(filters: OpportunityFilterSnapshot): boolean {
+  return (
+    filters.aiAnalysisEnabled &&
+    (filters.aiTrendUp ||
+      filters.aiTrendDown ||
+      filters.aiTrendSideways ||
+      filters.aiRecommendScoreRange.min !== undefined ||
+      filters.aiRecommendScoreRange.max !== undefined ||
+      filters.aiRequireSimilarPatterns)
+  );
+}
+
 /** 检查是否通过技术指标筛选 */
 function passesTechnicalIndicatorsFilter(
   klineData: KLineData[],
@@ -258,6 +271,185 @@ function passesTechnicalIndicatorsFilter(
       (filters.trendBreakdown && trends.breakdown);
 
     if (!trendMatched) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+/** 检查是否通过AI分析筛选 */
+function passesAIFilter(item: StockOpportunityData, filters: OpportunityFilterSnapshot): boolean {
+  // 如果未启用AI筛选，直接通过
+  if (!filters.aiAnalysisEnabled) {
+    return true;
+  }
+
+  // 如果没有AI分析数据，不通过
+  if (!item.aiAnalysis) {
+    return false;
+  }
+
+  const { trendPrediction, recommendation, similarPatterns } = item.aiAnalysis;
+
+  // 趋势预测筛选（勾选多项时为OR关系）
+  if (filters.aiTrendUp || filters.aiTrendDown || filters.aiTrendSideways) {
+    if (!trendPrediction) {
+      return false;
+    }
+
+    const trendMatched =
+      (filters.aiTrendUp && trendPrediction.direction === 'up') ||
+      (filters.aiTrendDown && trendPrediction.direction === 'down') ||
+      (filters.aiTrendSideways && trendPrediction.direction === 'sideways');
+
+    if (!trendMatched) {
+      return false;
+    }
+  }
+
+  // 置信度范围筛选（0-1转换为0-100）
+  if (filters.aiConfidenceRange.min !== undefined || filters.aiConfidenceRange.max !== undefined) {
+    if (!trendPrediction) {
+      return false;
+    }
+
+    const confidencePercent = trendPrediction.confidence * 100;
+
+    if (
+      filters.aiConfidenceRange.min !== undefined &&
+      confidencePercent < filters.aiConfidenceRange.min
+    ) {
+      return false;
+    }
+    if (
+      filters.aiConfidenceRange.max !== undefined &&
+      confidencePercent > filters.aiConfidenceRange.max
+    ) {
+      return false;
+    }
+  }
+
+  // 综合评分范围筛选
+  if (
+    filters.aiRecommendScoreRange.min !== undefined ||
+    filters.aiRecommendScoreRange.max !== undefined
+  ) {
+    if (!recommendation) {
+      return false;
+    }
+
+    const score = recommendation.totalScore;
+
+    if (
+      filters.aiRecommendScoreRange.min !== undefined &&
+      score < filters.aiRecommendScoreRange.min
+    ) {
+      return false;
+    }
+    if (
+      filters.aiRecommendScoreRange.max !== undefined &&
+      score > filters.aiRecommendScoreRange.max
+    ) {
+      return false;
+    }
+  }
+
+  // 技术面评分范围筛选
+  if (
+    filters.aiTechnicalScoreRange.min !== undefined ||
+    filters.aiTechnicalScoreRange.max !== undefined
+  ) {
+    if (!recommendation) {
+      return false;
+    }
+
+    const score = recommendation.technicalScore;
+
+    if (
+      filters.aiTechnicalScoreRange.min !== undefined &&
+      score < filters.aiTechnicalScoreRange.min
+    ) {
+      return false;
+    }
+    if (
+      filters.aiTechnicalScoreRange.max !== undefined &&
+      score > filters.aiTechnicalScoreRange.max
+    ) {
+      return false;
+    }
+  }
+
+  // 形态评分范围筛选
+  if (
+    filters.aiPatternScoreRange.min !== undefined ||
+    filters.aiPatternScoreRange.max !== undefined
+  ) {
+    if (!recommendation) {
+      return false;
+    }
+
+    const score = recommendation.patternScore;
+
+    if (filters.aiPatternScoreRange.min !== undefined && score < filters.aiPatternScoreRange.min) {
+      return false;
+    }
+    if (filters.aiPatternScoreRange.max !== undefined && score > filters.aiPatternScoreRange.max) {
+      return false;
+    }
+  }
+
+  // 趋势评分范围筛选
+  if (filters.aiTrendScoreRange.min !== undefined || filters.aiTrendScoreRange.max !== undefined) {
+    if (!recommendation) {
+      return false;
+    }
+
+    const score = recommendation.trendScore;
+
+    if (filters.aiTrendScoreRange.min !== undefined && score < filters.aiTrendScoreRange.min) {
+      return false;
+    }
+    if (filters.aiTrendScoreRange.max !== undefined && score > filters.aiTrendScoreRange.max) {
+      return false;
+    }
+  }
+
+  // 风险评分范围筛选
+  if (filters.aiRiskScoreRange.min !== undefined || filters.aiRiskScoreRange.max !== undefined) {
+    if (!recommendation) {
+      return false;
+    }
+
+    const score = recommendation.riskScore;
+
+    if (filters.aiRiskScoreRange.min !== undefined && score < filters.aiRiskScoreRange.min) {
+      return false;
+    }
+    if (filters.aiRiskScoreRange.max !== undefined && score > filters.aiRiskScoreRange.max) {
+      return false;
+    }
+  }
+
+  // 相似形态匹配要求
+  if (filters.aiRequireSimilarPatterns) {
+    if (!similarPatterns || similarPatterns.length === 0) {
+      return false;
+    }
+  }
+
+  // 相似形态最低相似度筛选（0-1转换为0-100）
+  if (filters.aiMinSimilarity !== undefined) {
+    if (!similarPatterns || similarPatterns.length === 0) {
+      return false;
+    }
+
+    const minSimilarityPercent = filters.aiMinSimilarity;
+    const hasMatchedPattern = similarPatterns.some(
+      (pattern) => pattern.similarity * 100 >= minSimilarityPercent
+    );
+
+    if (!hasMatchedPattern) {
       return false;
     }
   }
@@ -490,6 +682,11 @@ async function runFilterTask(
 
       // 新增：技术指标与形态筛选
       if (!passesTechnicalIndicatorsFilter(klineData || [], filters)) {
+        continue;
+      }
+
+      // AI分析筛选
+      if (!passesAIFilter(nextItem, filters)) {
         continue;
       }
 

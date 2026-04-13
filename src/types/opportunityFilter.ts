@@ -77,6 +77,28 @@ export interface OpportunityFilterSnapshot {
   trendBreakdown: boolean;
   /** 趋势形态回溯窗口大小（根数） */
   trendLookback: number;
+  /** AI分析筛选开关 */
+  aiAnalysisEnabled: boolean;
+  /** AI趋势预测方向筛选 */
+  aiTrendUp: boolean;
+  aiTrendDown: boolean;
+  aiTrendSideways: boolean;
+  /** AI趋势预测置信度范围（0-1，转换为0-100显示） */
+  aiConfidenceRange: NumberRange;
+  /** AI智能推荐综合评分范围（0-100） */
+  aiRecommendScoreRange: NumberRange;
+  /** AI技术面评分范围（0-100） */
+  aiTechnicalScoreRange: NumberRange;
+  /** AI形态评分范围（0-100） */
+  aiPatternScoreRange: NumberRange;
+  /** AI趋势评分范围（0-100） */
+  aiTrendScoreRange: NumberRange;
+  /** AI风险评分范围（0-100，分数越高风险越低） */
+  aiRiskScoreRange: NumberRange;
+  /** 是否要求有相似形态匹配 */
+  aiRequireSimilarPatterns: boolean;
+  /** 相似形态最低相似度（0-1，转换为0-100显示） */
+  aiMinSimilarity?: number;
 }
 
 export interface FilterSkippedItem {

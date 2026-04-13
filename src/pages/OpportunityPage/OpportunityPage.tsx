@@ -148,6 +148,19 @@ const INITIAL_FILTER_STATE = {
   trendBreakdown: false,
   /** 趋势形态回溯窗口大小（根数） */
   trendLookback: 20,
+  /** AI分析筛选 */
+  aiAnalysisEnabled: false,
+  aiTrendUp: false,
+  aiTrendDown: false,
+  aiTrendSideways: false,
+  aiConfidenceRange: {},
+  aiRecommendScoreRange: {},
+  aiTechnicalScoreRange: {},
+  aiPatternScoreRange: {},
+  aiTrendScoreRange: {},
+  aiRiskScoreRange: {},
+  aiRequireSimilarPatterns: false,
+  aiMinSimilarity: undefined,
 };
 
 /** 与 opportunityStore 初始值一致，用于「重置」恢复周期与 K 线数量 */
@@ -190,8 +203,8 @@ export function OpportunityPage() {
   );
   const [peRatioRange, setPeRatioRange] = useState<{ min?: number; max?: number }>(INITIAL_FILTER_STATE.peRatioRange);
   const [kdjJRange, setKdjJRange] = useState<{ min?: number; max?: number }>(INITIAL_FILTER_STATE.kdjJRange);
-  /** 筛选 Collapse 当前展开的面板 key 列表；[] 表示各组均收起。默认仅展开「数据筛选」 */
-  const [filterPanelActiveKey, setFilterPanelActiveKey] = useState<string[]>(['data']);
+  /** 筛选 Collapse 当前展开的面板 key 列表；[] 表示各组均收起。默认展开「数据筛选」、「形态分析」和「AI分析筛选」 */
+  const [filterPanelActiveKey, setFilterPanelActiveKey] = useState<string[]>(['data', 'technicalIndicators', 'aiAnalysis']);
 
   // 涨停/跌停筛选状态
   const [recentLimitUpCount, setRecentLimitUpCount] = useState<number | undefined>(
@@ -288,6 +301,36 @@ export function OpportunityPage() {
   const [trendBreakdown, setTrendBreakdown] = useState<boolean>(INITIAL_FILTER_STATE.trendBreakdown);
   const [trendLookback, setTrendLookback] = useState<number>(INITIAL_FILTER_STATE.trendLookback);
 
+  // AI分析筛选状态
+  const [aiAnalysisEnabled, setAiAnalysisEnabled] = useState<boolean>(INITIAL_FILTER_STATE.aiAnalysisEnabled);
+  const [aiTrendUp, setAiTrendUp] = useState<boolean>(INITIAL_FILTER_STATE.aiTrendUp);
+  const [aiTrendDown, setAiTrendDown] = useState<boolean>(INITIAL_FILTER_STATE.aiTrendDown);
+  const [aiTrendSideways, setAiTrendSideways] = useState<boolean>(INITIAL_FILTER_STATE.aiTrendSideways);
+  const [aiConfidenceRange, setAiConfidenceRange] = useState<{ min?: number; max?: number }>(
+    INITIAL_FILTER_STATE.aiConfidenceRange
+  );
+  const [aiRecommendScoreRange, setAiRecommendScoreRange] = useState<{ min?: number; max?: number }>(
+    INITIAL_FILTER_STATE.aiRecommendScoreRange
+  );
+  const [aiTechnicalScoreRange, setAiTechnicalScoreRange] = useState<{ min?: number; max?: number }>(
+    INITIAL_FILTER_STATE.aiTechnicalScoreRange
+  );
+  const [aiPatternScoreRange, setAiPatternScoreRange] = useState<{ min?: number; max?: number }>(
+    INITIAL_FILTER_STATE.aiPatternScoreRange
+  );
+  const [aiTrendScoreRange, setAiTrendScoreRange] = useState<{ min?: number; max?: number }>(
+    INITIAL_FILTER_STATE.aiTrendScoreRange
+  );
+  const [aiRiskScoreRange, setAiRiskScoreRange] = useState<{ min?: number; max?: number }>(
+    INITIAL_FILTER_STATE.aiRiskScoreRange
+  );
+  const [aiRequireSimilarPatterns, setAiRequireSimilarPatterns] = useState<boolean>(
+    INITIAL_FILTER_STATE.aiRequireSimilarPatterns
+  );
+  const [aiMinSimilarity, setAiMinSimilarity] = useState<number | undefined>(
+    INITIAL_FILTER_STATE.aiMinSimilarity
+  );
+
   // 先恢复 IndexedDB 中的分析结果与 K 线缓存，再套用 localStorage 中的查询/筛选偏好（纯前端筛选用缓存即可）
   useEffect(() => {
     let cancelled = false;
@@ -353,6 +396,13 @@ export function OpportunityPage() {
         setTrendBreakout,
         setTrendBreakdown,
         setTrendLookback,
+        // AI分析筛选 actions
+        setAiAnalysisEnabled,
+        setAiTrendUp,
+        setAiTrendDown,
+        setAiTrendSideways,
+        setAiRecommendScoreRange,
+        setAiRequireSimilarPatterns,
       });
       const st = useOpportunityStore.getState();
       if (st.analysisData.length === 0) {
@@ -521,6 +571,18 @@ export function OpportunityPage() {
       trendBreakout,
       trendBreakdown,
       trendLookback,
+      aiAnalysisEnabled,
+      aiTrendUp,
+      aiTrendDown,
+      aiTrendSideways,
+      aiConfidenceRange,
+      aiRecommendScoreRange,
+      aiTechnicalScoreRange,
+      aiPatternScoreRange,
+      aiTrendScoreRange,
+      aiRiskScoreRange,
+      aiRequireSimilarPatterns,
+      aiMinSimilarity,
     }),
     [
       priceRange,
@@ -577,6 +639,18 @@ export function OpportunityPage() {
       trendBreakout,
       trendBreakdown,
       trendLookback,
+      aiAnalysisEnabled,
+      aiTrendUp,
+      aiTrendDown,
+      aiTrendSideways,
+      aiConfidenceRange,
+      aiRecommendScoreRange,
+      aiTechnicalScoreRange,
+      aiPatternScoreRange,
+      aiTrendScoreRange,
+      aiRiskScoreRange,
+      aiRequireSimilarPatterns,
+      aiMinSimilarity,
     ]
   );
 
@@ -614,7 +688,7 @@ export function OpportunityPage() {
     setTurnoverRateRange({ ...s.turnoverRateRange });
     setPeRatioRange({ ...s.peRatioRange });
     setKdjJRange({ ...s.kdjJRange });
-    setFilterPanelActiveKey(['data']);
+    setFilterPanelActiveKey(['data', 'technicalIndicators', 'aiAnalysis']);
     setRecentLimitUpCount(s.recentLimitUpCount);
     setRecentLimitDownCount(s.recentLimitDownCount);
     setLimitUpPeriod(s.limitUpPeriod);
@@ -661,6 +735,19 @@ export function OpportunityPage() {
     setTrendBreakout(s.trendBreakout);
     setTrendBreakdown(s.trendBreakdown);
     setTrendLookback(s.trendLookback);
+    // 重置AI分析筛选
+    setAiAnalysisEnabled(s.aiAnalysisEnabled);
+    setAiTrendUp(s.aiTrendUp);
+    setAiTrendDown(s.aiTrendDown);
+    setAiTrendSideways(s.aiTrendSideways);
+    setAiConfidenceRange({ ...s.aiConfidenceRange });
+    setAiRecommendScoreRange({ ...s.aiRecommendScoreRange });
+    setAiTechnicalScoreRange({ ...s.aiTechnicalScoreRange });
+    setAiPatternScoreRange({ ...s.aiPatternScoreRange });
+    setAiTrendScoreRange({ ...s.aiTrendScoreRange });
+    setAiRiskScoreRange({ ...s.aiRiskScoreRange });
+    setAiRequireSimilarPatterns(s.aiRequireSimilarPatterns);
+    setAiMinSimilarity(s.aiMinSimilarity);
     patchSavedPrefsFiltersToDefaults();
     message.info('已恢复默认筛选条件');
   };
@@ -729,6 +816,19 @@ export function OpportunityPage() {
       trendBreakout,
       trendBreakdown,
       trendLookback,
+      // AI分析筛选
+      aiAnalysisEnabled,
+      aiTrendUp,
+      aiTrendDown,
+      aiTrendSideways,
+      aiConfidenceRange: { ...aiConfidenceRange },
+      aiRecommendScoreRange: { ...aiRecommendScoreRange },
+      aiTechnicalScoreRange: { ...aiTechnicalScoreRange },
+      aiPatternScoreRange: { ...aiPatternScoreRange },
+      aiTrendScoreRange: { ...aiTrendScoreRange },
+      aiRiskScoreRange: { ...aiRiskScoreRange },
+      aiRequireSimilarPatterns,
+      aiMinSimilarity,
     };
     saveOpportunityFilterPrefs(prefs);
 
@@ -1065,6 +1165,31 @@ export function OpportunityPage() {
             setTrendBreakdown={setTrendBreakdown}
             trendLookback={trendLookback}
             setTrendLookback={setTrendLookback}
+            // AI分析筛选 props
+            aiAnalysisEnabled={aiAnalysisEnabled}
+            setAiAnalysisEnabled={setAiAnalysisEnabled}
+            aiTrendUp={aiTrendUp}
+            setAiTrendUp={setAiTrendUp}
+            aiTrendDown={aiTrendDown}
+            setAiTrendDown={setAiTrendDown}
+            aiTrendSideways={aiTrendSideways}
+            setAiTrendSideways={setAiTrendSideways}
+            aiConfidenceRange={aiConfidenceRange}
+            setAiConfidenceRange={setAiConfidenceRange}
+            aiRecommendScoreRange={aiRecommendScoreRange}
+            setAiRecommendScoreRange={setAiRecommendScoreRange}
+            aiTechnicalScoreRange={aiTechnicalScoreRange}
+            setAiTechnicalScoreRange={setAiTechnicalScoreRange}
+            aiPatternScoreRange={aiPatternScoreRange}
+            setAiPatternScoreRange={setAiPatternScoreRange}
+            aiTrendScoreRange={aiTrendScoreRange}
+            setAiTrendScoreRange={setAiTrendScoreRange}
+            aiRiskScoreRange={aiRiskScoreRange}
+            setAiRiskScoreRange={setAiRiskScoreRange}
+            aiRequireSimilarPatterns={aiRequireSimilarPatterns}
+            setAiRequireSimilarPatterns={setAiRequireSimilarPatterns}
+            aiMinSimilarity={aiMinSimilarity}
+            setAiMinSimilarity={setAiMinSimilarity}
           />
         </div>
 

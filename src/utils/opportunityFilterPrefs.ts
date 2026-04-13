@@ -20,6 +20,8 @@ export const OPPORTUNITY_FILTER_PANEL_KEYS = {
   consolidation: 'consolidation',
   trendLine: 'trendLine',
   sharpMove: 'sharpMove',
+  technicalIndicators: 'technicalIndicators',
+  aiAnalysis: 'aiAnalysis',
 } as const;
 
 /** 由 localStorage 中四个「展开」布尔字段推导当前应展开的面板（可多组同时展开） */
@@ -37,7 +39,16 @@ export function activeFilterPanelKeyFromPrefs(
   if (prefs.consolidationFilterVisible) keys.push(OPPORTUNITY_FILTER_PANEL_KEYS.consolidation);
   if (prefs.trendLineFilterVisible) keys.push(OPPORTUNITY_FILTER_PANEL_KEYS.trendLine);
   if (prefs.sharpMoveFilterVisible) keys.push(OPPORTUNITY_FILTER_PANEL_KEYS.sharpMove);
-  return keys.length > 0 ? keys : [OPPORTUNITY_FILTER_PANEL_KEYS.data];
+  // 默认展开形态分析和AI分析筛选
+  keys.push(OPPORTUNITY_FILTER_PANEL_KEYS.technicalIndicators);
+  keys.push(OPPORTUNITY_FILTER_PANEL_KEYS.aiAnalysis);
+  return keys.length > 0
+    ? keys
+    : [
+        OPPORTUNITY_FILTER_PANEL_KEYS.data,
+        OPPORTUNITY_FILTER_PANEL_KEYS.technicalIndicators,
+        OPPORTUNITY_FILTER_PANEL_KEYS.aiAnalysis,
+      ];
 }
 
 /** 将当前展开的 key（单个或多个）写回偏好里的四个布尔字段（供「一键分析」保存） */
@@ -129,6 +140,19 @@ export interface OpportunityFilterPrefs {
   trendBreakdown: boolean;
   /** 趋势形态回溯窗口大小（根数） */
   trendLookback: number;
+  /** AI分析筛选 */
+  aiAnalysisEnabled: boolean;
+  aiTrendUp: boolean;
+  aiTrendDown: boolean;
+  aiTrendSideways: boolean;
+  aiConfidenceRange: { min?: number; max?: number };
+  aiRecommendScoreRange: { min?: number; max?: number };
+  aiTechnicalScoreRange: { min?: number; max?: number };
+  aiPatternScoreRange: { min?: number; max?: number };
+  aiTrendScoreRange: { min?: number; max?: number };
+  aiRiskScoreRange: { min?: number; max?: number };
+  aiRequireSimilarPatterns: boolean;
+  aiMinSimilarity?: number;
 }
 
 function isRecord(v: unknown): v is Record<string, unknown> {
@@ -259,6 +283,19 @@ export function loadOpportunityFilterPrefs(): OpportunityFilterPrefs | null {
       trendBreakout: p.trendBreakout === true,
       trendBreakdown: p.trendBreakdown === true,
       trendLookback: isFiniteNumber(p.trendLookback) ? Math.floor(p.trendLookback) : 20,
+      // AI分析筛选
+      aiAnalysisEnabled: p.aiAnalysisEnabled === true,
+      aiTrendUp: p.aiTrendUp === true,
+      aiTrendDown: p.aiTrendDown === true,
+      aiTrendSideways: p.aiTrendSideways === true,
+      aiConfidenceRange: parseRange(p.aiConfidenceRange),
+      aiRecommendScoreRange: parseRange(p.aiRecommendScoreRange),
+      aiTechnicalScoreRange: parseRange(p.aiTechnicalScoreRange),
+      aiPatternScoreRange: parseRange(p.aiPatternScoreRange),
+      aiTrendScoreRange: parseRange(p.aiTrendScoreRange),
+      aiRiskScoreRange: parseRange(p.aiRiskScoreRange),
+      aiRequireSimilarPatterns: p.aiRequireSimilarPatterns === true,
+      aiMinSimilarity: isFiniteNumber(p.aiMinSimilarity) ? p.aiMinSimilarity : undefined,
     };
 
     return prefs;
@@ -346,6 +383,19 @@ export function getDefaultFilterPrefsFields(): Omit<
     trendBreakout: false,
     trendBreakdown: false,
     trendLookback: 20,
+    // AI分析筛选默认值
+    aiAnalysisEnabled: false,
+    aiTrendUp: false,
+    aiTrendDown: false,
+    aiTrendSideways: false,
+    aiConfidenceRange: {},
+    aiRecommendScoreRange: {},
+    aiTechnicalScoreRange: {},
+    aiPatternScoreRange: {},
+    aiTrendScoreRange: {},
+    aiRiskScoreRange: {},
+    aiRequireSimilarPatterns: false,
+    aiMinSimilarity: undefined,
   };
 }
 
@@ -437,6 +487,19 @@ export interface OpportunityFilterPrefsApplyActions {
   setTrendBreakout: (v: boolean) => void;
   setTrendBreakdown: (v: boolean) => void;
   setTrendLookback: (v: number) => void;
+  // AI分析筛选 actions
+  setAiAnalysisEnabled: (v: boolean) => void;
+  setAiTrendUp: (v: boolean) => void;
+  setAiTrendDown: (v: boolean) => void;
+  setAiTrendSideways: (v: boolean) => void;
+  setAiConfidenceRange: (v: { min?: number; max?: number }) => void;
+  setAiRecommendScoreRange: (v: { min?: number; max?: number }) => void;
+  setAiTechnicalScoreRange: (v: { min?: number; max?: number }) => void;
+  setAiPatternScoreRange: (v: { min?: number; max?: number }) => void;
+  setAiTrendScoreRange: (v: { min?: number; max?: number }) => void;
+  setAiRiskScoreRange: (v: { min?: number; max?: number }) => void;
+  setAiRequireSimilarPatterns: (v: boolean) => void;
+  setAiMinSimilarity: (v: number | undefined) => void;
 }
 
 export function applyOpportunityFilterPrefsToState(
@@ -499,4 +562,17 @@ export function applyOpportunityFilterPrefsToState(
   actions.setTrendBreakout(prefs.trendBreakout);
   actions.setTrendBreakdown(prefs.trendBreakdown);
   actions.setTrendLookback(prefs.trendLookback);
+  // 应用AI分析筛选
+  actions.setAiAnalysisEnabled(prefs.aiAnalysisEnabled);
+  actions.setAiTrendUp(prefs.aiTrendUp);
+  actions.setAiTrendDown(prefs.aiTrendDown);
+  actions.setAiTrendSideways(prefs.aiTrendSideways);
+  actions.setAiConfidenceRange({ ...prefs.aiConfidenceRange });
+  actions.setAiRecommendScoreRange({ ...prefs.aiRecommendScoreRange });
+  actions.setAiTechnicalScoreRange({ ...prefs.aiTechnicalScoreRange });
+  actions.setAiPatternScoreRange({ ...prefs.aiPatternScoreRange });
+  actions.setAiTrendScoreRange({ ...prefs.aiTrendScoreRange });
+  actions.setAiRiskScoreRange({ ...prefs.aiRiskScoreRange });
+  actions.setAiRequireSimilarPatterns(prefs.aiRequireSimilarPatterns);
+  actions.setAiMinSimilarity(prefs.aiMinSimilarity);
 }
