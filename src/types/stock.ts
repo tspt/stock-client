@@ -615,3 +615,57 @@ export interface OverviewSortConfig {
   /** 排序方向 */
   direction: 'asc' | 'desc' | null;
 }
+
+/**
+ * 领涨/领跌股票信息
+ */
+export interface LeadingStock {
+  /** 股票代码 */
+  code: string;
+  /** 股票名称 */
+  name: string;
+  /** 涨跌额 */
+  change: number;
+  /** 涨跌幅（百分比） */
+  changePercent: number;
+  /** 最新价 */
+  currentPrice: number;
+}
+
+/**
+ * 板块排行数据
+ */
+export interface SectorRankData {
+  /** 板块代码 */
+  code: string;
+  /** 板块名称 */
+  name: string;
+  /** 涨跌幅（百分比） */
+  changePercent: number;
+  /** 涨跌额 */
+  change: number;
+  /** 领涨/领跌股信息 */
+  leadingStock: LeadingStock;
+  /** 换手率（百分比） */
+  turnoverRate?: number;
+  /** 量比 */
+  volumeRatio?: number;
+  /** 流通市值（亿） */
+  circulatingMarketCap?: number;
+  /** 总市值（亿） */
+  marketCap?: number;
+  /** 成交量（万手） */
+  volume?: number;
+  /** 成交额（万） */
+  amount?: number;
+  /** 5日涨跌幅（百分比） */
+  changePercent5d?: number;
+  /** 20日涨跌幅（百分比） */
+  changePercent20d?: number;
+  /** 60日涨跌幅（百分比） */
+  changePercent60d?: number;
+  /** 52周涨跌幅（百分比） */
+  changePercent52w?: number;
+  /** 年初至今涨跌幅（百分比） */
+  changePercentYTD?: number;
+}

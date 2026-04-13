@@ -1,0 +1,58 @@
+.sectorCard {
+  display: flex;
+  flex-direction: column;
+}
+
+.sectorCard :global(.ant-card-body) {
+  flex: 1;
+  overflow: auto;
+  padding: 0;
+}
+
+.sectorTable {
+  width: 100%;
+}
+
+.sectorTable :global(.ant-table-thead > tr > th) {
+  background: var(--ant-color-fill-tertiary);
+  font-weight: 500;
+  padding: 8px 12px;
+}
+
+.sectorTable :global(.ant-table-tbody > tr > td) {
+  padding: 6px 12px;
+}
+
+.sectorTable :global(.ant-table-tbody > tr:hover > td) {
+  background: var(--ant-color-primary-bg);
+}
+
+.rankNumber {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--ant-color-fill-tertiary);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.leadingStock {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.stockName {
+  font-size: 13px;
+}
+
+.positiveValue {
+  color: #ff4d4f;
+}
+
+.negativeValue {
+  color: #52c41a;
+}

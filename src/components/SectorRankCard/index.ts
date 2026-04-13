@@ -1,0 +1,1 @@
+export { SectorRankCard } from './SectorRankCard';

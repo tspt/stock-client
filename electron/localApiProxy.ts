@@ -11,6 +11,11 @@ const PROXY_CONFIG: Record<string, { target: string; referer: string; origin: st
     referer: 'https://finance.sina.com.cn',
     origin: 'https://finance.sina.com.cn',
   },
+  '/api/tencent/rank': {
+    target: 'https://proxy.finance.qq.com',
+    referer: 'https://finance.qq.com',
+    origin: 'https://finance.qq.com',
+  },
   '/api/tencent': {
     target: 'https://qt.gtimg.cn',
     referer: 'https://finance.qq.com',
@@ -58,8 +63,14 @@ export function startEmbeddedApiProxy(port: number): Promise<Server> {
       }
 
       const proxyPath = urlPath.replace(prefix, '');
-      const queryString = urlPath.includes('?') ? urlPath.split('?')[1] : '';
-      const pathWithoutQuery = proxyPath.split('?')[0];
+      let queryString = urlPath.includes('?') ? urlPath.split('?')[1] : '';
+      let pathWithoutQuery = proxyPath.split('?')[0];
+
+      // 特殊处理 /api/tencent/rank 路径，需要转换为 /cgi/cgi-bin/rank
+      if (prefix === '/api/tencent/rank') {
+        pathWithoutQuery = '/cgi/cgi-bin/rank' + pathWithoutQuery;
+      }
+
       const targetPath = pathWithoutQuery || '/';
       const targetUrl = proxyConfig.target + targetPath + (queryString ? '?' + queryString : '');
 

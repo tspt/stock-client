@@ -13,6 +13,15 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
+      '/api/tencent/rank': {
+        target: 'https://proxy.finance.qq.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/tencent\/rank/, '/cgi/cgi-bin/rank'),
+        headers: {
+          Referer: 'https://finance.qq.com',
+          Origin: 'https://finance.qq.com',
+        },
+      },
       '/api/tencent': {
         target: 'https://qt.gtimg.cn',
         changeOrigin: true,
