@@ -27,7 +27,7 @@ function pushRange(parts: string[], label: string, r: NumRange, unit = '') {
   parts.push(`${label}${fmtNum(r.min)}~${fmtNum(r.max)}${unit}`);
 }
 
-function buildOpportunityFilterSummary(p: {
+export function buildOpportunityFilterSummary(p: {
   priceRange: NumRange;
   marketCapRange: NumRange;
   turnoverRateRange: NumRange;

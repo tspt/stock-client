@@ -23,7 +23,7 @@ import { ColumnSettings } from '@/components/ColumnSettings/ColumnSettings';
 import { AIAnalysisModal } from '@/components/AIAnalysisModal';
 import { exportOpportunityToExcel } from '@/utils/opportunityExportUtils';
 import { exportStockNamesToExcel, exportStockNamesToPng } from '@/utils/stockNamesExportUtils';
-import type { ConsolidationType, KLinePeriod, StockInfo } from '@/types/stock';
+import type { ConsolidationType, KLinePeriod, StockInfo, StockOpportunityData } from '@/types/stock';
 import { useAllStocks } from '@/hooks/useAllStocks';
 import { useOpportunityFilterEngine } from '@/hooks/useOpportunityFilterEngine';
 import { getPureCode } from '@/utils/format';
@@ -37,7 +37,7 @@ import {
 } from '@/utils/opportunityFilterPrefs';
 import type { OpportunityFilterPrefs } from '@/utils/opportunityFilterPrefs';
 import type { OpportunityFilterSnapshot } from '@/types/opportunityFilter';
-import { OpportunityFiltersPanel } from './OpportunityFiltersPanel';
+import { OpportunityFiltersPanel, buildOpportunityFilterSummary } from './OpportunityFiltersPanel';
 import {
   OPPORTUNITY_DEFAULT_CONSOLIDATION,
   OPPORTUNITY_DEFAULT_SHARP_MOVE,
@@ -401,8 +401,14 @@ export function OpportunityPage() {
         setAiTrendUp,
         setAiTrendDown,
         setAiTrendSideways,
+        setAiConfidenceRange,
         setAiRecommendScoreRange,
+        setAiTechnicalScoreRange,
+        setAiPatternScoreRange,
+        setAiTrendScoreRange,
+        setAiRiskScoreRange,
         setAiRequireSimilarPatterns,
+        setAiMinSimilarity,
       });
       const st = useOpportunityStore.getState();
       if (st.analysisData.length === 0) {
@@ -418,6 +424,147 @@ export function OpportunityPage() {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- 仅挂载时恢复缓存与偏好；setter 稳定
   }, [loadCachedData]);
+
+  // 在页面卸载时保存当前的筛选条件
+  useEffect(() => {
+    return () => {
+      const prefs: OpportunityFilterPrefs = {
+        version: 1,
+        selectedMarket,
+        nameType,
+        currentPeriod,
+        currentCount,
+        priceRange: { ...priceRange },
+        marketCapRange: { ...marketCapRange },
+        turnoverRateRange: { ...turnoverRateRange },
+        peRatioRange: { ...peRatioRange },
+        kdjJRange: { ...kdjJRange },
+        ...visibilityFromActiveFilterPanelKey(filterPanelActiveKey),
+        recentLimitUpCount,
+        recentLimitDownCount,
+        limitUpPeriod,
+        limitDownPeriod,
+        consolidationTypes: [...consolidationTypes],
+        consolidationLookback,
+        consolidationConsecutive,
+        consolidationThreshold,
+        consolidationRequireAboveMa10,
+        consolidationFilterEnabled,
+        trendLineLookback,
+        trendLineConsecutive,
+        trendLineFilterEnabled,
+        sharpMoveWindowBars,
+        sharpMoveMagnitude,
+        sharpMoveOnlyDrop,
+        sharpMoveOnlyRise,
+        sharpMoveDropThenRiseLoose,
+        sharpMoveRiseThenDropLoose,
+        sharpMoveDropFlatRise,
+        sharpMoveRiseFlatDrop,
+        rsiRange: { ...rsiRange },
+        rsiPeriod,
+        candlestickHammer,
+        candlestickShootingStar,
+        candlestickDoji,
+        candlestickEngulfingBullish,
+        candlestickEngulfingBearish,
+        candlestickHaramiBullish,
+        candlestickHaramiBearish,
+        candlestickMorningStar,
+        candlestickEveningStar,
+        candlestickDarkCloudCover,
+        candlestickPiercing,
+        candlestickThreeBlackCrows,
+        candlestickThreeWhiteSoldiers,
+        candlestickLookback,
+        trendUptrend,
+        trendDowntrend,
+        trendSideways,
+        trendBreakout,
+        trendBreakdown,
+        trendLookback,
+        aiAnalysisEnabled,
+        aiTrendUp,
+        aiTrendDown,
+        aiTrendSideways,
+        aiConfidenceRange: { ...aiConfidenceRange },
+        aiRecommendScoreRange: { ...aiRecommendScoreRange },
+        aiTechnicalScoreRange: { ...aiTechnicalScoreRange },
+        aiPatternScoreRange: { ...aiPatternScoreRange },
+        aiTrendScoreRange: { ...aiTrendScoreRange },
+        aiRiskScoreRange: { ...aiRiskScoreRange },
+        aiRequireSimilarPatterns,
+        aiMinSimilarity,
+      };
+      saveOpportunityFilterPrefs(prefs);
+    };
+  }, [
+    selectedMarket,
+    nameType,
+    currentPeriod,
+    currentCount,
+    priceRange,
+    marketCapRange,
+    turnoverRateRange,
+    peRatioRange,
+    kdjJRange,
+    filterPanelActiveKey,
+    recentLimitUpCount,
+    recentLimitDownCount,
+    limitUpPeriod,
+    limitDownPeriod,
+    consolidationTypes,
+    consolidationLookback,
+    consolidationConsecutive,
+    consolidationThreshold,
+    consolidationRequireAboveMa10,
+    consolidationFilterEnabled,
+    trendLineLookback,
+    trendLineConsecutive,
+    trendLineFilterEnabled,
+    sharpMoveWindowBars,
+    sharpMoveMagnitude,
+    sharpMoveOnlyDrop,
+    sharpMoveOnlyRise,
+    sharpMoveDropThenRiseLoose,
+    sharpMoveRiseThenDropLoose,
+    sharpMoveDropFlatRise,
+    sharpMoveRiseFlatDrop,
+    rsiRange,
+    rsiPeriod,
+    candlestickHammer,
+    candlestickShootingStar,
+    candlestickDoji,
+    candlestickEngulfingBullish,
+    candlestickEngulfingBearish,
+    candlestickHaramiBullish,
+    candlestickHaramiBearish,
+    candlestickMorningStar,
+    candlestickEveningStar,
+    candlestickDarkCloudCover,
+    candlestickPiercing,
+    candlestickThreeBlackCrows,
+    candlestickThreeWhiteSoldiers,
+    candlestickLookback,
+    trendUptrend,
+    trendDowntrend,
+    trendSideways,
+    trendBreakout,
+    trendBreakdown,
+    trendLookback,
+    aiAnalysisEnabled,
+    aiTrendUp,
+    aiTrendDown,
+    aiTrendSideways,
+    aiConfidenceRange,
+    aiRecommendScoreRange,
+    aiTechnicalScoreRange,
+    aiPatternScoreRange,
+    aiTrendScoreRange,
+    aiRiskScoreRange,
+    aiRequireSimilarPatterns,
+    aiMinSimilarity,
+  ]);
 
   // 计算表格高度
   const updateTableHeight = useCallback(() => {
@@ -874,7 +1021,74 @@ export function OpportunityPage() {
         await exportStockNamesToExcel(names, { fileNamePrefix: '机会分析_股票名称' });
         message.success('名称列表已导出为 Excel');
       } else {
-        await exportStockNamesToPng(names, { fileNamePrefix: '机会分析_股票名称' });
+        // 生成筛选条件摘要
+        const filterSummary = buildOpportunityFilterSummary({
+          priceRange,
+          marketCapRange,
+          turnoverRateRange,
+          peRatioRange,
+          kdjJRange,
+          recentLimitUpCount,
+          recentLimitDownCount,
+          limitUpPeriod,
+          limitDownPeriod,
+          consolidationFilterEnabled,
+          consolidationTypes,
+          consolidationLookback,
+          consolidationConsecutive,
+          consolidationThreshold,
+          consolidationRequireAboveMa10,
+          consolidationTypeOptions: CONSOLIDATION_TYPE_OPTIONS,
+          trendLineFilterEnabled,
+          trendLineLookback,
+          trendLineConsecutive,
+          sharpMoveWindowBars,
+          sharpMoveMagnitude,
+          sharpMoveOnlyDrop,
+          sharpMoveOnlyRise,
+          sharpMoveDropThenRiseLoose,
+          sharpMoveRiseThenDropLoose,
+          sharpMoveDropFlatRise,
+          sharpMoveRiseFlatDrop,
+          rsiRange,
+          candlestickHammer,
+          candlestickShootingStar,
+          candlestickDoji,
+          candlestickEngulfingBullish,
+          candlestickEngulfingBearish,
+          candlestickHaramiBullish,
+          candlestickHaramiBearish,
+          candlestickMorningStar,
+          candlestickEveningStar,
+          candlestickDarkCloudCover,
+          candlestickPiercing,
+          candlestickThreeBlackCrows,
+          candlestickThreeWhiteSoldiers,
+          candlestickLookback,
+          trendUptrend,
+          trendDowntrend,
+          trendSideways,
+          trendBreakout,
+          trendBreakdown,
+          trendLookback,
+          aiAnalysisEnabled,
+          aiTrendUp,
+          aiTrendDown,
+          aiTrendSideways,
+          aiConfidenceRange,
+          aiRecommendScoreRange,
+          aiTechnicalScoreRange,
+          aiPatternScoreRange,
+          aiTrendScoreRange,
+          aiRiskScoreRange,
+          aiRequireSimilarPatterns,
+          aiMinSimilarity,
+        });
+
+        await exportStockNamesToPng(names, {
+          fileNamePrefix: '机会分析_股票名称',
+          filterSummary: filterSummary || undefined
+        });
         message.success('名称列表已导出为图片');
       }
     } catch (error) {
