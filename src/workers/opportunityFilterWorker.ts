@@ -27,6 +27,14 @@ const YIELD_EVERY_ITEMS = 40;
 let klineDataMap = new Map<string, KLineData[]>();
 let latestRequestId = 0;
 
+// AI分析结果缓存，避免重复计算
+interface AICacheEntry {
+  item: StockOpportunityData;
+  timestamp: number;
+}
+const aiCacheMap = new Map<string, AICacheEntry>();
+const AI_CACHE_TTL = 5 * 60 * 1000; // 5分钟缓存过期时间
+
 function sharpMoveFilterActive(filters: OpportunityFilterSnapshot): boolean {
   return (
     filters.sharpMoveFilterEnabled &&
@@ -37,6 +45,16 @@ function sharpMoveFilterActive(filters: OpportunityFilterSnapshot): boolean {
       filters.sharpMoveDropFlatRise ||
       filters.sharpMoveRiseFlatDrop)
   );
+}
+
+/** 清理过期的AI缓存 */
+function cleanupExpiredAICache(): void {
+  const now = Date.now();
+  for (const [code, entry] of aiCacheMap.entries()) {
+    if (now - entry.timestamp > AI_CACHE_TTL) {
+      aiCacheMap.delete(code);
+    }
+  }
 }
 
 /** 勾选多项时，满足任一命中即通过（OR） */
@@ -97,14 +115,29 @@ function technicalIndicatorsFilterActive(filters: OpportunityFilterSnapshot): bo
 
 /** 检查AI分析筛选是否激活 */
 function aiAnalysisFilterActive(filters: OpportunityFilterSnapshot): boolean {
+  if (!filters.aiAnalysisEnabled) {
+    return false;
+  }
+
+  // 检查是否有任何AI筛选条件被激活
   return (
-    filters.aiAnalysisEnabled &&
-    (filters.aiTrendUp ||
-      filters.aiTrendDown ||
-      filters.aiTrendSideways ||
-      filters.aiRecommendScoreRange.min !== undefined ||
-      filters.aiRecommendScoreRange.max !== undefined ||
-      filters.aiRequireSimilarPatterns)
+    filters.aiTrendUp ||
+    filters.aiTrendDown ||
+    filters.aiTrendSideways ||
+    filters.aiConfidenceRange.min !== undefined ||
+    filters.aiConfidenceRange.max !== undefined ||
+    filters.aiRecommendScoreRange.min !== undefined ||
+    filters.aiRecommendScoreRange.max !== undefined ||
+    filters.aiTechnicalScoreRange.min !== undefined ||
+    filters.aiTechnicalScoreRange.max !== undefined ||
+    filters.aiPatternScoreRange.min !== undefined ||
+    filters.aiPatternScoreRange.max !== undefined ||
+    filters.aiTrendScoreRange.min !== undefined ||
+    filters.aiTrendScoreRange.max !== undefined ||
+    filters.aiRiskScoreRange.min !== undefined ||
+    filters.aiRiskScoreRange.max !== undefined ||
+    filters.aiRequireSimilarPatterns ||
+    filters.aiMinSimilarity !== undefined
   );
 }
 
@@ -280,23 +313,26 @@ function passesTechnicalIndicatorsFilter(
 }
 
 /** 检查是否通过AI分析筛选 */
-function passesAIFilter(item: StockOpportunityData, filters: OpportunityFilterSnapshot): boolean {
+function passesAIFilter(
+  item: StockOpportunityData,
+  filters: OpportunityFilterSnapshot
+): { passed: boolean; reason?: string } {
   // 如果未启用AI筛选，直接通过
   if (!filters.aiAnalysisEnabled) {
-    return true;
+    return { passed: true };
   }
 
-  // 如果没有AI分析数据，不通过
+  // 快速失败：如果没有AI分析数据，不通过
   if (!item.aiAnalysis) {
-    return false;
+    return { passed: false, reason: '缺少AI分析数据' };
   }
 
   const { trendPrediction, recommendation, similarPatterns } = item.aiAnalysis;
 
-  // 趋势预测筛选（勾选多项时为OR关系）
+  // 1. 趋势预测筛选（勾选多项时为OR关系）
   if (filters.aiTrendUp || filters.aiTrendDown || filters.aiTrendSideways) {
     if (!trendPrediction) {
-      return false;
+      return { passed: false, reason: '缺少趋势预测数据' };
     }
 
     const trendMatched =
@@ -305,14 +341,27 @@ function passesAIFilter(item: StockOpportunityData, filters: OpportunityFilterSn
       (filters.aiTrendSideways && trendPrediction.direction === 'sideways');
 
     if (!trendMatched) {
-      return false;
+      const expectedTrends = [];
+      if (filters.aiTrendUp) expectedTrends.push('上涨');
+      if (filters.aiTrendDown) expectedTrends.push('下跌');
+      if (filters.aiTrendSideways) expectedTrends.push('横盘');
+      const actualTrend =
+        trendPrediction.direction === 'up'
+          ? '上涨'
+          : trendPrediction.direction === 'down'
+          ? '下跌'
+          : '横盘';
+      return {
+        passed: false,
+        reason: `趋势不匹配：期望[${expectedTrends.join('/')}]，实际为${actualTrend}`,
+      };
     }
   }
 
-  // 置信度范围筛选（0-1转换为0-100）
+  // 2. 置信度范围筛选（0-1转换为0-100）
   if (filters.aiConfidenceRange.min !== undefined || filters.aiConfidenceRange.max !== undefined) {
     if (!trendPrediction) {
-      return false;
+      return { passed: false, reason: '缺少趋势预测数据' };
     }
 
     const confidencePercent = trendPrediction.confidence * 100;
@@ -321,23 +370,29 @@ function passesAIFilter(item: StockOpportunityData, filters: OpportunityFilterSn
       filters.aiConfidenceRange.min !== undefined &&
       confidencePercent < filters.aiConfidenceRange.min
     ) {
-      return false;
+      return {
+        passed: false,
+        reason: `置信度过低：${confidencePercent.toFixed(1)}% < ${filters.aiConfidenceRange.min}%`,
+      };
     }
     if (
       filters.aiConfidenceRange.max !== undefined &&
       confidencePercent > filters.aiConfidenceRange.max
     ) {
-      return false;
+      return {
+        passed: false,
+        reason: `置信度过高：${confidencePercent.toFixed(1)}% > ${filters.aiConfidenceRange.max}%`,
+      };
     }
   }
 
-  // 综合评分范围筛选
+  // 3. 综合评分范围筛选
   if (
     filters.aiRecommendScoreRange.min !== undefined ||
     filters.aiRecommendScoreRange.max !== undefined
   ) {
     if (!recommendation) {
-      return false;
+      return { passed: false, reason: '缺少推荐评分数据' };
     }
 
     const score = recommendation.totalScore;
@@ -346,23 +401,29 @@ function passesAIFilter(item: StockOpportunityData, filters: OpportunityFilterSn
       filters.aiRecommendScoreRange.min !== undefined &&
       score < filters.aiRecommendScoreRange.min
     ) {
-      return false;
+      return {
+        passed: false,
+        reason: `综合评分过低：${score} < ${filters.aiRecommendScoreRange.min}`,
+      };
     }
     if (
       filters.aiRecommendScoreRange.max !== undefined &&
       score > filters.aiRecommendScoreRange.max
     ) {
-      return false;
+      return {
+        passed: false,
+        reason: `综合评分过高：${score} > ${filters.aiRecommendScoreRange.max}`,
+      };
     }
   }
 
-  // 技术面评分范围筛选
+  // 4. 技术面评分范围筛选
   if (
     filters.aiTechnicalScoreRange.min !== undefined ||
     filters.aiTechnicalScoreRange.max !== undefined
   ) {
     if (!recommendation) {
-      return false;
+      return { passed: false, reason: '缺少推荐评分数据' };
     }
 
     const score = recommendation.technicalScore;
@@ -371,78 +432,102 @@ function passesAIFilter(item: StockOpportunityData, filters: OpportunityFilterSn
       filters.aiTechnicalScoreRange.min !== undefined &&
       score < filters.aiTechnicalScoreRange.min
     ) {
-      return false;
+      return {
+        passed: false,
+        reason: `技术面评分过低：${score} < ${filters.aiTechnicalScoreRange.min}`,
+      };
     }
     if (
       filters.aiTechnicalScoreRange.max !== undefined &&
       score > filters.aiTechnicalScoreRange.max
     ) {
-      return false;
+      return {
+        passed: false,
+        reason: `技术面评分过高：${score} > ${filters.aiTechnicalScoreRange.max}`,
+      };
     }
   }
 
-  // 形态评分范围筛选
+  // 5. 形态评分范围筛选
   if (
     filters.aiPatternScoreRange.min !== undefined ||
     filters.aiPatternScoreRange.max !== undefined
   ) {
     if (!recommendation) {
-      return false;
+      return { passed: false, reason: '缺少推荐评分数据' };
     }
 
     const score = recommendation.patternScore;
 
     if (filters.aiPatternScoreRange.min !== undefined && score < filters.aiPatternScoreRange.min) {
-      return false;
+      return {
+        passed: false,
+        reason: `形态评分过低：${score} < ${filters.aiPatternScoreRange.min}`,
+      };
     }
     if (filters.aiPatternScoreRange.max !== undefined && score > filters.aiPatternScoreRange.max) {
-      return false;
+      return {
+        passed: false,
+        reason: `形态评分过高：${score} > ${filters.aiPatternScoreRange.max}`,
+      };
     }
   }
 
-  // 趋势评分范围筛选
+  // 6. 趋势评分范围筛选
   if (filters.aiTrendScoreRange.min !== undefined || filters.aiTrendScoreRange.max !== undefined) {
     if (!recommendation) {
-      return false;
+      return { passed: false, reason: '缺少推荐评分数据' };
     }
 
     const score = recommendation.trendScore;
 
     if (filters.aiTrendScoreRange.min !== undefined && score < filters.aiTrendScoreRange.min) {
-      return false;
+      return {
+        passed: false,
+        reason: `趋势评分过低：${score} < ${filters.aiTrendScoreRange.min}`,
+      };
     }
     if (filters.aiTrendScoreRange.max !== undefined && score > filters.aiTrendScoreRange.max) {
-      return false;
+      return {
+        passed: false,
+        reason: `趋势评分过高：${score} > ${filters.aiTrendScoreRange.max}`,
+      };
     }
   }
 
-  // 风险评分范围筛选
+  // 7. 风险评分范围筛选
   if (filters.aiRiskScoreRange.min !== undefined || filters.aiRiskScoreRange.max !== undefined) {
     if (!recommendation) {
-      return false;
+      return { passed: false, reason: '缺少推荐评分数据' };
     }
 
     const score = recommendation.riskScore;
 
     if (filters.aiRiskScoreRange.min !== undefined && score < filters.aiRiskScoreRange.min) {
-      return false;
+      return {
+        passed: false,
+        reason: `风险评分过低：${score} < ${filters.aiRiskScoreRange.min}`,
+      };
     }
     if (filters.aiRiskScoreRange.max !== undefined && score > filters.aiRiskScoreRange.max) {
-      return false;
+      return {
+        passed: false,
+        reason: `风险评分过高：${score} > ${filters.aiRiskScoreRange.max}`,
+      };
     }
   }
 
-  // 相似形态匹配要求
+  // 8. 相似形态匹配要求
   if (filters.aiRequireSimilarPatterns) {
     if (!similarPatterns || similarPatterns.length === 0) {
-      return false;
+      return { passed: false, reason: '无相似形态匹配' };
     }
   }
 
-  // 相似形态最低相似度筛选（0-1转换为0-100）
+  // 9. 相似形态最低相似度筛选（0-1转换为0-100）
   if (filters.aiMinSimilarity !== undefined) {
     if (!similarPatterns || similarPatterns.length === 0) {
-      return false;
+      return { passed: false, reason: '无相似形态匹配' };
     }
 
     const minSimilarityPercent = filters.aiMinSimilarity;
@@ -451,11 +536,14 @@ function passesAIFilter(item: StockOpportunityData, filters: OpportunityFilterSn
     );
 
     if (!hasMatchedPattern) {
-      return false;
+      return {
+        passed: false,
+        reason: `相似度不足：最高相似度 < ${minSimilarityPercent}%`,
+      };
     }
   }
 
-  return true;
+  return { passed: true };
 }
 
 function countLimitUpDown(
@@ -541,6 +629,9 @@ async function runFilterTask(
       : message.analysisData;
   const result: StockOpportunityData[] = [];
   const skippedMap = new Map<string, { code: string; name: string; reasons: string[] }>();
+
+  // 清理过期的AI缓存
+  cleanupExpiredAICache();
 
   const rawWb = filters.sharpMoveWindowBars;
   const sharpMoveWindowBars =
@@ -705,8 +796,30 @@ async function runFilterTask(
       }
 
       // AI分析筛选
-      if (!passesAIFilter(nextItem, filters)) {
+      // 检查是否有缓存的AI分析结果
+      let itemForAIFilter = nextItem;
+      if (filters.aiAnalysisEnabled && !nextItem.aiAnalysis) {
+        const cachedEntry = aiCacheMap.get(nextItem.code);
+        if (cachedEntry && Date.now() - cachedEntry.timestamp <= AI_CACHE_TTL) {
+          // 使用缓存的AI分析结果
+          itemForAIFilter = { ...nextItem, aiAnalysis: cachedEntry.item.aiAnalysis };
+        }
+      }
+
+      const aiFilterResult = passesAIFilter(itemForAIFilter, filters);
+      if (!aiFilterResult.passed) {
+        mergeSkippedReason(
+          skippedMap,
+          item.code,
+          item.name,
+          `AI筛选：${aiFilterResult.reason || '未通过'}`
+        );
         continue;
+      }
+
+      // 如果使用了缓存的AI分析结果，更新当前项
+      if (itemForAIFilter !== nextItem) {
+        nextItem = itemForAIFilter;
       }
 
       result.push(nextItem);
