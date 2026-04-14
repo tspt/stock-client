@@ -11,11 +11,7 @@ function deltaPercent(prevClose: number, close: number): number {
 }
 
 /** t 为当日 K 线索引，用 t-1 与 t 的收盘计算单日涨跌幅 */
-function classifyDay(
-  klineData: KLineData[],
-  t: number,
-  m: number
-): 'drop' | 'rise' | 'normal' {
+function classifyDay(klineData: KLineData[], t: number, m: number): 'drop' | 'rise' | 'normal' {
   const prev = klineData[t - 1].close;
   const cur = klineData[t].close;
   const d = deltaPercent(prev, cur);
@@ -24,14 +20,32 @@ function classifyDay(
   return 'normal';
 }
 
-function firstRiseAfter(klineData: KLineData[], fromExclusive: number, m: number, len: number): number | undefined {
+/** 判断是否为横盘日（涨跌幅绝对值 < flatThreshold） */
+function isFlatDay(klineData: KLineData[], t: number, flatThreshold: number): boolean {
+  const prev = klineData[t - 1].close;
+  const cur = klineData[t].close;
+  const d = Math.abs(deltaPercent(prev, cur));
+  return d < flatThreshold;
+}
+
+function firstRiseAfter(
+  klineData: KLineData[],
+  fromExclusive: number,
+  m: number,
+  len: number
+): number | undefined {
   for (let t = fromExclusive + 1; t < len; t++) {
     if (classifyDay(klineData, t, m) === 'rise') return t;
   }
   return undefined;
 }
 
-function firstDropAfter(klineData: KLineData[], fromExclusive: number, m: number, len: number): number | undefined {
+function firstDropAfter(
+  klineData: KLineData[],
+  fromExclusive: number,
+  m: number,
+  len: number
+): number | undefined {
   for (let t = fromExclusive + 1; t < len; t++) {
     if (classifyDay(klineData, t, m) === 'drop') return t;
   }
@@ -45,22 +59,39 @@ function middleAllNormal(klineData: KLineData[], i: number, j: number, m: number
   return true;
 }
 
+/** 检查中间是否全部是横盘日（使用独立的横盘幅度阈值） */
+function middleAllFlat(
+  klineData: KLineData[],
+  i: number,
+  j: number,
+  flatThreshold: number
+): boolean {
+  for (let k = i + 1; k < j; k++) {
+    if (!isFlatDay(klineData, k, flatThreshold)) return false;
+  }
+  return true;
+}
+
 /**
  * @param windowBars 最近多少根 K 线（右对齐最后一根）
- * @param magnitudePercent 阈值 M（%）
+ * @param magnitudePercent 阈值 M（%），用于判断急涨/急跌
+ * @param flatThresholdPercent 横盘幅度阈值（%），用于判断“横盘”
  */
 export function analyzeSharpMovePatterns(
   klineData: KLineData[],
   windowBars: number,
-  magnitudePercent: number
+  magnitudePercent: number,
+  flatThresholdPercent: number = magnitudePercent // 默认使用 magnitudePercent 保持向后兼容
 ): SharpMovePatternAnalysis {
   const m = magnitudePercent;
+  const flatThreshold = flatThresholdPercent;
   const len = klineData?.length ?? 0;
   const wb = Math.max(1, Math.floor(windowBars));
 
   const empty = (): SharpMovePatternAnalysis => ({
     windowBars: wb,
     magnitudePercent: m,
+    flatThresholdPercent: flatThreshold,
     onlyDrop: false,
     onlyRise: false,
     dropThenRiseLoose: false,
@@ -109,10 +140,8 @@ export function analyzeSharpMovePatterns(
     }
   }
 
-  const lastDropBarsAgo =
-    lastDropIndex !== undefined ? len - 1 - lastDropIndex : undefined;
-  const lastRiseBarsAgo =
-    lastRiseIndex !== undefined ? len - 1 - lastRiseIndex : undefined;
+  const lastDropBarsAgo = lastDropIndex !== undefined ? len - 1 - lastDropIndex : undefined;
+  const lastRiseBarsAgo = lastRiseIndex !== undefined ? len - 1 - lastRiseIndex : undefined;
 
   let dropThenRiseLoose = false;
   let riseThenDropLoose = false;
@@ -124,7 +153,7 @@ export function analyzeSharpMovePatterns(
     const jLoose = firstRiseAfter(klineData, i, m, len);
     if (jLoose !== undefined && jLoose <= tMax) {
       dropThenRiseLoose = true;
-      if (middleAllNormal(klineData, i, jLoose, m)) {
+      if (middleAllFlat(klineData, i, jLoose, flatThreshold)) {
         dropThenFlatThenRise = true;
       }
     }
@@ -135,7 +164,7 @@ export function analyzeSharpMovePatterns(
     const jLoose = firstDropAfter(klineData, i, m, len);
     if (jLoose !== undefined && jLoose <= tMax) {
       riseThenDropLoose = true;
-      if (middleAllNormal(klineData, i, jLoose, m)) {
+      if (middleAllFlat(klineData, i, jLoose, flatThreshold)) {
         riseThenFlatThenDrop = true;
       }
     }
@@ -152,6 +181,7 @@ export function analyzeSharpMovePatterns(
   return {
     windowBars: wb,
     magnitudePercent: m,
+    flatThresholdPercent: flatThreshold,
     onlyDrop,
     onlyRise,
     dropThenRiseLoose,

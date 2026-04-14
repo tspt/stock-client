@@ -100,10 +100,14 @@ export interface OpportunityFilterPrefs {
   trendLineConsecutive: number;
   trendLineFilterEnabled: boolean;
   trendLineFilterVisible: boolean;
+  /** 单日异动筛选开关 */
+  sharpMoveFilterEnabled: boolean;
   /** 单日异动筛选卡片 */
   sharpMoveFilterVisible: boolean;
   sharpMoveWindowBars: number;
   sharpMoveMagnitude: number;
+  /** 横盘幅度阈值（%） */
+  sharpMoveFlatThreshold: number;
   sharpMoveOnlyDrop: boolean;
   sharpMoveOnlyRise: boolean;
   sharpMoveDropThenRiseLoose: boolean;
@@ -240,6 +244,7 @@ export function loadOpportunityFilterPrefs(): OpportunityFilterPrefs | null {
         : OPPORTUNITY_DEFAULT_TREND_LINE.consecutive,
       trendLineFilterEnabled: p.trendLineFilterEnabled === true,
       trendLineFilterVisible: p.trendLineFilterVisible === false ? false : true,
+      sharpMoveFilterEnabled: p.sharpMoveFilterEnabled === true,
       sharpMoveFilterVisible: p.sharpMoveFilterVisible !== false,
       sharpMoveWindowBars: isFiniteNumber(p.sharpMoveWindowBars)
         ? Math.max(1, Math.floor(p.sharpMoveWindowBars))
@@ -248,6 +253,10 @@ export function loadOpportunityFilterPrefs(): OpportunityFilterPrefs | null {
         isFiniteNumber(p.sharpMoveMagnitude) && p.sharpMoveMagnitude > 0
           ? p.sharpMoveMagnitude
           : OPPORTUNITY_DEFAULT_SHARP_MOVE.magnitude,
+      sharpMoveFlatThreshold:
+        isFiniteNumber(p.sharpMoveFlatThreshold) && p.sharpMoveFlatThreshold > 0
+          ? p.sharpMoveFlatThreshold
+          : 3,
       sharpMoveOnlyDrop: p.sharpMoveOnlyDrop === true,
       sharpMoveOnlyRise: p.sharpMoveOnlyRise === true,
       sharpMoveDropThenRiseLoose: p.sharpMoveDropThenRiseLoose === true,
@@ -347,9 +356,11 @@ export function getDefaultFilterPrefsFields(): Omit<
     trendLineConsecutive: OPPORTUNITY_DEFAULT_TREND_LINE.consecutive,
     trendLineFilterEnabled: false,
     trendLineFilterVisible: true,
+    sharpMoveFilterEnabled: false,
     sharpMoveFilterVisible: true,
     sharpMoveWindowBars: OPPORTUNITY_DEFAULT_SHARP_MOVE.windowBars,
     sharpMoveMagnitude: OPPORTUNITY_DEFAULT_SHARP_MOVE.magnitude,
+    sharpMoveFlatThreshold: 3,
     sharpMoveOnlyDrop: false,
     sharpMoveOnlyRise: false,
     sharpMoveDropThenRiseLoose: false,
@@ -452,8 +463,10 @@ export interface OpportunityFilterPrefsApplyActions {
   setTrendLineLookback: (v: number) => void;
   setTrendLineConsecutive: (v: number) => void;
   setTrendLineFilterEnabled: (v: boolean) => void;
+  setSharpMoveFilterEnabled: (v: boolean) => void;
   setSharpMoveWindowBars: (v: number) => void;
   setSharpMoveMagnitude: (v: number) => void;
+  setSharpMoveFlatThreshold: (v: number) => void;
   setSharpMoveOnlyDrop: (v: boolean) => void;
   setSharpMoveOnlyRise: (v: boolean) => void;
   setSharpMoveDropThenRiseLoose: (v: boolean) => void;
@@ -527,8 +540,10 @@ export function applyOpportunityFilterPrefsToState(
   actions.setTrendLineLookback(prefs.trendLineLookback);
   actions.setTrendLineConsecutive(prefs.trendLineConsecutive);
   actions.setTrendLineFilterEnabled(prefs.trendLineFilterEnabled);
+  actions.setSharpMoveFilterEnabled(prefs.sharpMoveFilterEnabled);
   actions.setSharpMoveWindowBars(prefs.sharpMoveWindowBars);
   actions.setSharpMoveMagnitude(prefs.sharpMoveMagnitude);
+  actions.setSharpMoveFlatThreshold(prefs.sharpMoveFlatThreshold);
   actions.setSharpMoveOnlyDrop(prefs.sharpMoveOnlyDrop);
   actions.setSharpMoveOnlyRise(prefs.sharpMoveOnlyRise);
   actions.setSharpMoveDropThenRiseLoose(prefs.sharpMoveDropThenRiseLoose);

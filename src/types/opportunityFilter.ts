@@ -24,10 +24,14 @@ export interface OpportunityFilterSnapshot {
   trendLineLookback: number;
   trendLineConsecutive: number;
   trendLineFilterEnabled: boolean;
+  /** 单日异动筛选开关 */
+  sharpMoveFilterEnabled: boolean;
   /** 单日异动筛选：最近 N 根 K 线 */
   sharpMoveWindowBars: number;
   /** 单日涨跌阈值 M（%） */
   sharpMoveMagnitude: number;
+  /** 横盘幅度阈值（%），用于判断急跌横盘急涨等形态中的“横盘” */
+  sharpMoveFlatThreshold: number;
   /** 以下多选，满足任一即入选（OR） */
   sharpMoveOnlyDrop: boolean;
   sharpMoveOnlyRise: boolean;

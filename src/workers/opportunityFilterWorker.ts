@@ -29,12 +29,13 @@ let latestRequestId = 0;
 
 function sharpMoveFilterActive(filters: OpportunityFilterSnapshot): boolean {
   return (
-    filters.sharpMoveOnlyDrop ||
-    filters.sharpMoveOnlyRise ||
-    filters.sharpMoveDropThenRiseLoose ||
-    filters.sharpMoveRiseThenDropLoose ||
-    filters.sharpMoveDropFlatRise ||
-    filters.sharpMoveRiseFlatDrop
+    filters.sharpMoveFilterEnabled &&
+    (filters.sharpMoveOnlyDrop ||
+      filters.sharpMoveOnlyRise ||
+      filters.sharpMoveDropThenRiseLoose ||
+      filters.sharpMoveRiseThenDropLoose ||
+      filters.sharpMoveDropFlatRise ||
+      filters.sharpMoveRiseFlatDrop)
   );
 }
 
@@ -549,6 +550,9 @@ async function runFilterTask(
   const rawMag = filters.sharpMoveMagnitude;
   const sharpMoveMagnitude =
     typeof rawMag === 'number' && Number.isFinite(rawMag) && rawMag > 0 ? rawMag : 6;
+  const rawFlat = filters.sharpMoveFlatThreshold;
+  const sharpMoveFlatThreshold =
+    typeof rawFlat === 'number' && Number.isFinite(rawFlat) && rawFlat > 0 ? rawFlat : 3;
 
   /** 启用横盘且勾选至少一种类型时按类型过滤；启用但未选任何类型则视为不按类型过滤（与其它条件照常组合） */
   const consolidationTypesSet =
@@ -587,13 +591,27 @@ async function runFilterTask(
         // 仅在需要时重算横盘分析
         if (needConsolidationRecalc) {
           try {
-            const consolidation = calculateConsolidationInLookback(klineData, {
-              lookback: filters.consolidationLookback,
-              consecutive: filters.consolidationConsecutive,
-              threshold: filters.consolidationThreshold,
-              requireClosesAboveMa10: filters.consolidationRequireAboveMa10,
-            });
-            nextItem = { ...nextItem, consolidation };
+            // 检查是否有缓存的横盘分析结果且参数匹配
+            const cachedConsolidation = item.consolidation;
+            const paramsMatch =
+              cachedConsolidation &&
+              cachedConsolidation.lookback === filters.consolidationLookback &&
+              cachedConsolidation.period === filters.consolidationConsecutive &&
+              cachedConsolidation.threshold === filters.consolidationThreshold;
+
+            if (paramsMatch) {
+              // 使用缓存结果，无需重算
+              nextItem = { ...nextItem, consolidation: cachedConsolidation };
+            } else {
+              // 参数不匹配或无缓存，重新计算
+              const consolidation = calculateConsolidationInLookback(klineData, {
+                lookback: filters.consolidationLookback,
+                consecutive: filters.consolidationConsecutive,
+                threshold: filters.consolidationThreshold,
+                requireClosesAboveMa10: filters.consolidationRequireAboveMa10,
+              });
+              nextItem = { ...nextItem, consolidation };
+            }
           } catch {
             mergeSkippedReason(skippedMap, item.code, item.name, '横盘重算失败，已跳过重算');
           }
@@ -605,7 +623,8 @@ async function runFilterTask(
             const sharpMovePatterns = analyzeSharpMovePatterns(
               klineData,
               sharpMoveWindowBars,
-              sharpMoveMagnitude
+              sharpMoveMagnitude,
+              sharpMoveFlatThreshold
             );
             nextItem = { ...nextItem, sharpMovePatterns };
           } catch {

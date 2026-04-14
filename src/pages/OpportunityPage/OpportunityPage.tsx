@@ -98,8 +98,10 @@ const INITIAL_FILTER_STATE = {
   trendLineLookback: OPPORTUNITY_DEFAULT_TREND_LINE.lookback,
   trendLineConsecutive: OPPORTUNITY_DEFAULT_TREND_LINE.consecutive,
   trendLineFilterEnabled: false,
+  sharpMoveFilterEnabled: false,
   sharpMoveWindowBars: OPPORTUNITY_DEFAULT_SHARP_MOVE.windowBars,
   sharpMoveMagnitude: OPPORTUNITY_DEFAULT_SHARP_MOVE.magnitude,
+  sharpMoveFlatThreshold: 3,
   sharpMoveOnlyDrop: false,
   sharpMoveOnlyRise: false,
   sharpMoveDropThenRiseLoose: false,
@@ -203,8 +205,8 @@ export function OpportunityPage() {
   );
   const [peRatioRange, setPeRatioRange] = useState<{ min?: number; max?: number }>(INITIAL_FILTER_STATE.peRatioRange);
   const [kdjJRange, setKdjJRange] = useState<{ min?: number; max?: number }>(INITIAL_FILTER_STATE.kdjJRange);
-  /** 筛选 Collapse 当前展开的面板 key 列表；[] 表示各组均收起。默认展开「数据筛选」、「形态分析」和「AI分析筛选」 */
-  const [filterPanelActiveKey, setFilterPanelActiveKey] = useState<string[]>(['data', 'technicalIndicators', 'aiAnalysis']);
+  /** 筛选 Collapse 当前展开的面板 key 列表；[] 表示各组均收起。默认展开所有筛选项 */
+  const [filterPanelActiveKey, setFilterPanelActiveKey] = useState<string[]>(['data', 'consolidation', 'trendLine', 'sharpMove', 'technicalIndicators', 'aiAnalysis']);
 
   // 涨停/跌停筛选状态
   const [recentLimitUpCount, setRecentLimitUpCount] = useState<number | undefined>(
@@ -248,8 +250,12 @@ export function OpportunityPage() {
   const [aiAnalysisVisible, setAiAnalysisVisible] = useState(false);
   const [selectedStockForAI, setSelectedStockForAI] = useState<{ code: string; name: string } | null>(null);
 
+  const [sharpMoveFilterEnabled, setSharpMoveFilterEnabled] = useState<boolean>(
+    INITIAL_FILTER_STATE.sharpMoveFilterEnabled
+  );
   const [sharpMoveWindowBars, setSharpMoveWindowBars] = useState<number>(INITIAL_FILTER_STATE.sharpMoveWindowBars);
   const [sharpMoveMagnitude, setSharpMoveMagnitude] = useState<number>(INITIAL_FILTER_STATE.sharpMoveMagnitude);
+  const [sharpMoveFlatThreshold, setSharpMoveFlatThreshold] = useState<number>(INITIAL_FILTER_STATE.sharpMoveFlatThreshold);
   const [sharpMoveOnlyDrop, setSharpMoveOnlyDrop] = useState<boolean>(INITIAL_FILTER_STATE.sharpMoveOnlyDrop);
   const [sharpMoveOnlyRise, setSharpMoveOnlyRise] = useState<boolean>(INITIAL_FILTER_STATE.sharpMoveOnlyRise);
   const [sharpMoveDropThenRiseLoose, setSharpMoveDropThenRiseLoose] = useState<boolean>(
@@ -361,8 +367,10 @@ export function OpportunityPage() {
         setTrendLineLookback,
         setTrendLineConsecutive,
         setTrendLineFilterEnabled,
+        setSharpMoveFilterEnabled,
         setSharpMoveWindowBars,
         setSharpMoveMagnitude,
+        setSharpMoveFlatThreshold,
         setSharpMoveOnlyDrop,
         setSharpMoveOnlyRise,
         setSharpMoveDropThenRiseLoose,
@@ -453,8 +461,10 @@ export function OpportunityPage() {
         trendLineLookback,
         trendLineConsecutive,
         trendLineFilterEnabled,
+        sharpMoveFilterEnabled,
         sharpMoveWindowBars,
         sharpMoveMagnitude,
+        sharpMoveFlatThreshold,
         sharpMoveOnlyDrop,
         sharpMoveOnlyRise,
         sharpMoveDropThenRiseLoose,
@@ -522,8 +532,10 @@ export function OpportunityPage() {
     trendLineLookback,
     trendLineConsecutive,
     trendLineFilterEnabled,
+    sharpMoveFilterEnabled,
     sharpMoveWindowBars,
     sharpMoveMagnitude,
+    sharpMoveFlatThreshold,
     sharpMoveOnlyDrop,
     sharpMoveOnlyRise,
     sharpMoveDropThenRiseLoose,
@@ -682,8 +694,10 @@ export function OpportunityPage() {
       trendLineLookback,
       trendLineConsecutive,
       trendLineFilterEnabled,
+      sharpMoveFilterEnabled,
       sharpMoveWindowBars,
       sharpMoveMagnitude,
+      sharpMoveFlatThreshold,
       sharpMoveOnlyDrop,
       sharpMoveOnlyRise,
       sharpMoveDropThenRiseLoose,
@@ -750,8 +764,10 @@ export function OpportunityPage() {
       trendLineLookback,
       trendLineConsecutive,
       trendLineFilterEnabled,
+      sharpMoveFilterEnabled,
       sharpMoveWindowBars,
       sharpMoveMagnitude,
+      sharpMoveFlatThreshold,
       sharpMoveOnlyDrop,
       sharpMoveOnlyRise,
       sharpMoveDropThenRiseLoose,
@@ -835,7 +851,7 @@ export function OpportunityPage() {
     setTurnoverRateRange({ ...s.turnoverRateRange });
     setPeRatioRange({ ...s.peRatioRange });
     setKdjJRange({ ...s.kdjJRange });
-    setFilterPanelActiveKey(['data', 'technicalIndicators', 'aiAnalysis']);
+    setFilterPanelActiveKey(['data', 'consolidation', 'trendLine', 'sharpMove', 'technicalIndicators', 'aiAnalysis']);
     setRecentLimitUpCount(s.recentLimitUpCount);
     setRecentLimitDownCount(s.recentLimitDownCount);
     setLimitUpPeriod(s.limitUpPeriod);
@@ -849,8 +865,10 @@ export function OpportunityPage() {
     setTrendLineLookback(s.trendLineLookback);
     setTrendLineConsecutive(s.trendLineConsecutive);
     setTrendLineFilterEnabled(s.trendLineFilterEnabled);
+    setSharpMoveFilterEnabled(s.sharpMoveFilterEnabled);
     setSharpMoveWindowBars(s.sharpMoveWindowBars);
     setSharpMoveMagnitude(s.sharpMoveMagnitude);
+    setSharpMoveFlatThreshold(s.sharpMoveFlatThreshold);
     setSharpMoveOnlyDrop(s.sharpMoveOnlyDrop);
     setSharpMoveOnlyRise(s.sharpMoveOnlyRise);
     setSharpMoveDropThenRiseLoose(s.sharpMoveDropThenRiseLoose);
@@ -930,8 +948,10 @@ export function OpportunityPage() {
       trendLineLookback,
       trendLineConsecutive,
       trendLineFilterEnabled,
+      sharpMoveFilterEnabled,
       sharpMoveWindowBars,
       sharpMoveMagnitude,
+      sharpMoveFlatThreshold,
       sharpMoveOnlyDrop,
       sharpMoveOnlyRise,
       sharpMoveDropThenRiseLoose,
@@ -1042,8 +1062,10 @@ export function OpportunityPage() {
           trendLineFilterEnabled,
           trendLineLookback,
           trendLineConsecutive,
+          sharpMoveFilterEnabled,
           sharpMoveWindowBars,
           sharpMoveMagnitude,
+          sharpMoveFlatThreshold,
           sharpMoveOnlyDrop,
           sharpMoveOnlyRise,
           sharpMoveDropThenRiseLoose,
@@ -1315,10 +1337,14 @@ export function OpportunityPage() {
             setTrendLineConsecutive={setTrendLineConsecutive}
             trendLineFilterEnabled={trendLineFilterEnabled}
             setTrendLineFilterEnabled={setTrendLineFilterEnabled}
+            sharpMoveFilterEnabled={sharpMoveFilterEnabled}
+            setSharpMoveFilterEnabled={setSharpMoveFilterEnabled}
             sharpMoveWindowBars={sharpMoveWindowBars}
             setSharpMoveWindowBars={setSharpMoveWindowBars}
             sharpMoveMagnitude={sharpMoveMagnitude}
             setSharpMoveMagnitude={setSharpMoveMagnitude}
+            sharpMoveFlatThreshold={sharpMoveFlatThreshold}
+            setSharpMoveFlatThreshold={setSharpMoveFlatThreshold}
             sharpMoveOnlyDrop={sharpMoveOnlyDrop}
             setSharpMoveOnlyDrop={setSharpMoveOnlyDrop}
             sharpMoveOnlyRise={sharpMoveOnlyRise}

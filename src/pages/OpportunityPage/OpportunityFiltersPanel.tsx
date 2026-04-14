@@ -47,8 +47,10 @@ export function buildOpportunityFilterSummary(p: {
   trendLineFilterEnabled: boolean;
   trendLineLookback: number;
   trendLineConsecutive: number;
+  sharpMoveFilterEnabled: boolean;
   sharpMoveWindowBars: number;
   sharpMoveMagnitude: number;
+  sharpMoveFlatThreshold: number;
   sharpMoveOnlyDrop: boolean;
   sharpMoveOnlyRise: boolean;
   sharpMoveDropThenRiseLoose: boolean;
@@ -245,10 +247,14 @@ export interface OpportunityFiltersPanelProps {
   setTrendLineConsecutive: (v: number) => void;
   trendLineFilterEnabled: boolean;
   setTrendLineFilterEnabled: (v: boolean) => void;
+  sharpMoveFilterEnabled: boolean;
+  setSharpMoveFilterEnabled: (v: boolean) => void;
   sharpMoveWindowBars: number;
   setSharpMoveWindowBars: (v: number) => void;
   sharpMoveMagnitude: number;
   setSharpMoveMagnitude: (v: number) => void;
+  sharpMoveFlatThreshold: number;
+  setSharpMoveFlatThreshold: (v: number) => void;
   sharpMoveOnlyDrop: boolean;
   setSharpMoveOnlyDrop: (v: boolean) => void;
   sharpMoveOnlyRise: boolean;
@@ -377,10 +383,14 @@ export function OpportunityFiltersPanel({
   setTrendLineConsecutive,
   trendLineFilterEnabled,
   setTrendLineFilterEnabled,
+  sharpMoveFilterEnabled,
+  setSharpMoveFilterEnabled,
   sharpMoveWindowBars,
   setSharpMoveWindowBars,
   sharpMoveMagnitude,
   setSharpMoveMagnitude,
+  sharpMoveFlatThreshold,
+  setSharpMoveFlatThreshold,
   sharpMoveOnlyDrop,
   setSharpMoveOnlyDrop,
   sharpMoveOnlyRise,
@@ -493,8 +503,10 @@ export function OpportunityFiltersPanel({
         trendLineFilterEnabled,
         trendLineLookback,
         trendLineConsecutive,
+        sharpMoveFilterEnabled,
         sharpMoveWindowBars,
         sharpMoveMagnitude,
+        sharpMoveFlatThreshold,
         sharpMoveOnlyDrop,
         sharpMoveOnlyRise,
         sharpMoveDropThenRiseLoose,
@@ -555,8 +567,10 @@ export function OpportunityFiltersPanel({
       trendLineFilterEnabled,
       trendLineLookback,
       trendLineConsecutive,
+      sharpMoveFilterEnabled,
       sharpMoveWindowBars,
       sharpMoveMagnitude,
+      sharpMoveFlatThreshold,
       sharpMoveOnlyDrop,
       sharpMoveOnlyRise,
       sharpMoveDropThenRiseLoose,
@@ -635,6 +649,17 @@ export function OpportunityFiltersPanel({
         className={styles.filterDrawerWrap}
       >
         <div className={styles.filterDrawerBody}>
+          {/* 统一提示信息 */}
+          <div style={{
+            padding: '8px 12px',
+            marginBottom: 12,
+            backgroundColor: 'var(--ant-color-bg-layout)',
+            borderRadius: 4,
+            fontSize: 12,
+            color: 'var(--ant-color-text-secondary)'
+          }}>
+            💡 提示：所有"检索根数"均指从最新K线向前追溯的交易日数量
+          </div>
           <Collapse
             bordered={false}
             ghost
@@ -937,23 +962,6 @@ export function OpportunityFiltersPanel({
                     </div>
                     <div className={styles.filterRow}>
                       <div className={styles.filterItem}>
-                        <span className={styles.filterLabel}>横盘类型：</span>
-                        <Checkbox.Group
-                          value={consolidationTypes}
-                          onChange={(values) => {
-                            setConsolidationTypes(values as ConsolidationType[]);
-                          }}
-                        >
-                          {consolidationTypeOptions.map((item) => (
-                            <Checkbox key={item.value} value={item.value}>
-                              {item.label}
-                            </Checkbox>
-                          ))}
-                        </Checkbox.Group>
-                      </div>
-                    </div>
-                    <div className={styles.filterRow}>
-                      <div className={styles.filterItem}>
                         <span className={styles.filterLabel}>检索根数：</span>
                         <InputNumber
                           value={consolidationLookback}
@@ -970,7 +978,7 @@ export function OpportunityFiltersPanel({
                             }
                           }}
                         />
-                        <span style={{ marginLeft: 4 }}>根（从最新K线向前）</span>
+                        <span style={{ marginLeft: 4 }}>根</span>
                       </div>
                       <div className={styles.filterItem}>
                         <span className={styles.filterLabel}>连续根数：</span>
@@ -1005,20 +1013,29 @@ export function OpportunityFiltersPanel({
                     </div>
                     <div className={styles.filterRow}>
                       <div className={styles.filterItem}>
+                        <span className={styles.filterLabel}>横盘类型：</span>
+                        <Checkbox.Group
+                          value={consolidationTypes}
+                          onChange={(values) => {
+                            setConsolidationTypes(values as ConsolidationType[]);
+                          }}
+                        >
+                          {consolidationTypeOptions.map((item) => (
+                            <Checkbox key={item.value} value={item.value}>
+                              {item.label}
+                            </Checkbox>
+                          ))}
+                        </Checkbox.Group>
+                      </div>
+                    </div>
+                    <div className={styles.filterRow}>
+                      <div className={styles.filterItem}>
                         <Checkbox
                           checked={consolidationRequireAboveMa10}
                           onChange={(e) => setConsolidationRequireAboveMa10(e.target.checked)}
                         >
                           连续根数段内每日收盘价均在MA10之上
                         </Checkbox>
-                      </div>
-                    </div>
-                    <div className={styles.filterRow}>
-                      <div className={styles.filterItem}>
-                        <span className={styles.filterLabel}>命中说明：</span>
-                        <span>
-                          检索窗内任一段「连续根数」满足横盘即命中；勾选 MA10 则该段每日收盘≥当日 MA10。类型见左列，本列为简要波动与位置。
-                        </span>
                       </div>
                     </div>
                   </div>
@@ -1057,7 +1074,7 @@ export function OpportunityFiltersPanel({
                             }
                           }}
                         />
-                        <span style={{ marginLeft: 4 }}>根（从最新K线向前）</span>
+                        <span style={{ marginLeft: 4 }}>根</span>
                       </div>
                       <div className={styles.filterItem}>
                         <span className={styles.filterLabel}>连续根数：</span>
@@ -1073,16 +1090,13 @@ export function OpportunityFiltersPanel({
                             setTrendLineConsecutive(Math.min(maxN, Math.max(3, next)));
                           }}
                         />
-                        <span>根（需连续满足条件）</span>
                       </div>
                     </div>
                     <div className={styles.filterRow}>
                       <div className={styles.filterItem}>
-                        <span className={styles.filterLabel}>判定规则：</span>
+                        <span className={styles.filterLabel}>命中说明：</span>
                         <span style={{ lineHeight: '1.8' }}>
-                          1️⃣ 每日收盘价 ≥ 前一日收盘价（不跌）<br />
-                          2️⃣ 每日收盘价 ≥ 当日MA5均线<br />
-                          ✅ 若找到，取最靠近最新K线的一段
+                          1️⃣ 每日收盘价 ≥ 前一日收盘价（不跌）；2️⃣ 每日收盘价 ≥ 当日MA5均线；✅ 若找到，取最靠近最新K线的一段
                         </span>
                       </div>
                     </div>
@@ -1094,6 +1108,16 @@ export function OpportunityFiltersPanel({
                 label: '单日异动筛选',
                 children: (
                   <div className={styles.filterContent}>
+                    <div className={styles.filterRow}>
+                      <div className={styles.filterItem}>
+                        <Checkbox
+                          checked={sharpMoveFilterEnabled}
+                          onChange={(e) => setSharpMoveFilterEnabled(e.target.checked)}
+                        >
+                          启用单日异动筛选
+                        </Checkbox>
+                      </div>
+                    </div>
                     <div className={styles.filterRow}>
                       <div className={styles.filterItem}>
                         <span className={styles.filterLabel}>检索根数：</span>
@@ -1108,9 +1132,9 @@ export function OpportunityFiltersPanel({
                             setSharpMoveWindowBars(next);
                           }}
                         />
-                        <span style={{ marginLeft: 4 }}>根（从最新K线向前）</span>
+                        <span style={{ marginLeft: 4 }}>根</span>
                         <span className={styles.filterLabel} style={{ marginLeft: 16 }}>
-                          阈值 M：
+                          阈值M(%)：
                         </span>
                         <InputNumber
                           value={sharpMoveMagnitude}
@@ -1123,11 +1147,24 @@ export function OpportunityFiltersPanel({
                             setSharpMoveMagnitude(next);
                           }}
                         />
-                        <span style={{ marginLeft: 4 }}>%</span>
+                        <span className={styles.filterLabel} style={{ marginLeft: 16 }}>横盘幅度(%)：</span>
+                        <InputNumber
+                          value={sharpMoveFlatThreshold}
+                          min={0.1}
+                          max={10}
+                          step={0.1}
+                          precision={1}
+                          style={{ width: 100 }}
+                          onChange={(v) => {
+                            const next = typeof v === 'number' && isFinite(v) && v > 0 ? v : 3;
+                            setSharpMoveFlatThreshold(next);
+                          }}
+                        />
                       </div>
                     </div>
                     <div className={styles.filterRow}>
                       <div className={styles.filterItem} style={{ flexWrap: 'wrap', gap: 8 }}>
+                        <span className={styles.filterLabel}>异动类型：</span>
                         <Checkbox checked={sharpMoveOnlyDrop} onChange={(e) => setSharpMoveOnlyDrop(e.target.checked)}>
                           仅急跌
                         </Checkbox>
@@ -1160,14 +1197,6 @@ export function OpportunityFiltersPanel({
                         </Checkbox>
                       </div>
                     </div>
-                    <div className={styles.filterRow}>
-                      <div className={styles.filterItem}>
-                        <span style={{ color: 'var(--ant-color-text-secondary)' }}>
-                          勾选多项时满足任一即保留；未勾选任何形态则不按本项筛选。横盘指中间日涨跌幅绝对值小于
-                          M。
-                        </span>
-                      </div>
-                    </div>
                   </div>
                 ),
               },
@@ -1191,7 +1220,7 @@ export function OpportunityFiltersPanel({
                             setCandlestickLookback(Math.min(200, Math.max(5, next)));
                           }}
                         />
-                        <span style={{ marginLeft: 4 }}>根（从最新K线向前）</span>
+                        <span style={{ marginLeft: 4 }}>根</span>
                       </div>
                     </div>
 
@@ -1297,7 +1326,7 @@ export function OpportunityFiltersPanel({
                             setTrendLookback(Math.min(200, Math.max(5, next)));
                           }}
                         />
-                        <span style={{ marginLeft: 4 }}>根（从最新K线向前）</span>
+                        <span style={{ marginLeft: 4 }}>根</span>
                       </div>
                     </div>
 
@@ -1320,14 +1349,6 @@ export function OpportunityFiltersPanel({
                         <Checkbox checked={trendBreakdown} onChange={(e) => setTrendBreakdown(e.target.checked)}>
                           跌破形态
                         </Checkbox>
-                      </div>
-                    </div>
-
-                    <div className={styles.filterRow}>
-                      <div className={styles.filterItem}>
-                        <span style={{ color: 'var(--ant-color-text-secondary)' }}>
-                          勾选多项时满足任一即保留；未勾选任何项则不按本类筛选。
-                        </span>
                       </div>
                     </div>
                   </div>
@@ -1620,13 +1641,6 @@ export function OpportunityFiltersPanel({
                         >
                           要求有相似形态匹配
                         </Checkbox>
-                      </div>
-                    </div>
-                    <div className={styles.filterRow}>
-                      <div className={styles.filterItem}>
-                        <span style={{ color: 'var(--ant-color-text-secondary)' }}>
-                          勾选多项趋势时满足任一即保留；未启用开关则不按本项筛选。
-                        </span>
                       </div>
                     </div>
                   </div>

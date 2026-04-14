@@ -2,9 +2,9 @@
  * 热门行情页面 - 市场概览 + 板块排行
  */
 
-import { useEffect } from 'react';
 import { Layout } from 'antd';
 import { useHotStore } from '@/stores/hotStore';
+import { usePolling } from '@/hooks/usePolling';
 import { MarketSentimentCard } from './components/MarketSentimentCard';
 import { SectorRankCard } from '@/components/SectorRankCard';
 import styles from './HotPage.module.css';
@@ -14,17 +14,17 @@ const { Header } = Layout;
 export function HotPage() {
   const { loadMarketOverview, marketOverview, loadSectorRanks, risingSectors, fallingSectors, sectorsLoading } = useHotStore();
 
-  // 加载市场概览数据
-  useEffect(() => {
-    loadMarketOverview();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // 加载板块排行数据
-  useEffect(() => {
-    loadSectorRanks();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // 使用轮询定期刷新数据（10秒间隔）
+  usePolling(async () => {
+    await Promise.all([
+      loadMarketOverview(),
+      loadSectorRanks()
+    ]);
+  }, {
+    interval: 10000, // 10秒
+    immediate: true, // 立即执行一次
+    enabled: true
+  });
 
   return (
     <Layout className={styles.hotPage}>

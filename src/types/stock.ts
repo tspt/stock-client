@@ -466,6 +466,8 @@ export interface ConsolidationAnalysis {
 export interface SharpMovePatternAnalysis {
   windowBars: number;
   magnitudePercent: number;
+  /** 横盘幅度阈值（%） */
+  flatThresholdPercent: number;
   /** S1：窗口内存在急跌日 */
   onlyDrop: boolean;
   /** S2：窗口内存在急涨日 */
