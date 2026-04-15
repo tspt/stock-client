@@ -126,7 +126,7 @@ function AppContent() {
                         <Suspense
                           fallback={
                             <div className={styles.suspenseFallback}>
-                              <Spin size="large" tip="加载中..." />
+                              <Spin size="large" />
                             </div>
                           }
                         >
@@ -148,7 +148,7 @@ function AppContent() {
                         <Suspense
                           fallback={
                             <div className={styles.suspenseFallback}>
-                              <Spin size="large" tip="加载中..." />
+                              <Spin size="large" />
                             </div>
                           }
                         >
@@ -175,7 +175,7 @@ function AppContent() {
                         <Suspense
                           fallback={
                             <div className={styles.suspenseFallback}>
-                              <Spin size="large" tip="加载中..." />
+                              <Spin size="large" />
                             </div>
                           }
                         >
@@ -197,7 +197,7 @@ function AppContent() {
                         <Suspense
                           fallback={
                             <div className={styles.suspenseFallback}>
-                              <Spin size="large" tip="加载中..." />
+                              <Spin size="large" />
                             </div>
                           }
                         >
@@ -219,7 +219,7 @@ function AppContent() {
                         <Suspense
                           fallback={
                             <div className={styles.suspenseFallback}>
-                              <Spin size="large" tip="加载中..." />
+                              <Spin size="large" />
                             </div>
                           }
                         >
