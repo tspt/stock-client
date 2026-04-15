@@ -81,6 +81,7 @@ export interface OpportunityFilterPrefs {
   currentCount: number;
   priceRange: { min?: number; max?: number };
   marketCapRange: { min?: number; max?: number };
+  totalSharesRange: { min?: number; max?: number };
   turnoverRateRange: { min?: number; max?: number };
   peRatioRange: { min?: number; max?: number };
   kdjJRange: { min?: number; max?: number };
@@ -216,6 +217,7 @@ export function loadOpportunityFilterPrefs(): OpportunityFilterPrefs | null {
       currentCount: Math.floor(p.currentCount),
       priceRange: parseRange(p.priceRange),
       marketCapRange: parseRange(p.marketCapRange),
+      totalSharesRange: parseRange(p.totalSharesRange),
       turnoverRateRange: parseRange(p.turnoverRateRange),
       peRatioRange: parseRange(p.peRatioRange),
       kdjJRange: parseRange(p.kdjJRange),
@@ -346,6 +348,7 @@ export function getDefaultFilterPrefsFields(): Omit<
   return {
     priceRange: { min: 3, max: 30 },
     marketCapRange: { min: 30, max: 500 },
+    totalSharesRange: { min: 1, max: 50 },
     turnoverRateRange: { min: 1 },
     peRatioRange: {},
     kdjJRange: {},
@@ -422,7 +425,6 @@ export function getDefaultFilterPrefsFields(): Omit<
   };
 }
 
-
 /** 与 INITIAL_OPPORTUNITY_QUERY + 页面默认市场/名称类型一致 */
 export const DEFAULT_QUERY_PREFS_FIELDS = {
   selectedMarket: 'hs_main',
@@ -459,6 +461,7 @@ export interface OpportunityFilterPrefsApplyActions {
   setNameType: (v: string) => void;
   setPriceRange: (v: { min?: number; max?: number }) => void;
   setMarketCapRange: (v: { min?: number; max?: number }) => void;
+  setTotalSharesRange: (v: { min?: number; max?: number }) => void;
   setTurnoverRateRange: (v: { min?: number; max?: number }) => void;
   setPeRatioRange: (v: { min?: number; max?: number }) => void;
   setKdjJRange: (v: { min?: number; max?: number }) => void;
@@ -539,6 +542,7 @@ export function applyOpportunityFilterPrefsToState(
   actions.setNameType(prefs.nameType);
   actions.setPriceRange({ ...prefs.priceRange });
   actions.setMarketCapRange({ ...prefs.marketCapRange });
+  actions.setTotalSharesRange({ ...prefs.totalSharesRange });
   actions.setTurnoverRateRange({ ...prefs.turnoverRateRange });
   actions.setPeRatioRange({ ...prefs.peRatioRange });
   actions.setKdjJRange({ ...prefs.kdjJRange });

@@ -103,7 +103,9 @@ export async function analyzeStock(
       amount: quote.amount,
       marketCap: detail?.marketCap,
       circulatingMarketCap: detail?.circulatingMarketCap,
-      totalShares: detail?.marketCap && quote.price ? detail.marketCap / quote.price : undefined,
+      // marketCap 单位是亿，转换为股：totalShares(股) = marketCap(亿) * 1e8 / price(元/股)
+      totalShares:
+        detail?.marketCap && quote.price ? (detail.marketCap * 1e8) / quote.price : undefined,
       peRatio: detail?.peRatio,
       turnoverRate: detail?.turnoverRate,
       kdjK,
@@ -172,8 +174,9 @@ async function analyzeStockDetails(
     if (detail) {
       result.marketCap = detail.marketCap;
       result.circulatingMarketCap = detail.circulatingMarketCap;
+      // marketCap 单位是亿，转换为股：totalShares(股) = marketCap(亿) * 1e8 / price(元/股)
       result.totalShares =
-        detail.marketCap && quote.price ? detail.marketCap / quote.price : undefined;
+        detail.marketCap && quote.price ? (detail.marketCap * 1e8) / quote.price : undefined;
       result.peRatio = detail.peRatio;
       result.turnoverRate = detail.turnoverRate;
     }

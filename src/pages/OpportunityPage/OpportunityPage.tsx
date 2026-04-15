@@ -80,6 +80,7 @@ const INITIAL_FILTER_STATE = {
   nameType: 'non_st' as const,
   priceRange: { min: 3, max: 30 } as { min?: number; max?: number },
   marketCapRange: { min: 30, max: 500 } as { min?: number; max?: number },
+  totalSharesRange: { min: 1, max: 50 } as { min?: number; max?: number },
   turnoverRateRange: { min: 1 } as { min?: number; max?: number },
   peRatioRange: {} as { min?: number; max?: number },
   kdjJRange: {} as { min?: number; max?: number },
@@ -202,6 +203,9 @@ export function OpportunityPage() {
   // 筛选条件状态
   const [marketCapRange, setMarketCapRange] = useState<{ min?: number; max?: number }>(
     INITIAL_FILTER_STATE.marketCapRange
+  );
+  const [totalSharesRange, setTotalSharesRange] = useState<{ min?: number; max?: number }>(
+    INITIAL_FILTER_STATE.totalSharesRange
   );
   const [turnoverRateRange, setTurnoverRateRange] = useState<{ min?: number; max?: number }>(
     INITIAL_FILTER_STATE.turnoverRateRange
@@ -365,6 +369,7 @@ export function OpportunityPage() {
           setNameType,
           setPriceRange,
           setMarketCapRange,
+          setTotalSharesRange,
           setTurnoverRateRange,
           setPeRatioRange,
           setKdjJRange,
@@ -465,6 +470,7 @@ export function OpportunityPage() {
         currentCount,
         priceRange: { ...priceRange },
         marketCapRange: { ...marketCapRange },
+        totalSharesRange: { ...totalSharesRange },
         turnoverRateRange: { ...turnoverRateRange },
         peRatioRange: { ...peRatioRange },
         kdjJRange: { ...kdjJRange },
@@ -621,6 +627,7 @@ export function OpportunityPage() {
         currentCount,
         priceRange: { ...priceRange },
         marketCapRange: { ...marketCapRange },
+        totalSharesRange: { ...totalSharesRange },
         turnoverRateRange: { ...turnoverRateRange },
         peRatioRange: { ...peRatioRange },
         kdjJRange: { ...kdjJRange },
@@ -863,6 +870,7 @@ export function OpportunityPage() {
     () => ({
       priceRange,
       marketCapRange,
+      totalSharesRange,
       turnoverRateRange,
       peRatioRange,
       kdjJRange,
@@ -1427,6 +1435,8 @@ export function OpportunityPage() {
             setPriceRange={setPriceRange}
             marketCapRange={marketCapRange}
             setMarketCapRange={setMarketCapRange}
+            totalSharesRange={totalSharesRange}
+            setTotalSharesRange={setTotalSharesRange}
             turnoverRateRange={turnoverRateRange}
             setTurnoverRateRange={setTurnoverRateRange}
             peRatioRange={peRatioRange}

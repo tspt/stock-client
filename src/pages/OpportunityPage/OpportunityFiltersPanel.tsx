@@ -30,6 +30,7 @@ function pushRange(parts: string[], label: string, r: NumRange, unit = '') {
 export function buildOpportunityFilterSummary(p: {
   priceRange: NumRange;
   marketCapRange: NumRange;
+  totalSharesRange: NumRange;
   turnoverRateRange: NumRange;
   peRatioRange: NumRange;
   kdjJRange: NumRange;
@@ -103,6 +104,7 @@ export function buildOpportunityFilterSummary(p: {
   const parts: string[] = [];
   pushRange(parts, '价', p.priceRange);
   pushRange(parts, '市值', p.marketCapRange, '亿');
+  pushRange(parts, '总股数', p.totalSharesRange, '亿');
   pushRange(parts, '换手', p.turnoverRateRange, '%');
   if (p.peRatioRange.min != null || p.peRatioRange.max != null) {
     pushRange(parts, '市盈', p.peRatioRange);
@@ -227,6 +229,8 @@ export interface OpportunityFiltersPanelProps {
   setPriceRange: SetRange;
   marketCapRange: { min?: number; max?: number };
   setMarketCapRange: SetRange;
+  totalSharesRange: { min?: number; max?: number };
+  setTotalSharesRange: SetRange;
   turnoverRateRange: { min?: number; max?: number };
   setTurnoverRateRange: SetRange;
   peRatioRange: { min?: number; max?: number };
@@ -369,6 +373,8 @@ export function OpportunityFiltersPanel({
   setPriceRange,
   marketCapRange,
   setMarketCapRange,
+  totalSharesRange,
+  setTotalSharesRange,
   turnoverRateRange,
   setTurnoverRateRange,
   peRatioRange,
@@ -510,6 +516,7 @@ export function OpportunityFiltersPanel({
       buildOpportunityFilterSummary({
         priceRange,
         marketCapRange,
+        totalSharesRange,
         turnoverRateRange,
         peRatioRange,
         kdjJRange,
@@ -577,6 +584,7 @@ export function OpportunityFiltersPanel({
     [
       priceRange,
       marketCapRange,
+      totalSharesRange,
       turnoverRateRange,
       peRatioRange,
       kdjJRange,
@@ -766,6 +774,38 @@ export function OpportunityFiltersPanel({
                           placeholder="最大值"
                           onChange={(v) => {
                             setMarketCapRange((prev) => ({
+                              ...prev,
+                              max: typeof v === 'number' && isFinite(v) ? v : undefined,
+                            }));
+                          }}
+                        />
+                      </div>
+                      <div className={styles.filterItem}>
+                        <span className={styles.filterLabel}>总股数(亿)：</span>
+                        <InputNumber
+                          value={totalSharesRange.min}
+                          min={0}
+                          step={0.01}
+                          precision={2}
+                          style={{ width: 100 }}
+                          placeholder="最小值"
+                          onChange={(v) => {
+                            setTotalSharesRange((prev) => ({
+                              ...prev,
+                              min: typeof v === 'number' && isFinite(v) ? v : undefined,
+                            }));
+                          }}
+                        />
+                        <span style={{ margin: '0 4px' }}>~</span>
+                        <InputNumber
+                          value={totalSharesRange.max}
+                          min={0}
+                          step={0.01}
+                          precision={2}
+                          style={{ width: 100 }}
+                          placeholder="最大值"
+                          onChange={(v) => {
+                            setTotalSharesRange((prev) => ({
                               ...prev,
                               max: typeof v === 'number' && isFinite(v) ? v : undefined,
                             }));

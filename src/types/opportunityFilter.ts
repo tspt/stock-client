@@ -8,6 +8,7 @@ export interface NumberRange {
 export interface OpportunityFilterSnapshot {
   priceRange: NumberRange;
   marketCapRange: NumberRange;
+  totalSharesRange: NumberRange;
   turnoverRateRange: NumberRange;
   peRatioRange: NumberRange;
   kdjJRange: NumberRange;

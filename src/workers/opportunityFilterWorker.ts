@@ -20,7 +20,6 @@ import type {
   OpportunityFilterWorkerMessage,
   OpportunityFilterWorkerResponse,
 } from './opportunityFilterWorkerTypes';
-import { MAX_OPPORTUNITY_KLINE_CACHE_ENTRIES } from '@/utils/constants';
 
 let cancelledThroughRequestId = 0;
 const YIELD_EVERY_ITEMS = 40;
@@ -473,7 +472,9 @@ function passesAIFilter(
     ) {
       return {
         passed: false,
-        reason: `形态胜率过低：${winRatePercent.toFixed(0)}% < ${filters.aiPatternWinRateRange.min}%`,
+        reason: `形态胜率过低：${winRatePercent.toFixed(0)}% < ${
+          filters.aiPatternWinRateRange.min
+        }%`,
       };
     }
     if (
@@ -482,7 +483,9 @@ function passesAIFilter(
     ) {
       return {
         passed: false,
-        reason: `形态胜率过高：${winRatePercent.toFixed(0)}% > ${filters.aiPatternWinRateRange.max}%`,
+        reason: `形态胜率过高：${winRatePercent.toFixed(0)}% > ${
+          filters.aiPatternWinRateRange.max
+        }%`,
       };
     }
   }
@@ -495,7 +498,9 @@ function passesAIFilter(
     if (trendPrediction.riskRewardRatio < filters.aiMinRiskRewardRatio) {
       return {
         passed: false,
-        reason: `风险收益比不足：${trendPrediction.riskRewardRatio.toFixed(1)} < ${filters.aiMinRiskRewardRatio}`,
+        reason: `风险收益比不足：${trendPrediction.riskRewardRatio.toFixed(1)} < ${
+          filters.aiMinRiskRewardRatio
+        }`,
       };
     }
   }
@@ -579,11 +584,7 @@ function skippedMapToArray(
 async function runFilterTask(
   message: Extract<OpportunityFilterWorkerMessage, { type: 'filter' }>
 ): Promise<void> {
-  const { requestId, filters } = message;
-  const analysisData =
-    message.analysisData.length > MAX_OPPORTUNITY_KLINE_CACHE_ENTRIES
-      ? message.analysisData.slice(0, MAX_OPPORTUNITY_KLINE_CACHE_ENTRIES)
-      : message.analysisData;
+  const { requestId, filters, analysisData } = message;
   const result: StockOpportunityData[] = [];
   const skippedMap = new Map<string, { code: string; name: string; reasons: string[] }>();
 
@@ -765,12 +766,7 @@ async function runFilterTask(
         }
 
         if (!aiAnalysis) {
-          mergeSkippedReason(
-            skippedMap,
-            item.code,
-            item.name,
-            'AI筛选：缺少AI分析数据'
-          );
+          mergeSkippedReason(skippedMap, item.code, item.name, 'AI筛选：缺少AI分析数据');
           continue;
         }
 

@@ -176,6 +176,12 @@ export const OverviewTable = memo(function OverviewTable({
     });
   }, [columns, sortConfig]);
 
+  // 计算表格横向滚动宽度
+  const scrollX = useMemo(() => {
+    const visibleColumns = columns.filter((c) => c.visible).sort((a, b) => a.order - b.order);
+    return visibleColumns.reduce((sum, col) => sum + (col.width || 120), 0);
+  }, [columns]);
+
   // 处理表格变化（排序、分页等）
   const handleTableChange = (
     paginationConfig: TablePaginationConfig,
@@ -236,7 +242,7 @@ export const OverviewTable = memo(function OverviewTable({
         rowKey="code"
         pagination={pagination}
         virtual
-        scroll={{ x: 'max-content', y: 'calc(100vh - 240px)' }}
+        scroll={{ x: scrollX, y: 'calc(100vh - 240px)' }}
         onChange={handleTableChange}
         size="small"
       />

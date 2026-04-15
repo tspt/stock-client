@@ -261,6 +261,12 @@ export const OpportunityTable = memo(function OpportunityTable({ data, columns, 
     return cols;
   }, [columns, sortConfig, onShowAIAnalysis]);
 
+  // 计算表格横向滚动宽度
+  const scrollX = useMemo(() => {
+    const visibleColumns = columns.filter((c) => c.visible).sort((a, b) => a.order - b.order);
+    return visibleColumns.reduce((sum, col) => sum + (col.width || 120), 0);
+  }, [columns]);
+
   const handleTableChange = (paginationConfig: TablePaginationConfig, _filters: any, sorter: any) => {
     if (paginationConfig) {
       setPagination((prev) => ({
@@ -288,7 +294,7 @@ export const OpportunityTable = memo(function OpportunityTable({ data, columns, 
         rowKey="code"
         pagination={pagination}
         virtual
-        scroll={{ x: 'max-content', y: tableHeight }}
+        scroll={{ x: scrollX, y: tableHeight }}
         onChange={handleTableChange}
         size="small"
         className={styles.opportunityTable}

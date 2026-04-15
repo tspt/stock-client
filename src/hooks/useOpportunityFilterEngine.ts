@@ -2,7 +2,6 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import type { KLineData, StockOpportunityData } from '@/types/stock';
 import type { FilterSkippedItem, OpportunityFilterSnapshot } from '@/types/opportunityFilter';
 import type { OpportunityFilterWorkerResponse } from '@/workers/opportunityFilterWorkerTypes';
-import { MAX_OPPORTUNITY_KLINE_CACHE_ENTRIES } from '@/utils/constants';
 
 function passLightFilters(item: StockOpportunityData, filters: OpportunityFilterSnapshot): boolean {
   if (filters.priceRange.min !== undefined && item.price < filters.priceRange.min) return false;
@@ -15,6 +14,19 @@ function passLightFilters(item: StockOpportunityData, filters: OpportunityFilter
   if (filters.marketCapRange.max !== undefined) {
     if (item.marketCap === null || item.marketCap === undefined) return false;
     if (item.marketCap > filters.marketCapRange.max) return false;
+  }
+
+  if (filters.totalSharesRange.min !== undefined) {
+    if (item.totalShares === null || item.totalShares === undefined) return false;
+    // totalShares 单位是股，筛选条件单位是亿，需要转换
+    const totalSharesInYi = item.totalShares / 1e8;
+    if (totalSharesInYi < filters.totalSharesRange.min) return false;
+  }
+  if (filters.totalSharesRange.max !== undefined) {
+    if (item.totalShares === null || item.totalShares === undefined) return false;
+    // totalShares 单位是股，筛选条件单位是亿，需要转换
+    const totalSharesInYi = item.totalShares / 1e8;
+    if (totalSharesInYi > filters.totalSharesRange.max) return false;
   }
 
   if (filters.turnoverRateRange.min !== undefined) {
@@ -42,31 +54,6 @@ function passLightFilters(item: StockOpportunityData, filters: OpportunityFilter
   }
 
   return true;
-}
-
-/** 与 K 线缓存条数上限一致；超出时优先保留缓存命中的标的，再按原顺序补足 */
-function capAnalysisDataForWorker(
-  lightFiltered: StockOpportunityData[],
-  klineDataCache: Map<string, KLineData[]>,
-  max: number
-): StockOpportunityData[] {
-  if (lightFiltered.length <= max) {
-    return lightFiltered;
-  }
-  const withKline: StockOpportunityData[] = [];
-  const withoutKline: StockOpportunityData[] = [];
-  for (let i = 0; i < lightFiltered.length; i++) {
-    const item = lightFiltered[i];
-    if (klineDataCache.has(item.code)) {
-      withKline.push(item);
-    } else {
-      withoutKline.push(item);
-    }
-  }
-  if (withKline.length >= max) {
-    return withKline.slice(0, max);
-  }
-  return withKline.concat(withoutKline.slice(0, max - withKline.length));
 }
 
 interface UseOpportunityFilterEngineArgs {
@@ -231,11 +218,10 @@ export function useOpportunityFilterEngine({
     const lightFiltered = currentAnalysisData.filter((item) =>
       passLightFilters(item, currentFilters)
     );
-    const analysisDataForWorker = capAnalysisDataForWorker(
-      lightFiltered,
-      klineDataCache,
-      MAX_OPPORTUNITY_KLINE_CACHE_ENTRIES
-    );
+
+    // 筛选时传递给 Worker 的数据不做 K 线缓存数量限制，保证筛选结果完整性
+    // K 线缓存限制仅用于控制内存，不影响筛选逻辑
+    const analysisDataForWorker = lightFiltered;
     const requestId = ++requestIdRef.current;
     const previousRequestId = activeRequestIdRef.current;
     activeRequestIdRef.current = requestId;
