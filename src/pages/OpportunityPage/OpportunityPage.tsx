@@ -3,7 +3,7 @@
  */
 
 import { useEffect, useState, useMemo, useRef, useCallback, useLayoutEffect } from 'react';
-import { Layout, Card, Button, Space, Progress, Select, Collapse, message, InputNumber, Dropdown } from 'antd';
+import { Layout, Card, Button, Space, Progress, Select, Collapse, App, InputNumber, Dropdown } from 'antd';
 import {
   PlayCircleOutlined,
   StopOutlined,
@@ -176,6 +176,7 @@ const INITIAL_OPPORTUNITY_QUERY = {
 };
 
 export function OpportunityPage() {
+  const { message } = App.useApp();
   const {
     analysisData,
     loading,
@@ -1172,6 +1173,7 @@ export function OpportunityPage() {
         const filterSummary = buildOpportunityFilterSummary({
           priceRange,
           marketCapRange,
+          totalSharesRange,
           turnoverRateRange,
           peRatioRange,
           kdjJRange,
