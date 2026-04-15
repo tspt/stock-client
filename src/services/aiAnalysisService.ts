@@ -85,10 +85,15 @@ export function predictTrend(
   const trendSignals = analyzeTrendPatterns(klineData);
   signals.push(...trendSignals);
 
+  // 6. 成交量趋势确认（量价配合）
+  const volumeSignals = analyzeVolumeTrend(klineData);
+  signals.push(...volumeSignals);
+
   // 综合评分
   let upScore = 0;
   let downScore = 0;
   let sidewaysScore = 0;
+  let signalCount = 0; // 与最终方向一致的信号数
   const reasoning: string[] = [];
 
   signals.forEach((signal) => {
@@ -107,6 +112,7 @@ export function predictTrend(
   });
 
   const totalScore = upScore + downScore + sidewaysScore;
+  const totalSignals = signals.length;
   let direction: 'up' | 'down' | 'sideways' = 'sideways';
   let confidence = 0;
 
@@ -114,13 +120,23 @@ export function predictTrend(
     if (upScore >= downScore && upScore >= sidewaysScore) {
       direction = 'up';
       confidence = upScore / totalScore;
+      signalCount = signals.filter((s) => s.direction === 'up').length;
     } else if (downScore >= upScore && downScore >= sidewaysScore) {
       direction = 'down';
       confidence = downScore / totalScore;
+      signalCount = signals.filter((s) => s.direction === 'down').length;
     } else {
       direction = 'sideways';
       confidence = sidewaysScore / totalScore;
+      signalCount = signals.filter((s) => s.direction === 'sideways').length;
     }
+  }
+
+  // 信号共识增强：当4+信号一致时提升置信度
+  const signalConfluence = totalSignals > 0 && signalCount >= 4 && signalCount >= totalSignals * 0.6;
+  if (signalConfluence) {
+    confidence = Math.min(confidence * 1.2, 0.95); // 最多提升20%，上限95%
+    reasoning.unshift(`${signalCount}/${totalSignals}个信号达成共识`);
   }
 
   // 计算支撑位和阻力位
@@ -129,6 +145,16 @@ export function predictTrend(
   // 预测目标价
   const targetPrice = calculateTargetPrice(lastClose, direction, supportLevel, resistanceLevel);
 
+  // 计算风险收益比
+  let riskRewardRatio: number | undefined;
+  if (supportLevel && resistanceLevel && direction !== 'sideways') {
+    const potentialReward = Math.abs(resistanceLevel - lastClose);
+    const potentialRisk = Math.abs(lastClose - supportLevel);
+    if (potentialRisk > 0) {
+      riskRewardRatio = potentialReward / potentialRisk;
+    }
+  }
+
   return {
     direction,
     confidence: Math.min(confidence, 1),
@@ -136,7 +162,10 @@ export function predictTrend(
     period: config.predictionPeriod,
     supportLevel,
     resistanceLevel,
-    reasoning: reasoning.slice(0, 5), // 只保留前5个理由
+    reasoning: reasoning.slice(0, 5),
+    signalCount,
+    totalSignals,
+    riskRewardRatio,
   };
 }
 
@@ -362,6 +391,70 @@ function analyzeTrendPatterns(
   }
   if (trends.breakdown) {
     signals.push({ direction: 'down', weight: 0.3, reason: '检测到跌破形态' });
+  }
+
+  return signals;
+}
+
+/**
+ * 成交量趋势分析（量价配合信号）
+ */
+function analyzeVolumeTrend(
+  klineData: KLineData[]
+): Array<{ direction: 'up' | 'down' | 'sideways'; weight: number; reason: string }> {
+  const signals: Array<{ direction: 'up' | 'down' | 'sideways'; weight: number; reason: string }> =
+    [];
+  const len = klineData.length;
+
+  if (len < 15) return signals;
+
+  // 计算成交量MA5和MA10
+  const volMa5 = calculateMA(klineData.map((k) => k.volume), 5);
+  const volMa10 = calculateMA(klineData.map((k) => k.volume), 10);
+
+  if (volMa5.length < 2 || volMa10.length < 2) return signals;
+
+  const lastVolMa5 = volMa5[volMa5.length - 1];
+  const lastVolMa10 = volMa10[volMa10.length - 1];
+  const prevVolMa5 = volMa5[volMa5.length - 2];
+  const prevVolMa10 = volMa10[volMa10.length - 2];
+
+  // 量能放大趋势
+  if (lastVolMa5 > lastVolMa10 * 1.3) {
+    // 放量，结合价格方向判断
+    const priceChange = klineData[len - 1].close - klineData[len - 2].close;
+    if (priceChange > 0) {
+      signals.push({ direction: 'up', weight: 0.2, reason: '放量上涨，量价配合良好' });
+    } else {
+      signals.push({ direction: 'down', weight: 0.15, reason: '放量下跌，抛压较大' });
+    }
+  }
+
+  // 缩量趋势
+  if (lastVolMa5 < lastVolMa10 * 0.7) {
+    signals.push({ direction: 'sideways', weight: 0.1, reason: '成交量萎缩，市场观望' });
+  }
+
+  // 量能金叉/死叉
+  if (prevVolMa5 <= prevVolMa10 && lastVolMa5 > lastVolMa10) {
+    signals.push({ direction: 'up', weight: 0.15, reason: '成交量MA5上穿MA10' });
+  } else if (prevVolMa5 >= prevVolMa10 && lastVolMa5 < lastVolMa10) {
+    signals.push({ direction: 'down', weight: 0.15, reason: '成交量MA5下穿MA10' });
+  }
+
+  // 量价背离：价格上涨但成交量下降
+  if (len >= 10) {
+    const recent5PriceChange =
+      (klineData[len - 1].close - klineData[len - 6].close) / klineData[len - 6].close;
+    const recent5VolChange =
+      (lastVolMa5 - (volMa5.length >= 6 ? volMa5[volMa5.length - 6] : lastVolMa5)) /
+      (volMa5.length >= 6 ? volMa5[volMa5.length - 6] : lastVolMa5 || 1);
+
+    if (recent5PriceChange > 0.03 && recent5VolChange < -0.1) {
+      signals.push({ direction: 'down', weight: 0.2, reason: '量价背离：上涨缩量，动能不足' });
+    } else if (recent5PriceChange < -0.03 && recent5VolChange < -0.1) {
+      signals.push({ direction: 'up', weight: 0.15, reason: '下跌缩量，抛压减轻' });
+    }
   }
 
   return signals;
@@ -929,10 +1022,32 @@ export function performAIAnalysis(
   // 智能推荐评分
   const recommendation = calculateRecommendationScore(klineData, opportunityData);
 
+  // 信号共识判定
+  const signalConfluence =
+    trendPrediction.totalSignals > 0 &&
+    trendPrediction.signalCount >= 4 &&
+    trendPrediction.signalCount >= trendPrediction.totalSignals * 0.6;
+
+  // 相似形态历史胜率
+  let patternWinRate: number | undefined;
+  if (similarPatterns && similarPatterns.length > 0) {
+    const withPerformance = similarPatterns.filter(
+      (p) => p.historicalPerformance !== undefined
+    );
+    if (withPerformance.length > 0) {
+      const winCount = withPerformance.filter(
+        (p) => (p.historicalPerformance?.changePercent ?? 0) > 0
+      ).length;
+      patternWinRate = winCount / withPerformance.length;
+    }
+  }
+
   return {
     trendPrediction,
     similarPatterns,
     recommendation,
     analyzedAt,
+    signalConfluence,
+    patternWinRate,
   };
 }

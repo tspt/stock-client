@@ -29,7 +29,7 @@ let latestRequestId = 0;
 
 // AI分析结果缓存，避免重复计算
 interface AICacheEntry {
-  item: StockOpportunityData;
+  aiAnalysis: StockOpportunityData['aiAnalysis'];
   timestamp: number;
 }
 const aiCacheMap = new Map<string, AICacheEntry>();
@@ -113,13 +113,11 @@ function technicalIndicatorsFilterActive(filters: OpportunityFilterSnapshot): bo
   );
 }
 
-/** 检查AI分析筛选是否激活 */
+/** 检查AI分析筛选是否激活（至少有一个子条件启用） */
 function aiAnalysisFilterActive(filters: OpportunityFilterSnapshot): boolean {
   if (!filters.aiAnalysisEnabled) {
     return false;
   }
-
-  // 检查是否有任何AI筛选条件被激活
   return (
     filters.aiTrendUp ||
     filters.aiTrendDown ||
@@ -137,7 +135,11 @@ function aiAnalysisFilterActive(filters: OpportunityFilterSnapshot): boolean {
     filters.aiRiskScoreRange.min !== undefined ||
     filters.aiRiskScoreRange.max !== undefined ||
     filters.aiRequireSimilarPatterns ||
-    filters.aiMinSimilarity !== undefined
+    filters.aiMinSimilarity !== undefined ||
+    filters.aiMinSignalCount !== undefined ||
+    filters.aiPatternWinRateRange.min !== undefined ||
+    filters.aiPatternWinRateRange.max !== undefined ||
+    filters.aiMinRiskRewardRatio !== undefined
   );
 }
 
@@ -176,41 +178,15 @@ function passesTechnicalIndicatorsFilter(
     }
   }
 
-  // MACD筛选
+  // MACD筛选（OR关系：至少满足一个勾选的条件即可）
   if (filters.macdGoldenCross || filters.macdDeathCross || filters.macdDivergence) {
     const macd = calculateMACD(klineData);
 
-    if (filters.macdGoldenCross && !isMACDGoldenCross(macd.dif, macd.dea, len - 1)) {
-      // 如果只要求金叉但不是金叉，继续检查其他条件
-      if (!filters.macdDeathCross && !filters.macdDivergence) {
-        return false;
-      }
-    }
+    const isGolden = filters.macdGoldenCross && isMACDGoldenCross(macd.dif, macd.dea, len - 1);
+    const isDeath = filters.macdDeathCross && isMACDDeathCross(macd.dif, macd.dea, len - 1);
+    const isDiv = filters.macdDivergence && hasMACDDivergence(klineData, macd.dif, 20);
 
-    if (filters.macdDeathCross && !isMACDDeathCross(macd.dif, macd.dea, len - 1)) {
-      // 如果只要求死叉但不是死叉，继续检查其他条件
-      if (!filters.macdGoldenCross && !filters.macdDivergence) {
-        return false;
-      }
-    }
-
-    if (filters.macdDivergence && !hasMACDDivergence(klineData, macd.dif, 20)) {
-      // 如果只要求背离但没有背离，继续检查其他条件
-      if (!filters.macdGoldenCross && !filters.macdDeathCross) {
-        return false;
-      }
-    }
-
-    // 如果至少有一个MACD条件满足，则通过
-    const macdMatched =
-      (filters.macdGoldenCross && isMACDGoldenCross(macd.dif, macd.dea, len - 1)) ||
-      (filters.macdDeathCross && isMACDDeathCross(macd.dif, macd.dea, len - 1)) ||
-      (filters.macdDivergence && hasMACDDivergence(klineData, macd.dif, 20));
-
-    if (
-      !macdMatched &&
-      (filters.macdGoldenCross || filters.macdDeathCross || filters.macdDivergence)
-    ) {
+    if (!isGolden && !isDeath && !isDiv) {
       return false;
     }
   }
@@ -386,159 +362,140 @@ function passesAIFilter(
     }
   }
 
-  // 3. 综合评分范围筛选
-  if (
-    filters.aiRecommendScoreRange.min !== undefined ||
-    filters.aiRecommendScoreRange.max !== undefined
-  ) {
-    if (!recommendation) {
-      return { passed: false, reason: '缺少推荐评分数据' };
-    }
+  // 3-7. 统一处理各类评分范围筛选（减少代码重复）
+  const scoreChecks: Array<{
+    name: string;
+    range: { min?: number; max?: number };
+    value: number | undefined | null;
+    missingReason: string;
+  }> = [
+    {
+      name: '综合评分',
+      range: filters.aiRecommendScoreRange,
+      value: recommendation?.totalScore,
+      missingReason: '缺少综合评分数据',
+    },
+    {
+      name: '技术面评分',
+      range: filters.aiTechnicalScoreRange,
+      value: recommendation?.technicalScore,
+      missingReason: '缺少技术面评分数据',
+    },
+    {
+      name: '形态评分',
+      range: filters.aiPatternScoreRange,
+      value: recommendation?.patternScore,
+      missingReason: '缺少形态评分数据',
+    },
+    {
+      name: '趋势评分',
+      range: filters.aiTrendScoreRange,
+      value: recommendation?.trendScore,
+      missingReason: '缺少趋势评分数据',
+    },
+    {
+      name: '风险评分',
+      range: filters.aiRiskScoreRange,
+      value: recommendation?.riskScore,
+      missingReason: '缺少风险评分数据',
+    },
+  ];
 
-    const score = recommendation.totalScore;
+  for (const check of scoreChecks) {
+    if (check.range.min !== undefined || check.range.max !== undefined) {
+      if (check.value === undefined || check.value === null) {
+        return { passed: false, reason: check.missingReason };
+      }
 
-    if (
-      filters.aiRecommendScoreRange.min !== undefined &&
-      score < filters.aiRecommendScoreRange.min
-    ) {
-      return {
-        passed: false,
-        reason: `综合评分过低：${score} < ${filters.aiRecommendScoreRange.min}`,
-      };
-    }
-    if (
-      filters.aiRecommendScoreRange.max !== undefined &&
-      score > filters.aiRecommendScoreRange.max
-    ) {
-      return {
-        passed: false,
-        reason: `综合评分过高：${score} > ${filters.aiRecommendScoreRange.max}`,
-      };
-    }
-  }
-
-  // 4. 技术面评分范围筛选
-  if (
-    filters.aiTechnicalScoreRange.min !== undefined ||
-    filters.aiTechnicalScoreRange.max !== undefined
-  ) {
-    if (!recommendation) {
-      return { passed: false, reason: '缺少推荐评分数据' };
-    }
-
-    const score = recommendation.technicalScore;
-
-    if (
-      filters.aiTechnicalScoreRange.min !== undefined &&
-      score < filters.aiTechnicalScoreRange.min
-    ) {
-      return {
-        passed: false,
-        reason: `技术面评分过低：${score} < ${filters.aiTechnicalScoreRange.min}`,
-      };
-    }
-    if (
-      filters.aiTechnicalScoreRange.max !== undefined &&
-      score > filters.aiTechnicalScoreRange.max
-    ) {
-      return {
-        passed: false,
-        reason: `技术面评分过高：${score} > ${filters.aiTechnicalScoreRange.max}`,
-      };
+      if (check.range.min !== undefined && check.value < check.range.min) {
+        return {
+          passed: false,
+          reason: `${check.name}过低：${check.value} < ${check.range.min}`,
+        };
+      }
+      if (check.range.max !== undefined && check.value > check.range.max) {
+        return {
+          passed: false,
+          reason: `${check.name}过高：${check.value} > ${check.range.max}`,
+        };
+      }
     }
   }
 
-  // 5. 形态评分范围筛选
-  if (
-    filters.aiPatternScoreRange.min !== undefined ||
-    filters.aiPatternScoreRange.max !== undefined
-  ) {
-    if (!recommendation) {
-      return { passed: false, reason: '缺少推荐评分数据' };
-    }
-
-    const score = recommendation.patternScore;
-
-    if (filters.aiPatternScoreRange.min !== undefined && score < filters.aiPatternScoreRange.min) {
-      return {
-        passed: false,
-        reason: `形态评分过低：${score} < ${filters.aiPatternScoreRange.min}`,
-      };
-    }
-    if (filters.aiPatternScoreRange.max !== undefined && score > filters.aiPatternScoreRange.max) {
-      return {
-        passed: false,
-        reason: `形态评分过高：${score} > ${filters.aiPatternScoreRange.max}`,
-      };
-    }
-  }
-
-  // 6. 趋势评分范围筛选
-  if (filters.aiTrendScoreRange.min !== undefined || filters.aiTrendScoreRange.max !== undefined) {
-    if (!recommendation) {
-      return { passed: false, reason: '缺少推荐评分数据' };
-    }
-
-    const score = recommendation.trendScore;
-
-    if (filters.aiTrendScoreRange.min !== undefined && score < filters.aiTrendScoreRange.min) {
-      return {
-        passed: false,
-        reason: `趋势评分过低：${score} < ${filters.aiTrendScoreRange.min}`,
-      };
-    }
-    if (filters.aiTrendScoreRange.max !== undefined && score > filters.aiTrendScoreRange.max) {
-      return {
-        passed: false,
-        reason: `趋势评分过高：${score} > ${filters.aiTrendScoreRange.max}`,
-      };
-    }
-  }
-
-  // 7. 风险评分范围筛选
-  if (filters.aiRiskScoreRange.min !== undefined || filters.aiRiskScoreRange.max !== undefined) {
-    if (!recommendation) {
-      return { passed: false, reason: '缺少推荐评分数据' };
-    }
-
-    const score = recommendation.riskScore;
-
-    if (filters.aiRiskScoreRange.min !== undefined && score < filters.aiRiskScoreRange.min) {
-      return {
-        passed: false,
-        reason: `风险评分过低：${score} < ${filters.aiRiskScoreRange.min}`,
-      };
-    }
-    if (filters.aiRiskScoreRange.max !== undefined && score > filters.aiRiskScoreRange.max) {
-      return {
-        passed: false,
-        reason: `风险评分过高：${score} > ${filters.aiRiskScoreRange.max}`,
-      };
-    }
-  }
-
-  // 8. 相似形态匹配要求
-  if (filters.aiRequireSimilarPatterns) {
-    if (!similarPatterns || similarPatterns.length === 0) {
-      return { passed: false, reason: '无相似形态匹配' };
-    }
-  }
-
-  // 9. 相似形态最低相似度筛选（0-1转换为0-100）
-  if (filters.aiMinSimilarity !== undefined) {
+  // 8-9. 相似形态筛选（合并检查，避免重复）
+  if (filters.aiRequireSimilarPatterns || filters.aiMinSimilarity !== undefined) {
     if (!similarPatterns || similarPatterns.length === 0) {
       return { passed: false, reason: '无相似形态匹配' };
     }
 
-    const minSimilarityPercent = filters.aiMinSimilarity;
-    const hasMatchedPattern = similarPatterns.some(
-      (pattern) => pattern.similarity * 100 >= minSimilarityPercent
-    );
+    // 9. 相似形态最低相似度筛选（0-1转换为0-100）
+    if (filters.aiMinSimilarity !== undefined) {
+      const minSimilarityPercent = filters.aiMinSimilarity;
+      const hasMatchedPattern = similarPatterns.some(
+        (pattern) => pattern.similarity * 100 >= minSimilarityPercent
+      );
 
-    if (!hasMatchedPattern) {
+      if (!hasMatchedPattern) {
+        return {
+          passed: false,
+          reason: `相似度不足：最高相似度 < ${minSimilarityPercent}%`,
+        };
+      }
+    }
+  }
+
+  // 10. 信号共识筛选：要求最少N个信号方向一致
+  if (filters.aiMinSignalCount !== undefined) {
+    if (!trendPrediction) {
+      return { passed: false, reason: '缺少趋势预测数据' };
+    }
+    if (trendPrediction.signalCount < filters.aiMinSignalCount) {
       return {
         passed: false,
-        reason: `相似度不足：最高相似度 < ${minSimilarityPercent}%`,
+        reason: `信号共识不足：${trendPrediction.signalCount}/${trendPrediction.totalSignals} < ${filters.aiMinSignalCount}个`,
+      };
+    }
+  }
+
+  // 11. 相似形态历史胜率筛选（0-1转换为0-100）
+  const { patternWinRate } = item.aiAnalysis;
+  if (
+    filters.aiPatternWinRateRange.min !== undefined ||
+    filters.aiPatternWinRateRange.max !== undefined
+  ) {
+    if (patternWinRate === undefined || patternWinRate === null) {
+      return { passed: false, reason: '缺少相似形态胜率数据' };
+    }
+    const winRatePercent = patternWinRate * 100;
+    if (
+      filters.aiPatternWinRateRange.min !== undefined &&
+      winRatePercent < filters.aiPatternWinRateRange.min
+    ) {
+      return {
+        passed: false,
+        reason: `形态胜率过低：${winRatePercent.toFixed(0)}% < ${filters.aiPatternWinRateRange.min}%`,
+      };
+    }
+    if (
+      filters.aiPatternWinRateRange.max !== undefined &&
+      winRatePercent > filters.aiPatternWinRateRange.max
+    ) {
+      return {
+        passed: false,
+        reason: `形态胜率过高：${winRatePercent.toFixed(0)}% > ${filters.aiPatternWinRateRange.max}%`,
+      };
+    }
+  }
+
+  // 12. 风险收益比筛选
+  if (filters.aiMinRiskRewardRatio !== undefined) {
+    if (!trendPrediction || trendPrediction.riskRewardRatio === undefined) {
+      return { passed: false, reason: '缺少风险收益比数据' };
+    }
+    if (trendPrediction.riskRewardRatio < filters.aiMinRiskRewardRatio) {
+      return {
+        passed: false,
+        reason: `风险收益比不足：${trendPrediction.riskRewardRatio.toFixed(1)} < ${filters.aiMinRiskRewardRatio}`,
       };
     }
   }
@@ -796,29 +753,44 @@ async function runFilterTask(
       }
 
       // AI分析筛选
-      // 检查是否有缓存的AI分析结果
-      let itemForAIFilter = nextItem;
-      if (filters.aiAnalysisEnabled && !nextItem.aiAnalysis) {
-        const cachedEntry = aiCacheMap.get(nextItem.code);
-        if (cachedEntry && Date.now() - cachedEntry.timestamp <= AI_CACHE_TTL) {
-          // 使用缓存的AI分析结果
-          itemForAIFilter = { ...nextItem, aiAnalysis: cachedEntry.item.aiAnalysis };
+      // 提前判断：AI筛选未启用或无子条件激活时直接通过
+      if (aiAnalysisFilterActive(filters)) {
+        // 查找AI分析数据：优先用item自带的，其次用缓存，都没有则不通过
+        let aiAnalysis = nextItem.aiAnalysis;
+        if (!aiAnalysis) {
+          const cachedEntry = aiCacheMap.get(nextItem.code);
+          if (cachedEntry && Date.now() - cachedEntry.timestamp <= AI_CACHE_TTL) {
+            aiAnalysis = cachedEntry.aiAnalysis;
+          }
         }
-      }
 
-      const aiFilterResult = passesAIFilter(itemForAIFilter, filters);
-      if (!aiFilterResult.passed) {
-        mergeSkippedReason(
-          skippedMap,
-          item.code,
-          item.name,
-          `AI筛选：${aiFilterResult.reason || '未通过'}`
-        );
-        continue;
-      }
+        if (!aiAnalysis) {
+          mergeSkippedReason(
+            skippedMap,
+            item.code,
+            item.name,
+            'AI筛选：缺少AI分析数据'
+          );
+          continue;
+        }
 
-      // 如果使用了缓存的AI分析结果，更新当前项
-      if (itemForAIFilter !== nextItem) {
+        const itemForAIFilter = { ...nextItem, aiAnalysis };
+        const aiFilterResult = passesAIFilter(itemForAIFilter, filters);
+        if (!aiFilterResult.passed) {
+          mergeSkippedReason(
+            skippedMap,
+            item.code,
+            item.name,
+            `AI筛选：${aiFilterResult.reason || '未通过'}`
+          );
+          continue;
+        }
+
+        // 将有AI分析结果的item写入缓存（用于后续筛选任务复用）
+        if (!nextItem.aiAnalysis && aiAnalysis) {
+          aiCacheMap.set(nextItem.code, { aiAnalysis, timestamp: Date.now() });
+        }
+
         nextItem = itemForAIFilter;
       }
 

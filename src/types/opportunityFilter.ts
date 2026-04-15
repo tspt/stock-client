@@ -103,6 +103,12 @@ export interface OpportunityFilterSnapshot {
   aiRequireSimilarPatterns: boolean;
   /** 相似形态最低相似度（0-1，转换为0-100显示） */
   aiMinSimilarity?: number;
+  /** AI信号共识：要求最少N个信号方向一致 */
+  aiMinSignalCount?: number;
+  /** AI相似形态历史胜率范围（0-100%） */
+  aiPatternWinRateRange: NumberRange;
+  /** AI最低风险收益比 */
+  aiMinRiskRewardRatio?: number;
 }
 
 export interface FilterSkippedItem {

@@ -94,7 +94,7 @@ const INITIAL_FILTER_STATE = {
   /** 连续 N 根横盘段内每日收盘价是否要求 ≥ 当日 MA10 */
   consolidationRequireAboveMa10: OPPORTUNITY_DEFAULT_CONSOLIDATION.requireClosesAboveMa10,
   /** 是否按横盘条件过滤列表（与趋势线可同时开启，关系为 AND） */
-  consolidationFilterEnabled: true,
+  consolidationFilterEnabled: false,
   trendLineLookback: OPPORTUNITY_DEFAULT_TREND_LINE.lookback,
   trendLineConsecutive: OPPORTUNITY_DEFAULT_TREND_LINE.consecutive,
   trendLineFilterEnabled: false,
@@ -163,6 +163,9 @@ const INITIAL_FILTER_STATE = {
   aiRiskScoreRange: {},
   aiRequireSimilarPatterns: false,
   aiMinSimilarity: undefined,
+  aiMinSignalCount: undefined as number | undefined,
+  aiPatternWinRateRange: {} as { min?: number; max?: number },
+  aiMinRiskRewardRatio: undefined as number | undefined,
 };
 
 /** 与 opportunityStore 初始值一致，用于「重置」恢复周期与 K 线数量 */
@@ -336,6 +339,15 @@ export function OpportunityPage() {
   const [aiMinSimilarity, setAiMinSimilarity] = useState<number | undefined>(
     INITIAL_FILTER_STATE.aiMinSimilarity
   );
+  const [aiMinSignalCount, setAiMinSignalCount] = useState<number | undefined>(
+    INITIAL_FILTER_STATE.aiMinSignalCount
+  );
+  const [aiPatternWinRateRange, setAiPatternWinRateRange] = useState<{ min?: number; max?: number }>(
+    INITIAL_FILTER_STATE.aiPatternWinRateRange
+  );
+  const [aiMinRiskRewardRatio, setAiMinRiskRewardRatio] = useState<number | undefined>(
+    INITIAL_FILTER_STATE.aiMinRiskRewardRatio
+  );
 
   // 标记是否已完成初始恢复
   const isRestoredRef = useRef(false);
@@ -420,6 +432,9 @@ export function OpportunityPage() {
           setAiRiskScoreRange,
           setAiRequireSimilarPatterns,
           setAiMinSimilarity,
+          setAiMinSignalCount,
+          setAiPatternWinRateRange,
+          setAiMinRiskRewardRatio,
         });
       }
       const st = useOpportunityStore.getState();
@@ -511,6 +526,9 @@ export function OpportunityPage() {
         aiRiskScoreRange: { ...aiRiskScoreRange },
         aiRequireSimilarPatterns,
         aiMinSimilarity,
+        aiMinSignalCount,
+        aiPatternWinRateRange: { ...aiPatternWinRateRange },
+        aiMinRiskRewardRatio,
       };
       saveOpportunityFilterPrefs(prefs);
     };
@@ -582,6 +600,9 @@ export function OpportunityPage() {
     aiRiskScoreRange,
     aiRequireSimilarPatterns,
     aiMinSimilarity,
+    aiMinSignalCount,
+    aiPatternWinRateRange,
+    aiMinRiskRewardRatio,
   ]);
 
   // 筛选条件变化时自动保存（防抖300ms）
@@ -661,6 +682,9 @@ export function OpportunityPage() {
         aiRiskScoreRange: { ...aiRiskScoreRange },
         aiRequireSimilarPatterns,
         aiMinSimilarity,
+        aiMinSignalCount,
+        aiPatternWinRateRange: { ...aiPatternWinRateRange },
+        aiMinRiskRewardRatio,
       };
       saveOpportunityFilterPrefs(prefs);
     }, 300); // 防抖300ms
@@ -734,6 +758,9 @@ export function OpportunityPage() {
     aiRiskScoreRange,
     aiRequireSimilarPatterns,
     aiMinSimilarity,
+    aiMinSignalCount,
+    aiPatternWinRateRange,
+    aiMinRiskRewardRatio,
   ]);
 
   // 计算表格高度
@@ -902,6 +929,9 @@ export function OpportunityPage() {
       aiRiskScoreRange,
       aiRequireSimilarPatterns,
       aiMinSimilarity,
+      aiMinSignalCount,
+      aiPatternWinRateRange,
+      aiMinRiskRewardRatio,
     }),
     [
       priceRange,
@@ -972,6 +1002,9 @@ export function OpportunityPage() {
       aiRiskScoreRange,
       aiRequireSimilarPatterns,
       aiMinSimilarity,
+      aiMinSignalCount,
+      aiPatternWinRateRange,
+      aiMinRiskRewardRatio,
     ]
   );
 
@@ -1071,6 +1104,9 @@ export function OpportunityPage() {
     setAiRiskScoreRange({ ...s.aiRiskScoreRange });
     setAiRequireSimilarPatterns(s.aiRequireSimilarPatterns);
     setAiMinSimilarity(s.aiMinSimilarity);
+    setAiMinSignalCount(s.aiMinSignalCount);
+    setAiPatternWinRateRange({ ...s.aiPatternWinRateRange });
+    setAiMinRiskRewardRatio(s.aiMinRiskRewardRatio);
     patchSavedPrefsFiltersToDefaults();
     message.info('已恢复默认筛选条件');
   };
@@ -1188,6 +1224,9 @@ export function OpportunityPage() {
           aiRiskScoreRange,
           aiRequireSimilarPatterns,
           aiMinSimilarity,
+          aiMinSignalCount,
+          aiPatternWinRateRange,
+          aiMinRiskRewardRatio,
         });
 
         await exportStockNamesToPng(names, {
@@ -1513,6 +1552,12 @@ export function OpportunityPage() {
             setAiRequireSimilarPatterns={setAiRequireSimilarPatterns}
             aiMinSimilarity={aiMinSimilarity}
             setAiMinSimilarity={setAiMinSimilarity}
+            aiMinSignalCount={aiMinSignalCount}
+            setAiMinSignalCount={setAiMinSignalCount}
+            aiPatternWinRateRange={aiPatternWinRateRange}
+            setAiPatternWinRateRange={setAiPatternWinRateRange}
+            aiMinRiskRewardRatio={aiMinRiskRewardRatio}
+            setAiMinRiskRewardRatio={setAiMinRiskRewardRatio}
           />
         </div>
 

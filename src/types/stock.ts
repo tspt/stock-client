@@ -507,6 +507,12 @@ export interface TrendPrediction {
   resistanceLevel?: number;
   /** 预测依据 */
   reasoning: string[];
+  /** 达成共识的信号数量（总信号中与预测方向一致的个数） */
+  signalCount: number;
+  /** 信号总数 */
+  totalSignals: number;
+  /** 风险收益比（收益空间/亏损空间，越高越好） */
+  riskRewardRatio?: number;
 }
 
 /**
@@ -565,6 +571,10 @@ export interface AIAnalysisResult {
   recommendation?: SmartRecommendationScore;
   /** 分析时间戳 */
   analyzedAt: number;
+  /** 多信号达成共识（4+信号一致时为true，预测更可靠） */
+  signalConfluence?: boolean;
+  /** 相似形态历史胜率（0-1，匹配到盈利形态的比例） */
+  patternWinRate?: number;
 }
 
 /**

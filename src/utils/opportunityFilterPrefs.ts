@@ -157,6 +157,9 @@ export interface OpportunityFilterPrefs {
   aiRiskScoreRange: { min?: number; max?: number };
   aiRequireSimilarPatterns: boolean;
   aiMinSimilarity?: number;
+  aiMinSignalCount?: number;
+  aiPatternWinRateRange: { min?: number; max?: number };
+  aiMinRiskRewardRatio?: number;
 }
 
 function isRecord(v: unknown): v is Record<string, unknown> {
@@ -305,6 +308,12 @@ export function loadOpportunityFilterPrefs(): OpportunityFilterPrefs | null {
       aiRiskScoreRange: parseRange(p.aiRiskScoreRange),
       aiRequireSimilarPatterns: p.aiRequireSimilarPatterns === true,
       aiMinSimilarity: isFiniteNumber(p.aiMinSimilarity) ? p.aiMinSimilarity : undefined,
+      aiMinSignalCount: isFiniteNumber(p.aiMinSignalCount) ? p.aiMinSignalCount : undefined,
+      aiPatternWinRateRange: parseRange(p.aiPatternWinRateRange),
+      aiMinRiskRewardRatio:
+        isFiniteNumber(p.aiMinRiskRewardRatio) && p.aiMinRiskRewardRatio > 0
+          ? p.aiMinRiskRewardRatio
+          : undefined,
     };
 
     return prefs;
@@ -407,8 +416,12 @@ export function getDefaultFilterPrefsFields(): Omit<
     aiRiskScoreRange: {},
     aiRequireSimilarPatterns: false,
     aiMinSimilarity: undefined,
+    aiMinSignalCount: undefined,
+    aiPatternWinRateRange: {},
+    aiMinRiskRewardRatio: undefined,
   };
 }
+
 
 /** 与 INITIAL_OPPORTUNITY_QUERY + 页面默认市场/名称类型一致 */
 export const DEFAULT_QUERY_PREFS_FIELDS = {
@@ -513,6 +526,9 @@ export interface OpportunityFilterPrefsApplyActions {
   setAiRiskScoreRange: (v: { min?: number; max?: number }) => void;
   setAiRequireSimilarPatterns: (v: boolean) => void;
   setAiMinSimilarity: (v: number | undefined) => void;
+  setAiMinSignalCount: (v: number | undefined) => void;
+  setAiPatternWinRateRange: (v: { min?: number; max?: number }) => void;
+  setAiMinRiskRewardRatio: (v: number | undefined) => void;
 }
 
 export function applyOpportunityFilterPrefsToState(
@@ -590,4 +606,7 @@ export function applyOpportunityFilterPrefsToState(
   actions.setAiRiskScoreRange({ ...prefs.aiRiskScoreRange });
   actions.setAiRequireSimilarPatterns(prefs.aiRequireSimilarPatterns);
   actions.setAiMinSimilarity(prefs.aiMinSimilarity);
+  actions.setAiMinSignalCount(prefs.aiMinSignalCount);
+  actions.setAiPatternWinRateRange({ ...prefs.aiPatternWinRateRange });
+  actions.setAiMinRiskRewardRatio(prefs.aiMinRiskRewardRatio);
 }

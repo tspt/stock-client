@@ -96,6 +96,9 @@ export function buildOpportunityFilterSummary(p: {
   aiRiskScoreRange: NumRange;
   aiRequireSimilarPatterns: boolean;
   aiMinSimilarity?: number;
+  aiMinSignalCount?: number;
+  aiPatternWinRateRange: NumRange;
+  aiMinRiskRewardRatio?: number;
 }): string {
   const parts: string[] = [];
   pushRange(parts, '价', p.priceRange);
@@ -113,9 +116,7 @@ export function buildOpportunityFilterSummary(p: {
   if (p.recentLimitDownCount != null) {
     parts.push(`跌停≥${p.recentLimitDownCount}·${p.limitDownPeriod}天`);
   }
-  if (!p.consolidationFilterEnabled) {
-    parts.push('横盘关');
-  } else {
+  if (p.consolidationFilterEnabled) {
     let typePart: string;
     if (p.consolidationTypes.length === 0) {
       typePart = '类型无';
@@ -133,13 +134,11 @@ export function buildOpportunityFilterSummary(p: {
     }
     const ma10 = p.consolidationRequireAboveMa10 ? '·MA10上' : '';
     parts.push(
-      `横盘开·${typePart}·检索${p.consolidationLookback}根·连续${p.consolidationConsecutive}根·阈值${fmtNum(p.consolidationThreshold)}%${ma10}`,
+      `横盘·${typePart}·检索${p.consolidationLookback}根·连续${p.consolidationConsecutive}根·阈值${fmtNum(p.consolidationThreshold)}%${ma10}`,
     );
   }
-  if (!p.trendLineFilterEnabled) {
-    parts.push('趋势线关');
-  } else {
-    parts.push(`趋势线开·M=${p.trendLineLookback}根·N=${p.trendLineConsecutive}根`);
+  if (p.trendLineFilterEnabled) {
+    parts.push(`趋势线·M=${p.trendLineLookback}根·N=${p.trendLineConsecutive}根`);
   }
   const sharpOn =
     p.sharpMoveOnlyDrop ||
@@ -148,7 +147,11 @@ export function buildOpportunityFilterSummary(p: {
     p.sharpMoveRiseThenDropLoose ||
     p.sharpMoveDropFlatRise ||
     p.sharpMoveRiseFlatDrop;
-  parts.push(`异动${p.sharpMoveWindowBars}根/${p.sharpMoveMagnitude}%${sharpOn ? '·形态' : ''}`);
+  if (p.sharpMoveFilterEnabled && sharpOn) {
+    parts.push(`异动${p.sharpMoveWindowBars}根/${p.sharpMoveMagnitude}%·形态`);
+  } else if (p.sharpMoveFilterEnabled) {
+    parts.push(`异动${p.sharpMoveWindowBars}根/${p.sharpMoveMagnitude}%`);
+  }
 
   // K线形态汇总
   const candleParts: string[] = [];
@@ -201,6 +204,15 @@ export function buildOpportunityFilterSummary(p: {
     }
     if (p.aiMinSimilarity != null) {
       parts.push(`相似度≥${p.aiMinSimilarity}%`);
+    }
+    if (p.aiMinSignalCount != null) {
+      parts.push(`信号共识≥${p.aiMinSignalCount}`);
+    }
+    if (p.aiPatternWinRateRange.min != null || p.aiPatternWinRateRange.max != null) {
+      pushRange(parts, '形态胜率', p.aiPatternWinRateRange, '%');
+    }
+    if (p.aiMinRiskRewardRatio != null) {
+      parts.push(`风险收益比≥${p.aiMinRiskRewardRatio}`);
     }
   }
 
@@ -342,6 +354,12 @@ export interface OpportunityFiltersPanelProps {
   setAiRequireSimilarPatterns: (v: boolean) => void;
   aiMinSimilarity?: number;
   setAiMinSimilarity: (v: number | undefined) => void;
+  aiMinSignalCount?: number;
+  setAiMinSignalCount: (v: number | undefined) => void;
+  aiPatternWinRateRange: { min?: number; max?: number };
+  setAiPatternWinRateRange: SetRange;
+  aiMinRiskRewardRatio?: number;
+  setAiMinRiskRewardRatio: (v: number | undefined) => void;
 }
 
 export function OpportunityFiltersPanel({
@@ -478,6 +496,12 @@ export function OpportunityFiltersPanel({
   setAiRequireSimilarPatterns,
   aiMinSimilarity,
   setAiMinSimilarity,
+  aiMinSignalCount,
+  setAiMinSignalCount,
+  aiPatternWinRateRange,
+  setAiPatternWinRateRange,
+  aiMinRiskRewardRatio,
+  setAiMinRiskRewardRatio,
 }: OpportunityFiltersPanelProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
 
@@ -546,6 +570,9 @@ export function OpportunityFiltersPanel({
         aiRiskScoreRange,
         aiRequireSimilarPatterns,
         aiMinSimilarity,
+        aiMinSignalCount,
+        aiPatternWinRateRange,
+        aiMinRiskRewardRatio,
       }),
     [
       priceRange,
@@ -610,6 +637,9 @@ export function OpportunityFiltersPanel({
       aiRiskScoreRange,
       aiRequireSimilarPatterns,
       aiMinSimilarity,
+      aiMinSignalCount,
+      aiPatternWinRateRange,
+      aiMinRiskRewardRatio,
     ]
   );
 
@@ -1641,6 +1671,86 @@ export function OpportunityFiltersPanel({
                         >
                           要求有相似形态匹配
                         </Checkbox>
+                      </div>
+                    </div>
+                    <div className={styles.filterRow}>
+                      <div className={styles.filterItem}>
+                        <span className={styles.filterLabel}>信号共识：</span>
+                        <InputNumber
+                          value={aiMinSignalCount}
+                          min={1}
+                          max={10}
+                          step={1}
+                          style={{ width: 100 }}
+                          placeholder="最少个数"
+                          disabled={!aiAnalysisEnabled}
+                          onChange={(v) => {
+                            setAiMinSignalCount(typeof v === 'number' && isFinite(v) ? v : undefined);
+                          }}
+                        />
+                        <span style={{ marginLeft: 4 }}>
+                          （要求N+个指标信号方向一致）
+                        </span>
+                      </div>
+                    </div>
+                    <div className={styles.filterRow}>
+                      <div className={styles.filterItem}>
+                        <span className={styles.filterLabel}>形态胜率：</span>
+                        <InputNumber
+                          value={aiPatternWinRateRange.min}
+                          min={0}
+                          max={100}
+                          step={5}
+                          style={{ width: 80 }}
+                          placeholder="最低%"
+                          disabled={!aiAnalysisEnabled}
+                          onChange={(v) => {
+                            setAiPatternWinRateRange((prev) => ({
+                              ...prev,
+                              min: typeof v === 'number' && isFinite(v) ? v : undefined,
+                            }));
+                          }}
+                        />
+                        <span style={{ margin: '0 4px' }}>~</span>
+                        <InputNumber
+                          value={aiPatternWinRateRange.max}
+                          min={0}
+                          max={100}
+                          step={5}
+                          style={{ width: 80 }}
+                          placeholder="最高%"
+                          disabled={!aiAnalysisEnabled}
+                          onChange={(v) => {
+                            setAiPatternWinRateRange((prev) => ({
+                              ...prev,
+                              max: typeof v === 'number' && isFinite(v) ? v : undefined,
+                            }));
+                          }}
+                        />
+                        <span style={{ marginLeft: 4 }}>（相似形态历史盈利比例）</span>
+                      </div>
+                    </div>
+                    <div className={styles.filterRow}>
+                      <div className={styles.filterItem}>
+                        <span className={styles.filterLabel}>风险收益比：</span>
+                        <InputNumber
+                          value={aiMinRiskRewardRatio}
+                          min={0.1}
+                          max={20}
+                          step={0.1}
+                          precision={1}
+                          style={{ width: 100 }}
+                          placeholder="最低值"
+                          disabled={!aiAnalysisEnabled}
+                          onChange={(v) => {
+                            setAiMinRiskRewardRatio(
+                              typeof v === 'number' && isFinite(v) && v > 0 ? v : undefined
+                            );
+                          }}
+                        />
+                        <span style={{ marginLeft: 4 }}>
+                          （收益空间/亏损空间，越高越好）
+                        </span>
                       </div>
                     </div>
                   </div>
