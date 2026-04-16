@@ -3,7 +3,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { getKLineData } from '@/services/stockApi';
+import { getKLineData } from '@/services/stocks';
 import { KLINE_POLLING_INTERVAL_MS } from '@/utils/constants';
 import { usePolling } from './usePolling';
 import { klineCache } from '@/utils/klineCache';

@@ -16,6 +16,25 @@ import { detectTrendPatterns } from '@/utils/trendPatterns';
 import { detectCandlestickPatternsInWindow } from '@/utils/candlestickPatterns';
 
 /**
+ * 简单的移动平均计算（用于number数组）
+ */
+function calculateSimpleMA(data: number[], period: number): number[] {
+  const result: number[] = [];
+  for (let i = 0; i < data.length; i++) {
+    if (i < period - 1) {
+      result.push(NaN);
+    } else {
+      let sum = 0;
+      for (let j = i - period + 1; j <= i; j++) {
+        sum += data[j];
+      }
+      result.push(sum / period);
+    }
+  }
+  return result;
+}
+
+/**
  * 趋势预测配置
  */
 export interface TrendPredictionConfig {
@@ -50,6 +69,8 @@ export function predictTrend(
       confidence: 0,
       period: config.predictionPeriod,
       reasoning: ['数据不足，无法进行有效预测'],
+      signalCount: 0,
+      totalSignals: 0,
     };
   }
 
@@ -410,14 +431,9 @@ function analyzeVolumeTrend(
   if (len < 15) return signals;
 
   // 计算成交量MA5和MA10
-  const volMa5 = calculateMA(
-    klineData.map((k) => k.volume),
-    5
-  );
-  const volMa10 = calculateMA(
-    klineData.map((k) => k.volume),
-    10
-  );
+  const volumes = klineData.map((k) => k.volume);
+  const volMa5 = calculateSimpleMA(volumes, 5);
+  const volMa10 = calculateSimpleMA(volumes, 10);
 
   if (volMa5.length < 2 || volMa10.length < 2) return signals;
 

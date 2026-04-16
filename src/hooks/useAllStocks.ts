@@ -3,7 +3,7 @@
  */
 
 import { useEffect } from 'react';
-import { getAllStocks } from '@/services/stockApi';
+import { getAllStocks } from '@/services/stocks';
 import { useStockStore } from '@/stores/stockStore';
 
 // 模块级别的 Promise 缓存，确保同一请求只执行一次

@@ -3,7 +3,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { getFundamentalAnalysis } from '@/services/fundamentalApi';
+import { getFundamentalAnalysis } from '@/services/fundamental';
 import type { FundamentalAnalysis } from '@/types/stock';
 
 export function useFundamentalAnalysis(code: string) {

@@ -3,8 +3,8 @@
  */
 
 import { create } from 'zustand';
-import { getMarketOverview, getSectorRanks } from '@/services/tencentFinanceApi';
-import type { MarketOverview } from '@/services/tencentFinanceApi';
+import { getMarketOverview, getSectorRanks } from '@/services/hot';
+import type { MarketOverview } from '@/services/hot';
 import type { SectorRankData } from '@/types/stock';
 
 interface HotState {

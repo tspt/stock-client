@@ -3,7 +3,7 @@
  */
 
 import { Typography, Divider } from 'antd';
-import type { MarketOverview } from '@/services/tencentFinanceApi';
+import type { MarketOverview } from '@/services/hot';
 import { formatChangePercent } from '@/utils/format';
 import styles from '../HotPage.module.css';
 

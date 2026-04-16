@@ -5,12 +5,12 @@
  */
 
 import type { KLinePeriod, StockInfo, StockOpportunityData, KLineData } from '@/types/stock';
-import { getKLineData, getStockDetail, getStockQuotes } from '@/services/stockApi';
+import { getKLineData, getStockDetail, getStockQuotes } from '../stocks/api';
 import { calcAllIndicators, formatKDJValues } from '@/utils/indicators';
 import { calculateConsolidationInLookback } from '@/utils/consolidationAnalysis';
 import { analyzeSharpMovePatterns } from '@/utils/sharpMovePatterns';
 import { calculateTrendLineInLookback } from '@/utils/trendLineAnalysis';
-import { performAIAnalysis } from '@/services/aiAnalysisService';
+import { performAIAnalysis } from './ai';
 import { ConcurrencyManager } from '@/utils/concurrencyManager';
 import {
   OPPORTUNITY_BATCH_DELAY,

@@ -12,13 +12,16 @@ import type {
   KLineData,
 } from '@/types/stock';
 import type { ColumnConfig } from '@/types/common';
-import { analyzeAllStocksOpportunity } from '@/services/opportunityService';
+import { analyzeAllStocksOpportunity } from '@/services/opportunity';
 import {
   saveOpportunityData,
   getOpportunityData,
   saveOpportunityHistory,
 } from '@/utils/opportunityIndexedDB';
-import { MAX_OPPORTUNITY_KLINE_CACHE_ENTRIES, OPPORTUNITY_DEFAULT_COLUMNS } from '@/utils/constants';
+import {
+  MAX_OPPORTUNITY_KLINE_CACHE_ENTRIES,
+  OPPORTUNITY_DEFAULT_COLUMNS,
+} from '@/utils/constants';
 
 function trimKlineDataCache(map: Map<string, KLineData[]>) {
   if (map.size <= MAX_OPPORTUNITY_KLINE_CACHE_ENTRIES) return;

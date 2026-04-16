@@ -13,22 +13,7 @@ import type {
 } from '@/types/stock';
 import { getPureCode, getMarketFromCode } from '@/utils/format';
 import { apiCache } from '@/utils/apiCache';
-
-// 开发环境、Electron 打包版均走主进程拉起的本地 proxy
-const isDev = import.meta.env?.DEV ?? process.env.NODE_ENV === 'development';
-const isElectronShell =
-  typeof window !== 'undefined' &&
-  (window as Window & { electronAPI?: unknown }).electronAPI != null;
-const useLocalProxy = isElectronShell || isDev;
-
-const API_BASE = {
-  // 东方财富财经数据中心
-  EASTMONEY: useLocalProxy
-    ? 'http://127.0.0.1:3000/api/eastmoney'
-    : 'https://datacenter-web.eastmoney.com',
-  // 同花顺iFinD
-  THS: useLocalProxy ? 'http://127.0.0.1:3000/api/ths' : 'https://basic.10jqka.com.cn',
-};
+import { API_BASE } from '@/config/environment';
 
 /**
  * 获取股票基本面分析数据

@@ -5,7 +5,7 @@
 import { useState } from 'react';
 import { Input, AutoComplete, message, Button, Dropdown, Modal } from 'antd';
 import { SearchOutlined, MoreOutlined } from '@ant-design/icons';
-import { searchStockLocal } from '@/services/stockApi';
+import { searchStockLocal } from '@/services/stocks';
 import { useStockStore } from '@/stores/stockStore';
 import { useStockList } from '@/hooks/useStockList';
 import { StockGroupSelector } from '@/components/StockGroupSelector/StockGroupSelector';

@@ -8,7 +8,7 @@ import { StockOutlined, BellOutlined, BarChartOutlined, FireOutlined } from '@an
 import zhCN from 'antd/locale/zh_CN';
 import { useTheme } from '@/hooks/useTheme';
 import { useStockStore } from '@/stores/stockStore';
-import { initNotificationNavigation } from '@/services/notificationNavigation';
+import { initNotificationNavigation } from '@/services/alerts';
 import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { ErrorBoundary } from '@/components/ErrorBoundary/ErrorBoundary';
 import { logger } from '@/utils/logger';

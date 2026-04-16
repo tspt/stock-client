@@ -8,6 +8,7 @@ import type { StockInfo, StockQuote, KLineData, StockDetail } from '@/types/stoc
 import { getPureCode, getMarketFromCode } from '@/utils/format';
 import { getStorage, setStorage } from '@/utils/storage';
 import { apiCache } from '@/utils/apiCache';
+import { API_BASE, useLocalProxy } from '@/config/environment';
 
 /** biyingapi 全量股票列表本地缓存（默认约 1 个月过期） */
 const BIYING_HSLT_LIST_CACHE_KEY = 'biying_hslt_stock_list_v1';
@@ -34,18 +35,6 @@ function readBiyingHsltListCache(): StockInfo[] | null {
 
 /** 并发时复用同一次拉取，避免缓存失效瞬间多次打满接口 */
 let biyingHsltListFetchPromise: Promise<StockInfo[]> | null = null;
-
-// 开发环境、Electron 打包版均走主进程拉起的本地 proxy（与 npm run dev 一致）；仅纯浏览器构建直连三方域名
-const isDev = import.meta.env?.DEV ?? process.env.NODE_ENV === 'development';
-const isElectronShell =
-  typeof window !== 'undefined' &&
-  (window as Window & { electronAPI?: unknown }).electronAPI != null;
-const useLocalProxy = isElectronShell || isDev;
-const API_BASE = {
-  SINA: useLocalProxy ? 'http://127.0.0.1:3000/api/sina' : 'https://hq.sinajs.cn',
-  TENCENT: useLocalProxy ? 'http://127.0.0.1:3000/api/tencent' : 'https://qt.gtimg.cn',
-  KLINE: useLocalProxy ? 'http://127.0.0.1:3000/api/kline' : 'https://proxy.finance.qq.com',
-};
 
 /**
  * 获取所有股票列表

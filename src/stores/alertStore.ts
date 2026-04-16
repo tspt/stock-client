@@ -239,7 +239,7 @@ export const useAlertStore = create<AlertState>((set, get) => ({
         });
 
         // 发送通知
-        import('@/services/notificationService')
+        import('@/services/alerts')
           .then(({ sendAlertNotification }) => {
             return sendAlertNotification(alert, quote);
           })

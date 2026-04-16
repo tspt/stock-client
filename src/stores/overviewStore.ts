@@ -10,7 +10,7 @@ import type {
   KLinePeriod,
 } from '@/types/stock';
 import type { ColumnConfig } from '@/types/common';
-import { analyzeAllStocks } from '@/services/overviewService';
+import { analyzeAllStocks } from '@/services/overview';
 import { saveOverviewData, getOverviewData, saveOverviewHistory } from '@/utils/indexedDB';
 import { OVERVIEW_DEFAULT_COLUMNS } from '@/utils/constants';
 import { useStockStore } from './stockStore';

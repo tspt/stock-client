@@ -3,7 +3,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { getStockDetail } from '@/services/stockApi';
+import { getStockDetail } from '@/services/stocks';
 import { usePolling } from './usePolling';
 import type { StockDetail } from '@/types/stock';
 
@@ -12,10 +12,7 @@ import type { StockDetail } from '@/types/stock';
  * @param code 股票代码
  * @param enablePolling 是否启用轮询更新
  */
-export function useStockDetail(
-  code: string | null,
-  enablePolling: boolean = false
-) {
+export function useStockDetail(code: string | null, enablePolling: boolean = false) {
   const [detail, setDetail] = useState<StockDetail | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
@@ -59,4 +56,3 @@ export function useStockDetail(
     refetch: fetchDetail,
   };
 }
-
