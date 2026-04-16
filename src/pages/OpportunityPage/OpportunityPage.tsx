@@ -23,6 +23,7 @@ import { ColumnSettings } from '@/components/ColumnSettings/ColumnSettings';
 import { AIAnalysisModal } from '@/components/AIAnalysisModal';
 import { exportOpportunityToExcel } from '@/utils/opportunityExportUtils';
 import { exportStockNamesToExcel, exportStockNamesToPng } from '@/utils/stockNamesExportUtils';
+import { detectTradingSignal } from '@/utils/signalDetector';
 import type { ConsolidationType, KLinePeriod, StockInfo, StockOpportunityData } from '@/types/stock';
 import { useAllStocks } from '@/hooks/useAllStocks';
 import { useOpportunityFilterEngine } from '@/hooks/useOpportunityFilterEngine';
@@ -167,6 +168,10 @@ const INITIAL_FILTER_STATE = {
   aiMinSignalCount: undefined as number | undefined,
   aiPatternWinRateRange: {} as { min?: number; max?: number },
   aiMinRiskRewardRatio: undefined as number | undefined,
+  /** 专业版筛选增强功能 */
+  aiEnableWeightedScoring: false,
+  aiMinCompositeScore: undefined as number | undefined,
+  aiEnableTimeDecay: false,
 };
 
 /** 与 opportunityStore 初始值一致，用于「重置」恢复周期与 K 线数量 */
@@ -196,6 +201,27 @@ export function OpportunityPage() {
   } = useOpportunityStore();
 
   const { allStocks } = useAllStocks();
+
+  // 为每只股票计算交易信号
+  const processedData = useMemo(() => {
+    return analysisData.map((item) => {
+      // 从 klineDataCache 中获取 K 线数据
+      const cachedKline = klineDataCache?.get(item.code);
+      if (!cachedKline || cachedKline.length < 60) {
+        const { tradingSignal: _, ...rest } = item;
+        return rest;
+      }
+
+      const signal = detectTradingSignal(cachedKline);
+      // 确保 tradingSignal 要么是 TradingSignal 对象，要么不存在（undefined）
+      if (signal) {
+        return { ...item, tradingSignal: signal };
+      }
+      const { tradingSignal: __, ...rest } = item;
+      return rest;
+    });
+  }, [analysisData, klineDataCache]);
+
   const [columnSettingsVisible, setColumnSettingsVisible] = useState(false);
   const [selectedMarket, setSelectedMarket] = useState<string>(INITIAL_FILTER_STATE.selectedMarket);
   const [priceRange, setPriceRange] = useState<{ min?: number; max?: number }>(INITIAL_FILTER_STATE.priceRange);
@@ -363,6 +389,7 @@ export function OpportunityPage() {
   const [aiEnableTimeDecay, setAiEnableTimeDecay] = useState<boolean>(
     INITIAL_FILTER_STATE.aiEnableTimeDecay || false
   );
+  const [tradingSignalTypes, setTradingSignalTypes] = useState<import('@/types/stock').TradingSignalType[]>([]);
 
   // 标记是否已完成初始恢复
   const isRestoredRef = useRef(false);
@@ -951,6 +978,7 @@ export function OpportunityPage() {
       aiMinSignalCount,
       aiPatternWinRateRange,
       aiMinRiskRewardRatio,
+      tradingSignalTypes,
     }),
     [
       priceRange,
@@ -1024,12 +1052,13 @@ export function OpportunityPage() {
       aiMinSignalCount,
       aiPatternWinRateRange,
       aiMinRiskRewardRatio,
+      tradingSignalTypes,
     ]
   );
 
   const { filteredData: filteredAnalysisData, filtering: filteringAnalysisData, skipped: filterSkippedItems } =
     useOpportunityFilterEngine({
-      analysisData,
+      analysisData: processedData as StockOpportunityData[],
       klineDataCache,
       filters: filterSnapshot,
     });
@@ -1587,6 +1616,8 @@ export function OpportunityPage() {
             setAiMinCompositeScore={setAiMinCompositeScore}
             aiEnableTimeDecay={aiEnableTimeDecay}
             setAiEnableTimeDecay={setAiEnableTimeDecay}
+            tradingSignalTypes={tradingSignalTypes}
+            setTradingSignalTypes={setTradingSignalTypes}
           />
         </div>
 

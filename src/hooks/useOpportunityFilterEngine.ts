@@ -53,6 +53,13 @@ function passLightFilters(item: StockOpportunityData, filters: OpportunityFilter
     if (filters.kdjJRange.max !== undefined && item.kdjJ > filters.kdjJRange.max) return false;
   }
 
+  // 交易信号筛选
+  if (filters.tradingSignalTypes && filters.tradingSignalTypes.length > 0) {
+    if (!item.tradingSignal || !filters.tradingSignalTypes.includes(item.tradingSignal.type)) {
+      return false;
+    }
+  }
+
   return true;
 }
 

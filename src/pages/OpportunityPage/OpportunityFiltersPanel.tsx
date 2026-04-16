@@ -6,7 +6,7 @@ import { useMemo, useState } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 import { Button, Drawer, Space, Collapse, InputNumber, Checkbox, Select } from 'antd';
 import { FilterOutlined } from '@ant-design/icons';
-import type { ConsolidationType } from '@/types/stock';
+import type { ConsolidationType, TradingSignalType } from '@/types/stock';
 import { PatternTooltip } from '@/components/PatternTooltip/PatternTooltip';
 import styles from './OpportunityPage.module.css';
 
@@ -371,6 +371,9 @@ export interface OpportunityFiltersPanelProps {
   setAiMinCompositeScore: (v: number | undefined) => void;
   aiEnableTimeDecay?: boolean;
   setAiEnableTimeDecay: (v: boolean) => void;
+  // 交易信号筛选
+  tradingSignalTypes?: TradingSignalType[];
+  setTradingSignalTypes: (v: TradingSignalType[]) => void;
 }
 
 export function OpportunityFiltersPanel({
@@ -522,6 +525,9 @@ export function OpportunityFiltersPanel({
   setAiMinCompositeScore,
   aiEnableTimeDecay,
   setAiEnableTimeDecay,
+  // 交易信号筛选
+  tradingSignalTypes,
+  setTradingSignalTypes,
 }: OpportunityFiltersPanelProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
 
@@ -1867,6 +1873,46 @@ export function OpportunityFiltersPanel({
                           disabled={!aiAnalysisEnabled}
                         >
                           启用信号时效性衰减
+                        </Checkbox>
+                      </div>
+                    </div>
+
+                    {/* 交易信号筛选 */}
+                    <div className={styles.filterRow}>
+                      <div className={styles.filterItem} style={{ flexWrap: 'wrap', gap: 8 }}>
+                        <span className={styles.filterLabel}>今日信号：</span>
+                        <Checkbox
+                          checked={tradingSignalTypes?.includes('STRONG_BUY') || false}
+                          onChange={(e) => {
+                            const newTypes = e.target.checked
+                              ? [...(tradingSignalTypes || []), 'STRONG_BUY'] as TradingSignalType[]
+                              : (tradingSignalTypes || []).filter((t): t is TradingSignalType => t !== 'STRONG_BUY');
+                            setTradingSignalTypes(newTypes);
+                          }}
+                        >
+                          🟢 强烈买入
+                        </Checkbox>
+                        <Checkbox
+                          checked={tradingSignalTypes?.includes('BUY') || false}
+                          onChange={(e) => {
+                            const newTypes = e.target.checked
+                              ? [...(tradingSignalTypes || []), 'BUY'] as TradingSignalType[]
+                              : (tradingSignalTypes || []).filter((t): t is TradingSignalType => t !== 'BUY');
+                            setTradingSignalTypes(newTypes);
+                          }}
+                        >
+                          🟢 建议买入
+                        </Checkbox>
+                        <Checkbox
+                          checked={tradingSignalTypes?.includes('SELL') || false}
+                          onChange={(e) => {
+                            const newTypes = e.target.checked
+                              ? [...(tradingSignalTypes || []), 'SELL'] as TradingSignalType[]
+                              : (tradingSignalTypes || []).filter((t): t is TradingSignalType => t !== 'SELL');
+                            setTradingSignalTypes(newTypes);
+                          }}
+                        >
+                          🔴 卖出
                         </Checkbox>
                       </div>
                     </div>

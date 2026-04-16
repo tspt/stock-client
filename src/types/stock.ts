@@ -330,6 +330,23 @@ export interface TrendLineAnalysis {
 }
 
 /**
+ * 交易信号类型
+ */
+export type TradingSignalType = 'STRONG_BUY' | 'BUY' | 'HOLD' | 'SELL' | 'STRONG_SELL';
+
+/**
+ * 交易信号详情
+ */
+export interface TradingSignal {
+  /** 信号类型 */
+  type: TradingSignalType;
+  /** 信号强度 (0-100) */
+  strength: number;
+  /** 简要原因 */
+  reason: string;
+}
+
+/**
  * 机会分析 - 单只股票的分析数据
  */
 export interface StockOpportunityData {
@@ -400,6 +417,8 @@ export interface StockOpportunityData {
   aiAnalysis?: AIAnalysisResult;
   /** AI分析生成时间戳（用于计算时间衰减） */
   analysisTimestamp?: number;
+  /** 今日交易信号 */
+  tradingSignal?: TradingSignal;
   /** 分析时间戳 */
   analyzedAt: number;
   /** 错误信息（如果获取失败） */

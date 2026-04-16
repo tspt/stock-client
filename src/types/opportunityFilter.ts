@@ -1,4 +1,4 @@
-import type { ConsolidationType, StockOpportunityData } from '@/types/stock';
+import type { ConsolidationType, StockOpportunityData, TradingSignalType } from '@/types/stock';
 
 export interface NumberRange {
   min?: number;
@@ -140,6 +140,9 @@ export interface OpportunityFilterSnapshot {
   /** 5. 回测胜率联动 */
   aiMinHistoricalWinRate?: number; // 最低历史胜率 (%)
   aiMinAvgRiskReward?: number; // 最低平均盈亏比
+
+  /** 6. 交易信号筛选 */
+  tradingSignalTypes?: TradingSignalType[];
 }
 
 export interface FilterSkippedItem {

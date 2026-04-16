@@ -163,6 +163,24 @@ export const OpportunityTable = memo(function OpportunityTable({ data, columns, 
         if (!labels || labels.length === 0) return '-';
         return labels.join('、');
       }
+      case 'tradingSignal': {
+        const signal = record?.tradingSignal;
+        if (!signal) return <span style={{ color: '#999' }}>-</span>;
+
+        let color = '#666';
+        let text = '观望';
+        if (signal.type === 'STRONG_BUY') { color = '#52c41a'; text = '🟢 强烈买入'; }
+        else if (signal.type === 'BUY') { color = '#73d13d'; text = '🟢 建议买入'; }
+        else if (signal.type === 'SELL') { color = '#ff7875'; text = '🔴 建议卖出'; }
+        else if (signal.type === 'STRONG_SELL') { color = '#f5222d'; text = '🔴 强烈卖出'; }
+
+        return (
+          <div>
+            <span style={{ fontWeight: 'bold', color, fontSize: '12px' }}>{text}</span>
+            <div style={{ fontSize: '10px', color: '#999' }}>{signal.reason}</div>
+          </div>
+        );
+      }
       default:
         return String(value);
     }
