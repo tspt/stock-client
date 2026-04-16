@@ -353,6 +353,16 @@ export function OpportunityPage() {
   const [aiMinRiskRewardRatio, setAiMinRiskRewardRatio] = useState<number | undefined>(
     INITIAL_FILTER_STATE.aiMinRiskRewardRatio
   );
+  // 专业版筛选增强功能状态
+  const [aiEnableWeightedScoring, setAiEnableWeightedScoring] = useState<boolean>(
+    INITIAL_FILTER_STATE.aiEnableWeightedScoring || false
+  );
+  const [aiMinCompositeScore, setAiMinCompositeScore] = useState<number | undefined>(
+    INITIAL_FILTER_STATE.aiMinCompositeScore
+  );
+  const [aiEnableTimeDecay, setAiEnableTimeDecay] = useState<boolean>(
+    INITIAL_FILTER_STATE.aiEnableTimeDecay || false
+  );
 
   // 标记是否已完成初始恢复
   const isRestoredRef = useRef(false);
@@ -1570,6 +1580,13 @@ export function OpportunityPage() {
             setAiPatternWinRateRange={setAiPatternWinRateRange}
             aiMinRiskRewardRatio={aiMinRiskRewardRatio}
             setAiMinRiskRewardRatio={setAiMinRiskRewardRatio}
+            // 专业版筛选增强功能
+            aiEnableWeightedScoring={aiEnableWeightedScoring}
+            setAiEnableWeightedScoring={setAiEnableWeightedScoring}
+            aiMinCompositeScore={aiMinCompositeScore}
+            setAiMinCompositeScore={setAiMinCompositeScore}
+            aiEnableTimeDecay={aiEnableTimeDecay}
+            setAiEnableTimeDecay={setAiEnableTimeDecay}
           />
         </div>
 

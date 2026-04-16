@@ -398,6 +398,8 @@ export interface StockOpportunityData {
   sharpMovePatterns?: SharpMovePatternAnalysis;
   /** AI辅助分析结果 */
   aiAnalysis?: AIAnalysisResult;
+  /** AI分析生成时间戳（用于计算时间衰减） */
+  analysisTimestamp?: number;
   /** 分析时间戳 */
   analyzedAt: number;
   /** 错误信息（如果获取失败） */

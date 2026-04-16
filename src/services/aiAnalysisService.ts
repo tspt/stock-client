@@ -133,7 +133,8 @@ export function predictTrend(
   }
 
   // 信号共识增强：当4+信号一致时提升置信度
-  const signalConfluence = totalSignals > 0 && signalCount >= 4 && signalCount >= totalSignals * 0.6;
+  const signalConfluence =
+    totalSignals > 0 && signalCount >= 4 && signalCount >= totalSignals * 0.6;
   if (signalConfluence) {
     confidence = Math.min(confidence * 1.2, 0.95); // 最多提升20%，上限95%
     reasoning.unshift(`${signalCount}/${totalSignals}个信号达成共识`);
@@ -409,8 +410,14 @@ function analyzeVolumeTrend(
   if (len < 15) return signals;
 
   // 计算成交量MA5和MA10
-  const volMa5 = calculateMA(klineData.map((k) => k.volume), 5);
-  const volMa10 = calculateMA(klineData.map((k) => k.volume), 10);
+  const volMa5 = calculateMA(
+    klineData.map((k) => k.volume),
+    5
+  );
+  const volMa10 = calculateMA(
+    klineData.map((k) => k.volume),
+    10
+  );
 
   if (volMa5.length < 2 || volMa10.length < 2) return signals;
 
@@ -1031,9 +1038,7 @@ export function performAIAnalysis(
   // 相似形态历史胜率
   let patternWinRate: number | undefined;
   if (similarPatterns && similarPatterns.length > 0) {
-    const withPerformance = similarPatterns.filter(
-      (p) => p.historicalPerformance !== undefined
-    );
+    const withPerformance = similarPatterns.filter((p) => p.historicalPerformance !== undefined);
     if (withPerformance.length > 0) {
       const winCount = withPerformance.filter(
         (p) => (p.historicalPerformance?.changePercent ?? 0) > 0
@@ -1050,4 +1055,17 @@ export function performAIAnalysis(
     signalConfluence,
     patternWinRate,
   };
+}
+
+/**
+ * 执行 AI 分析并返回包含时间戳的完整结果（用于 Worker 筛选）
+ */
+export function performAIAnalysisWithTimestamp(
+  klineData: KLineData[],
+  opportunityData: StockOpportunityData,
+  allStockData?: Map<string, { code: string; name: string; klineData: KLineData[] }>
+): { result: AIAnalysisResult; timestamp: number } {
+  const timestamp = Date.now();
+  const result = performAIAnalysis(klineData, opportunityData, allStockData);
+  return { result, timestamp };
 }

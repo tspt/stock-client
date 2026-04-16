@@ -161,6 +161,23 @@ export interface OpportunityFilterPrefs {
   aiMinSignalCount?: number;
   aiPatternWinRateRange: { min?: number; max?: number };
   aiMinRiskRewardRatio?: number;
+
+  // --- 专业版筛选增强功能 ---
+  aiEnableWeightedScoring?: boolean;
+  aiWeights?: {
+    confidence: number;
+    totalScore: number;
+    technicalScore: number;
+    riskScore: number;
+  };
+  aiMinCompositeScore?: number;
+  aiEnableConsistencyCheck?: boolean;
+  aiMaxDivergence?: number;
+  aiTopPercentile?: number;
+  aiEnableTimeDecay?: boolean;
+  aiDecayRate?: number;
+  aiMinHistoricalWinRate?: number;
+  aiMinAvgRiskReward?: number;
 }
 
 function isRecord(v: unknown): v is Record<string, unknown> {
@@ -316,6 +333,30 @@ export function loadOpportunityFilterPrefs(): OpportunityFilterPrefs | null {
         isFiniteNumber(p.aiMinRiskRewardRatio) && p.aiMinRiskRewardRatio > 0
           ? p.aiMinRiskRewardRatio
           : undefined,
+      // 专业版筛选增强功能
+      aiEnableWeightedScoring: p.aiEnableWeightedScoring === true,
+      aiWeights: isRecord(p.aiWeights)
+        ? {
+            confidence: isFiniteNumber(p.aiWeights.confidence) ? p.aiWeights.confidence : 0.3,
+            totalScore: isFiniteNumber(p.aiWeights.totalScore) ? p.aiWeights.totalScore : 0.4,
+            technicalScore: isFiniteNumber(p.aiWeights.technicalScore)
+              ? p.aiWeights.technicalScore
+              : 0.2,
+            riskScore: isFiniteNumber(p.aiWeights.riskScore) ? p.aiWeights.riskScore : 0.1,
+          }
+        : undefined,
+      aiMinCompositeScore: isFiniteNumber(p.aiMinCompositeScore)
+        ? p.aiMinCompositeScore
+        : undefined,
+      aiEnableConsistencyCheck: p.aiEnableConsistencyCheck === true,
+      aiMaxDivergence: isFiniteNumber(p.aiMaxDivergence) ? p.aiMaxDivergence : undefined,
+      aiTopPercentile: isFiniteNumber(p.aiTopPercentile) ? p.aiTopPercentile : undefined,
+      aiEnableTimeDecay: p.aiEnableTimeDecay === true,
+      aiDecayRate: isFiniteNumber(p.aiDecayRate) ? p.aiDecayRate : undefined,
+      aiMinHistoricalWinRate: isFiniteNumber(p.aiMinHistoricalWinRate)
+        ? p.aiMinHistoricalWinRate
+        : undefined,
+      aiMinAvgRiskReward: isFiniteNumber(p.aiMinAvgRiskReward) ? p.aiMinAvgRiskReward : undefined,
     };
 
     return prefs;

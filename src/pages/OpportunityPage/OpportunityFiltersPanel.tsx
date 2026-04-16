@@ -364,6 +364,13 @@ export interface OpportunityFiltersPanelProps {
   setAiPatternWinRateRange: SetRange;
   aiMinRiskRewardRatio?: number;
   setAiMinRiskRewardRatio: (v: number | undefined) => void;
+  // 专业版筛选增强功能
+  aiEnableWeightedScoring?: boolean;
+  setAiEnableWeightedScoring: (v: boolean) => void;
+  aiMinCompositeScore?: number;
+  setAiMinCompositeScore: (v: number | undefined) => void;
+  aiEnableTimeDecay?: boolean;
+  setAiEnableTimeDecay: (v: boolean) => void;
 }
 
 export function OpportunityFiltersPanel({
@@ -508,6 +515,13 @@ export function OpportunityFiltersPanel({
   setAiPatternWinRateRange,
   aiMinRiskRewardRatio,
   setAiMinRiskRewardRatio,
+  // 专业版筛选增强功能
+  aiEnableWeightedScoring,
+  setAiEnableWeightedScoring,
+  aiMinCompositeScore,
+  setAiMinCompositeScore,
+  aiEnableTimeDecay,
+  setAiEnableTimeDecay,
 }: OpportunityFiltersPanelProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
 
@@ -1429,6 +1443,23 @@ export function OpportunityFiltersPanel({
                 label: 'AI分析筛选',
                 children: (
                   <div className={styles.filterContent}>
+                    {/* 专业模式说明提示 */}
+                    <div style={{
+                      padding: '10px 14px',
+                      marginBottom: 12,
+                      backgroundColor: 'var(--ant-color-bg-layout)',
+                      borderRadius: 6,
+                      fontSize: 12,
+                      lineHeight: 1.6,
+                      color: 'var(--ant-color-text-secondary)',
+                      borderLeft: '3px solid var(--ant-color-primary)'
+                    }}>
+                      <div style={{ fontWeight: 'bold', marginBottom: 4, color: 'var(--ant-color-text)' }}>💡 专业筛选模式说明：</div>
+                      <div><strong>A. 传统模式：</strong>关闭下方高级开关，仅使用数值区间进行硬性过滤。</div>
+                      <div><strong>B. 加权模式（推荐）：</strong>开启“加权综合评分”，系统会自动平衡置信度、技术面和风险，选出综合素质最高的股票。</div>
+                      <div><strong>C. 时效模式：</strong>开启“信号时效性衰减”，分析时间越久的数据得分越低，强迫关注最新信号。</div>
+                    </div>
+
                     <div className={styles.filterRow}>
                       <div className={styles.filterItem}>
                         <Checkbox
@@ -1791,6 +1822,52 @@ export function OpportunityFiltersPanel({
                         <span style={{ marginLeft: 4 }}>
                           （收益空间/亏损空间，越高越好）
                         </span>
+                      </div>
+                    </div>
+
+                    {/* 专业版功能：加权评分 */}
+                    <div className={styles.filterRow}>
+                      <div className={styles.filterItem}>
+                        <Checkbox
+                          checked={aiEnableWeightedScoring}
+                          onChange={(e) => setAiEnableWeightedScoring(e.target.checked)}
+                          disabled={!aiAnalysisEnabled}
+                        >
+                          启用加权综合评分模式
+                        </Checkbox>
+                      </div>
+                    </div>
+                    {aiEnableWeightedScoring && (
+                      <div className={styles.filterRow}>
+                        <div className={styles.filterItem}>
+                          <span className={styles.filterLabel}>最低加权得分：</span>
+                          <InputNumber
+                            value={aiMinCompositeScore}
+                            min={0}
+                            max={100}
+                            step={1}
+                            style={{ width: 80 }}
+                            disabled={!aiAnalysisEnabled}
+                            onChange={(v) => {
+                              setAiMinCompositeScore(
+                                typeof v === 'number' && isFinite(v) ? v : undefined
+                              );
+                            }}
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 专业版功能：时间衰减 */}
+                    <div className={styles.filterRow}>
+                      <div className={styles.filterItem}>
+                        <Checkbox
+                          checked={aiEnableTimeDecay}
+                          onChange={(e) => setAiEnableTimeDecay(e.target.checked)}
+                          disabled={!aiAnalysisEnabled}
+                        >
+                          启用信号时效性衰减
+                        </Checkbox>
                       </div>
                     </div>
                   </div>

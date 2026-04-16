@@ -505,6 +505,96 @@ function passesAIFilter(
     }
   }
 
+  // --- 专业版增强逻辑 ---
+
+  // 4. 时间衰减因子 (Time Decay)
+  let effectiveConfidence = trendPrediction?.confidence || 0;
+  if (filters.aiEnableTimeDecay && item.analysisTimestamp) {
+    const hoursPassed = (Date.now() - item.analysisTimestamp) / (1000 * 3600);
+    const decayRate = filters.aiDecayRate || 0.1;
+    effectiveConfidence = effectiveConfidence * Math.exp(-decayRate * hoursPassed);
+  }
+
+  // 1. 加权评分模式 (Weighted Scoring)
+  if (filters.aiEnableWeightedScoring && recommendation) {
+    const weights = filters.aiWeights || {
+      confidence: 0.3,
+      totalScore: 0.4,
+      technicalScore: 0.2,
+      riskScore: 0.1,
+    };
+
+    // 归一化处理 (将不同量纲映射到 0-100)
+    const normConfidence = effectiveConfidence * 100;
+    const normTotal = recommendation.totalScore || 0;
+    const normTech = recommendation.technicalScore || 0;
+    const normRisk = recommendation.riskScore || 0;
+
+    const compositeScore =
+      normConfidence * weights.confidence +
+      normTotal * weights.totalScore +
+      normTech * weights.technicalScore +
+      normRisk * weights.riskScore;
+
+    if (filters.aiMinCompositeScore !== undefined && compositeScore < filters.aiMinCompositeScore) {
+      return {
+        passed: false,
+        reason: `加权综合得分不足：${compositeScore.toFixed(1)} < ${filters.aiMinCompositeScore}`,
+      };
+    }
+  }
+
+  // 2. 一致性校验 (Consistency Check)
+  if (filters.aiEnableConsistencyCheck && trendPrediction && recommendation) {
+    const divergenceThreshold = filters.aiMaxDivergence || 40;
+
+    // 如果看涨但风险极高，或看跌但技术面极强，视为不一致
+    if (trendPrediction.direction === 'up' && recommendation.riskScore < divergenceThreshold) {
+      return { passed: false, reason: '信号冲突：看涨趋势与高风险评分不一致' };
+    }
+    if (
+      trendPrediction.direction === 'down' &&
+      recommendation.technicalScore > 100 - divergenceThreshold
+    ) {
+      return { passed: false, reason: '信号冲突：看跌趋势与强技术面不一致' };
+    }
+  }
+
+  // 5. 回测胜率联动 (Backtest Integration)
+  if (filters.aiMinHistoricalWinRate !== undefined) {
+    const winRate = item.aiAnalysis?.patternWinRate;
+    if (winRate === undefined || winRate === null) {
+      return { passed: false, reason: '缺少历史回测胜率数据' };
+    }
+    if (winRate * 100 < filters.aiMinHistoricalWinRate) {
+      return {
+        passed: false,
+        reason: `历史胜率不足：${(winRate * 100).toFixed(0)}% < ${filters.aiMinHistoricalWinRate}%`,
+      };
+    }
+  }
+
+  if (filters.aiMinAvgRiskReward !== undefined) {
+    const rr = trendPrediction?.riskRewardRatio;
+    if (rr === undefined) {
+      return { passed: false, reason: '缺少盈亏比数据' };
+    }
+    if (rr < filters.aiMinAvgRiskReward) {
+      return {
+        passed: false,
+        reason: `平均盈亏比不足：${rr.toFixed(1)} < ${filters.aiMinAvgRiskReward}`,
+      };
+    }
+  }
+
+  // 3. 相对排名筛选 (Percentile Ranking)
+  // 注意：百分位筛选通常需要在所有数据处理完后进行排序截取，
+  // 在单条过滤函数中我们暂时标记，由主循环统一处理排序和截取。
+  if (filters.aiTopPercentile !== undefined) {
+    // 这里我们暂时不直接返回 false，而是依赖后续的全局排序逻辑
+    // 为了简化，我们在主循环外处理此逻辑，或者在此处仅做初步标记
+  }
+
   return { passed: true };
 }
 

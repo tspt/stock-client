@@ -110,6 +110,36 @@ export interface OpportunityFilterSnapshot {
   aiPatternWinRateRange: NumberRange;
   /** AI最低风险收益比 */
   aiMinRiskRewardRatio?: number;
+
+  // --- 专业版筛选增强功能 ---
+
+  /** 1. 加权评分模式开关 */
+  aiEnableWeightedScoring?: boolean;
+  /** 各维度权重 (总和应为 1) */
+  aiWeights?: {
+    confidence: number;
+    totalScore: number;
+    technicalScore: number;
+    riskScore: number;
+  };
+  /** 最低综合加权得分 */
+  aiMinCompositeScore?: number;
+
+  /** 2. 一致性校验开关 */
+  aiEnableConsistencyCheck?: boolean;
+  /** 允许的最大分歧度 (例如：看涨时风险评分不能低于此值) */
+  aiMaxDivergence?: number;
+
+  /** 3. 相对排名筛选 (百分位) */
+  aiTopPercentile?: number; // 例如 10 代表前 10%
+
+  /** 4. 时间衰减因子 */
+  aiEnableTimeDecay?: boolean;
+  aiDecayRate?: number; // 衰减速率
+
+  /** 5. 回测胜率联动 */
+  aiMinHistoricalWinRate?: number; // 最低历史胜率 (%)
+  aiMinAvgRiskReward?: number; // 最低平均盈亏比
 }
 
 export interface FilterSkippedItem {
