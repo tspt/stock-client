@@ -1,0 +1,79 @@
+.card {
+  margin-top: 8px;
+}
+
+.loadingContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+}
+
+.tabContent {
+  padding: 16px 0;
+}
+
+.percentileSection {
+  margin-top: 24px;
+}
+
+.percentileSection h4 {
+  margin-bottom: 16px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.percentileItem {
+  margin-bottom: 16px;
+}
+
+.percentileItem span {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: var(--ant-color-text-secondary);
+}
+
+.reportCard {
+  width: 100%;
+}
+
+.reportHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+
+.reportTitle {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  flex: 1;
+  margin-right: 8px;
+}
+
+.reportMeta {
+  display: flex;
+  gap: 16px;
+  font-size: 12px;
+  color: var(--ant-color-text-secondary);
+  margin-bottom: 8px;
+}
+
+.reportSummary {
+  font-size: 13px;
+  color: var(--ant-color-text);
+  margin: 8px 0;
+  line-height: 1.6;
+}
+
+.reportLink {
+  font-size: 13px;
+  color: var(--ant-color-primary);
+  text-decoration: none;
+}
+
+.reportLink:hover {
+  text-decoration: underline;
+}

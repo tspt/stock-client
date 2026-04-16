@@ -683,3 +683,113 @@ export interface SectorRankData {
   /** 年初至今涨跌幅（百分比） */
   changePercentYTD?: number;
 }
+
+/**
+ * 财务报表数据
+ */
+export interface FinancialStatement {
+  /** 报告期 */
+  reportPeriod: string;
+  /** 营业收入（元） */
+  revenue?: number;
+  /** 净利润（元） */
+  netProfit?: number;
+  /** 扣非净利润（元） */
+  deductNetProfit?: number;
+  /** 经营现金流（元） */
+  operatingCashFlow?: number;
+  /** 总资产（元） */
+  totalAssets?: number;
+  /** 净资产（元） */
+  netAssets?: number;
+  /** 每股收益（元） */
+  eps?: number;
+  /** 净资产收益率（%） */
+  roe?: number;
+  /** 毛利率（%） */
+  grossMargin?: number;
+  /** 净利率（%） */
+  netMargin?: number;
+}
+
+/**
+ * 估值分析数据
+ */
+export interface ValuationAnalysis {
+  /** 市盈率TTM */
+  peTtm?: number;
+  /** 市净率 */
+  pb?: number;
+  /** 市销率 */
+  ps?: number;
+  /** PE历史分位数（0-100） */
+  pePercentile?: number;
+  /** PB历史分位数（0-100） */
+  pbPercentile?: number;
+  /** PS历史分位数（0-100） */
+  psPercentile?: number;
+  /** 股息率（%） */
+  dividendYield?: number;
+  /** EV/EBITDA */
+  evEbitda?: number;
+}
+
+/**
+ * 行业对比数据
+ */
+export interface IndustryComparison {
+  /** 行业名称 */
+  industryName: string;
+  /** 行业PE中位数 */
+  industryPeMedian?: number;
+  /** 行业PB中位数 */
+  industryPbMedian?: number;
+  /** 行业PS中位数 */
+  industryPsMedian?: number;
+  /** 个股PE在行业中的排名 */
+  peRank?: number;
+  /** 个股PB在行业中的排名 */
+  pbRank?: number;
+  /** 个股PS在行业中的排名 */
+  psRank?: number;
+  /** 行业公司总数 */
+  totalCompanies?: number;
+}
+
+/**
+ * 机构研报摘要
+ */
+export interface ResearchReportSummary {
+  /** 研报标题 */
+  title: string;
+  /** 发布机构 */
+  institution: string;
+  /** 发布日期 */
+  publishDate: string;
+  /** 评级 */
+  rating?: string;
+  /** 目标价 */
+  targetPrice?: number;
+  /** 摘要内容 */
+  summary?: string;
+  /** 原文链接 */
+  url?: string;
+}
+
+/**
+ * 基本面分析综合数据
+ */
+export interface FundamentalAnalysis {
+  /** 最新财报数据 */
+  latestFinancials?: FinancialStatement;
+  /** 历史财报数据列表 */
+  financialHistory?: FinancialStatement[];
+  /** 估值分析 */
+  valuation?: ValuationAnalysis;
+  /** 行业对比 */
+  industryComparison?: IndustryComparison;
+  /** 机构研报摘要列表 */
+  researchReports?: ResearchReportSummary[];
+  /** 数据更新时间 */
+  updatedAt: number;
+}

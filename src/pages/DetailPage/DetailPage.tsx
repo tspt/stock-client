@@ -11,6 +11,7 @@ import { useKLineData } from '@/hooks/useKLineData';
 import { useStockDetail } from '@/hooks/useStockDetail';
 import { KLineChart } from '@/components/KLineChart/KLineChart';
 import { AlertSettingModal } from '@/components/PriceAlert/AlertSettingModal';
+import { FundamentalAnalysisCard } from '@/components/FundamentalAnalysisCard';
 import {
   formatPrice,
   formatVolume,
@@ -299,6 +300,9 @@ export function DetailPage() {
             />
           </div>
         </div>
+
+        {/* 基本面分析 */}
+        <FundamentalAnalysisCard code={selectedStock} />
       </Content>
       {selectedStock && stock && (
         <AlertSettingModal
