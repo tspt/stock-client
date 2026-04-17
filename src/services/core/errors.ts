@@ -42,13 +42,22 @@ export function handleApiError(error: unknown, context?: string): ApiError {
   }
 
   if (error instanceof Error) {
-    // 检查是否是网络相关错误
-    if (error.message.includes('network') || error.message.includes('fetch')) {
+    // 检查是否是网络相关错误（更全面的检测）
+    const isNetworkError =
+      error.message.toLowerCase().includes('network') ||
+      error.message.toLowerCase().includes('fetch') ||
+      error.message.toLowerCase().includes('connection') ||
+      error.message.toLowerCase().includes('net::err');
+
+    if (isNetworkError) {
       return new NetworkError(`${context ? `[${context}] ` : ''}${error.message}`);
     }
 
     // 检查是否是超时错误
-    if (error.message.includes('timeout')) {
+    if (
+      error.message.toLowerCase().includes('timeout') ||
+      error.message.toLowerCase().includes('ETIMEOUT')
+    ) {
       return new TimeoutError(`${context ? `[${context}] ` : ''}${error.message}`);
     }
 

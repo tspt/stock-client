@@ -18,6 +18,8 @@ import {
   QUOTES_BATCH_DELAY,
   QUOTES_CONCURRENT_LIMIT,
   QUOTES_BATCH_SIZE,
+  VOLUME_AMOUNT_UNIT_CONVERSION,
+  PROGRESS_BASE,
 } from '@/utils/constants';
 import {
   OPPORTUNITY_DEFAULT_CONSOLIDATION,
@@ -25,7 +27,6 @@ import {
   OPPORTUNITY_DEFAULT_TREND_LINE,
 } from '@/utils/opportunityAnalysisDefaults';
 import { logger } from '@/utils/logger';
-import { VOLUME_AMOUNT_UNIT_CONVERSION, PROGRESS_BASE } from '@/utils/constants';
 
 async function analyzeOneStock(
   stock: StockInfo,

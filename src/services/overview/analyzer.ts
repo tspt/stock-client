@@ -5,10 +5,13 @@
 import type { StockInfo, StockOverviewData, KLinePeriod } from '@/types/stock';
 import { getStockQuotes, getStockDetail, getKLineData } from '../stocks/api';
 import { ConcurrencyManager } from '@/utils/concurrencyManager';
-import { OVERVIEW_CONCURRENT_LIMIT, OVERVIEW_BATCH_DELAY } from '@/utils/constants';
+import {
+  OVERVIEW_CONCURRENT_LIMIT,
+  OVERVIEW_BATCH_DELAY,
+  VOLUME_AMOUNT_UNIT_CONVERSION,
+} from '@/utils/constants';
 import { calcAllIndicators, formatKDJValues } from '@/utils/indicators';
 import { logger } from '@/utils/logger';
-import { VOLUME_AMOUNT_UNIT_CONVERSION } from '@/utils/constants';
 
 /**
  * 分析单只股票

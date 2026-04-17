@@ -121,7 +121,8 @@ function shouldTriggerSupportResistanceAlert(
   currentPrice: number,
   klineData?: KLineData[]
 ): boolean {
-  if (!klineData || klineData.length < 20) {
+  if (!klineData || klineData.length < 60) {
+    // 支撑阻力位识别至少需要60天数据
     return false;
   }
 
@@ -162,18 +163,39 @@ function shouldTriggerSupportResistanceAlert(
 /**
  * 检查成交量异常提醒是否应该触发
  */
-function shouldTriggerVolumeAnomalyAlert(alert: PriceAlert, klineData?: KLineData[]): boolean {
-  if (!klineData || klineData.length < 20) {
+function shouldTriggerVolumeAnomalyAlert(
+  alert: PriceAlert,
+  currentPrice: number,
+  klineData?: KLineData[]
+): boolean {
+  if (!klineData || klineData.length < 21) {
+    // 至少需要 volumePeriod + 1 天数据
     return false;
   }
 
-  const { volumeMultiplier = 2.0, volumePeriod = 20, triggered } = alert;
+  const { volumeMultiplier = 2.0, volumePeriod = 20, triggered, lastTriggerPrice } = alert;
 
   // 检测成交量异常
   const anomalyResult = detectVolumeAnomaly(klineData, volumePeriod, volumeMultiplier);
 
-  if (anomalyResult.isAnomaly && !triggered) {
-    return true;
+  if (anomalyResult.isAnomaly) {
+    if (!triggered) {
+      // 首次触发
+      return true;
+    }
+    // 回退机制：成交量必须回落到阈值以下，再异常才再次触发
+    // 使用 lastTriggerPrice 记录上次触发时的成交量
+    if (lastTriggerPrice !== undefined) {
+      const historicalVolumes = klineData.slice(-volumePeriod - 1, -1).map((k) => k.volume);
+      const avgVolume =
+        historicalVolumes.reduce((sum, vol) => sum + vol, 0) / historicalVolumes.length;
+      const lastVolumeRatio = lastTriggerPrice / avgVolume;
+
+      // 如果上次触发后成交量已经回落到正常水平，则可以再次触发
+      if (lastVolumeRatio < volumeMultiplier) {
+        return true;
+      }
+    }
   }
 
   return false;
@@ -182,22 +204,51 @@ function shouldTriggerVolumeAnomalyAlert(alert: PriceAlert, klineData?: KLineDat
 /**
  * 检查技术指标金叉/死叉提醒是否应该触发
  */
-function shouldTriggerIndicatorCrossAlert(alert: PriceAlert, klineData?: KLineData[]): boolean {
+function shouldTriggerIndicatorCrossAlert(
+  alert: PriceAlert,
+  currentPrice: number,
+  klineData?: KLineData[]
+): boolean {
   if (!klineData || !alert.indicatorType) {
     return false;
   }
 
-  const { condition, indicatorType, maFastPeriod = 5, maSlowPeriod = 20, triggered } = alert;
+  const {
+    condition,
+    indicatorType,
+    maFastPeriod = 5,
+    maSlowPeriod = 20,
+    triggered,
+    lastTriggerPrice,
+  } = alert;
 
   // 检测指标交叉
   const crossResult = detectIndicatorCross(klineData, indicatorType, maFastPeriod, maSlowPeriod);
 
-  if (condition === 'golden_cross' && crossResult.isGoldenCross && !triggered) {
-    return true;
+  if (condition === 'golden_cross') {
+    if (crossResult.isGoldenCross) {
+      if (!triggered) {
+        // 首次触发
+        return true;
+      }
+      // 回退机制：快线必须回落至慢线下方，再金叉才再次触发
+      if (lastTriggerPrice !== undefined && crossResult.fastValue <= crossResult.slowValue) {
+        return true;
+      }
+    }
   }
 
-  if (condition === 'death_cross' && crossResult.isDeathCross && !triggered) {
-    return true;
+  if (condition === 'death_cross') {
+    if (crossResult.isDeathCross) {
+      if (!triggered) {
+        // 首次触发
+        return true;
+      }
+      // 回退机制：快线必须回升至慢线上方，再死叉才再次触发
+      if (lastTriggerPrice !== undefined && crossResult.fastValue >= crossResult.slowValue) {
+        return true;
+      }
+    }
   }
 
   return false;
@@ -331,9 +382,9 @@ export const useAlertStore = create<AlertState>((set, get) => ({
       } else if (alert.type === 'support_resistance') {
         shouldTrigger = shouldTriggerSupportResistanceAlert(alert, currentPrice, klineData);
       } else if (alert.type === 'volume_anomaly') {
-        shouldTrigger = shouldTriggerVolumeAnomalyAlert(alert, klineData);
+        shouldTrigger = shouldTriggerVolumeAnomalyAlert(alert, currentPrice, klineData);
       } else if (alert.type === 'indicator_cross') {
-        shouldTrigger = shouldTriggerIndicatorCrossAlert(alert, klineData);
+        shouldTrigger = shouldTriggerIndicatorCrossAlert(alert, currentPrice, klineData);
       }
 
       if (shouldTrigger) {
@@ -396,8 +447,58 @@ export const useAlertStore = create<AlertState>((set, get) => ({
               get().updateAlert(alert.id, { lastTriggerPrice: currentPrice });
             }
           }
+        } else if (alert.type === 'volume_anomaly' && klineData) {
+          // 成交量异常提醒的回退机制
+          const { volumeMultiplier = 2.0, volumePeriod = 20, lastTriggerPrice } = alert;
+          const historicalVolumes = klineData.slice(-volumePeriod - 1, -1).map((k) => k.volume);
+          const avgVolume =
+            historicalVolumes.reduce((sum, vol) => sum + vol, 0) / historicalVolumes.length;
+          const currentVolumeRatio = klineData[klineData.length - 1].volume / avgVolume;
+
+          // 如果成交量已经回落到阈值以下，更新 lastTriggerPrice
+          if (
+            currentVolumeRatio < volumeMultiplier &&
+            (lastTriggerPrice === undefined || lastTriggerPrice >= avgVolume * volumeMultiplier)
+          ) {
+            get().updateAlert(alert.id, {
+              lastTriggerPrice: klineData[klineData.length - 1].volume,
+            });
+          }
+        } else if (alert.type === 'indicator_cross' && klineData) {
+          // 指标交叉提醒的回退机制
+          const {
+            condition,
+            indicatorType,
+            maFastPeriod = 5,
+            maSlowPeriod = 20,
+            lastTriggerPrice,
+          } = alert;
+          const crossResult = detectIndicatorCross(
+            klineData,
+            indicatorType!,
+            maFastPeriod,
+            maSlowPeriod
+          );
+
+          if (condition === 'golden_cross') {
+            // 金叉提醒：如果快线回落至慢线下方，更新 lastTriggerPrice
+            if (
+              crossResult.fastValue <= crossResult.slowValue &&
+              (lastTriggerPrice === undefined || lastTriggerPrice === 1)
+            ) {
+              get().updateAlert(alert.id, { lastTriggerPrice: 0 });
+            }
+          } else if (condition === 'death_cross') {
+            // 死叉提醒：如果快线回升至慢线上方，更新 lastTriggerPrice
+            if (
+              crossResult.fastValue >= crossResult.slowValue &&
+              (lastTriggerPrice === undefined || lastTriggerPrice === 0)
+            ) {
+              get().updateAlert(alert.id, { lastTriggerPrice: 1 });
+            }
+          }
         }
-        // 其他类型的提醒暂不需要回退机制
+        // 支撑阻力位提醒暂不需要额外的回退机制更新
       }
     });
   },
