@@ -3,6 +3,7 @@
  */
 
 import type { SectorRankData } from '@/types/stock';
+import { logger } from '@/utils/logger';
 
 /**
  * 腾讯财经板块排行原始数据
@@ -74,7 +75,7 @@ function parseSectorRankData(rawData: RawSectorRankResponse): SectorRankData[] {
       changePercentYTD: item.zdf_y ? parseFloat(item.zdf_y) : undefined,
     }));
   } catch (error) {
-    console.error('解析板块排行数据失败:', error);
+    logger.error('解析板块排行数据失败:', error);
     return [];
   }
 }
@@ -100,7 +101,7 @@ export async function getRisingSectors(count: number = 20): Promise<SectorRankDa
 
     return parseSectorRankData(data);
   } catch (error) {
-    console.error('获取领涨板块数据失败:', error);
+    logger.error('获取领涨板块数据失败:', error);
     throw error;
   }
 }
@@ -126,7 +127,7 @@ export async function getFallingSectors(count: number = 20): Promise<SectorRankD
 
     return parseSectorRankData(data);
   } catch (error) {
-    console.error('获取领跌板块数据失败:', error);
+    logger.error('获取领跌板块数据失败:', error);
     throw error;
   }
 }
@@ -146,7 +147,7 @@ export async function getSectorRanks(count: number = 20): Promise<{
 
     return { rising, falling };
   } catch (error) {
-    console.error('获取板块排行数据失败:', error);
+    logger.error('获取板块排行数据失败:', error);
     throw error;
   }
 }

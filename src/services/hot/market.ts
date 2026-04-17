@@ -2,6 +2,8 @@
  * 市场概览服务 - 获取上证指数、深证成指等市场数据
  */
 
+import { logger } from '@/utils/logger';
+
 /**
  * 市场概览数据类型
  */
@@ -130,7 +132,7 @@ function parseMarketOverviewData(rawData: string): MarketOverview | null {
       shenzhenRank,
     };
   } catch (error) {
-    console.error('解析市场概览数据失败:', error);
+    logger.error('解析市场概览数据失败:', error);
     return null;
   }
 }
@@ -163,7 +165,7 @@ export async function getMarketOverview(): Promise<MarketOverview | null> {
       return data;
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error));
-      console.warn(`获取市场概览数据失败 (尝试 ${attempt}/${maxRetries}):`, lastError.message);
+      logger.warn(`获取市场概览数据失败 (尝试 ${attempt}/${maxRetries}):`, lastError.message);
 
       if (attempt < maxRetries) {
         await new Promise((resolve) => setTimeout(resolve, 1000 * attempt));

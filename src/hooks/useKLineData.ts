@@ -8,6 +8,7 @@ import { KLINE_POLLING_INTERVAL_MS } from '@/utils/constants';
 import { usePolling } from './usePolling';
 import { klineCache } from '@/utils/klineCache';
 import type { KLineData, KLinePeriod } from '@/types/stock';
+import { logger } from '@/utils/logger';
 
 interface UseKLineDataOptions {
   /** 股票代码 */
@@ -41,13 +42,13 @@ export function useKLineData(options: UseKLineDataOptions) {
       // 先尝试从缓存获取
       const cachedData = klineCache.get(code, period);
       if (cachedData && cachedData.length > 0) {
-        console.log(`[KLine Cache Hit] ${code} ${period}`);
+        logger.debug(`[KLine Cache Hit] ${code} ${period}`);
         setData(cachedData);
         setLoading(false);
         return;
       }
 
-      console.log(`[KLine Cache Miss] ${code} ${period}, fetching from API...`);
+      logger.debug(`[KLine Cache Miss] ${code} ${period}, fetching from API...`);
 
       // 根据周期决定加载数量
       const count =

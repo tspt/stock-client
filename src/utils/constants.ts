@@ -11,6 +11,21 @@ export const KLINE_POLLING_INTERVAL_MS = 12000;
 /** 机会分析 K 线缓存 Map 最大条数（超出则删除最旧条目，控制内存） */
 export const MAX_OPPORTUNITY_KLINE_CACHE_ENTRIES = 400;
 
+/** API超时时间（毫秒） */
+export const API_TIMEOUT = 10000; // 10秒
+
+/** 默认缓存TTL（毫秒） */
+export const DEFAULT_CACHE_TTL = 5 * 60 * 1000; // 5分钟
+
+/** 股票列表搜索最大返回数量 */
+export const MAX_SEARCH_RESULTS = 50;
+
+/** 成交量/成交额单位转换系数（从元转为亿） */
+export const VOLUME_AMOUNT_UNIT_CONVERSION = 100000000; // 1亿
+
+/** 进度计算基数 */
+export const PROGRESS_BASE = 100;
+
 /** LocalStorage键名 */
 export const STORAGE_KEYS = {
   /** 自选股列表 */

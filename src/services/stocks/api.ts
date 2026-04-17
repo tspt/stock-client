@@ -9,6 +9,13 @@ import { getPureCode, getMarketFromCode } from '@/utils/format';
 import { getStorage, setStorage } from '@/utils/storage';
 import { apiCache } from '@/utils/apiCache';
 import { API_BASE, useLocalProxy } from '@/config/environment';
+import { safeApiCall, handleApiError } from '../core/errors';
+import {
+  MAX_SEARCH_RESULTS,
+  VOLUME_AMOUNT_UNIT_CONVERSION,
+  API_TIMEOUT,
+  DEFAULT_CACHE_TTL,
+} from '@/utils/constants';
 
 /** biyingapi 全量股票列表本地缓存（默认约 1 个月过期） */
 const BIYING_HSLT_LIST_CACHE_KEY = 'biying_hslt_stock_list_v1';
@@ -79,7 +86,9 @@ export async function getAllStocks(): Promise<StockInfo[]> {
       }
 
       return [];
-    } catch {
+    } catch (error) {
+      const apiError = handleApiError(error, 'getAllStocks');
+      // 记录错误但不抛出，返回空数组
       return [];
     } finally {
       biyingHsltListFetchPromise = null;
@@ -114,7 +123,7 @@ export function searchStockLocal(keyword: string, allStocks: StockInfo[]): Stock
         stock.code.toLowerCase().includes(lowerKeyword)
       );
     })
-    .slice(0, 50); // 限制返回最多50条结果
+    .slice(0, MAX_SEARCH_RESULTS); // 限制返回最大数量
 }
 
 // 请求缓存 Map，用于防止相同参数的重复请求
@@ -205,6 +214,8 @@ export async function getStockQuotes(codes: string[]): Promise<StockQuote[]> {
 
       return quotes;
     } catch (error) {
+      const apiError = handleApiError(error, 'getStockQuotes');
+      // 记录错误但返回空数组
       return [];
     } finally {
       // 请求完成后清除缓存
@@ -237,7 +248,7 @@ export async function getStockDetail(code: string): Promise<StockDetail | null> 
     const tencentUrl = `${API_BASE.TENCENT}/q=${tencentCode}`;
 
     const tencentResponse = await axios.get(tencentUrl, {
-      timeout: 10000,
+      timeout: API_TIMEOUT,
     });
 
     let detail: StockDetail = {
@@ -307,6 +318,7 @@ export async function getStockDetail(code: string): Promise<StockDetail | null> 
 
     return detail;
   } catch (error: any) {
+    const apiError = handleApiError(error, `getStockDetail:${code}`);
     return null;
   }
 }
@@ -498,13 +510,14 @@ export async function getKLineData(
         month: 10 * 60 * 1000,
         year: 10 * 60 * 1000,
       };
-      const ttl = ttlMap[period] || 5 * 60 * 1000;
+      const ttl = ttlMap[period] || DEFAULT_CACHE_TTL;
       apiCache.set(cacheKey, klineData, ttl);
       return klineData;
     } else {
       return [];
     }
   } catch (error) {
+    const apiError = handleApiError(error, `getKLineData:${code}:${period}`);
     return [];
   }
 }

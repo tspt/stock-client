@@ -13,6 +13,7 @@ import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { ErrorBoundary } from '@/components/ErrorBoundary/ErrorBoundary';
 import { logger } from '@/utils/logger';
 import styles from './App.module.css';
+import { POLLING_INTERVAL } from '@/utils/constants';
 
 const ListPage = lazy(() => import('@/pages/ListPage/ListPage').then((m) => ({ default: m.ListPage })));
 const DetailPage = lazy(() => import('@/pages/DetailPage/DetailPage').then((m) => ({ default: m.DetailPage })));
@@ -56,7 +57,7 @@ function AppContent() {
       } else {
         logger.warn('[App] electronAPI 仍然不可用，继续等待...');
       }
-    }, 500);
+    }, POLLING_INTERVAL / 20); // 500ms = 10000ms / 20
 
     return () => {
       if (checkInterval !== undefined) {

@@ -7,6 +7,8 @@ import { getStockQuotes, getStockDetail, getKLineData } from '../stocks/api';
 import { ConcurrencyManager } from '@/utils/concurrencyManager';
 import { OVERVIEW_CONCURRENT_LIMIT, OVERVIEW_BATCH_DELAY } from '@/utils/constants';
 import { calcAllIndicators, formatKDJValues } from '@/utils/indicators';
+import { logger } from '@/utils/logger';
+import { VOLUME_AMOUNT_UNIT_CONVERSION } from '@/utils/constants';
 
 /**
  * 分析单只股票
@@ -88,7 +90,7 @@ export async function analyzeStock(
         ma360 = maFields.ma360;
       }
     } catch (error) {
-      console.warn(`[${code}] 获取K线数据失败:`, error);
+      logger.warn(`[${code}] 获取K线数据失败:`, error);
       // K线数据获取失败不影响其他数据
     }
 
@@ -129,7 +131,7 @@ export async function analyzeStock(
     return overviewData;
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error(`[${code}] 分析失败:`, errorMessage);
+    logger.error(`[${code}] 分析失败:`, errorMessage);
 
     // 返回错误数据
     return {
@@ -220,11 +222,11 @@ async function analyzeStockDetails(
         result.ma360 = maFields.ma360;
       }
     } catch (error) {
-      console.warn(`[${code}] 获取K线数据失败:`, error);
+      logger.warn(`[${code}] 获取K线数据失败:`, error);
       // K线数据获取失败不影响其他数据
     }
   } catch (error) {
-    console.warn(`[${code}] 获取详情数据失败:`, error);
+    logger.warn(`[${code}] 获取详情数据失败:`, error);
     // 详情数据获取失败不影响行情数据
   }
 
@@ -412,8 +414,8 @@ export function analyzeAllStocks(
             change: quote.change,
             changePercent: quote.changePercent,
             // 从"元"转为"亿"：除以100000000，并保留两位小数
-            volume: Number((quote.volume / 100000000).toFixed(2)), // 从元转为亿，保留两位小数
-            amount: Number((quote.amount / 100000000).toFixed(2)), // 从元转为亿，保留两位小数
+            volume: Number((quote.volume / VOLUME_AMOUNT_UNIT_CONVERSION).toFixed(2)), // 从元转为亿，保留两位小数
+            amount: Number((quote.amount / VOLUME_AMOUNT_UNIT_CONVERSION).toFixed(2)), // 从元转为亿，保留两位小数
             marketCap: details.marketCap,
             circulatingMarketCap: details.circulatingMarketCap,
             totalShares: details.totalShares,

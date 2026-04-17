@@ -4,6 +4,8 @@
  */
 
 import { cacheManager } from '@/services/core/cache';
+import { logger } from './logger';
+import { DEFAULT_CACHE_TTL } from '@/utils/constants';
 
 /**
  * @deprecated 请使用 cacheManager 替代
@@ -19,8 +21,8 @@ export const apiCache = {
 
 // 导出类以便需要时创建自定义实例（已废弃）
 export class ApiCacheManager {
-  constructor(private defaultTTL: number = 5 * 60 * 1000) {
-    console.warn('[ApiCacheManager] 已废弃，请使用 cacheManager');
+  constructor(private defaultTTL: number = DEFAULT_CACHE_TTL) {
+    logger.warn('[ApiCacheManager] 已废弃，请使用 cacheManager');
   }
 
   get<T>(key: string): T | null {

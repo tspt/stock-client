@@ -24,6 +24,8 @@ import {
   OPPORTUNITY_DEFAULT_SHARP_MOVE,
   OPPORTUNITY_DEFAULT_TREND_LINE,
 } from '@/utils/opportunityAnalysisDefaults';
+import { logger } from '@/utils/logger';
+import { VOLUME_AMOUNT_UNIT_CONVERSION, PROGRESS_BASE } from '@/utils/constants';
 
 async function analyzeOneStock(
   stock: StockInfo,
@@ -79,7 +81,7 @@ async function analyzeOneStock(
       requireClosesAboveMa10: OPPORTUNITY_DEFAULT_CONSOLIDATION.requireClosesAboveMa10,
     });
   } catch (error) {
-    console.warn(`[${code}] 横盘分析失败:`, error);
+    logger.warn(`[${code}] 横盘分析失败:`, error);
     // 横盘分析失败不影响其他数据
   }
 
@@ -90,7 +92,7 @@ async function analyzeOneStock(
       consecutive: OPPORTUNITY_DEFAULT_TREND_LINE.consecutive,
     });
   } catch (error) {
-    console.warn(`[${code}] 趋势线分析失败:`, error);
+    logger.warn(`[${code}] 趋势线分析失败:`, error);
   }
 
   let sharpMovePatterns;
@@ -101,7 +103,7 @@ async function analyzeOneStock(
       OPPORTUNITY_DEFAULT_SHARP_MOVE.magnitude
     );
   } catch (error) {
-    console.warn(`[${code}] 单日异动分析失败:`, error);
+    logger.warn(`[${code}] 单日异动分析失败:`, error);
   }
 
   // AI辅助分析（可选，避免影响主要流程）
@@ -113,8 +115,8 @@ async function analyzeOneStock(
       price: quote.price,
       change: quote.change,
       changePercent: quote.changePercent,
-      volume: Number((quote.volume / 100000000).toFixed(2)),
-      amount: Number((quote.amount / 100000000).toFixed(2)),
+      volume: Number((quote.volume / VOLUME_AMOUNT_UNIT_CONVERSION).toFixed(2)),
+      amount: Number((quote.amount / VOLUME_AMOUNT_UNIT_CONVERSION).toFixed(2)),
       marketCap: detail?.marketCap,
       circulatingMarketCap: detail?.circulatingMarketCap,
       peRatio: detail?.peRatio,
@@ -130,12 +132,12 @@ async function analyzeOneStock(
     };
     aiAnalysis = performAIAnalysis(klineData, tempOpportunityData);
   } catch (error) {
-    console.warn(`[${code}] AI分析失败:`, error);
+    logger.warn(`[${code}] AI分析失败:`, error);
   }
 
   // 与数据概况页保持一致：volume/amount 先转为"亿单位"再显示
-  const volume = Number((quote.volume / 100000000).toFixed(2));
-  const amount = Number((quote.amount / 100000000).toFixed(2));
+  const volume = Number((quote.volume / VOLUME_AMOUNT_UNIT_CONVERSION).toFixed(2));
+  const amount = Number((quote.amount / VOLUME_AMOUNT_UNIT_CONVERSION).toFixed(2));
 
   return {
     data: {
@@ -321,7 +323,7 @@ export function analyzeAllStocksOpportunity(
           total: totalStocks,
           completed: previousBatchesCompleted,
           failed: previousBatchesFailed,
-          percent: totalStocks > 0 ? (previousBatchesCompleted / totalStocks) * 100 : 0,
+          percent: totalStocks > 0 ? (previousBatchesCompleted / totalStocks) * PROGRESS_BASE : 0,
         });
         continue;
       }
@@ -339,7 +341,7 @@ export function analyzeAllStocksOpportunity(
             total: totalStocks,
             completed: currentGlobalCompleted,
             failed: currentGlobalFailed,
-            percent: totalStocks > 0 ? (currentGlobalCompleted / totalStocks) * 100 : 0,
+            percent: totalStocks > 0 ? (currentGlobalCompleted / totalStocks) * PROGRESS_BASE : 0,
           });
         },
       });
@@ -419,8 +421,8 @@ export function analyzeAllStocksOpportunity(
           price: quote.price || 0,
           change: quote.change || 0,
           changePercent: quote.changePercent || 0,
-          volume: Number(((quote.volume || 0) / 100000000).toFixed(2)),
-          amount: Number(((quote.amount || 0) / 100000000).toFixed(2)),
+          volume: Number(((quote.volume || 0) / VOLUME_AMOUNT_UNIT_CONVERSION).toFixed(2)),
+          amount: Number(((quote.amount || 0) / VOLUME_AMOUNT_UNIT_CONVERSION).toFixed(2)),
           analyzedAt,
           error: err?.error.message || '分析失败',
         });
@@ -436,7 +438,7 @@ export function analyzeAllStocksOpportunity(
         total: totalStocks,
         completed: previousBatchesCompleted,
         failed: previousBatchesFailed,
-        percent: totalStocks > 0 ? (previousBatchesCompleted / totalStocks) * 100 : 0,
+        percent: totalStocks > 0 ? (previousBatchesCompleted / totalStocks) * PROGRESS_BASE : 0,
       });
     }
 

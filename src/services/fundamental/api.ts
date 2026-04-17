@@ -14,6 +14,8 @@ import type {
 import { getPureCode, getMarketFromCode } from '@/utils/format';
 import { apiCache } from '@/utils/apiCache';
 import { API_BASE } from '@/config/environment';
+import { logger } from '@/utils/logger';
+import { API_TIMEOUT, DEFAULT_CACHE_TTL } from '@/utils/constants';
 
 /**
  * 获取股票基本面分析数据
@@ -38,7 +40,7 @@ export async function getFundamentalAnalysis(code: string): Promise<FundamentalA
     const market = getMarketFromCode(code);
 
     if (!market) {
-      console.error('无法识别市场类型:', code);
+      logger.error('无法识别市场类型:', code);
       return null;
     }
 
@@ -72,11 +74,11 @@ export async function getFundamentalAnalysis(code: string): Promise<FundamentalA
     }
 
     // 将结果存入缓存（5分钟 TTL）
-    apiCache.set(cacheKey, result, 5 * 60 * 1000);
+    apiCache.set(cacheKey, result, DEFAULT_CACHE_TTL);
 
     return result;
   } catch (error) {
-    console.error('获取基本面分析数据失败:', error);
+    logger.error('获取基本面分析数据失败:', error);
     return null;
   }
 }
@@ -105,7 +107,7 @@ async function getFinancialStatements(
         sortTypes: '-1',
         sortColumns: 'REPORT_DATE',
       },
-      timeout: 10000,
+      timeout: API_TIMEOUT,
     });
 
     if (response.data?.result?.data && Array.isArray(response.data.result.data)) {
@@ -124,7 +126,7 @@ async function getFinancialStatements(
 
     return [];
   } catch (error) {
-    console.error('获取财务报表数据失败:', error);
+    logger.error('获取财务报表数据失败:', error);
     return [];
   }
 }
@@ -150,7 +152,7 @@ async function getValuationAnalysis(
         pageNumber: 1,
         pageSize: 1,
       },
-      timeout: 10000,
+      timeout: API_TIMEOUT,
     });
 
     if (response.data?.result?.data && response.data.result.data.length > 0) {
@@ -171,7 +173,7 @@ async function getValuationAnalysis(
 
     return null;
   } catch (error) {
-    console.error('获取估值分析数据失败:', error);
+    logger.error('获取估值分析数据失败:', error);
     return null;
   }
 }
@@ -218,7 +220,7 @@ async function getIndustryComparison(
         pageNumber: 1,
         pageSize: 1,
       },
-      timeout: 10000,
+      timeout: API_TIMEOUT,
     });
 
     if (response.data?.result?.data && response.data.result.data.length > 0) {
@@ -236,7 +238,7 @@ async function getIndustryComparison(
 
     return null;
   } catch (error) {
-    console.error('获取行业对比数据失败:', error);
+    logger.error('获取行业对比数据失败:', error);
     return null;
   }
 }
@@ -287,7 +289,7 @@ async function getResearchReports(
         sortTypes: '-1',
         sortColumns: 'PUBLISH_DATE',
       },
-      timeout: 10000,
+      timeout: API_TIMEOUT,
     });
 
     if (response.data?.result?.data && Array.isArray(response.data.result.data)) {
@@ -304,7 +306,7 @@ async function getResearchReports(
 
     return [];
   } catch (error) {
-    console.error('获取机构研报失败:', error);
+    logger.error('获取机构研报失败:', error);
     return [];
   }
 }

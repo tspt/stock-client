@@ -3,6 +3,9 @@
  * 提供内存、localStorage、IndexedDB 多种存储策略
  */
 
+import { logger } from '@/utils/logger';
+import { DEFAULT_CACHE_TTL } from '@/utils/constants';
+
 interface CacheItem<T> {
   data: T;
   expiry: number; // 过期时间戳
@@ -17,7 +20,6 @@ export interface CacheConfig {
   keyPrefix?: string;
 }
 
-const DEFAULT_TTL = 5 * 60 * 1000; // 默认5分钟
 const DEFAULT_STORAGE: CacheConfig['storage'] = 'memory';
 
 class CacheManager {
@@ -68,7 +70,7 @@ class CacheManager {
 
       return item.data;
     } catch (error) {
-      console.warn(`[Cache] 读取localStorage失败: ${key}`, error);
+      logger.warn(`[Cache] 读取localStorage失败: ${key}`, error);
       return null;
     }
   }
@@ -94,7 +96,7 @@ class CacheManager {
       };
       localStorage.setItem(key, JSON.stringify(item));
     } catch (error) {
-      console.warn(`[Cache] 写入localStorage失败: ${key}`, error);
+      logger.warn(`[Cache] 写入localStorage失败: ${key}`, error);
     }
   }
 
@@ -115,7 +117,7 @@ class CacheManager {
         return this.getFromLocalStorage<T>(cacheKey);
       case 'indexedDB':
         // TODO: 实现IndexedDB存储
-        console.warn('[Cache] IndexedDB存储暂未实现，降级为memory');
+        logger.warn('[Cache] IndexedDB存储暂未实现，降级为memory');
         return this.getFromMemory<T>(cacheKey);
       default:
         return null;
@@ -129,7 +131,7 @@ class CacheManager {
    * @param config 缓存配置
    */
   set<T>(key: string, value: T, config?: CacheConfig): void {
-    const ttl = config?.ttl ?? DEFAULT_TTL;
+    const ttl = config?.ttl ?? DEFAULT_CACHE_TTL;
     const storage = config?.storage ?? DEFAULT_STORAGE;
     const cacheKey = this.generateKey(key, config?.keyPrefix);
 
@@ -142,7 +144,7 @@ class CacheManager {
         break;
       case 'indexedDB':
         // TODO: 实现IndexedDB存储
-        console.warn('[Cache] IndexedDB存储暂未实现，降级为memory');
+        logger.warn('[Cache] IndexedDB存储暂未实现，降级为memory');
         this.setToMemory<T>(cacheKey, value, ttl);
         break;
     }
