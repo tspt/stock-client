@@ -23,6 +23,7 @@ const OpportunityPage = lazy(() =>
   import('@/pages/OpportunityPage/OpportunityPage').then((m) => ({ default: m.OpportunityPage }))
 );
 const HotPage = lazy(() => import('@/pages/HotPage/HotPage').then((m) => ({ default: m.HotPage })));
+const SectorPage = lazy(() => import('@/pages/SectorPage/SectorPage').then((m) => ({ default: m.SectorPage })));
 
 const { Header, Content } = Layout;
 
@@ -138,6 +139,50 @@ function AppContent() {
                       ),
                     },
                     {
+                      key: 'sector',
+                      label: (
+                        <span>
+                          <FireOutlined className={styles.mgr6} />
+                          行业板块
+                        </span>
+                      ),
+                      children: (
+                        <Suspense
+                          fallback={
+                            <div className={styles.suspenseFallback}>
+                              <Spin size="large" />
+                            </div>
+                          }
+                        >
+                          <div className={styles.sectorLayout}>
+                            <SectorPage />
+                          </div>
+                        </Suspense>
+                      ),
+                    },
+                    {
+                      key: 'opportunity',
+                      label: (
+                        <span>
+                          <BarChartOutlined className={styles.mgr6} />
+                          机会分析
+                        </span>
+                      ),
+                      children: (
+                        <Suspense
+                          fallback={
+                            <div className={styles.suspenseFallback}>
+                              <Spin size="large" />
+                            </div>
+                          }
+                        >
+                          <div className={styles.opportunityLayout}>
+                            <OpportunityPage />
+                          </div>
+                        </Suspense>
+                      ),
+                    },
+                    {
                       key: 'stocks',
                       label: (
                         <span>
@@ -204,28 +249,6 @@ function AppContent() {
                         >
                           <div className={styles.overviewLayout}>
                             <OverviewPage />
-                          </div>
-                        </Suspense>
-                      ),
-                    },
-                    {
-                      key: 'opportunity',
-                      label: (
-                        <span>
-                          <BarChartOutlined className={styles.mgr6} />
-                          机会分析
-                        </span>
-                      ),
-                      children: (
-                        <Suspense
-                          fallback={
-                            <div className={styles.suspenseFallback}>
-                              <Spin size="large" />
-                            </div>
-                          }
-                        >
-                          <div className={styles.opportunityLayout}>
-                            <OpportunityPage />
                           </div>
                         </Suspense>
                       ),

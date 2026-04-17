@@ -832,6 +832,16 @@ export interface ResearchReportSummary {
 }
 
 /**
+ * 申万二级行业数据
+ */
+export interface ShenwanIndustry {
+  /** 行业名称 */
+  name: string;
+  /** 行业代码 (如 sw2_730200) */
+  code: string;
+}
+
+/**
  * 基本面分析综合数据
  */
 export interface FundamentalAnalysis {
