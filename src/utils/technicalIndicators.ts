@@ -200,7 +200,7 @@ export function isMACDDeathCross(
 }
 
 /**
- * 检测MACD背离
+ * 检测MACD背离（使用局部极值点）
  * @param klineData K线数据
  * @param dif DIF数组
  * @param lookback 回溯周期
@@ -216,42 +216,70 @@ export function hasMACDDivergence(
     return false;
   }
 
-  // 查找最近的价格高点和低点
-  let priceHighIndex = len - 1;
-  let priceLowIndex = len - 1;
-  let difHighIndex = len - 1;
-  let difLowIndex = len - 1;
+  // 提取有效数据
+  const closes = klineData.map((k) => k.close);
+  const validDif = dif.map((d) => d ?? 0); // 将null替换为0
 
-  for (let i = len - lookback; i < len; i++) {
-    if (klineData[i].close > klineData[priceHighIndex].close) {
-      priceHighIndex = i;
+  // 查找局部极值点的辅助函数
+  function findLocalPeaks(data: number[], windowSize: number): number[] {
+    const peaks: number[] = [];
+    for (let i = windowSize; i < data.length - windowSize; i++) {
+      let isPeak = true;
+      for (let j = i - windowSize; j <= i + windowSize; j++) {
+        if (j !== i && data[j] >= data[i]) {
+          isPeak = false;
+          break;
+        }
+      }
+      if (isPeak) peaks.push(i);
     }
-    if (klineData[i].close < klineData[priceLowIndex].close) {
-      priceLowIndex = i;
+    return peaks;
+  }
+
+  function findLocalValleys(data: number[], windowSize: number): number[] {
+    const valleys: number[] = [];
+    for (let i = windowSize; i < data.length - windowSize; i++) {
+      let isValley = true;
+      for (let j = i - windowSize; j <= i + windowSize; j++) {
+        if (j !== i && data[j] <= data[i]) {
+          isValley = false;
+          break;
+        }
+      }
+      if (isValley) valleys.push(i);
     }
-    if (dif[i] !== null && dif[i]! > (dif[difHighIndex] ?? -Infinity)) {
-      difHighIndex = i;
-    }
-    if (dif[i] !== null && dif[i]! < (dif[difLowIndex] ?? Infinity)) {
-      difLowIndex = i;
+    return valleys;
+  }
+
+  // 在回溯窗口内查找最近的两个波峰和波谷
+  const windowStart = Math.max(0, len - lookback);
+  const windowCloses = closes.slice(windowStart);
+  const windowDif = validDif.slice(windowStart);
+
+  const pricePeaks = findLocalPeaks(windowCloses, 2).slice(-2);
+  const priceValleys = findLocalValleys(windowCloses, 2).slice(-2);
+  const difPeaks = findLocalPeaks(windowDif, 2).slice(-2);
+  const difValleys = findLocalValleys(windowDif, 2).slice(-2);
+
+  // 顶背离：价格第二个峰更高，但DIF第二个峰更低
+  if (pricePeaks.length >= 2 && difPeaks.length >= 2) {
+    const priceHigher = windowCloses[pricePeaks[1]] > windowCloses[pricePeaks[0]];
+    const difLower = windowDif[difPeaks[1]] < windowDif[difPeaks[0]];
+    if (priceHigher && difLower) {
+      return true;
     }
   }
 
-  // 顶背离：价格创新高，DIF未创新高
-  const priceHigher = klineData[priceHighIndex].close > klineData[len - lookback].close;
-  const difLower =
-    dif[priceHighIndex] !== null &&
-    dif[difHighIndex] !== null &&
-    (dif[priceHighIndex] as number) < (dif[difHighIndex] as number);
+  // 底背离：价格第二个谷更低，但DIF第二个谷更高
+  if (priceValleys.length >= 2 && difValleys.length >= 2) {
+    const priceLower = windowCloses[priceValleys[1]] < windowCloses[priceValleys[0]];
+    const difHigher = windowDif[difValleys[1]] > windowDif[difValleys[0]];
+    if (priceLower && difHigher) {
+      return true;
+    }
+  }
 
-  // 底背离：价格创新低，DIF未创新低
-  const priceLower = klineData[priceLowIndex].close < klineData[len - lookback].close;
-  const difHigher =
-    dif[priceLowIndex] !== null &&
-    dif[difLowIndex] !== null &&
-    (dif[priceLowIndex] as number) > (dif[difLowIndex] as number);
-
-  return (priceHigher && difLower) || (priceLower && difHigher);
+  return false;
 }
 
 /**

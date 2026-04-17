@@ -113,7 +113,9 @@ const INITIAL_FILTER_STATE = {
   /** RSI指标范围 */
   rsiRange: {} as { min?: number; max?: number },
   /** RSI周期 */
-  rsiPeriod: 6,
+  rsiPeriod: 14,
+  /** 布林带阈值（0-1之间，默认0.02即2%） */
+  bollingerThreshold: 0.02,
   /** MACD金叉 */
   macdGoldenCross: false,
   /** MACD死叉 */
@@ -308,6 +310,7 @@ export function OpportunityPage() {
   // 新增技术指标筛选状态
   const [rsiRange, setRsiRange] = useState<{ min?: number; max?: number }>(INITIAL_FILTER_STATE.rsiRange);
   const [rsiPeriod, setRsiPeriod] = useState<number>(INITIAL_FILTER_STATE.rsiPeriod);
+  const [bollingerThreshold, setBollingerThreshold] = useState<number>(INITIAL_FILTER_STATE.bollingerThreshold);
   const [macdGoldenCross, setMacdGoldenCross] = useState<boolean>(INITIAL_FILTER_STATE.macdGoldenCross);
   const [macdDeathCross, setMacdDeathCross] = useState<boolean>(INITIAL_FILTER_STATE.macdDeathCross);
   const [macdDivergence, setMacdDivergence] = useState<boolean>(INITIAL_FILTER_STATE.macdDivergence);
@@ -937,6 +940,7 @@ export function OpportunityPage() {
       sharpMoveRiseFlatDrop,
       rsiRange,
       rsiPeriod,
+      bollingerThreshold,
       macdGoldenCross,
       macdDeathCross,
       macdDivergence,
@@ -1011,6 +1015,7 @@ export function OpportunityPage() {
       sharpMoveRiseFlatDrop,
       rsiRange,
       rsiPeriod,
+      bollingerThreshold,
       macdGoldenCross,
       macdDeathCross,
       macdDivergence,

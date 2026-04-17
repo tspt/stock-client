@@ -2,7 +2,12 @@
  * 横盘分析工具函数
  */
 
-import type { ConsolidationAnalysis, ConsolidationMatch, ConsolidationType, KLineData } from '@/types/stock';
+import type {
+  ConsolidationAnalysis,
+  ConsolidationMatch,
+  ConsolidationType,
+  KLineData,
+} from '@/types/stock';
 
 const EPSILON = 1e-6;
 const MA10_PERIOD = 10;
@@ -75,11 +80,11 @@ function calculateRangePercent(minValue: number, maxValue: number): number {
 }
 
 function calculateStrength(metric: number, threshold: number): number {
-  if (threshold <= 0) {
-    return 0;
-  }
+  if (threshold <= 0 || metric >= threshold) return 0;
 
-  return round(Math.max(0, Math.min(100, 100 - (metric / threshold) * 100)));
+  // 使用指数衰减：metric越小，strength越高；ratio=0时strength=100, ratio=1时strength≈5
+  const ratio = metric / threshold;
+  return round(Math.exp(-3 * ratio) * 100);
 }
 
 function createMatch(
@@ -170,7 +175,11 @@ export function calculateConsolidation(
       createMatch(
         'box',
         `箱体·低${lowRangePercent}%高${highRangePercent}%`,
-        round((calculateStrength(lowRangePercent, threshold) + calculateStrength(highRangePercent, threshold)) / 2)
+        round(
+          (calculateStrength(lowRangePercent, threshold) +
+            calculateStrength(highRangePercent, threshold)) /
+            2
+        )
       )
     );
   }

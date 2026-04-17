@@ -197,9 +197,11 @@ function passesTechnicalIndicatorsFilter(
     const lastMiddle = bb.middle[len - 1];
     const lastLower = bb.lower[len - 1];
 
-    const nearUpper = isNearUpperBand(lastClose, lastUpper, lastMiddle, lastLower);
-    const nearMiddle = isNearMiddleBand(lastClose, lastUpper, lastMiddle, lastLower);
-    const nearLower = isNearLowerBand(lastClose, lastUpper, lastMiddle, lastLower);
+    // 使用配置的阈值，默认0.02（2%）
+    const bbThreshold = filters.bollingerThreshold || 0.02;
+    const nearUpper = isNearUpperBand(lastClose, lastUpper, lastMiddle, lastLower, bbThreshold);
+    const nearMiddle = isNearMiddleBand(lastClose, lastUpper, lastMiddle, lastLower, bbThreshold);
+    const nearLower = isNearLowerBand(lastClose, lastUpper, lastMiddle, lastLower, bbThreshold);
 
     // 至少满足一个布林带条件
     const bbMatched =
@@ -304,6 +306,16 @@ function passesAIFilter(
 
   const { trendPrediction, recommendation, similarPatterns } = item.aiAnalysis;
 
+  // --- 专业版增强逻辑 ---
+
+  // 4. 时间衰减因子 (Time Decay) - 必须在所有置信度检查之前计算
+  let effectiveConfidence = trendPrediction?.confidence || 0;
+  if (filters.aiEnableTimeDecay && item.analysisTimestamp) {
+    const hoursPassed = (Date.now() - item.analysisTimestamp) / (1000 * 3600);
+    const decayRate = filters.aiDecayRate || 0.1;
+    effectiveConfidence = effectiveConfidence * Math.exp(-decayRate * hoursPassed);
+  }
+
   // 1. 趋势预测筛选（勾选多项时为OR关系）
   if (filters.aiTrendUp || filters.aiTrendDown || filters.aiTrendSideways) {
     if (!trendPrediction) {
@@ -333,13 +345,13 @@ function passesAIFilter(
     }
   }
 
-  // 2. 置信度范围筛选（0-1转换为0-100）
+  // 2. 置信度范围筛选（使用衰减后的effectiveConfidence）
   if (filters.aiConfidenceRange.min !== undefined || filters.aiConfidenceRange.max !== undefined) {
     if (!trendPrediction) {
       return { passed: false, reason: '缺少趋势预测数据' };
     }
 
-    const confidencePercent = trendPrediction.confidence * 100;
+    const confidencePercent = effectiveConfidence * 100; // 使用衰减后的值
 
     if (
       filters.aiConfidenceRange.min !== undefined &&
@@ -361,62 +373,94 @@ function passesAIFilter(
     }
   }
 
-  // 3-7. 统一处理各类评分范围筛选（减少代码重复）
-  const scoreChecks: Array<{
-    name: string;
-    range: { min?: number; max?: number };
-    value: number | undefined | null;
-    missingReason: string;
-  }> = [
-    {
-      name: '综合评分',
-      range: filters.aiRecommendScoreRange,
-      value: recommendation?.totalScore,
-      missingReason: '缺少综合评分数据',
-    },
-    {
-      name: '技术面评分',
-      range: filters.aiTechnicalScoreRange,
-      value: recommendation?.technicalScore,
-      missingReason: '缺少技术面评分数据',
-    },
-    {
-      name: '形态评分',
-      range: filters.aiPatternScoreRange,
-      value: recommendation?.patternScore,
-      missingReason: '缺少形态评分数据',
-    },
-    {
-      name: '趋势评分',
-      range: filters.aiTrendScoreRange,
-      value: recommendation?.trendScore,
-      missingReason: '缺少趋势评分数据',
-    },
-    {
-      name: '风险评分',
-      range: filters.aiRiskScoreRange,
-      value: recommendation?.riskScore,
-      missingReason: '缺少风险评分数据',
-    },
-  ];
+  // --- 专业版增强逻辑 ---
 
-  for (const check of scoreChecks) {
-    if (check.range.min !== undefined || check.range.max !== undefined) {
-      if (check.value === undefined || check.value === null) {
-        return { passed: false, reason: check.missingReason };
-      }
+  // 1. 加权评分模式 (Weighted Scoring)
+  if (filters.aiEnableWeightedScoring && recommendation) {
+    const weights = filters.aiWeights || {
+      confidence: 0.3,
+      totalScore: 0.4,
+      technicalScore: 0.2,
+      riskScore: 0.1,
+    };
 
-      if (check.range.min !== undefined && check.value < check.range.min) {
-        return {
-          passed: false,
-          reason: `${check.name}过低：${check.value} < ${check.range.min}`,
-        };
-      }
-      if (check.range.max !== undefined && check.value > check.range.max) {
-        return {
-          passed: false,
-          reason: `${check.name}过高：${check.value} > ${check.range.max}`,
-        };
+    // 归一化处理 (将不同量纲映射到 0-100)
+    const normConfidence = effectiveConfidence * 100; // 使用衰减后的置信度
+    const normTotal = recommendation.totalScore || 0;
+    const normTech = recommendation.technicalScore || 0;
+    const normRisk = recommendation.riskScore || 0;
+
+    const compositeScore =
+      normConfidence * weights.confidence +
+      normTotal * weights.totalScore +
+      normTech * weights.technicalScore +
+      normRisk * weights.riskScore;
+
+    if (filters.aiMinCompositeScore !== undefined && compositeScore < filters.aiMinCompositeScore) {
+      return {
+        passed: false,
+        reason: `加权综合得分不足：${compositeScore.toFixed(1)} < ${filters.aiMinCompositeScore}`,
+      };
+    }
+  } else {
+    // 非加权模式：执行原有的单项评分检查
+    // 3-7. 统一处理各类评分范围筛选（减少代码重复）
+    const scoreChecks: Array<{
+      name: string;
+      range: { min?: number; max?: number };
+      value: number | undefined | null;
+      missingReason: string;
+    }> = [
+      {
+        name: '综合评分',
+        range: filters.aiRecommendScoreRange,
+        value: recommendation?.totalScore,
+        missingReason: '缺少综合评分数据',
+      },
+      {
+        name: '技术面评分',
+        range: filters.aiTechnicalScoreRange,
+        value: recommendation?.technicalScore,
+        missingReason: '缺少技术面评分数据',
+      },
+      {
+        name: '形态评分',
+        range: filters.aiPatternScoreRange,
+        value: recommendation?.patternScore,
+        missingReason: '缺少形态评分数据',
+      },
+      {
+        name: '趋势评分',
+        range: filters.aiTrendScoreRange,
+        value: recommendation?.trendScore,
+        missingReason: '缺少趋势评分数据',
+      },
+      {
+        name: '风险评分',
+        range: filters.aiRiskScoreRange,
+        value: recommendation?.riskScore,
+        missingReason: '缺少风险评分数据',
+      },
+    ];
+
+    for (const check of scoreChecks) {
+      if (check.range.min !== undefined || check.range.max !== undefined) {
+        if (check.value === undefined || check.value === null) {
+          return { passed: false, reason: check.missingReason };
+        }
+
+        if (check.range.min !== undefined && check.value < check.range.min) {
+          return {
+            passed: false,
+            reason: `${check.name}过低：${check.value} < ${check.range.min}`,
+          };
+        }
+        if (check.range.max !== undefined && check.value > check.range.max) {
+          return {
+            passed: false,
+            reason: `${check.name}过高：${check.value} > ${check.range.max}`,
+          };
+        }
       }
     }
   }
@@ -506,43 +550,6 @@ function passesAIFilter(
   }
 
   // --- 专业版增强逻辑 ---
-
-  // 4. 时间衰减因子 (Time Decay)
-  let effectiveConfidence = trendPrediction?.confidence || 0;
-  if (filters.aiEnableTimeDecay && item.analysisTimestamp) {
-    const hoursPassed = (Date.now() - item.analysisTimestamp) / (1000 * 3600);
-    const decayRate = filters.aiDecayRate || 0.1;
-    effectiveConfidence = effectiveConfidence * Math.exp(-decayRate * hoursPassed);
-  }
-
-  // 1. 加权评分模式 (Weighted Scoring)
-  if (filters.aiEnableWeightedScoring && recommendation) {
-    const weights = filters.aiWeights || {
-      confidence: 0.3,
-      totalScore: 0.4,
-      technicalScore: 0.2,
-      riskScore: 0.1,
-    };
-
-    // 归一化处理 (将不同量纲映射到 0-100)
-    const normConfidence = effectiveConfidence * 100;
-    const normTotal = recommendation.totalScore || 0;
-    const normTech = recommendation.technicalScore || 0;
-    const normRisk = recommendation.riskScore || 0;
-
-    const compositeScore =
-      normConfidence * weights.confidence +
-      normTotal * weights.totalScore +
-      normTech * weights.technicalScore +
-      normRisk * weights.riskScore;
-
-    if (filters.aiMinCompositeScore !== undefined && compositeScore < filters.aiMinCompositeScore) {
-      return {
-        passed: false,
-        reason: `加权综合得分不足：${compositeScore.toFixed(1)} < ${filters.aiMinCompositeScore}`,
-      };
-    }
-  }
 
   // 2. 一致性校验 (Consistency Check)
   if (filters.aiEnableConsistencyCheck && trendPrediction && recommendation) {

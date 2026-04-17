@@ -44,6 +44,8 @@ export interface OpportunityFilterSnapshot {
   rsiRange: NumberRange;
   /** RSI周期 */
   rsiPeriod: number;
+  /** 布林带阈值（0-1之间，默认0.02即2%） */
+  bollingerThreshold: number;
   /** MACD金叉 */
   macdGoldenCross: boolean;
   /** MACD死叉 */

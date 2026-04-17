@@ -36,9 +36,9 @@ export function isUptrend(klineData: KLineData[], lookback: number = 20): boolea
   // 计算斜率
   const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
 
-  // 如果斜率为正且显著，则认为是上升趋势
+  // 如果斜率为正且显著，则认为是上升趋势（提高到0.5%）
   const avgPrice = sumY / n;
-  return slope > avgPrice * 0.001; // 斜率大于平均价格的0.1%
+  return slope > avgPrice * 0.005; // 斜率大于平均价格的0.5%
 }
 
 /**
@@ -72,9 +72,9 @@ export function isDowntrend(klineData: KLineData[], lookback: number = 20): bool
   // 计算斜率
   const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
 
-  // 如果斜率为负且显著，则认为是下降趋势
+  // 如果斜率为负且显著，则认为是下降趋势（提高到0.5%）
   const avgPrice = sumY / n;
-  return slope < -avgPrice * 0.001; // 斜率小于平均价格的-0.1%
+  return slope < -avgPrice * 0.005; // 斜率小于平均价格的-0.5%
 }
 
 /**
@@ -110,12 +110,17 @@ export function isSideways(
 }
 
 /**
- * 判断是否为突破形态
+ * 判断是否为突破形态（带成交量确认）
  * @param klineData K线数据
  * @param lookback 回溯周期，默认20
+ * @param requireVolume 是否需要成交量确认，默认true
  * @returns 是否为突破形态
  */
-export function isBreakout(klineData: KLineData[], lookback: number = 20): boolean {
+export function isBreakout(
+  klineData: KLineData[],
+  lookback: number = 20,
+  requireVolume: boolean = true
+): boolean {
   const len = klineData.length;
   if (len < lookback + 1) return false;
 
@@ -127,16 +132,33 @@ export function isBreakout(klineData: KLineData[], lookback: number = 20): boole
 
   // 如果最新收盘价突破前期高点，且涨幅较大
   const breakoutThreshold = prevHigh * 1.02; // 突破2%以上
-  return lastKline.close > breakoutThreshold && lastKline.close > lastKline.open;
+  if (!(lastKline.close > breakoutThreshold && lastKline.close > lastKline.open)) {
+    return false;
+  }
+
+  // 成交量确认：当日成交量 > 前20日均量 * 1.5
+  if (requireVolume) {
+    const avgVolume = recent.reduce((sum, k) => sum + k.volume, 0) / recent.length;
+    if (lastKline.volume < avgVolume * 1.5) {
+      return false; // 无量突破，可能是假突破
+    }
+  }
+
+  return true;
 }
 
 /**
- * 判断是否为跌破形态
+ * 判断是否为跌破形态（带成交量确认）
  * @param klineData K线数据
  * @param lookback 回溯周期，默认20
+ * @param requireVolume 是否需要成交量确认，默认true
  * @returns 是否为跌破形态
  */
-export function isBreakdown(klineData: KLineData[], lookback: number = 20): boolean {
+export function isBreakdown(
+  klineData: KLineData[],
+  lookback: number = 20,
+  requireVolume: boolean = true
+): boolean {
   const len = klineData.length;
   if (len < lookback + 1) return false;
 
@@ -148,7 +170,19 @@ export function isBreakdown(klineData: KLineData[], lookback: number = 20): bool
 
   // 如果最新收盘价跌破前期低点，且跌幅较大
   const breakdownThreshold = prevLow * 0.98; // 跌破2%以上
-  return lastKline.close < breakdownThreshold && lastKline.close < lastKline.open;
+  if (!(lastKline.close < breakdownThreshold && lastKline.close < lastKline.open)) {
+    return false;
+  }
+
+  // 成交量确认：当日成交量 > 前20日均量 * 1.5
+  if (requireVolume) {
+    const avgVolume = recent.reduce((sum, k) => sum + k.volume, 0) / recent.length;
+    if (lastKline.volume < avgVolume * 1.5) {
+      return false; // 无量跌破，可能是假跌破
+    }
+  }
+
+  return true;
 }
 
 /**
