@@ -3,9 +3,14 @@
  */
 
 import { create } from 'zustand';
-import type { PriceAlert, StockQuote } from '@/types/stock';
+import type { PriceAlert, StockQuote, KLineData } from '@/types/stock';
 import { getStorage, setStorage } from '@/utils/storage';
 import { STORAGE_KEYS } from '@/utils/constants';
+import {
+  identifySupportResistance,
+  detectVolumeAnomaly,
+  detectIndicatorCross,
+} from '@/utils/alertEnhancements';
 
 interface AlertState {
   // 提醒列表
@@ -18,7 +23,10 @@ interface AlertState {
   toggleAlert: (id: string) => void;
   loadAlerts: () => void;
   saveAlerts: () => void;
-  checkAlerts: (quotes: Record<string, StockQuote>) => void;
+  checkAlerts: (
+    quotes: Record<string, StockQuote>,
+    klineDataMap?: Map<string, KLineData[]>
+  ) => void;
   resetAlertTrigger: (id: string) => void;
   getAlertsByCode: (code: string) => PriceAlert[];
 }
@@ -100,6 +108,96 @@ function shouldTriggerPriceAlert(alert: PriceAlert, currentPrice: number): boole
         return true;
       }
     }
+  }
+
+  return false;
+}
+
+/**
+ * 检查支撑阻力位突破提醒是否应该触发
+ */
+function shouldTriggerSupportResistanceAlert(
+  alert: PriceAlert,
+  currentPrice: number,
+  klineData?: KLineData[]
+): boolean {
+  if (!klineData || klineData.length < 20) {
+    return false;
+  }
+
+  const { condition, triggered, lastTriggerPrice } = alert;
+
+  // 识别支撑阻力位
+  const srResult = identifySupportResistance(klineData);
+
+  if (condition === 'breakout') {
+    // 突破阻力位
+    const nearestResistance = srResult.nearestResistance;
+    if (nearestResistance && currentPrice >= nearestResistance) {
+      if (!triggered) {
+        return true;
+      }
+      // 回退机制：价格必须回落到阻力位下方，再突破才再次触发
+      if (lastTriggerPrice !== undefined && lastTriggerPrice < nearestResistance) {
+        return true;
+      }
+    }
+  } else if (condition === 'breakdown') {
+    // 跌破支撑位
+    const nearestSupport = srResult.nearestSupport;
+    if (nearestSupport && currentPrice <= nearestSupport) {
+      if (!triggered) {
+        return true;
+      }
+      // 回退机制：价格必须回升到支撑位上方，再跌破才再次触发
+      if (lastTriggerPrice !== undefined && lastTriggerPrice > nearestSupport) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+/**
+ * 检查成交量异常提醒是否应该触发
+ */
+function shouldTriggerVolumeAnomalyAlert(alert: PriceAlert, klineData?: KLineData[]): boolean {
+  if (!klineData || klineData.length < 20) {
+    return false;
+  }
+
+  const { volumeMultiplier = 2.0, volumePeriod = 20, triggered } = alert;
+
+  // 检测成交量异常
+  const anomalyResult = detectVolumeAnomaly(klineData, volumePeriod, volumeMultiplier);
+
+  if (anomalyResult.isAnomaly && !triggered) {
+    return true;
+  }
+
+  return false;
+}
+
+/**
+ * 检查技术指标金叉/死叉提醒是否应该触发
+ */
+function shouldTriggerIndicatorCrossAlert(alert: PriceAlert, klineData?: KLineData[]): boolean {
+  if (!klineData || !alert.indicatorType) {
+    return false;
+  }
+
+  const { condition, indicatorType, maFastPeriod = 5, maSlowPeriod = 20, triggered } = alert;
+
+  // 检测指标交叉
+  const crossResult = detectIndicatorCross(klineData, indicatorType, maFastPeriod, maSlowPeriod);
+
+  if (condition === 'golden_cross' && crossResult.isGoldenCross && !triggered) {
+    return true;
+  }
+
+  if (condition === 'death_cross' && crossResult.isDeathCross && !triggered) {
+    return true;
   }
 
   return false;
@@ -200,7 +298,7 @@ export const useAlertStore = create<AlertState>((set, get) => ({
     setStorage(STORAGE_KEYS.PRICE_ALERTS, alerts);
   },
 
-  checkAlerts: (quotes) => {
+  checkAlerts: (quotes, klineDataMap) => {
     const { alerts } = get();
 
     // 检查所有启用的提醒
@@ -223,12 +321,19 @@ export const useAlertStore = create<AlertState>((set, get) => ({
 
       const currentPrice = quote.price;
       let shouldTrigger = false;
+      const klineData = klineDataMap?.get(alert.code);
 
       // 根据提醒类型检查
       if (alert.type === 'price') {
         shouldTrigger = shouldTriggerPriceAlert(alert, currentPrice);
-      } else {
+      } else if (alert.type === 'percent') {
         shouldTrigger = shouldTriggerPercentAlert(alert, currentPrice);
+      } else if (alert.type === 'support_resistance') {
+        shouldTrigger = shouldTriggerSupportResistanceAlert(alert, currentPrice, klineData);
+      } else if (alert.type === 'volume_anomaly') {
+        shouldTrigger = shouldTriggerVolumeAnomalyAlert(alert, klineData);
+      } else if (alert.type === 'indicator_cross') {
+        shouldTrigger = shouldTriggerIndicatorCrossAlert(alert, klineData);
       }
 
       if (shouldTrigger) {
@@ -267,7 +372,7 @@ export const useAlertStore = create<AlertState>((set, get) => ({
               get().updateAlert(alert.id, { lastTriggerPrice: currentPrice });
             }
           }
-        } else {
+        } else if (alert.type === 'percent') {
           // 幅度提醒的回退机制
           const { condition, targetValue, basePrice, lastTriggerPrice } = alert;
           const currentPercent = ((currentPrice - basePrice) / basePrice) * 100;
@@ -292,6 +397,7 @@ export const useAlertStore = create<AlertState>((set, get) => ({
             }
           }
         }
+        // 其他类型的提醒暂不需要回退机制
       }
     });
   },

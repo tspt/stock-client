@@ -179,17 +179,33 @@ export interface StockWatchListData {
 /**
  * 价格提醒类型
  */
-export type AlertType = 'price' | 'percent';
+export type AlertType =
+  | 'price'
+  | 'percent'
+  | 'support_resistance'
+  | 'volume_anomaly'
+  | 'indicator_cross';
 
 /**
  * 提醒触发条件
  */
-export type AlertCondition = 'above' | 'below';
+export type AlertCondition =
+  | 'above'
+  | 'below'
+  | 'golden_cross'
+  | 'death_cross'
+  | 'breakout'
+  | 'breakdown';
 
 /**
  * 提醒时间周期
  */
 export type AlertTimePeriod = 'day' | 'week' | 'month' | 'permanent';
+
+/**
+ * 技术指标类型（用于金叉/死叉提醒）
+ */
+export type IndicatorType = 'MACD' | 'KDJ' | 'RSI' | 'MA';
 
 /**
  * 通知方式配置
@@ -231,6 +247,26 @@ export interface PriceAlert {
   createdAt: number;
   /** 是否启用 */
   enabled: boolean;
+
+  // === 新增字段：支撑阻力位提醒 ===
+  /** 支撑位价格（用于支撑阻力位提醒） */
+  supportLevel?: number;
+  /** 阻力位价格（用于支撑阻力位提醒） */
+  resistanceLevel?: number;
+
+  // === 新增字段：成交量异常提醒 ===
+  /** 成交量倍数阈值（相对于历史均量，如2.0表示2倍） */
+  volumeMultiplier?: number;
+  /** 成交量检测周期（天数） */
+  volumePeriod?: number;
+
+  // === 新增字段：技术指标金叉/死叉提醒 ===
+  /** 技术指标类型 */
+  indicatorType?: IndicatorType;
+  /** MA周期（当indicatorType为MA时使用） */
+  maFastPeriod?: number;
+  /** MA慢速周期（当indicatorType为MA时使用） */
+  maSlowPeriod?: number;
 }
 
 /**

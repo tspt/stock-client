@@ -55,10 +55,42 @@ export function AlertPage() {
         return alert.condition === 'above'
           ? `涨到 ${formatPrice(alert.targetValue)} 元`
           : `跌到 ${formatPrice(alert.targetValue)} 元`;
+      } else if (alert.type === 'percent') {
+        return alert.condition === 'above'
+          ? `涨幅达到 ${formatChangePercent(alert.targetValue)}`
+          : `跌幅达到 ${formatChangePercent(alert.targetValue)}`;
+      } else if (alert.type === 'support_resistance') {
+        if (alert.condition === 'breakout') {
+          return `突破阻力位 ${formatPrice(alert.resistanceLevel || alert.targetValue)} 元`;
+        } else {
+          return `跌破支撑位 ${formatPrice(alert.supportLevel || alert.targetValue)} 元`;
+        }
+      } else if (alert.type === 'volume_anomaly') {
+        return `成交量异常（>${(alert.volumeMultiplier || 2.0).toFixed(1)}倍均量）`;
+      } else if (alert.type === 'indicator_cross') {
+        const indicatorName = getIndicatorName(alert.indicatorType);
+        if (alert.condition === 'golden_cross') {
+          return `${indicatorName}金叉`;
+        } else {
+          return `${indicatorName}死叉`;
+        }
       }
-      return alert.condition === 'above'
-        ? `涨幅达到 ${formatChangePercent(alert.targetValue)}`
-        : `跌幅达到 ${formatChangePercent(alert.targetValue)}`;
+      return '-';
+    };
+
+    const getIndicatorName = (indicatorType?: string): string => {
+      switch (indicatorType) {
+        case 'MACD':
+          return 'MACD';
+        case 'KDJ':
+          return 'KDJ';
+        case 'RSI':
+          return 'RSI';
+        case 'MA':
+          return '均线';
+        default:
+          return '指标';
+      }
     };
 
     return [
@@ -77,12 +109,36 @@ export function AlertPage() {
       {
         title: '提醒类型',
         key: 'type',
-        width: 100,
-        render: (_: unknown, alert: PriceAlert) => (
-          <Tag color={alert.type === 'price' ? 'blue' : 'purple'}>
-            {alert.type === 'price' ? '价格' : '幅度'}
-          </Tag>
-        ),
+        width: 120,
+        render: (_: unknown, alert: PriceAlert) => {
+          let color = 'blue';
+          let text = '价格';
+
+          switch (alert.type) {
+            case 'price':
+              color = 'blue';
+              text = '价格';
+              break;
+            case 'percent':
+              color = 'purple';
+              text = '幅度';
+              break;
+            case 'support_resistance':
+              color = 'orange';
+              text = '支撑阻力';
+              break;
+            case 'volume_anomaly':
+              color = 'red';
+              text = '成交量';
+              break;
+            case 'indicator_cross':
+              color = 'green';
+              text = '指标交叉';
+              break;
+          }
+
+          return <Tag color={color}>{text}</Tag>;
+        },
       },
       {
         title: '触发条件',

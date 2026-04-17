@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from 'react';
 import { Modal, Form, Radio, InputNumber, Select, Checkbox, message } from 'antd';
-import type { PriceAlert, AlertType, NotificationConfig } from '@/types/stock';
+import type { PriceAlert, AlertType, NotificationConfig, IndicatorType } from '@/types/stock';
 import { useAlertStore } from '@/stores/alertStore';
 import { useStockStore } from '@/stores/stockStore';
 import { ALERT_TIME_PERIODS } from '@/utils/constants';
@@ -43,6 +43,7 @@ export function AlertSettingModal({
   const { addAlert, updateAlert } = useAlertStore();
   const { quotes } = useStockStore();
   const [alertType, setAlertType] = useState<AlertType>('price');
+  const [indicatorType, setIndicatorType] = useState<IndicatorType>('MACD');
 
   // 获取当前行情（如果未传入）
   const quote = quotes[code];
@@ -59,8 +60,14 @@ export function AlertSettingModal({
           targetValue: editAlert.targetValue,
           timePeriod: editAlert.timePeriod,
           notifications: editAlert.notifications,
+          indicatorType: editAlert.indicatorType || 'MACD',
+          volumeMultiplier: editAlert.volumeMultiplier || 2.0,
+          volumePeriod: editAlert.volumePeriod || 20,
+          maFastPeriod: editAlert.maFastPeriod || 5,
+          maSlowPeriod: editAlert.maSlowPeriod || 20,
         });
         setAlertType(editAlert.type);
+        setIndicatorType(editAlert.indicatorType || 'MACD');
       } else {
         // 新建模式：重置表单
         form.resetFields();
@@ -72,8 +79,14 @@ export function AlertSettingModal({
             tray: true,
             desktop: true,
           },
+          indicatorType: 'MACD',
+          volumeMultiplier: 2.0,
+          volumePeriod: 20,
+          maFastPeriod: 5,
+          maSlowPeriod: 20,
         });
         setAlertType('price');
+        setIndicatorType('MACD');
       }
     }
   }, [visible, editAlert, form]);
@@ -81,7 +94,18 @@ export function AlertSettingModal({
   const handleSubmit = async () => {
     try {
       const values = await form.validateFields();
-      const { type, condition, targetValue, timePeriod, notifications } = values;
+      const {
+        type,
+        condition,
+        targetValue,
+        timePeriod,
+        notifications,
+        indicatorType: selectedIndicatorType,
+        volumeMultiplier,
+        volumePeriod,
+        maFastPeriod,
+        maSlowPeriod,
+      } = values;
 
       // 验证目标值
       if (type === 'price') {
@@ -95,13 +119,18 @@ export function AlertSettingModal({
         if (condition === 'below' && targetValue >= displayPrice) {
           message.warning('跌到提醒：目标价格应小于当前价格');
         }
-      } else {
+      } else if (type === 'percent') {
         if (condition === 'above' && targetValue <= 0) {
           message.error('目标涨幅必须大于0');
           return;
         }
         if (condition === 'below' && targetValue >= 0) {
           message.error('目标跌幅必须小于0');
+          return;
+        }
+      } else if (type === 'volume_anomaly') {
+        if (!volumeMultiplier || volumeMultiplier < 1.5) {
+          message.error('成交量倍数阈值必须大于等于1.5');
           return;
         }
       }
@@ -114,6 +143,11 @@ export function AlertSettingModal({
           targetValue,
           timePeriod,
           notifications,
+          indicatorType: selectedIndicatorType,
+          volumeMultiplier,
+          volumePeriod,
+          maFastPeriod,
+          maSlowPeriod,
           // 重置触发状态（如果修改了目标值）
           triggered: false,
           lastTriggerPrice: undefined,
@@ -130,6 +164,11 @@ export function AlertSettingModal({
           basePrice: displayBasePrice,
           timePeriod,
           notifications,
+          indicatorType: selectedIndicatorType,
+          volumeMultiplier,
+          volumePeriod,
+          maFastPeriod,
+          maSlowPeriod,
         });
         message.success('提醒已设置');
       }
@@ -137,6 +176,7 @@ export function AlertSettingModal({
       onSuccess?.();
       onCancel();
     } catch (error) {
+      console.error('表单验证失败:', error);
     }
   };
 
@@ -175,6 +215,9 @@ export function AlertSettingModal({
           >
             <Radio value="price">价格提醒</Radio>
             <Radio value="percent">幅度提醒</Radio>
+            <Radio value="support_resistance">支撑阻力位</Radio>
+            <Radio value="volume_anomaly">成交量异常</Radio>
+            <Radio value="indicator_cross">指标金叉/死叉</Radio>
           </Radio.Group>
         </Form.Item>
 
@@ -184,8 +227,30 @@ export function AlertSettingModal({
           rules={[{ required: true, message: '请选择触发条件' }]}
         >
           <Radio.Group>
-            <Radio value="above">{alertType === 'price' ? '涨到' : '涨幅达到'}</Radio>
-            <Radio value="below">{alertType === 'price' ? '跌到' : '跌幅达到'}</Radio>
+            {alertType === 'price' && (
+              <>
+                <Radio value="above">涨到</Radio>
+                <Radio value="below">跌到</Radio>
+              </>
+            )}
+            {alertType === 'percent' && (
+              <>
+                <Radio value="above">涨幅达到</Radio>
+                <Radio value="below">跌幅达到</Radio>
+              </>
+            )}
+            {alertType === 'support_resistance' && (
+              <>
+                <Radio value="breakout">突破阻力位</Radio>
+                <Radio value="breakdown">跌破支撑位</Radio>
+              </>
+            )}
+            {alertType === 'indicator_cross' && (
+              <>
+                <Radio value="golden_cross">金叉</Radio>
+                <Radio value="death_cross">死叉</Radio>
+              </>
+            )}
           </Radio.Group>
         </Form.Item>
 
@@ -219,6 +284,69 @@ export function AlertSettingModal({
             placeholder={alertType === 'price' ? '请输入目标价格' : '请输入目标幅度'}
           />
         </Form.Item>
+
+        {/* 技术指标类型选择（仅当提醒类型为指标金叉/死叉时显示） */}
+        {alertType === 'indicator_cross' && (
+          <Form.Item
+            name="indicatorType"
+            label="技术指标类型"
+            rules={[{ required: true, message: '请选择技术指标类型' }]}
+          >
+            <Select onChange={(value) => setIndicatorType(value)}>
+              <Select.Option value="MACD">MACD</Select.Option>
+              <Select.Option value="KDJ">KDJ</Select.Option>
+              <Select.Option value="RSI">RSI</Select.Option>
+              <Select.Option value="MA">均线 (MA)</Select.Option>
+            </Select>
+          </Form.Item>
+        )}
+
+        {/* MA周期配置（仅当指标类型为MA时显示） */}
+        {alertType === 'indicator_cross' && indicatorType === 'MA' && (
+          <>
+            <Form.Item
+              name="maFastPeriod"
+              label="快速MA周期"
+              rules={[{ required: true, message: '请输入快速MA周期' }]}
+            >
+              <InputNumber style={{ width: '100%' }} min={1} max={60} />
+            </Form.Item>
+            <Form.Item
+              name="maSlowPeriod"
+              label="慢速MA周期"
+              rules={[{ required: true, message: '请输入慢速MA周期' }]}
+            >
+              <InputNumber style={{ width: '100%' }} min={1} max={120} />
+            </Form.Item>
+          </>
+        )}
+
+        {/* 成交量异常配置 */}
+        {alertType === 'volume_anomaly' && (
+          <>
+            <Form.Item
+              name="volumeMultiplier"
+              label="成交量倍数阈值"
+              rules={[{ required: true, message: '请输入成交量倍数阈值' }]}
+            >
+              <InputNumber
+                style={{ width: '100%' }}
+                min={1.5}
+                max={10}
+                step={0.1}
+                precision={1}
+                placeholder="例如：2.0表示2倍均量"
+              />
+            </Form.Item>
+            <Form.Item
+              name="volumePeriod"
+              label="历史均量计算周期（天）"
+              rules={[{ required: true, message: '请输入计算周期' }]}
+            >
+              <InputNumber style={{ width: '100%' }} min={5} max={60} />
+            </Form.Item>
+          </>
+        )}
 
         <Form.Item
           name="timePeriod"
