@@ -740,6 +740,90 @@ export interface SectorRankData {
 }
 
 /**
+ * 概念板块排行数据（包含主力资金流向）
+ */
+export interface ConceptSectorRankData {
+  /** 板块代码 */
+  code: string;
+  /** 板块名称 */
+  name: string;
+  /** 涨跌幅（百分比） */
+  changePercent: number;
+  /** 换手率（百分比） */
+  turnoverRate?: number;
+  /** 成交额（万元） */
+  amount?: number;
+  // 主力净流入
+  mainNetInflow?: number; // 净额（万元）
+  mainNetInflowRatio?: number; // 净占比（百分比）
+  // 超大单净流入
+  superLargeNetInflow?: number; // 净额（万元）
+  superLargeNetInflowRatio?: number; // 净占比（百分比）
+  // 大单净流入
+  largeNetInflow?: number; // 净额（万元）
+  largeNetInflowRatio?: number; // 净占比（百分比）
+  // 中单净流入
+  mediumNetInflow?: number; // 净额（万元）
+  mediumNetInflowRatio?: number; // 净占比（百分比）
+  // 小单净流入
+  smallNetInflow?: number; // 净额（万元）
+  smallNetInflowRatio?: number; // 净占比（百分比）
+  /** 领涨股名称 */
+  leadingStock?: string;
+  /** 领涨股代码 */
+  leadingStockCode?: string;
+}
+
+/**
+ * 概念板块下股票数据
+ */
+export interface ConceptSectorStockData {
+  /** 股票代码 */
+  code: string;
+  /** 股票名称 */
+  name: string;
+  /** 最新价 */
+  price: number;
+  /** 涨跌幅（百分比） */
+  changePercent: number;
+  // 主力净流入
+  mainNetInflow: number; // 净额（万元）
+  mainNetInflowRatio: number; // 净占比（百分比）
+  // 超大单净流入
+  superLargeNetInflow: number; // 净额（万元）
+  superLargeNetInflowRatio: number; // 净占比（百分比）
+  // 大单净流入
+  largeNetInflow: number; // 净额（万元）
+  largeNetInflowRatio: number; // 净占比（百分比）
+  // 中单净流入
+  mediumNetInflow: number; // 净额（万元）
+  mediumNetInflowRatio: number; // 净占比（百分比）
+  // 小单净流入
+  smallNetInflow: number; // 净额（万元）
+  smallNetInflowRatio: number; // 净占比（百分比）
+}
+
+/**
+ * 概念板块股票列表响应（包含总数）
+ */
+export interface ConceptSectorStocksResponse {
+  /** 股票列表 */
+  data: ConceptSectorStockData[];
+  /** 总记录数 */
+  total: number;
+}
+
+/**
+ * 概念板块列表响应（包含总数）
+ */
+export interface ConceptSectorsResponse {
+  /** 板块列表 */
+  data: ConceptSectorRankData[];
+  /** 总记录数 */
+  total: number;
+}
+
+/**
  * 财务报表数据
  */
 export interface FinancialStatement {

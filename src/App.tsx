@@ -4,7 +4,7 @@
 
 import { Suspense, lazy, useEffect, useState } from 'react';
 import { ConfigProvider, App as AntdApp, theme, Layout, Tabs, Spin } from 'antd';
-import { StockOutlined, BellOutlined, BarChartOutlined, FireOutlined } from '@ant-design/icons';
+import { StockOutlined, BellOutlined, BarChartOutlined, FireOutlined, ClusterOutlined } from '@ant-design/icons';
 import zhCN from 'antd/locale/zh_CN';
 import { useTheme } from '@/hooks/useTheme';
 import { useStockStore } from '@/stores/stockStore';
@@ -24,6 +24,7 @@ const OpportunityPage = lazy(() =>
 );
 const HotPage = lazy(() => import('@/pages/HotPage/HotPage').then((m) => ({ default: m.HotPage })));
 const SectorPage = lazy(() => import('@/pages/SectorPage/SectorPage').then((m) => ({ default: m.SectorPage })));
+const ConceptSectorPage = lazy(() => import('@/pages/ConceptSectorPage/ConceptSectorPage').then((m) => ({ default: m.ConceptSectorPage })));
 
 const { Header, Content } = Layout;
 
@@ -156,6 +157,28 @@ function AppContent() {
                         >
                           <div className={styles.sectorLayout}>
                             <SectorPage />
+                          </div>
+                        </Suspense>
+                      ),
+                    },
+                    {
+                      key: 'concept-sector',
+                      label: (
+                        <span>
+                          <ClusterOutlined className={styles.mgr6} />
+                          概念板块
+                        </span>
+                      ),
+                      children: (
+                        <Suspense
+                          fallback={
+                            <div className={styles.suspenseFallback}>
+                              <Spin size="large" />
+                            </div>
+                          }
+                        >
+                          <div className={styles.sectorLayout}>
+                            <ConceptSectorPage />
                           </div>
                         </Suspense>
                       ),

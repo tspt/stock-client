@@ -3,7 +3,7 @@
  */
 
 import { create } from 'zustand';
-import { getMarketOverview, getSectorRanks } from '@/services/hot';
+import { getMarketOverview, getSectorRanks, getConceptSectorRanks } from '@/services/hot';
 import type { MarketOverview } from '@/services/hot';
 import type { SectorRankData } from '@/types/stock';
 
@@ -14,9 +14,15 @@ interface HotState {
   fallingSectors: SectorRankData[]; // 领跌板块
   sectorsLoading: boolean; // 板块加载状态
 
+  // 概念板块数据
+  risingConceptSectors: SectorRankData[]; // 领涨概念板块
+  fallingConceptSectors: SectorRankData[]; // 领跌概念板块
+  conceptSectorsLoading: boolean; // 概念板块加载状态
+
   // Actions
   loadMarketOverview: () => Promise<void>; // 加载市场概览
   loadSectorRanks: () => Promise<void>; // 加载板块排行
+  loadConceptSectorRanks: () => Promise<void>; // 加载概念板块排行
 }
 
 export const useHotStore = create<HotState>((set) => ({
@@ -25,6 +31,11 @@ export const useHotStore = create<HotState>((set) => ({
   risingSectors: [],
   fallingSectors: [],
   sectorsLoading: false,
+
+  // 概念板块初始状态
+  risingConceptSectors: [],
+  fallingConceptSectors: [],
+  conceptSectorsLoading: false,
 
   // 加载市场概览
   loadMarketOverview: async () => {
@@ -49,6 +60,22 @@ export const useHotStore = create<HotState>((set) => ({
     } catch (error) {
       console.error('加载板块排行数据失败:', error);
       set({ sectorsLoading: false });
+    }
+  },
+
+  // 加载概念板块排行
+  loadConceptSectorRanks: async () => {
+    set({ conceptSectorsLoading: true });
+    try {
+      const { rising, falling } = await getConceptSectorRanks(20);
+      set({
+        risingConceptSectors: rising,
+        fallingConceptSectors: falling,
+        conceptSectorsLoading: false,
+      });
+    } catch (error) {
+      console.error('加载概念板块排行数据失败:', error);
+      set({ conceptSectorsLoading: false });
     }
   },
 }));

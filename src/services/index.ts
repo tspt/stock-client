@@ -7,6 +7,12 @@
 export { getMarketOverview } from './hot';
 export type { MarketOverview } from './hot';
 export { getRisingSectors, getFallingSectors, getSectorRanks } from './hot';
+export {
+  getConceptSectors,
+  getRisingConceptSectors,
+  getFallingConceptSectors,
+  getConceptSectorRanks,
+} from './hot';
 
 // Stocks 模块
 export {

@@ -126,10 +126,7 @@
   top: 0;
   z-index: 10;
   background: var(--ant-color-bg-container);
-  border-bottom: 1px solid var(--ant-color-border);
-  margin-bottom: 8px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
-  padding: 0;
+    padding: 0;
 }
 
 /* 单行入口：按钮 + 摘要（主区域仅占用一行） */
