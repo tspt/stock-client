@@ -18,4 +18,6 @@ export {
   getEastMoneyFallingSectors,
   getEastMoneySectorRanks,
 } from './eastmoney-sectors';
+export { getEastMoneyIndices } from './indices';
+export type { EastMoneyIndexData } from './indices';
 export type { ConceptSectorStockData } from '@/types/stock';

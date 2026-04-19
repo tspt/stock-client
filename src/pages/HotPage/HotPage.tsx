@@ -1,11 +1,11 @@
 /**
- * 热门行情页面 - 市场概览 + 板块排行
+ * 热门行情页面 - 指数展示 + 板块排行
  */
 
 import { Layout } from 'antd';
 import { useHotStore } from '@/stores/hotStore';
 import { usePolling } from '@/hooks/usePolling';
-import { MarketSentimentCard } from './components/MarketSentimentCard';
+import { IndexCard } from './components/IndexCard';
 import { EastMoneySectorRankCard } from '@/components/EastMoneySectorRankCard';
 import styles from './HotPage.module.css';
 
@@ -13,8 +13,9 @@ const { Header } = Layout;
 
 export function HotPage() {
   const {
-    loadMarketOverview,
-    marketOverview,
+    indices,
+    indicesLoading,
+    loadEastMoneyIndices,
     loadEastMoneySectorRanks,
     eastMoneyRisingSectors,
     eastMoneyFallingSectors
@@ -23,7 +24,7 @@ export function HotPage() {
   // 使用轮询定期刷新数据（10秒间隔）
   usePolling(async () => {
     await Promise.all([
-      loadMarketOverview(),
+      loadEastMoneyIndices(),
       loadEastMoneySectorRanks()
     ]);
   }, {
@@ -34,10 +35,20 @@ export function HotPage() {
 
   return (
     <Layout className={styles.hotPage}>
-      <Header className={styles.sentimentHeader}>
-        <MarketSentimentCard marketOverview={marketOverview} />
-      </Header>
-      {/* 板块排行区域 */}
+      {/* 指数展示区域 - 固定顶部 */}
+      <div className={styles.indicesContainer}>
+        {indices.length > 0 ? (
+          <div className={styles.indicesGrid}>
+            {indices.map((index) => (
+              <IndexCard key={index.code} index={index} />
+            ))}
+          </div>
+        ) : (
+          <div className={styles.loadingText}>加载中...</div>
+        )}
+      </div>
+
+      {/* 板块排行区域 - 可滚动 */}
       <div className={styles.sectorRankContainer}>
         <div className={styles.sectorColumn}>
           <EastMoneySectorRankCard

@@ -2,98 +2,52 @@
   height: 100%;
   display: flex;
   flex-direction: column;
-  background: transparent;
-  overflow: auto;
+  background: #f5f7fa;
+  overflow: hidden;
 }
 
-.sentimentHeader {
-  padding: 16px;
-  background: transparent;
-  border-bottom: 1px solid var(--ant-color-border);
-  height: auto;
-  line-height: normal;
+/* 指数展示区域 - 固定顶部 */
+.indicesContainer {
+  flex-shrink: 0;
+  padding: 16px 20px;
+  background: #fff;
+  border-bottom: 1px solid var(--ant-color-border-secondary);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  z-index: 10;
 }
 
-/* 板块排行区域 */
-.sectorRankContainer {
-  display: flex;
-  gap: 16px;
-  padding: 16px;
+.indicesGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  max-width: 1050px;
+}
+
+.loadingText {
+  text-align: center;
+  padding: 60px 40px;
+  color: var(--ant-color-text-secondary);
+  font-size: 14px;
   background: var(--ant-color-bg-container);
-  border-top: 1px solid var(--ant-color-border);
+  border-radius: 8px;
+}
+
+/* 板块排行区域 - 可滚动 */
+.sectorRankContainer {
+  flex: 1;
+  display: flex;
+  gap: 20px;
+  padding: 20px;
+  overflow-y: auto;
+  overflow-x: auto;
+  background: #fff;
 }
 
 .sectorColumn {
-  width: 550px;
+  width: 520px;
   flex-shrink: 0;
+  background: var(--ant-color-bg-container);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
-/* 市场概览卡片样式 */
-.marketOverviewContainer {
-  display: flex;
-  gap: 32px;
-  justify-content: flex-start;
-}
-
-.marketColumn {
-  width: 300px;
-  flex-shrink: 0;
-}
-
-.indexInfo {
-  padding: 4px 0;
-}
-
-.indexName {
-  font-size: 13px;
-  display: block;
-  margin-bottom: 6px;
-  color: var(--ant-color-text-secondary);
-}
-
-.indexPrice {
-  font-size: 24px;
-  font-weight: bold;
-  line-height: 1.2;
-  margin-bottom: 4px;
-}
-
-.indexChange {
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 1.4;
-  margin-bottom: 8px;
-}
-
-.indexDetail {
-  font-size: 12px;
-  line-height: 1.6;
-  color: var(--ant-color-text-secondary);
-}
-
-.rankInfo {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-top: 8px;
-  padding-top: 8px;
-  border-top: 1px dashed var(--ant-color-border);
-}
-
-.rankUp {
-  color: #ff4d4f;
-  font-weight: 500;
-  font-size: 13px;
-}
-
-.rankFlat {
-  color: #999;
-  font-weight: 500;
-  font-size: 13px;
-}
-
-.rankDown {
-  color: #52c41a;
-  font-weight: 500;
-  font-size: 13px;
-}

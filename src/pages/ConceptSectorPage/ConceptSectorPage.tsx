@@ -2,7 +2,7 @@
  * 概念板块页面 - 展示概念板块列表（包含主力资金流向）
  */
 
-import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Layout, Input, Table, Card, Space, Select, Button, Typography } from 'antd';
 import { SearchOutlined, ReloadOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
@@ -20,30 +20,30 @@ const formatAmount = (value?: number): string => {
   if (!value) return '-';
   const absValue = Math.abs(value);
   if (absValue >= 10000) {
-    // 大于等于1亿，显示为亿
     const yiValue = value / 10000;
     return `${yiValue.toFixed(2)}亿`;
   }
-  // 否则显示为万元
   return `${value.toFixed(2)}万`;
 };
 
 // 格式化净额显示（带颜色）
 const formatNetInflow = (value?: number): JSX.Element => {
-  if (!value) return <span>-</span>;
-  const formatted = formatAmount(value);
-  const color = value >= 0 ? 'var(--ant-color-success)' : 'var(--ant-color-error)';
+  if (value === undefined || value === null || isNaN(Number(value))) return <span>-</span>;
+  const numValue = Number(value);
+  const formatted = formatAmount(numValue);
+  const color = numValue >= 0 ? 'var(--ant-color-success)' : 'var(--ant-color-error)';
   return <span style={{ color }}>{formatted}</span>;
 };
 
 // 格式化净占比显示（带颜色）
 const formatRatio = (value?: number): JSX.Element => {
-  if (!value && value !== 0) return <span>-</span>;
-  const color = value >= 0 ? 'var(--ant-color-success)' : 'var(--ant-color-error)';
-  return <span style={{ color }}>{value.toFixed(2)}%</span>;
+  if (value === undefined || value === null || isNaN(Number(value))) return <span>-</span>;
+  const numValue = Number(value);
+  const color = numValue >= 0 ? 'var(--ant-color-success)' : 'var(--ant-color-error)';
+  return <span style={{ color }}>{numValue.toFixed(2)}%</span>;
 };
 
-type SortField = 'f3' | 'f184' | 'f62' | 'f66'; // 涨跌幅、涨速、主力净流入、超大单净流入（保留类型定义用于排序功能）
+
 
 export function ConceptSectorPage() {
   const [searchKeyword, setSearchKeyword] = useState('');
@@ -112,6 +112,13 @@ export function ConceptSectorPage() {
     }
   };
 
+  // 处理排序变化 - 重置到第一页
+  const handleSortChange = (value: number) => {
+    setSortOrder(value);
+    setCurrentPage(1);
+    loadData(1);
+  };
+
   // 过滤数据
   const filteredData = useMemo(() => {
     if (!searchKeyword) return data;
@@ -130,8 +137,8 @@ export function ConceptSectorPage() {
     setModalOpen(true);
   };
 
-  // 表格列定义
-  const columns: ColumnsType<ConceptSectorRankData> = [
+  // 表格列定义 - 使用 useMemo 避免重复创建
+  const columns = useMemo<ColumnsType<ConceptSectorRankData>>(() => [
     {
       title: (
         <Space size={4}>
@@ -165,12 +172,13 @@ export function ConceptSectorPage() {
       width: 90,
       sorter: (a, b) => (a.changePercent || 0) - (b.changePercent || 0),
       render: (value?: number) => {
-        if (!value && value !== 0) return <span>-</span>;
-        const isPositive = value >= 0;
+        if (value === undefined || value === null || isNaN(Number(value))) return <span>-</span>;
+        const numValue = Number(value);
+        const isPositive = numValue >= 0;
         const colorClass = isPositive ? styles.positive : styles.negative;
         return (
           <span className={colorClass} style={{ fontWeight: 600 }}>
-            {isPositive ? '+' : ''}{value.toFixed(2)}%
+            {isPositive ? '+' : ''}{numValue.toFixed(2)}%
           </span>
         );
       },
@@ -198,9 +206,10 @@ export function ConceptSectorPage() {
           key: 'mainNetInflowRatio',
           width: 70,
           render: (value?: number) => {
-            if (!value && value !== 0) return <span>-</span>;
-            const color = value >= 0 ? 'var(--ant-color-success)' : 'var(--ant-color-error)';
-            return <span style={{ color }}>{value.toFixed(2)}%</span>;
+            if (value === undefined || value === null || isNaN(Number(value))) return <span>-</span>;
+            const numValue = Number(value);
+            const color = numValue >= 0 ? 'var(--ant-color-success)' : 'var(--ant-color-error)';
+            return <span style={{ color }}>{numValue.toFixed(2)}%</span>;
           },
         },
       ],
@@ -309,7 +318,7 @@ export function ConceptSectorPage() {
         },
       ],
     },
-  ];
+  ], []);
 
   return (
     <Layout className={styles.conceptSectorPage}>
@@ -330,7 +339,7 @@ export function ConceptSectorPage() {
 
             <Select
               value={sortOrder}
-              onChange={(value) => setSortOrder(value)}
+              onChange={handleSortChange}
               style={{ width: 100 }}
             >
               <Option value={1}>降序</Option>

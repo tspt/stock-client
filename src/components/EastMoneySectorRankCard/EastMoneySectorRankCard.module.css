@@ -6,36 +6,106 @@
   height: 100%;
   display: flex;
   flex-direction: column;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.sectorCard:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+.sectorCard :global(.ant-card-head) {
+  background: linear-gradient(135deg, var(--ant-color-bg-container) 0%, var(--ant-color-bg-elevated) 100%);
+  border-bottom: 2px solid var(--ant-color-border-secondary);
+  padding: 12px 16px;
+  min-height: auto;
+}
+
+.sectorCard :global(.ant-card-head-title) {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ant-color-text);
+  letter-spacing: 0.5px;
 }
 
 .sectorCard :global(.ant-card-body) {
   flex: 1;
   overflow: hidden;
   padding: 0;
+  display: flex;
+  flex-direction: column;
 }
 
-.sectorTable {
-  width: 100%;
-  height: 100%;
-}
-
-.sectorTable :global(.ant-table) {
+/* 表头 */
+.listHeader {
+  display: flex;
+  align-items: center;
+  padding: 10px 12px;
+  background: linear-gradient(to bottom, var(--ant-color-fill-quaternary), var(--ant-color-fill-tertiary));
+  border-bottom: 2px solid var(--ant-color-border-secondary);
+  font-weight: 600;
   font-size: 13px;
+  color: var(--ant-color-text);
+  flex-shrink: 0;
 }
 
-.sectorTable :global(.ant-table-thead > tr > th) {
-  background: #fafafa;
-  font-weight: 500;
+.headerCell {
+  padding: 0 4px;
+  flex-shrink: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 列表容器 - 可滚动 */
+.listContainer {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* 滚动条样式 */
+.listContainer::-webkit-scrollbar {
+  width: 6px;
+}
+
+.listContainer::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.listContainer::-webkit-scrollbar-thumb {
+  background: var(--ant-color-fill-tertiary);
+  border-radius: 3px;
+  transition: background 0.2s ease;
+}
+
+.listContainer::-webkit-scrollbar-thumb:hover {
+  background: var(--ant-color-fill-secondary);
+}
+
+/* 列表项 */
+.listItem {
+  display: flex;
+  align-items: center;
   padding: 8px 12px;
-  font-size: 13px;
+  border-bottom: 1px solid var(--ant-color-border-secondary);
+  transition: all 0.2s ease;
+  cursor: pointer;
 }
 
-.sectorTable :global(.ant-table-tbody > tr > td) {
-  padding: 6px 12px;
+.listItem:last-child {
+  border-bottom: none;
 }
 
-.sectorTable :global(.ant-table-tbody > tr:hover > td) {
-  background: var(--ant-color-primary-bg);
+.listItem:hover {
+  background: var(--ant-color-fill-secondary);
+}
+
+.listItem:hover .rankNumber {
+  transform: scale(1.1);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
 }
 
 /* 排名数字样式 */
@@ -43,32 +113,39 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 500;
-  background-color: var(--ant-color-fill-tertiary);
-  color: var(--ant-color-text-secondary);
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  background: linear-gradient(135deg, var(--ant-color-fill-tertiary) 0%, var(--ant-color-fill-secondary) 100%);
+  color: var(--ant-color-text);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  margin-right: 8px;
 }
 
-/* 前3名高亮 */
-.sectorTable :global(.ant-table-tbody > tr:nth-child(1) .rankNumber) {
-  background-color: #ff4d4f;
+/* 前3名高亮 - 渐变色 */
+.listItem:nth-child(1) .rankNumber {
+  background: linear-gradient(135deg, #ff4d4f 0%, #ff7875 100%);
   color: #fff;
-  font-weight: 600;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(255, 77, 79, 0.3);
 }
 
-.sectorTable :global(.ant-table-tbody > tr:nth-child(2) .rankNumber) {
-  background-color: #ff7a45;
+.listItem:nth-child(2) .rankNumber {
+  background: linear-gradient(135deg, #ff7a45 0%, #ffa940 100%);
   color: #fff;
-  font-weight: 600;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(255, 122, 69, 0.3);
 }
 
-.sectorTable :global(.ant-table-tbody > tr:nth-child(3) .rankNumber) {
-  background-color: #ffa940;
+.listItem:nth-child(3) .rankNumber {
+  background: linear-gradient(135deg, #ffa940 0%, #ffc53d 100%);
   color: #fff;
-  font-weight: 600;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(255, 169, 64, 0.3);
 }
 
 /* 涨跌颜色 - 红涨绿跌 */
@@ -82,7 +159,9 @@
 
 /* 涨跌幅加粗 */
 .changePercentBold {
-  font-weight: 600;
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: -0.3px;
 }
 
 /* 涨跌家数颜色 */
@@ -94,17 +173,44 @@
   color: #52c41a;
 }
 
+/* 板块名称 */
+.sectorName {
+  width: 120px;
+  padding: 0 8px;
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--ant-color-text);
+  transition: color 0.2s ease;
+  flex-shrink: 0;
+}
+
+.listItem:hover .sectorName {
+  color: var(--ant-color-primary);
+}
+
 /* 领涨股票 */
 .leadingStock {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+  padding: 2px 0;
+  min-width: 0;
 }
 
 .stockName {
   font-size: 13px;
+  font-weight: 500;
   flex: 1;
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  color: var(--ant-color-text);
+  transition: color 0.2s ease;
+}
+
+.listItem:hover .stockName {
+  color: var(--ant-color-primary);
 }

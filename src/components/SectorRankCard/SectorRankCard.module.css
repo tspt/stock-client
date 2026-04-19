@@ -14,7 +14,6 @@
 }
 
 .sectorTable :global(.ant-table-thead > tr > th) {
-  background: var(--ant-color-fill-tertiary);
   font-weight: 500;
   padding: 8px 12px;
 }

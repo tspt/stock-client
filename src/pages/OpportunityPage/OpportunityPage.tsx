@@ -826,7 +826,7 @@ export function OpportunityPage() {
     if (bodyHeight > 0) {
       // 查找分页器
       const pagination = cardBody.querySelector('.ant-pagination') as HTMLElement;
-      const paginationHeight = pagination ? pagination.offsetHeight : 64;
+      const paginationHeight = pagination ? pagination.offsetHeight : 24;
 
       // 表格可用高度 = body高度 - 分页器高度 - 一些边距
       const height = bodyHeight - paginationHeight - 40 - 38 - 10;
