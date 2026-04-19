@@ -13,4 +13,9 @@ export {
   getConceptSectorRanks,
   getConceptSectorStocks,
 } from './concept-sectors';
+export {
+  getEastMoneyRisingSectors,
+  getEastMoneyFallingSectors,
+  getEastMoneySectorRanks,
+} from './eastmoney-sectors';
 export type { ConceptSectorStockData } from '@/types/stock';

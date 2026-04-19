@@ -6,7 +6,7 @@ import { Layout } from 'antd';
 import { useHotStore } from '@/stores/hotStore';
 import { usePolling } from '@/hooks/usePolling';
 import { MarketSentimentCard } from './components/MarketSentimentCard';
-import { SectorRankCard } from '@/components/SectorRankCard';
+import { EastMoneySectorRankCard } from '@/components/EastMoneySectorRankCard';
 import styles from './HotPage.module.css';
 
 const { Header } = Layout;
@@ -15,22 +15,16 @@ export function HotPage() {
   const {
     loadMarketOverview,
     marketOverview,
-    loadSectorRanks,
-    risingSectors,
-    fallingSectors,
-    sectorsLoading,
-    loadConceptSectorRanks,
-    risingConceptSectors,
-    fallingConceptSectors,
-    conceptSectorsLoading
+    loadEastMoneySectorRanks,
+    eastMoneyRisingSectors,
+    eastMoneyFallingSectors
   } = useHotStore();
 
   // 使用轮询定期刷新数据（10秒间隔）
   usePolling(async () => {
     await Promise.all([
       loadMarketOverview(),
-      loadSectorRanks(),
-      loadConceptSectorRanks()
+      loadEastMoneySectorRanks()
     ]);
   }, {
     interval: 10000, // 10秒
@@ -46,38 +40,16 @@ export function HotPage() {
       {/* 板块排行区域 */}
       <div className={styles.sectorRankContainer}>
         <div className={styles.sectorColumn}>
-          <SectorRankCard
-            title="领涨行业板块"
-            data={risingSectors}
-            loading={sectorsLoading}
+          <EastMoneySectorRankCard
+            title="领涨概念"
+            data={eastMoneyRisingSectors}
             type="rising"
           />
         </div>
         <div className={styles.sectorColumn}>
-          <SectorRankCard
-            title="领跌行业板块"
-            data={fallingSectors}
-            loading={sectorsLoading}
-            type="falling"
-          />
-        </div>
-      </div>
-
-      {/* 概念板块排行区域 */}
-      <div className={styles.sectorRankContainer}>
-        <div className={styles.sectorColumn}>
-          <SectorRankCard
-            title="领涨概念板块"
-            data={risingConceptSectors}
-            loading={conceptSectorsLoading}
-            type="rising"
-          />
-        </div>
-        <div className={styles.sectorColumn}>
-          <SectorRankCard
-            title="领跌概念板块"
-            data={fallingConceptSectors}
-            loading={conceptSectorsLoading}
+          <EastMoneySectorRankCard
+            title="领跌概念"
+            data={eastMoneyFallingSectors}
             type="falling"
           />
         </div>

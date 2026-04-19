@@ -31,10 +31,10 @@ interface OpportunityTableProps {
 export const OpportunityTable = memo(function OpportunityTable({ data, columns, sortConfig, onSortChange, tableHeight = 600, onShowAIAnalysis }: OpportunityTableProps) {
   const [pagination, setPagination] = useState<TablePaginationConfig>({
     current: 1,
-    pageSize: 50,
+    pageSize: 100,
     showSizeChanger: true,
     showTotal: (total) => `共 ${total} 条`,
-    pageSizeOptions: ['20', '50', '100', '200'],
+    pageSizeOptions: ['50', '100', '200'],
   });
 
   const getSortValue = (record: StockOpportunityData, key: string): string | number | null | undefined => {

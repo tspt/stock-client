@@ -775,6 +775,30 @@ export interface ConceptSectorRankData {
 }
 
 /**
+ * 东方财富热门板块数据
+ */
+export interface EastMoneySectorData {
+  /** 板块代码 */
+  code: string;
+  /** 板块名称 */
+  name: string;
+  /** 涨跌幅（百分比） */
+  changePercent: number;
+  /** 换手率（百分比） */
+  turnoverRate: number;
+  /** 上涨家数 */
+  riseCount: number;
+  /** 下跌家数 */
+  fallCount: number;
+  /** 领涨股票名称 */
+  leadingStockName: string;
+  /** 领涨股票代码 */
+  leadingStockCode: string;
+  /** 领涨股票涨跌幅（百分比） */
+  leadingStockChangePercent: number;
+}
+
+/**
  * 概念板块下股票数据
  */
 export interface ConceptSectorStockData {

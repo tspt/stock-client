@@ -141,10 +141,14 @@ export function formatTurnoverRate(rate: number): string {
 
 /**
  * 格式化总股数（转换为亿单位，保留2位小数）
+ * 输入：以"股"为单位的数值
+ * 输出：以"亿"为单位显示的字符串
  */
 export function formatTotalShares(shares: number): string {
   if (shares === null || shares === undefined || !isFinite(shares)) {
     return '-';
   }
-  return `${shares.toFixed(2)}亿`;
+  // 将股转换为亿（除以1亿）
+  const sharesInBillion = shares / 1e8;
+  return `${sharesInBillion.toFixed(2)}亿`;
 }

@@ -1,0 +1,110 @@
+/**
+ * 东方财富板块排行卡片样式
+ */
+
+.sectorCard {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.sectorCard :global(.ant-card-body) {
+  flex: 1;
+  overflow: hidden;
+  padding: 0;
+}
+
+.sectorTable {
+  width: 100%;
+  height: 100%;
+}
+
+.sectorTable :global(.ant-table) {
+  font-size: 13px;
+}
+
+.sectorTable :global(.ant-table-thead > tr > th) {
+  background: #fafafa;
+  font-weight: 500;
+  padding: 8px 12px;
+  font-size: 13px;
+}
+
+.sectorTable :global(.ant-table-tbody > tr > td) {
+  padding: 6px 12px;
+}
+
+.sectorTable :global(.ant-table-tbody > tr:hover > td) {
+  background: var(--ant-color-primary-bg);
+}
+
+/* 排名数字样式 */
+.rankNumber {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  background-color: var(--ant-color-fill-tertiary);
+  color: var(--ant-color-text-secondary);
+}
+
+/* 前3名高亮 */
+.sectorTable :global(.ant-table-tbody > tr:nth-child(1) .rankNumber) {
+  background-color: #ff4d4f;
+  color: #fff;
+  font-weight: 600;
+}
+
+.sectorTable :global(.ant-table-tbody > tr:nth-child(2) .rankNumber) {
+  background-color: #ff7a45;
+  color: #fff;
+  font-weight: 600;
+}
+
+.sectorTable :global(.ant-table-tbody > tr:nth-child(3) .rankNumber) {
+  background-color: #ffa940;
+  color: #fff;
+  font-weight: 600;
+}
+
+/* 涨跌颜色 - 红涨绿跌 */
+.positive {
+  color: #ff4d4f;
+}
+
+.negative {
+  color: #52c41a;
+}
+
+/* 涨跌幅加粗 */
+.changePercentBold {
+  font-weight: 600;
+}
+
+/* 涨跌家数颜色 */
+.riseCount {
+  color: #ff4d4f;
+}
+
+.fallCount {
+  color: #52c41a;
+}
+
+/* 领涨股票 */
+.leadingStock {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.stockName {
+  font-size: 13px;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

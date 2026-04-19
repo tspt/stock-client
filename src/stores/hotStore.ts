@@ -3,9 +3,14 @@
  */
 
 import { create } from 'zustand';
-import { getMarketOverview, getSectorRanks, getConceptSectorRanks } from '@/services/hot';
+import {
+  getMarketOverview,
+  getSectorRanks,
+  getConceptSectorRanks,
+  getEastMoneySectorRanks,
+} from '@/services/hot';
 import type { MarketOverview } from '@/services/hot';
-import type { SectorRankData } from '@/types/stock';
+import type { SectorRankData, ConceptSectorRankData, EastMoneySectorData } from '@/types/stock';
 
 interface HotState {
   // 数据状态
@@ -15,14 +20,20 @@ interface HotState {
   sectorsLoading: boolean; // 板块加载状态
 
   // 概念板块数据
-  risingConceptSectors: SectorRankData[]; // 领涨概念板块
-  fallingConceptSectors: SectorRankData[]; // 领跌概念板块
+  risingConceptSectors: ConceptSectorRankData[]; // 领涨概念板块
+  fallingConceptSectors: ConceptSectorRankData[]; // 领跌概念板块
   conceptSectorsLoading: boolean; // 概念板块加载状态
+
+  // 东方财富板块数据
+  eastMoneyRisingSectors: EastMoneySectorData[]; // 东方财富领涨板块
+  eastMoneyFallingSectors: EastMoneySectorData[]; // 东方财富领跌板块
+  eastMoneySectorsLoading: boolean; // 东方财富板块加载状态
 
   // Actions
   loadMarketOverview: () => Promise<void>; // 加载市场概览
   loadSectorRanks: () => Promise<void>; // 加载板块排行
   loadConceptSectorRanks: () => Promise<void>; // 加载概念板块排行
+  loadEastMoneySectorRanks: () => Promise<void>; // 加载东方财富板块排行
 }
 
 export const useHotStore = create<HotState>((set) => ({
@@ -36,6 +47,11 @@ export const useHotStore = create<HotState>((set) => ({
   risingConceptSectors: [],
   fallingConceptSectors: [],
   conceptSectorsLoading: false,
+
+  // 东方财富板块初始状态
+  eastMoneyRisingSectors: [],
+  eastMoneyFallingSectors: [],
+  eastMoneySectorsLoading: false,
 
   // 加载市场概览
   loadMarketOverview: async () => {
@@ -76,6 +92,22 @@ export const useHotStore = create<HotState>((set) => ({
     } catch (error) {
       console.error('加载概念板块排行数据失败:', error);
       set({ conceptSectorsLoading: false });
+    }
+  },
+
+  // 加载东方财富板块排行
+  loadEastMoneySectorRanks: async () => {
+    set({ eastMoneySectorsLoading: true });
+    try {
+      const { rising, falling } = await getEastMoneySectorRanks(20);
+      set({
+        eastMoneyRisingSectors: rising,
+        eastMoneyFallingSectors: falling,
+        eastMoneySectorsLoading: false,
+      });
+    } catch (error) {
+      console.error('加载东方财富板块排行数据失败:', error);
+      set({ eastMoneySectorsLoading: false });
     }
   },
 }));
