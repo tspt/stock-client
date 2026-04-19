@@ -18,6 +18,7 @@
   flex-shrink: 0;
 }
 
-.ant-select-selection-placeholder {
+/* 使用更具体的选择器，避免影响其他 AutoComplete 组件 */
+.searchBarContent :global(.ant-select-selection-placeholder) {
   padding-left: 40px;
 }

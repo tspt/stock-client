@@ -775,6 +775,63 @@ export interface ConceptSectorRankData {
 }
 
 /**
+ * 行业板块排行数据（包含主力资金流向）
+ */
+export interface IndustrySectorRankData {
+  /** 板块代码 */
+  code: string;
+  /** 板块名称 */
+  name: string;
+  /** 最新价 */
+  price?: number;
+  /** 涨跌幅（百分比） */
+  changePercent: number;
+  // 主力净流入
+  mainNetInflow?: number; // 净额（万元）
+  mainNetInflowRatio?: number; // 净占比（百分比）
+  // 超大单净流入
+  superLargeNetInflow?: number; // 净额（万元）
+  superLargeNetInflowRatio?: number; // 净占比（百分比）
+  // 大单净流入
+  largeNetInflow?: number; // 净额（万元）
+  largeNetInflowRatio?: number; // 净占比（百分比）
+  // 中单净流入
+  mediumNetInflow?: number; // 净额（万元）
+  mediumNetInflowRatio?: number; // 净占比（百分比）
+  // 小单净流入
+  smallNetInflow?: number; // 净额（万元）
+  smallNetInflowRatio?: number; // 净占比（百分比）
+  /** 领涨股名称 */
+  leadingStock?: string;
+  /** 领涨股代码 */
+  leadingStockCode?: string;
+}
+
+/**
+ * 概念板块基础信息（用于搜索和缓存）
+ */
+export interface ConceptSectorBasicInfo {
+  /** 板块代码 */
+  code: string;
+  /** 板块名称 */
+  name: string;
+  /** 主力净流入（元） */
+  mainNetInflow?: number;
+}
+
+/**
+ * 行业板块基础信息（用于搜索和缓存）
+ */
+export interface IndustrySectorBasicInfo {
+  /** 板块代码 */
+  code: string;
+  /** 板块名称 */
+  name: string;
+  /** 主力净流入（元） */
+  mainNetInflow?: number;
+}
+
+/**
  * 东方财富热门板块数据
  */
 export interface EastMoneySectorData {
@@ -937,16 +994,6 @@ export interface ResearchReportSummary {
   summary?: string;
   /** 原文链接 */
   url?: string;
-}
-
-/**
- * 申万二级行业数据
- */
-export interface ShenwanIndustry {
-  /** 行业名称 */
-  name: string;
-  /** 行业代码 (如 sw2_730200) */
-  code: string;
 }
 
 /**

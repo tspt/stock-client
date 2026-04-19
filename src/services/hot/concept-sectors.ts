@@ -2,8 +2,13 @@
  * 概念板块服务 - 获取概念板块数据
  */
 
-import type { ConceptSectorRankData, ConceptSectorStockData } from '@/types/stock';
+import type {
+  ConceptSectorRankData,
+  ConceptSectorStockData,
+  ConceptSectorBasicInfo,
+} from '@/types/stock';
 import { logger } from '@/utils/logger';
+import { getStorage, setStorage } from '@/utils/storage';
 
 /**
  * 东方财富概念板块原始数据
@@ -322,4 +327,166 @@ export async function getConceptSectorRanks(count: number = 20): Promise<{
     logger.error('获取概念板块排行数据失败:', error);
     throw error;
   }
+}
+
+/**
+ * 获取单个概念板块详细数据（资金流向）
+ * @param sectorCode 概念板块代码（如 BK1136）
+ */
+export async function getSingleConceptSector(
+  sectorCode: string
+): Promise<ConceptSectorRankData | null> {
+  try {
+    // 使用 push2.eastmoney.com 的 ulist.np/get 接口
+    const baseUrl = '/api/eastmoney/ulist.np/get';
+    const params = new URLSearchParams({
+      fltt: '2',
+      secids: `90.${sectorCode}`, // 90.板块代码 表示概念板块
+      fields: 'f62,f184,f66,f69,f72,f75,f78,f81,f84,f87,f124,f3,f12,f14',
+      ut: 'b2884a393a59ad64002292a3e90d46a5',
+    });
+
+    const url = `${baseUrl}?${params.toString()}`;
+
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    // 直接解析JSON响应（不是JSONP）
+    const data = await response.json();
+
+    if (data.rc !== 0 || !data.data || !data.data.diff || data.data.diff.length === 0) {
+      throw new Error('获取概念详细数据失败');
+    }
+
+    const item = data.data.diff[0];
+
+    // 转换为标准格式
+    return {
+      code: item.f12 || sectorCode,
+      name: item.f14 || '未知概念',
+      changePercent: item.f3 || 0,
+      // 主力净流入（元转万元）
+      mainNetInflow: item.f62 / 10000,
+      mainNetInflowRatio: item.f184,
+      // 超大单净流入（元转万元）
+      superLargeNetInflow: item.f66 / 10000,
+      superLargeNetInflowRatio: item.f69,
+      // 大单净流入（元转万元）
+      largeNetInflow: item.f72 / 10000,
+      largeNetInflowRatio: item.f75,
+      // 中单净流入（元转万元）
+      mediumNetInflow: item.f78 / 10000,
+      mediumNetInflowRatio: item.f81,
+      // 小单净流入（元转万元）
+      smallNetInflow: item.f84 / 10000,
+      smallNetInflowRatio: item.f87,
+    };
+  } catch (error) {
+    logger.error('[getSingleConceptSector] 获取概念详细数据失败:', error);
+    throw error;
+  }
+}
+
+/**
+ * 所有概念分类缓存键（每日过期）
+ */
+const ALL_CONCEPT_SECTORS_CACHE_KEY = 'all_concept_sectors_v1';
+const ALL_CONCEPT_SECTORS_CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24小时
+
+interface AllConceptSectorsCache {
+  savedAt: number;
+  sectors: ConceptSectorBasicInfo[];
+}
+
+/**
+ * 读取所有概念分类缓存
+ */
+function readAllConceptSectorsCache(): ConceptSectorBasicInfo[] | null {
+  const raw = getStorage<AllConceptSectorsCache | null>(ALL_CONCEPT_SECTORS_CACHE_KEY, null);
+  if (
+    raw &&
+    typeof raw.savedAt === 'number' &&
+    Array.isArray(raw.sectors) &&
+    raw.sectors.length > 0 &&
+    Date.now() - raw.savedAt < ALL_CONCEPT_SECTORS_CACHE_TTL_MS
+  ) {
+    return raw.sectors;
+  }
+  return null;
+}
+
+/** 并发时复用同一次拉取，避免缓存失效瞬间多次打满接口 */
+let allConceptSectorsFetchPromise: Promise<ConceptSectorBasicInfo[]> | null = null;
+
+/**
+ * 获取所有概念分类（带缓存，每日只拉取一次）
+ */
+export async function getAllConceptSectors(): Promise<ConceptSectorBasicInfo[]> {
+  const cached = readAllConceptSectorsCache();
+  if (cached) {
+    return cached;
+  }
+
+  if (allConceptSectorsFetchPromise) {
+    return allConceptSectorsFetchPromise;
+  }
+
+  allConceptSectorsFetchPromise = (async (): Promise<ConceptSectorBasicInfo[]> => {
+    try {
+      // 使用东方财富API获取所有概念板块
+      const baseUrl = '/api/eastmoney-data/bkzj/getbkzj';
+      const params = new URLSearchParams({
+        key: 'f62',
+        code: 'm:90+t:3', // m:90 t:3 表示概念板块 (URLSearchParams会自动编码)
+      });
+
+      const url = `${baseUrl}?${params.toString()}`;
+
+      const response = await fetch(url);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      // 直接解析JSON响应（不是JSONP）
+      const data = await response.json();
+
+      // rc=0 表示成功
+      if (data.rc !== 0) {
+        throw new Error('获取概念分类数据失败');
+      }
+
+      // 数据在 data.diff 数组中
+      if (!data.data || !data.data.diff || !Array.isArray(data.data.diff)) {
+        throw new Error('获取概念分类数据失败');
+      }
+
+      // 转换为基本概念信息
+      const sectors: ConceptSectorBasicInfo[] = data.data.diff.map((item: any) => ({
+        code: item.f12,
+        name: item.f14,
+        mainNetInflow: item.f62, // 主力净流入（元）
+      }));
+
+      // 保存到缓存
+      if (sectors.length > 0) {
+        setStorage(ALL_CONCEPT_SECTORS_CACHE_KEY, {
+          savedAt: Date.now(),
+          sectors,
+        });
+      }
+
+      return sectors;
+    } catch (error) {
+      logger.error('[getAllConceptSectors] 获取概念分类失败:', error);
+      return [];
+    } finally {
+      allConceptSectorsFetchPromise = null;
+    }
+  })();
+
+  return allConceptSectorsFetchPromise;
 }

@@ -23,6 +23,12 @@
   min-height: auto;
 }
 
+/* 深色主题 */
+[data-theme='dark'] .sectorCard :global(.ant-card-head) {
+  background: linear-gradient(135deg, #1f1f1f 0%, #262626 100%);
+  border-bottom-color: #303030;
+}
+
 .sectorCard :global(.ant-card-head-title) {
   font-size: 15px;
   font-weight: 600;
@@ -49,6 +55,12 @@
   font-size: 13px;
   color: var(--ant-color-text);
   flex-shrink: 0;
+}
+
+/* 深色主题 */
+[data-theme='dark'] .listHeader {
+  background: linear-gradient(to bottom, #262626, #1f1f1f);
+  border-bottom-color: #303030;
 }
 
 .headerCell {
@@ -101,6 +113,15 @@
 
 .listItem:hover {
   background: var(--ant-color-fill-secondary);
+}
+
+/* 深色主题 */
+[data-theme='dark'] .listItem {
+  border-bottom-color: #303030;
+}
+
+[data-theme='dark'] .listItem:hover {
+  background: #262626;
 }
 
 .listItem:hover .rankNumber {

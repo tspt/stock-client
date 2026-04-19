@@ -1,0 +1,18 @@
+.drawer :global(.ant-drawer-body) {
+  padding: 0;
+}
+
+.stockTable {
+}
+
+.stockTable :global(.ant-table-thead > tr > th) {
+  font-weight: 400;
+}
+
+.positive {
+  color: #ff4d4f;
+}
+
+.negative {
+  color: #52c41a;
+}

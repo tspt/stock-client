@@ -15,14 +15,12 @@ interface IndexCardProps {
 export function IndexCard({ index }: IndexCardProps) {
   const isRise = index.change >= 0;
   const color = isRise ? '#ff4d4f' : '#52c41a';
-  const bgColor = isRise
-    ? 'linear-gradient(135deg, #fff1f0 0%, #ffffff 100%)'
-    : 'linear-gradient(135deg, #f6ffed 0%, #ffffff 100%)';
+  const riseClass = isRise ? styles.riseCard : styles.fallCard;
 
   return (
-    <Card className={styles.indexCard} bordered={false} style={{ background: bgColor }}>
+    <Card className={`${styles.indexCard} ${riseClass}`} bordered={false}>
       <div className={styles.indexHeader}>
-        <Text strong className={styles.indexName}>
+        <Text className={styles.indexName}>
           {index.name}
         </Text>
       </div>

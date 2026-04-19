@@ -6,6 +6,11 @@
   overflow: hidden;
 }
 
+/* 深色主题 */
+[data-theme='dark'] .hotPage {
+  background: #141414;
+}
+
 /* 指数展示区域 - 固定顶部 */
 .indicesContainer {
   flex-shrink: 0;
@@ -14,6 +19,13 @@
   border-bottom: 1px solid var(--ant-color-border-secondary);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   z-index: 10;
+}
+
+/* 深色主题 */
+[data-theme='dark'] .indicesContainer {
+  background: #1f1f1f;
+  border-bottom-color: #303030;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .indicesGrid {
@@ -43,11 +55,22 @@
   background: #fff;
 }
 
+/* 深色主题 */
+[data-theme='dark'] .sectorRankContainer {
+  background: #141414;
+}
+
 .sectorColumn {
   width: 520px;
   flex-shrink: 0;
   background: var(--ant-color-bg-container);
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+/* 深色主题 */
+[data-theme='dark'] .sectorColumn {
+  background: #1f1f1f;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 

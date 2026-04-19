@@ -12,7 +12,18 @@ export {
   getFallingConceptSectors,
   getConceptSectorRanks,
   getConceptSectorStocks,
+  getSingleConceptSector,
+  getAllConceptSectors,
 } from './concept-sectors';
+export {
+  getIndustrySectors,
+  getRisingIndustrySectors,
+  getFallingIndustrySectors,
+  getIndustrySectorRanks,
+  getIndustrySectorStocks,
+  getSingleIndustrySector,
+  getAllIndustrySectors,
+} from './industry-sectors';
 export {
   getEastMoneyRisingSectors,
   getEastMoneyFallingSectors,
@@ -20,4 +31,4 @@ export {
 } from './eastmoney-sectors';
 export { getEastMoneyIndices } from './indices';
 export type { EastMoneyIndexData } from './indices';
-export type { ConceptSectorStockData } from '@/types/stock';
+export type { ConceptSectorStockData, ConceptSectorBasicInfo } from '@/types/stock';

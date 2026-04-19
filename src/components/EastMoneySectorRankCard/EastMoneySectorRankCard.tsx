@@ -25,7 +25,7 @@ export function EastMoneySectorRankCard({ title, data, type }: EastMoneySectorRa
       {/* 表头 */}
       <div className={styles.listHeader}>
         <span className={styles.headerCell} style={{ width: 34 }}>排名</span>
-        <span className={styles.headerCell} style={{ width: 140 }}>板块名称</span>
+        <span className={styles.headerCell} style={{ width: 140 }}>概念名称</span>
         <span className={styles.headerCell} style={{ width: 80, textAlign: 'right' }}>涨跌幅</span>
         <span className={styles.headerCell} style={{ width: 60, textAlign: 'center' }}>上涨</span>
         <span className={styles.headerCell} style={{ width: 60, textAlign: 'center' }}>下跌</span>

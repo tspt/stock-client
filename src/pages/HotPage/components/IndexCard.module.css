@@ -9,16 +9,51 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
+/* 深色主题 */
+[data-theme='dark'] .indexCard {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme='dark'] .indexCard:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+/* 上涨卡片背景 */
+.riseCard {
+  background: linear-gradient(135deg, #fff1f0 0%, #ffffff 100%);
+}
+
+/* 下跌卡片背景 */
+.fallCard {
+  background: linear-gradient(135deg, #f6ffed 0%, #ffffff 100%);
+}
+
+/* 深色主题 - 上涨卡片 */
+[data-theme='dark'] .riseCard {
+  background: linear-gradient(135deg, #2a1f1f 0%, #1f1f1f 100%);
+}
+
+/* 深色主题 - 下跌卡片 */
+[data-theme='dark'] .fallCard {
+  background: linear-gradient(135deg, #1f2a1f 0%, #1f1f1f 100%);
+}
+
 .indexHeader {
   margin-bottom: 12px;
   padding-bottom: 10px;
   border-bottom: 2px solid rgba(0, 0, 0, 0.04);
 }
 
+/* 深色主题 */
+[data-theme='dark'] .indexHeader {
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
 .indexName {
   font-size: 15px;
   color: var(--ant-color-text);
   letter-spacing: 0.5px;
+  font-weight: 600;
 }
 
 .indexBody {
@@ -60,6 +95,11 @@
   border-color: rgba(0, 0, 0, 0.06);
 }
 
+/* 深色主题 */
+[data-theme='dark'] .divider {
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
 .indexDetails {
   display: flex;
   flex-direction: column;
@@ -80,7 +120,6 @@
 
 .detailValue {
   font-size: 14px;
-  font-weight: 600;
   color: var(--ant-color-text);
 }
 
