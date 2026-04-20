@@ -7,6 +7,12 @@ import { logger } from '@/utils/logger';
 import { getStorage, setStorage } from '@/utils/storage';
 
 /**
+ * 板块成分股分页大小常量
+ * 经过测试，东方财富接口支持最大 100 条/页
+ */
+export const SECTOR_STOCKS_PAGE_SIZE = 100;
+
+/**
  * 东方财富行业板块原始数据
  */
 interface RawIndustrySectorResponse {

@@ -4,7 +4,7 @@
 
 import { Suspense, lazy, useEffect, useState } from 'react';
 import { ConfigProvider, App as AntdApp, theme, Layout, Tabs, Spin } from 'antd';
-import { StockOutlined, BellOutlined, BarChartOutlined, FireOutlined, ClusterOutlined, AppstoreOutlined } from '@ant-design/icons';
+import { StockOutlined, BellOutlined, BarChartOutlined, FireOutlined, ClusterOutlined, AppstoreOutlined, PieChartOutlined } from '@ant-design/icons';
 import zhCN from 'antd/locale/zh_CN';
 import { useTheme } from '@/hooks/useTheme';
 import { useStockStore } from '@/stores/stockStore';
@@ -25,6 +25,7 @@ const OpportunityPage = lazy(() =>
 const HotPage = lazy(() => import('@/pages/HotPage/HotPage').then((m) => ({ default: m.HotPage })));
 const IndustrySectorPage = lazy(() => import('@/pages/IndustrySectorPage/IndustrySectorPage').then((m) => ({ default: m.IndustrySectorPage })));
 const ConceptSectorPage = lazy(() => import('@/pages/ConceptSectorPage/ConceptSectorPage').then((m) => ({ default: m.ConceptSectorPage })));
+const SectorPanoramaPage = lazy(() => import('@/pages/SectorPanoramaPage/SectorPanoramaPage').then((m) => ({ default: m.SectorPanoramaPage })));
 
 const { Header, Content } = Layout;
 
@@ -179,6 +180,28 @@ function AppContent() {
                         >
                           <div className={styles.sectorLayout}>
                             <ConceptSectorPage />
+                          </div>
+                        </Suspense>
+                      ),
+                    },
+                    {
+                      key: 'sector-panorama',
+                      label: (
+                        <span>
+                          <PieChartOutlined className={styles.mgr6} />
+                          板块全景
+                        </span>
+                      ),
+                      children: (
+                        <Suspense
+                          fallback={
+                            <div className={styles.suspenseFallback}>
+                              <Spin size="large" />
+                            </div>
+                          }
+                        >
+                          <div className={styles.sectorLayout}>
+                            <SectorPanoramaPage />
                           </div>
                         </Suspense>
                       ),

@@ -9,6 +9,7 @@ import type { ColumnsType } from 'antd/es/table';
 import { getUnifiedConceptBasic, getUnifiedConceptRank } from '@/services/hot/unified-sectors';
 import { getSingleConceptSector } from '@/services/hot/concept-sectors';
 import { POLLING_INTERVAL } from '@/utils/constants';
+import { usePolling } from '@/hooks/usePolling';
 import type { ConceptSectorRankData, ConceptSectorBasicInfo } from '@/types/stock';
 import { ConceptSectorStocksDrawer } from '@/components/ConceptSectorStocksDrawer/ConceptSectorStocksDrawer';
 import styles from './ConceptSectorPage.module.css';
@@ -129,25 +130,27 @@ export function ConceptSectorPage() {
     };
   }, []);
 
-  // 自动刷新 - 每10秒静默刷新当前页（使用统一缓存服务）
-  useEffect(() => {
-    const interval = setInterval(async () => {
-      try {
-        if (viewMode === 'list') {
-          // 概念列表模式：刷新概念列表
+  // 使用标准轮询Hook - 每10秒静默刷新当前页（使用统一缓存服务）
+  usePolling(
+    async () => {
+      if (viewMode === 'list') {
+        try {
           const result = await getUnifiedConceptRank(sortOrder, pageSize, currentPage);
           setData(result.data);
           setTotal(result.total);
+        } catch (error) {
+          console.error('自动刷新失败:', error);
+          message.error('数据刷新失败');
         }
-        // 注意：在详情模式下不自动刷新，避免覆盖用户选择的数据
-      } catch (error) {
-        console.error('自动刷新失败:', error);
-        message.error('数据刷新失败');
       }
-    }, POLLING_INTERVAL);
-
-    return () => clearInterval(interval);
-  }, [currentPage, sortOrder, viewMode]);
+      // 注意：在详情模式下不自动刷新，避免覆盖用户选择的数据
+    },
+    {
+      interval: POLLING_INTERVAL,
+      immediate: false, // 不立即执行，因为已有初始加载
+      enabled: viewMode === 'list', // 只在列表模式下启用
+    }
+  );
 
   // 处理分页变化
   const handlePageChange = (page: number) => {

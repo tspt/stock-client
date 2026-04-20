@@ -17,19 +17,133 @@ import { logger } from '@/utils/logger';
 import { getStorage, setStorage } from '@/utils/storage';
 import { getAllIndustrySectors as fetchAllIndustrySectors } from './industry-sectors';
 import { getAllConceptSectors as fetchAllConceptSectors } from './concept-sectors';
-import { getIndustrySectors as fetchIndustrySectors } from './industry-sectors';
-import { getConceptSectors as fetchConceptSectors } from './concept-sectors';
+import {
+  getIndustrySectors as fetchIndustrySectors,
+  getIndustrySectorStocks,
+} from './industry-sectors';
+import {
+  getConceptSectors as fetchConceptSectors,
+  getConceptSectorStocks,
+} from './concept-sectors';
+
+// ==================== 板块全景数据结构 ====================
+
+export interface SectorStockSummary {
+  code: string;
+  name: string;
+}
+
+export interface SectorFullData {
+  sectorCode: string;
+  sectorName: string;
+  stocks: SectorStockSummary[];
+}
+
+export interface FetchProgress {
+  current: number;
+  total: number;
+  percent: number;
+  message: string;
+}
+
+// ==================== 全量数据获取逻辑 ====================
+
+/**
+ * 获取单个板块的全部成分股（自动分页）
+ */
+async function fetchAllStocksForSector(
+  sectorCode: string,
+  sectorType: 'industry' | 'concept'
+): Promise<SectorStockSummary[]> {
+  const allStocks: SectorStockSummary[] = [];
+  let pageNum = 1;
+  let total = 0;
+  const pageSize = 100; // 使用测试后的最大容量
+
+  do {
+    const result = await (sectorType === 'industry'
+      ? getIndustrySectorStocks(sectorCode, 'f12', 1, pageSize, pageNum)
+      : getConceptSectorStocks(sectorCode, 'f12', 1, pageSize, pageNum));
+
+    if (pageNum === 1) total = result.total;
+
+    const summaries = result.data.map((stock) => ({
+      code: stock.code,
+      name: stock.name,
+    }));
+
+    allStocks.push(...summaries);
+    pageNum++;
+  } while (allStocks.length < total);
+
+  return allStocks;
+}
+
+/**
+ * 批量获取所有板块的成分股
+ * @param onProgress 进度回调
+ */
+export async function fetchAllSectorsStocks(
+  onProgress?: (progress: FetchProgress) => void
+): Promise<{ industry: SectorFullData[]; concept: SectorFullData[] }> {
+  const [industryBasics, conceptBasics] = await Promise.all([
+    getUnifiedIndustryBasic(),
+    getUnifiedConceptBasic(),
+  ]);
+
+  const industryResults: SectorFullData[] = [];
+  const conceptResults: SectorFullData[] = [];
+  let processedCount = 0;
+  const totalCount = industryBasics.length + conceptBasics.length;
+
+  const updateProgress = (name: string) => {
+    processedCount++;
+    const percent = Math.round((processedCount / totalCount) * 100);
+    onProgress?.({
+      current: processedCount,
+      total: totalCount,
+      percent,
+      message: `正在获取: ${name}`,
+    });
+  };
+
+  // 串行处理行业板块，避免请求过猛
+  for (const sector of industryBasics) {
+    try {
+      const stocks = await fetchAllStocksForSector(sector.code, 'industry');
+      industryResults.push({ sectorCode: sector.code, sectorName: sector.name, stocks });
+    } catch (error) {
+      logger.error(`获取行业 ${sector.name} 成分股失败:`, error);
+    }
+    updateProgress(sector.name);
+  }
+
+  // 串行处理概念板块
+  for (const sector of conceptBasics) {
+    try {
+      const stocks = await fetchAllStocksForSector(sector.code, 'concept');
+      conceptResults.push({ sectorCode: sector.code, sectorName: sector.name, stocks });
+    } catch (error) {
+      logger.error(`获取概念 ${sector.name} 成分股失败:`, error);
+    }
+    updateProgress(sector.name);
+  }
+
+  return { industry: industryResults, concept: conceptResults };
+}
 
 // ==================== 缓存配置 ====================
 
 /**
  * 缓存键定义
+ * 注意：排行数据已禁用缓存，只缓存基础信息（板块列表相对稳定）
  */
 const CACHE_KEYS = {
   INDUSTRY_BASIC: 'unified_industry_basic_v1',
   CONCEPT_BASIC: 'unified_concept_basic_v1',
-  INDUSTRY_RANK: 'unified_industry_rank_v1',
-  CONCEPT_RANK: 'unified_concept_rank_v1',
+  // 排行数据缓存键已废弃，保留仅为向后兼容
+  // INDUSTRY_RANK: 'unified_industry_rank_v1',
+  // CONCEPT_RANK: 'unified_concept_rank_v1',
 };
 
 /**
@@ -124,7 +238,7 @@ export async function getUnifiedIndustryBasic(): Promise<IndustrySectorBasicInfo
 }
 
 /**
- * 获取行业板块排行数据（带缓存）
+ * 获取行业板块排行数据（无缓存，实时获取）
  * 用于表格展示等场景
  * @param sortOrder 排序方向: 1-降序, 0-升序
  * @param pageSize 每页数量
@@ -135,51 +249,28 @@ export async function getUnifiedIndustryRank(
   pageSize: number = 50,
   pageNum: number = 1
 ): Promise<{ data: IndustrySectorRankData[]; total: number }> {
-  // 注意：排行数据包含分页和排序参数，不适合全局缓存
-  // 这里只缓存第一页的降序数据作为热点数据
-  const shouldCache = pageNum === 1 && sortOrder === 1 && pageSize === 50;
-
-  if (shouldCache) {
-    const cached = readCache<IndustrySectorRankData>(CACHE_KEYS.INDUSTRY_RANK);
-    if (cached) {
-      logger.debug('[UnifiedSectors] 使用行业排行缓存');
-      return { data: cached, total: cached.length };
-    }
-  }
-
-  // 检查是否有正在进行的请求
-  if (shouldCache && industryRankFetchPromise) {
+  // 检查是否有正在进行的请求（避免并发重复请求）
+  if (industryRankFetchPromise) {
     logger.debug('[UnifiedSectors] 复用进行中的行业排行请求');
     return industryRankFetchPromise;
   }
 
-  // 发起新请求
-  logger.debug('[UnifiedSectors] 从API获取行业排行数据');
+  // 发起新请求 - 每次都从API获取实时数据
+  logger.debug('[UnifiedSectors] 从API获取行业排行数据（实时）');
   const fetchPromise = (async (): Promise<{ data: IndustrySectorRankData[]; total: number }> => {
     try {
       const result = await fetchIndustrySectors('f3', sortOrder, pageSize, pageNum);
-
-      // 只缓存首页降序数据
-      if (shouldCache && result.data.length > 0) {
-        writeCache(CACHE_KEYS.INDUSTRY_RANK, result.data);
-        logger.info(`[UnifiedSectors] 行业排行数据已缓存，共 ${result.data.length} 条`);
-      }
-
+      logger.info(`[UnifiedSectors] 获取到 ${result.data.length} 条行业排行数据`);
       return result;
     } catch (error) {
       logger.error('[UnifiedSectors] 获取行业排行数据失败:', error);
       throw error;
     } finally {
-      if (shouldCache) {
-        industryRankFetchPromise = null;
-      }
+      industryRankFetchPromise = null;
     }
   })();
 
-  if (shouldCache) {
-    industryRankFetchPromise = fetchPromise;
-  }
-
+  industryRankFetchPromise = fetchPromise;
   return fetchPromise;
 }
 
@@ -223,7 +314,7 @@ export async function getUnifiedConceptBasic(): Promise<ConceptSectorBasicInfo[]
 }
 
 /**
- * 获取概念板块排行数据（带缓存）
+ * 获取概念板块排行数据（无缓存，实时获取）
  * 用于表格展示等场景
  * @param sortOrder 排序方向: 1-降序, 0-升序
  * @param pageSize 每页数量
@@ -234,51 +325,28 @@ export async function getUnifiedConceptRank(
   pageSize: number = 50,
   pageNum: number = 1
 ): Promise<{ data: ConceptSectorRankData[]; total: number }> {
-  // 注意：排行数据包含分页和排序参数，不适合全局缓存
-  // 这里只缓存第一页的降序数据作为热点数据
-  const shouldCache = pageNum === 1 && sortOrder === 1 && pageSize === 50;
-
-  if (shouldCache) {
-    const cached = readCache<ConceptSectorRankData>(CACHE_KEYS.CONCEPT_RANK);
-    if (cached) {
-      logger.debug('[UnifiedSectors] 使用概念排行缓存');
-      return { data: cached, total: cached.length };
-    }
-  }
-
-  // 检查是否有正在进行的请求
-  if (shouldCache && conceptRankFetchPromise) {
+  // 检查是否有正在进行的请求（避免并发重复请求）
+  if (conceptRankFetchPromise) {
     logger.debug('[UnifiedSectors] 复用进行中的概念排行请求');
     return conceptRankFetchPromise;
   }
 
-  // 发起新请求
-  logger.debug('[UnifiedSectors] 从API获取概念排行数据');
+  // 发起新请求 - 每次都从API获取实时数据
+  logger.debug('[UnifiedSectors] 从API获取概念排行数据（实时）');
   const fetchPromise = (async (): Promise<{ data: ConceptSectorRankData[]; total: number }> => {
     try {
       const result = await fetchConceptSectors('f3', sortOrder, pageSize, pageNum);
-
-      // 只缓存首页降序数据
-      if (shouldCache && result.data.length > 0) {
-        writeCache(CACHE_KEYS.CONCEPT_RANK, result.data);
-        logger.info(`[UnifiedSectors] 概念排行数据已缓存，共 ${result.data.length} 条`);
-      }
-
+      logger.info(`[UnifiedSectors] 获取到 ${result.data.length} 条概念排行数据`);
       return result;
     } catch (error) {
       logger.error('[UnifiedSectors] 获取概念排行数据失败:', error);
       throw error;
     } finally {
-      if (shouldCache) {
-        conceptRankFetchPromise = null;
-      }
+      conceptRankFetchPromise = null;
     }
   })();
 
-  if (shouldCache) {
-    conceptRankFetchPromise = fetchPromise;
-  }
-
+  conceptRankFetchPromise = fetchPromise;
   return fetchPromise;
 }
 
