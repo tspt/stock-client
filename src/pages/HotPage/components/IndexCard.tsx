@@ -38,7 +38,7 @@ export const IndexCard = memo(function IndexCard({ index }: IndexCardProps) {
   );
 
   return (
-    <Card className={`${styles.indexCard} ${riseClass}`} bordered={false}>
+    <Card className={`${styles.indexCard} ${riseClass}`} variant="borderless">
       <div className={styles.indexHeader}>
         <Text className={styles.indexName}>{index.name}</Text>
       </div>

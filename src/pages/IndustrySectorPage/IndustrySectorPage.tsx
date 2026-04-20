@@ -438,7 +438,7 @@ export function IndustrySectorPage() {
                 value={searchKeyword}
                 onSearch={handleSearchChange}
                 onSelect={handleSectorSelect}
-                onDropdownVisibleChange={(open) => setDropdownOpen(open)}
+                onOpenChange={(open) => setDropdownOpen(open)}
                 placeholder="搜索行业板块"
                 style={{ width: 220 }}
                 filterOption={false}

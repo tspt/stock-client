@@ -69,7 +69,7 @@ export const EastMoneySectorRankCard = memo(function EastMoneySectorRankCard({
   }, [data]);
 
   return (
-    <Card className={styles.sectorCard} title={title} size="small" bordered={false}>
+    <Card className={styles.sectorCard} title={title} size="small" variant="borderless">
       {/* 表头 */}
       <div className={styles.listHeader}>
         <span className={styles.headerCell} style={{ width: 34 }}>

@@ -439,7 +439,7 @@ export function ConceptSectorPage() {
                 value={searchKeyword}
                 onSearch={handleSearchChange}
                 onSelect={handleSectorSelect}
-                onDropdownVisibleChange={(open) => setDropdownOpen(open)}
+                onOpenChange={(open) => setDropdownOpen(open)}
                 placeholder="搜索概念板块"
                 style={{ width: 220 }}
                 filterOption={false}
