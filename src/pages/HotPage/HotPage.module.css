@@ -44,6 +44,13 @@
   border-radius: 8px;
 }
 
+/* 骨架屏容器 */
+.skeletonContainer {
+  padding: 20px;
+  background: var(--ant-color-bg-container);
+  border-radius: 8px;
+}
+
 /* 板块排行区域 - 可滚动 */
 .sectorRankContainer {
   flex: 1;

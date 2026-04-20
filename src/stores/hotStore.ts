@@ -42,6 +42,15 @@ interface HotState {
   loadEastMoneyIndices: () => Promise<void>; // 加载东方财富指数数据
 }
 
+// 选择器函数，避免不必要的重渲染
+export const useIndices = () => useHotStore((state) => state.indices);
+export const useIndicesLoading = () => useHotStore((state) => state.indicesLoading);
+export const useEastMoneyRisingSectors = () => useHotStore((state) => state.eastMoneyRisingSectors);
+export const useEastMoneyFallingSectors = () =>
+  useHotStore((state) => state.eastMoneyFallingSectors);
+export const useEastMoneySectorsLoading = () =>
+  useHotStore((state) => state.eastMoneySectorsLoading);
+
 export const useHotStore = create<HotState>((set) => ({
   // 初始状态
   marketOverview: null,

@@ -42,6 +42,12 @@ interface RawEastMoneySectorResponse {
   };
 }
 
+// API 缓存
+let risingSectorsCache: EastMoneySectorData[] | null = null;
+let fallingSectorsCache: EastMoneySectorData[] | null = null;
+let lastSectorsFetchTime: number = 0;
+const SECTORS_CACHE_DURATION = 8000; // 8秒缓存
+
 /**
  * 解析东方财富热门板块数据
  */
@@ -83,6 +89,14 @@ function parseEastMoneySectorData(rawData: RawEastMoneySectorResponse): EastMone
 export async function getEastMoneyRisingSectors(
   count: number = 20
 ): Promise<EastMoneySectorData[]> {
+  const now = Date.now();
+
+  // 检查缓存是否有效
+  if (risingSectorsCache && now - lastSectorsFetchTime < SECTORS_CACHE_DURATION) {
+    logger.debug('使用缓存的领涨板块数据');
+    return risingSectorsCache;
+  }
+
   try {
     const baseUrl = '/api/eastmoney/clist/get';
     const params = new URLSearchParams({
@@ -105,12 +119,19 @@ export async function getEastMoneyRisingSectors(
 
     const url = `${baseUrl}?${params.toString()}`;
 
+    // 添加超时控制
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10秒超时
+
     const response = await fetch(url, {
       headers: {
         Cookie:
           'qgqp_b_id=51d6d555c5e243b0256ceb1ac9c36628; st_nvi=TnWN91Owg3cX5WszqJeo-f8e2; nid18=0d86f08b814c455b1d6ebd09256a5ade; nid18_create_time=1775911116025; gviem=VcbSKTlarodHzNMYoAptO452f; gviem_create_time=1775911116025; fullscreengg=1; fullscreengg2=1; st_si=84713527048044; st_pvi=13325294659680; st_sp=2025-03-30%2015%3A14%3A18; st_inirUrl=https%3A%2F%2Femcreative.eastmoney.com%2F; st_sn=10; st_psi=20260417210401477-113200301353-6617435904; st_asi=delete',
       },
+      signal: controller.signal,
     });
+
+    clearTimeout(timeoutId);
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -130,8 +151,21 @@ export async function getEastMoneyRisingSectors(
       throw new Error('获取东方财富领涨板块数据失败');
     }
 
-    return parseEastMoneySectorData(data);
+    const result = parseEastMoneySectorData(data);
+
+    // 更新缓存
+    if (result.length > 0) {
+      risingSectorsCache = result;
+      lastSectorsFetchTime = now;
+    }
+
+    return result;
   } catch (error) {
+    // 如果请求失败但有缓存，返回缓存数据
+    if (risingSectorsCache) {
+      logger.warn('获取领涨板块数据失败，使用缓存数据:', error);
+      return risingSectorsCache;
+    }
     logger.error('获取东方财富领涨板块数据失败:', error);
     throw error;
   }
@@ -144,6 +178,14 @@ export async function getEastMoneyRisingSectors(
 export async function getEastMoneyFallingSectors(
   count: number = 20
 ): Promise<EastMoneySectorData[]> {
+  const now = Date.now();
+
+  // 检查缓存是否有效
+  if (fallingSectorsCache && now - lastSectorsFetchTime < SECTORS_CACHE_DURATION) {
+    logger.debug('使用缓存的领跌板块数据');
+    return fallingSectorsCache;
+  }
+
   try {
     const baseUrl = '/api/eastmoney/clist/get';
     const params = new URLSearchParams({
@@ -166,12 +208,19 @@ export async function getEastMoneyFallingSectors(
 
     const url = `${baseUrl}?${params.toString()}`;
 
+    // 添加超时控制
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10秒超时
+
     const response = await fetch(url, {
       headers: {
         Cookie:
           'qgqp_b_id=51d6d555c5e243b0256ceb1ac9c36628; st_nvi=TnWN91Owg3cX5WszqJeo-f8e2; nid18=0d86f08b814c455b1d6ebd09256a5ade; nid18_create_time=1775911116025; gviem=VcbSKTlarodHzNMYoAptO452f; gviem_create_time=1775911116025; fullscreengg=1; fullscreengg2=1; st_si=84713527048044; st_pvi=13325294659680; st_sp=2025-03-30%2015%3A14%3A18; st_inirUrl=https%3A%2F%2Femcreative.eastmoney.com%2F; st_sn=10; st_psi=20260417210401477-113200301353-6617435904; st_asi=delete',
       },
+      signal: controller.signal,
     });
+
+    clearTimeout(timeoutId);
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -191,8 +240,21 @@ export async function getEastMoneyFallingSectors(
       throw new Error('获取东方财富领跌板块数据失败');
     }
 
-    return parseEastMoneySectorData(data);
+    const result = parseEastMoneySectorData(data);
+
+    // 更新缓存
+    if (result.length > 0) {
+      fallingSectorsCache = result;
+      lastSectorsFetchTime = now;
+    }
+
+    return result;
   } catch (error) {
+    // 如果请求失败但有缓存，返回缓存数据
+    if (fallingSectorsCache) {
+      logger.warn('获取领跌板块数据失败，使用缓存数据:', error);
+      return fallingSectorsCache;
+    }
     logger.error('获取东方财富领跌板块数据失败:', error);
     throw error;
   }

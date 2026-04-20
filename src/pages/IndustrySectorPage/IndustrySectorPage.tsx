@@ -3,7 +3,7 @@
  */
 
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
-import { Layout, Input, Table, Space, Select, Button, Typography, AutoComplete } from 'antd';
+import { Layout, Input, Table, Space, Select, Button, Typography, AutoComplete, message } from 'antd';
 import { SearchOutlined, ReloadOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { getIndustrySectors, getAllIndustrySectors, getSingleIndustrySector } from '@/services/hot';
@@ -69,6 +69,9 @@ export function IndustrySectorPage() {
   // 防止重复请求
   const isFetchingRef = useRef(false);
 
+  // 搜索防抖定时器
+  const searchTimerRef = useRef<NodeJS.Timeout | null>(null);
+
   // 加载数据
   const loadData = useCallback(async (page: number = 1, silent: boolean = false) => {
     if (isFetchingRef.current) return;
@@ -84,6 +87,7 @@ export function IndustrySectorPage() {
       setCurrentPage(page);
     } catch (error) {
       console.error('加载行业板块数据失败:', error);
+      message.error('加载数据失败，请重试');
     } finally {
       if (!silent) {
         setLoading(false);
@@ -100,6 +104,7 @@ export function IndustrySectorPage() {
         setAllSectors(sectors);
       } catch (error) {
         console.error('加载所有行业分类失败:', error);
+        message.warning('加载行业分类失败，搜索功能可能受限');
       }
     };
     loadAllSectors();
@@ -112,6 +117,15 @@ export function IndustrySectorPage() {
     }
   }, [loadData, viewMode]);
 
+  // 组件卸载时清理定时器
+  useEffect(() => {
+    return () => {
+      if (searchTimerRef.current) {
+        clearTimeout(searchTimerRef.current);
+      }
+    };
+  }, []);
+
   // 自动刷新 - 每10秒静默刷新当前页
   useEffect(() => {
     const interval = setInterval(async () => {
@@ -121,36 +135,45 @@ export function IndustrySectorPage() {
           const result = await getIndustrySectors('f3', sortOrder, pageSize, currentPage);
           setData(result.data);
           setTotal(result.total);
-        } else if (selectedSector) {
-          // 行业详情模式：刷新该行业的详细数据
-          const data = await getSingleIndustrySector(selectedSector.code);
-          if (data) {
-            setData([data]);
-            setTotal(1);
-          }
         }
+        // 注意：在详情模式下不自动刷新，避免覆盖用户选择的数据
       } catch (error) {
         console.error('自动刷新失败:', error);
+        message.error('数据刷新失败');
       }
     }, 10000);
 
     return () => clearInterval(interval);
-  }, [currentPage, sortOrder, viewMode, selectedSector]);
+  }, [currentPage, sortOrder, viewMode]);
 
   // 处理分页变化
   const handlePageChange = (page: number) => {
     loadData(page);
   };
 
-  // 处理搜索关键词变化（仅更新状态，不触发加载）
+  // 处理搜索关键词变化（带防抖）
   const handleSearchChange = (value: string) => {
     setSearchKeyword(value);
+
+    // 清除之前的定时器
+    if (searchTimerRef.current) {
+      clearTimeout(searchTimerRef.current);
+    }
+
+    // 设置新的定时器，300ms 后执行搜索
+    searchTimerRef.current = setTimeout(() => {
+      // 这里可以添加额外的搜索逻辑，如果需要的话
+      // 目前只是更新搜索关键词，AutoComplete 会自动过滤
+    }, 300);
   };
 
   // 处理行业选择 - 切换到行业详情模式
   const handleSectorSelect = async (sectorCode: string) => {
     const sector = allSectors.find((s) => s.code === sectorCode);
-    if (!sector) return;
+    if (!sector) {
+      message.warning('未找到该行业信息');
+      return;
+    }
 
     // 切换到详情模式
     setViewMode('detail');
@@ -165,9 +188,12 @@ export function IndustrySectorPage() {
       if (data) {
         setData([data]);
         setTotal(1);
+      } else {
+        message.warning('未获取到行业详情数据');
       }
     } catch (error) {
       console.error('加载行业详细数据失败:', error);
+      message.error('加载行业详情失败');
     } finally {
       setLoading(false);
     }
@@ -179,6 +205,7 @@ export function IndustrySectorPage() {
     setSelectedSector(null);
     setCurrentPage(1);
     loadData(1);
+    message.info('已返回行业列表');
   };
 
   // 处理名称点击 - 打开行业详情抽屉
@@ -220,7 +247,7 @@ export function IndustrySectorPage() {
         value: sector.code,
         label: `${sector.name} (${sector.code})`,
       }));
-  }, [searchKeyword, allSectors, dropdownOpen]);
+  }, [searchKeyword, allSectors]);
 
   // 表格列定义
   const columns: ColumnsType<IndustrySectorRankData> = [

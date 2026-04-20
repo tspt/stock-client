@@ -75,6 +75,11 @@ interface RawEastMoneyIndexRankResponse {
   };
 }
 
+// API 缓存 - 存储最近一次成功的响应
+let indicesCache: EastMoneyIndexData[] | null = null;
+let lastFetchTime: number = 0;
+const CACHE_DURATION = 5000; // 5秒缓存
+
 /**
  * 解析指数行情数据
  */
@@ -121,6 +126,14 @@ function parseIndexData(
 export async function getEastMoneyIndices(
   secids: string[] = ['1.000001', '0.399001', '0.399006']
 ): Promise<EastMoneyIndexData[]> {
+  const now = Date.now();
+
+  // 检查缓存是否有效
+  if (indicesCache && now - lastFetchTime < CACHE_DURATION) {
+    logger.debug('使用缓存的指数数据');
+    return indicesCache;
+  }
+
   try {
     // 1. 获取指数行情数据
     const indexBaseUrl = '/api/eastmoney/clist/get';
@@ -158,21 +171,28 @@ export async function getEastMoneyIndices(
       _: Date.now().toString(),
     });
 
-    // 并发请求两个接口
+    // 并发请求两个接口，添加超时控制
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10秒超时
+
     const [indexResponse, rankResponse] = await Promise.all([
       fetch(`${indexBaseUrl}?${indexParams.toString()}`, {
         headers: {
           Cookie:
             'qgqp_b_id=51d6d555c5e243b0256ceb1ac9c36628; st_nvi=TnWN91Owg3cX5WszqJeo-f8e2; nid18=0d86f08b814c455b1d6ebd09256a5ade; nid18_create_time=1775911116025; gviem=VcbSKTlarodHzNMYoAptO452f; gviem_create_time=1775911116025; fullscreengg=1; fullscreengg2=1; st_si=84713527048044; st_pvi=13325294659680; st_sp=2025-03-30%2015%3A14%3A18; st_inirUrl=https%3A%2F%2Femcreative.eastmoney.com%2F; st_sn=10; st_psi=20260417210401477-113200301353-6617435904; st_asi=delete',
         },
+        signal: controller.signal,
       }),
       fetch(`${rankBaseUrl}?${rankParams.toString()}`, {
         headers: {
           Cookie:
             'qgqp_b_id=51d6d555c5e243b0256ceb1ac9c36628; st_nvi=TnWN91Owg3cX5WszqJeo-f8e2; nid18=0d86f08b814c455b1d6ebd09256a5ade; nid18_create_time=1775911116025; gviem=VcbSKTlarodHzNMYoAptO452f; gviem_create_time=1775911116025; fullscreengg=1; fullscreengg2=1; st_si=84713527048044; st_pvi=13325294659680; st_sp=2025-03-30%2015%3A14%3A18; st_inirUrl=https%3A%2F%2Femcreative.eastmoney.com%2F; st_sn=10; st_psi=20260417210401477-113200301353-6617435904; st_asi=delete',
         },
+        signal: controller.signal,
       }),
     ]);
+
+    clearTimeout(timeoutId);
 
     if (!indexResponse.ok) {
       throw new Error(`获取指数行情数据失败: ${indexResponse.status}`);
@@ -225,8 +245,21 @@ export async function getEastMoneyIndices(
       },
     };
 
-    return parseIndexData(filteredIndexData, rankData);
+    const result = parseIndexData(filteredIndexData, rankData);
+
+    // 更新缓存
+    if (result.length > 0) {
+      indicesCache = result;
+      lastFetchTime = now;
+    }
+
+    return result;
   } catch (error) {
+    // 如果请求失败但有缓存，返回缓存数据
+    if (indicesCache) {
+      logger.warn('获取指数数据失败，使用缓存数据:', error);
+      return indicesCache;
+    }
     logger.error('获取东方财富指数数据失败:', error);
     throw error;
   }
