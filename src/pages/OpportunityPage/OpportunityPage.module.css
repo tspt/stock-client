@@ -77,48 +77,38 @@
 }
 
 .errorCard {
-  margin-bottom: 16px;
+  margin: 0 16px 16px;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(255, 77, 79, 0.08);
   border: 1px solid var(--ant-color-error-border);
+  background: var(--ant-color-error-bg);
 }
 
-/* 错误 Alert 样式 */
-.errorAlert {
-  margin-bottom: 16px;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(255, 77, 79, 0.08);
-}
-
-.errorAlertHeader {
+.errorCardHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  width: 100%;
-}
-
-.errorAlertHeader strong {
-  color: var(--ant-color-error);
-  font-size: 16px;
-}
-
-.errorTagsContainer {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
   padding: 8px 0;
 }
 
-.errorTag {
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 13px;
-  margin: 0;
+.errorCardTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ant-color-error);
 }
 
-.errorTag:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 2px 8px rgba(255, 77, 79, 0.2);
+.errorIcon {
+  font-size: 16px;
+}
+
+.errorCount {
+  color: var(--ant-color-error);
+  font-size: 18px;
+  font-weight: 700;
+  padding: 0 4px;
 }
 
 .errorList {

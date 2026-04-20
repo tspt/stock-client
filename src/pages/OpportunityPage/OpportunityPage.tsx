@@ -293,6 +293,7 @@ export function OpportunityPage() {
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false); // 筛选抽屉状态
   const [showAllSkipped, setShowAllSkipped] = useState(false); // 是否显示全部跳过数据
   const [filterSkipPopoverOpen, setFilterSkipPopoverOpen] = useState(false); // 跳过详情弹窗状态
+  const [errorExpanded, setErrorExpanded] = useState(false); // 失败详情展开状态
 
   const [sharpMoveFilterEnabled, setSharpMoveFilterEnabled] = useState<boolean>(
     INITIAL_FILTER_STATE.sharpMoveFilterEnabled
@@ -1545,12 +1546,19 @@ export function OpportunityPage() {
         )}
 
         {errors.length > 0 && (
-          <Alert
-            type="error"
-            showIcon
-            message={
-              <div className={styles.errorAlertHeader}>
-                <span>分析失败：<strong>{errors.length}</strong> 只股票</span>
+          <Card className={styles.errorCard} size="small">
+            <div className={styles.errorCardHeader}>
+              <div className={styles.errorCardTitle}>
+                <span className={styles.errorIcon}>⚠️</span>
+                <span>分析失败 <span className={styles.errorCount}>{errors.length}</span> 只股票</span>
+              </div>
+              <Space size="small">
+                <Button
+                  size="small"
+                  onClick={() => setErrorExpanded(!errorExpanded)}
+                >
+                  {errorExpanded ? '收起' : '查看详情'}
+                </Button>
                 <Button
                   type="primary"
                   size="small"
@@ -1561,25 +1569,24 @@ export function OpportunityPage() {
                 >
                   重试失败股票
                 </Button>
+              </Space>
+            </div>
+
+            {errorExpanded && (
+              <div className={styles.errorList}>
+                {errors.map((err, index) => (
+                  <Tooltip key={index} title={err.error} placement="top">
+                    <div className={styles.errorItem}>
+                      <span className={styles.errorStock}>
+                        {err.stock.code} {err.stock.name}
+                      </span>
+                      <span className={styles.errorMessage}>{err.error}</span>
+                    </div>
+                  </Tooltip>
+                ))}
               </div>
-            }
-            description={
-              <Collapse ghost expandIconPosition="end">
-                <Panel header="查看失败详情" key="details">
-                  <div className={styles.errorTagsContainer}>
-                    {errors.map((err, index) => (
-                      <Tooltip key={index} title={err.error} placement="top">
-                        <Tag color="error" className={styles.errorTag}>
-                          {err.stock.code} {err.stock.name}
-                        </Tag>
-                      </Tooltip>
-                    ))}
-                  </div>
-                </Panel>
-              </Collapse>
-            }
-            className={styles.errorAlert}
-          />
+            )}
+          </Card>
         )}
 
         {/* 筛选入口 - 始终显示 */}

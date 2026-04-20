@@ -272,7 +272,21 @@ export const useOpportunityStore = create<OpportunityState>((set, get) => ({
         stock: { code: err.stock.code, name: err.stock.name },
         error: err.error.message,
       }));
-      const mergedErrors = [...remainingErrors, ...formattedNewErrors];
+
+      // 按股票代码去重：优先使用新的错误信息（如果股票在新的错误列表中）
+      const errorMap = new Map<string, { stock: { code: string; name: string }; error: string }>();
+
+      // 先添加剩余的旧错误
+      remainingErrors.forEach((err) => {
+        errorMap.set(err.stock.code, err);
+      });
+
+      // 再用新错误覆盖（如果有新的错误信息）
+      formattedNewErrors.forEach((err) => {
+        errorMap.set(err.stock.code, err);
+      });
+
+      const mergedErrors = Array.from(errorMap.values());
 
       // 保存更新后的数据到 IndexedDB
       const klineDataCacheArray: Array<[string, KLineData[]]> = Array.from(newCache.entries());
