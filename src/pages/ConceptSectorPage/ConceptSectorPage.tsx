@@ -8,6 +8,7 @@ import { SearchOutlined, ReloadOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { getUnifiedConceptBasic, getUnifiedConceptRank } from '@/services/hot/unified-sectors';
 import { getSingleConceptSector } from '@/services/hot/concept-sectors';
+import { POLLING_INTERVAL } from '@/utils/constants';
 import type { ConceptSectorRankData, ConceptSectorBasicInfo } from '@/types/stock';
 import { ConceptSectorStocksDrawer } from '@/components/ConceptSectorStocksDrawer/ConceptSectorStocksDrawer';
 import styles from './ConceptSectorPage.module.css';
@@ -143,7 +144,7 @@ export function ConceptSectorPage() {
         console.error('自动刷新失败:', error);
         message.error('数据刷新失败');
       }
-    }, 10000);
+    }, POLLING_INTERVAL);
 
     return () => clearInterval(interval);
   }, [currentPage, sortOrder, viewMode]);

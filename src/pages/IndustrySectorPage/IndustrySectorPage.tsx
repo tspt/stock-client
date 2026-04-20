@@ -8,6 +8,7 @@ import { SearchOutlined, ReloadOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { getUnifiedIndustryBasic, getUnifiedIndustryRank } from '@/services/hot/unified-sectors';
 import { getSingleIndustrySector } from '@/services/hot/industry-sectors';
+import { POLLING_INTERVAL } from '@/utils/constants';
 import type { IndustrySectorRankData, IndustrySectorBasicInfo } from '@/types/stock';
 import { IndustrySectorStocksDrawer } from '@/components/IndustrySectorStocksDrawer/IndustrySectorStocksDrawer';
 import styles from './IndustrySectorPage.module.css';
@@ -142,7 +143,7 @@ export function IndustrySectorPage() {
         console.error('自动刷新失败:', error);
         message.error('数据刷新失败');
       }
-    }, 10000);
+    }, POLLING_INTERVAL);
 
     return () => clearInterval(interval);
   }, [currentPage, sortOrder, viewMode]);

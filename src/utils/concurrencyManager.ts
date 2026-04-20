@@ -30,6 +30,8 @@ export interface ConcurrencyManagerOptions {
   onProgress?: (progress: ProgressInfo) => void;
   /** 批次间延迟（毫秒） */
   batchDelay?: number;
+  /** 单个任务超时时间（毫秒），0 表示不限制 */
+  taskTimeout?: number;
 }
 
 /**
@@ -37,7 +39,8 @@ export interface ConcurrencyManagerOptions {
  */
 export class ConcurrencyManager<T> {
   private maxConcurrency: number;
-  private queue: Array<Task<T> & { resolve: (value: T) => void; reject: (error: Error) => void }> = [];
+  private queue: Array<Task<T> & { resolve: (value: T) => void; reject: (error: Error) => void }> =
+    [];
   private running: Set<Promise<void>> = new Set();
   private results: T[] = [];
   private errors: Array<{ task: Task<T>; error: Error }> = [];
@@ -47,11 +50,13 @@ export class ConcurrencyManager<T> {
   private completedTasks: number = 0;
   private failedTasks: number = 0;
   private batchDelay: number;
+  private taskTimeout: number;
 
   constructor(options: ConcurrencyManagerOptions = {}) {
     this.maxConcurrency = options.maxConcurrency || 5;
     this.onProgress = options.onProgress;
     this.batchDelay = options.batchDelay || 100;
+    this.taskTimeout = options.taskTimeout || 0; // 默认不限制超时
   }
 
   /**
@@ -120,7 +125,23 @@ export class ConcurrencyManager<T> {
     }
 
     try {
-      const result = await task.fn();
+      let result: T;
+
+      // 如果设置了超时时间，使用 Promise.race 实现超时控制
+      if (this.taskTimeout > 0) {
+        const timeoutPromise = new Promise<never>((_, reject) => {
+          setTimeout(() => {
+            reject(new Error(`任务超时 (${this.taskTimeout}ms)`));
+          }, this.taskTimeout);
+        });
+
+        // race 返回最先完成的 Promise
+        result = await Promise.race([task.fn(), timeoutPromise]);
+      } else {
+        // 没有超时限制，直接执行
+        result = await task.fn();
+      }
+
       if (!this.cancelled) {
         this.results.push(result);
         this.completedTasks++;
@@ -202,4 +223,3 @@ export class ConcurrencyManager<T> {
     this.failedTasks = 0;
   }
 }
-

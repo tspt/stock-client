@@ -3,7 +3,7 @@
  */
 
 import { useEffect, useState, useMemo, useRef, useCallback, useLayoutEffect } from 'react';
-import { Layout, Card, Button, Space, Progress, Select, Collapse, App, InputNumber, Dropdown } from 'antd';
+import { Layout, Card, Button, Space, Progress, Select, Collapse, App, InputNumber, Dropdown, Alert, Tag, Tooltip, Badge, Popover } from 'antd';
 import {
   PlayCircleOutlined,
   StopOutlined,
@@ -14,6 +14,7 @@ import {
   DownOutlined,
   OrderedListOutlined,
   FilterOutlined,
+  ReloadOutlined,
 } from '@ant-design/icons';
 import { useOpportunityStore } from '@/stores/opportunityStore';
 import {
@@ -76,7 +77,7 @@ const CONSOLIDATION_TYPE_OPTIONS: { label: string; value: ConsolidationType }[] 
   { label: CONSOLIDATION_TYPE_LABELS.box, value: 'box' },
 ];
 
-const DEFAULT_CONSOLIDATION_TYPES: ConsolidationType[] = CONSOLIDATION_TYPE_OPTIONS.map((item) => item.value);
+const DEFAULT_CONSOLIDATION_TYPES: ConsolidationType[] = [];
 
 /** 与下方 useState 初始值保持一致，供「重置」同步恢复 */
 const INITIAL_FILTER_STATE = {
@@ -103,14 +104,14 @@ const INITIAL_FILTER_STATE = {
   trendLineLookback: OPPORTUNITY_DEFAULT_TREND_LINE.lookback,
   trendLineConsecutive: OPPORTUNITY_DEFAULT_TREND_LINE.consecutive,
   trendLineFilterEnabled: false,
-  sharpMoveFilterEnabled: false,
+  sharpMoveFilterEnabled: true,
   sharpMoveWindowBars: OPPORTUNITY_DEFAULT_SHARP_MOVE.windowBars,
   sharpMoveMagnitude: OPPORTUNITY_DEFAULT_SHARP_MOVE.magnitude,
   sharpMoveFlatThreshold: 3,
-  sharpMoveOnlyDrop: false,
-  sharpMoveOnlyRise: false,
-  sharpMoveDropThenRiseLoose: false,
-  sharpMoveRiseThenDropLoose: false,
+  sharpMoveOnlyDrop: true,
+  sharpMoveOnlyRise: true,
+  sharpMoveDropThenRiseLoose: true,
+  sharpMoveRiseThenDropLoose: true,
   sharpMoveDropFlatRise: false,
   sharpMoveRiseFlatDrop: false,
   /** RSI指标范围 */
@@ -158,16 +159,16 @@ const INITIAL_FILTER_STATE = {
   /** 趋势形态回溯窗口大小（根数） */
   trendLookback: 20,
   /** AI分析筛选 */
-  aiAnalysisEnabled: false,
-  aiTrendUp: false,
+  aiAnalysisEnabled: true,
+  aiTrendUp: true,
   aiTrendDown: false,
   aiTrendSideways: false,
   aiConfidenceRange: {},
   aiRecommendScoreRange: {},
   aiTechnicalScoreRange: {},
   aiPatternScoreRange: {},
-  aiTrendScoreRange: {},
-  aiRiskScoreRange: {},
+  aiTrendScoreRange: { min: 50 },
+  aiRiskScoreRange: { max: 50 },
   aiRequireSimilarPatterns: false,
   aiMinSimilarity: undefined,
   aiMinSignalCount: undefined as number | undefined,
@@ -199,6 +200,7 @@ export function OpportunityPage() {
     klineDataCache,
     startAnalysis,
     cancelAnalysis,
+    retryFailedStocks,
     loadCachedData,
     updateColumnConfig,
     updateSortConfig,
@@ -289,6 +291,8 @@ export function OpportunityPage() {
   const [aiAnalysisVisible, setAiAnalysisVisible] = useState(false);
   const [selectedStockForAI, setSelectedStockForAI] = useState<{ code: string; name: string } | null>(null);
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false); // 筛选抽屉状态
+  const [showAllSkipped, setShowAllSkipped] = useState(false); // 是否显示全部跳过数据
+  const [filterSkipPopoverOpen, setFilterSkipPopoverOpen] = useState(false); // 跳过详情弹窗状态
 
   const [sharpMoveFilterEnabled, setSharpMoveFilterEnabled] = useState<boolean>(
     INITIAL_FILTER_STATE.sharpMoveFilterEnabled
@@ -1217,6 +1221,13 @@ export function OpportunityPage() {
     message.info('分析已取消');
   };
 
+  const handleRetryFailed = async () => {
+    if (errors.length === 0) {
+      return;
+    }
+    await retryFailedStocks();
+  };
+
   const handleExport = async (format: 'excel') => {
     if (filteredAnalysisData.length === 0) {
       message.warning('没有数据可导出');
@@ -1534,30 +1545,41 @@ export function OpportunityPage() {
         )}
 
         {errors.length > 0 && (
-          <Card className={styles.errorCard} size="small">
-            <Collapse>
-              <Panel
-                header={
-                  <span>
-                    <ExclamationCircleOutlined style={{ color: '#ff4d4f', marginRight: 8 }} />
-                    分析失败 ({errors.length} 只股票)
-                  </span>
-                }
-                key="errors"
-              >
-                <div className={styles.errorList}>
-                  {errors.map((err, index) => (
-                    <div key={index} className={styles.errorItem}>
-                      <span className={styles.errorStock}>
-                        {err.stock.name} ({err.stock.code})
-                      </span>
-                      <span className={styles.errorMessage}>{err.error}</span>
-                    </div>
-                  ))}
-                </div>
-              </Panel>
-            </Collapse>
-          </Card>
+          <Alert
+            type="error"
+            showIcon
+            message={
+              <div className={styles.errorAlertHeader}>
+                <span>分析失败：<strong>{errors.length}</strong> 只股票</span>
+                <Button
+                  type="primary"
+                  size="small"
+                  icon={<ReloadOutlined />}
+                  onClick={handleRetryFailed}
+                  loading={loading}
+                  disabled={loading}
+                >
+                  重试失败股票
+                </Button>
+              </div>
+            }
+            description={
+              <Collapse ghost expandIconPosition="end">
+                <Panel header="查看失败详情" key="details">
+                  <div className={styles.errorTagsContainer}>
+                    {errors.map((err, index) => (
+                      <Tooltip key={index} title={err.error} placement="top">
+                        <Tag color="error" className={styles.errorTag}>
+                          {err.stock.code} {err.stock.name}
+                        </Tag>
+                      </Tooltip>
+                    ))}
+                  </div>
+                </Panel>
+              </Collapse>
+            }
+            className={styles.errorAlert}
+          />
         )}
 
         {/* 筛选入口 - 始终显示 */}
@@ -1733,7 +1755,7 @@ export function OpportunityPage() {
 
         {/* 筛选结果提示 - 仅在有数据时显示 */}
         {analysisData.length > 0 && (
-          <>
+          <div className={styles.filterResultWrapper}>
             <div className={styles.filterResult}>
               {/* 筛选结果计数 - 放在最左侧 */}
               <span style={{ fontWeight: 500, whiteSpace: 'nowrap' }}>
@@ -1833,32 +1855,67 @@ export function OpportunityPage() {
 
               {filteringAnalysisData && <span className={styles.filteringTag}>筛选中...</span>}
               {filterSkippedItems.length > 0 && (
-                <span className={styles.filterSkipSummary}>
-                  跳过 {filterSkippedItems.length} 条
-                  <Button
-                    type="link"
-                    size="small"
-                    onClick={() => setFilterSkippedExpanded((prev) => !prev)}
-                    className={styles.filterSkipToggle}
-                  >
-                    {filterSkippedExpanded ? '收起' : '展开'}
-                  </Button>
-                </span>
+                <Popover
+                  content={
+                    <div className={styles.filterSkipPopover}>
+                      <div className={styles.filterSkipHeader}>
+                        <strong>跳过原因统计</strong>
+                      </div>
+                      <div className={styles.filterSkipList}>
+                        {(showAllSkipped ? filterSkippedItems : filterSkippedItems.slice(0, 20)).map((item) => (
+                          <div key={`${item.code}-${item.reason}`} className={styles.filterSkipItem}>
+                            <Tag color="warning">{item.code} {item.name}</Tag>
+                            <span className={styles.filterSkipReason}>{item.reason}</span>
+                          </div>
+                        ))}
+                        {!showAllSkipped && filterSkippedItems.length > 20 && (
+                          <Button
+                            type="link"
+                            size="small"
+                            className={styles.filterSkipShowAll}
+                            onClick={() => setShowAllSkipped(true)}
+                          >
+                            查看全部 {filterSkippedItems.length} 条
+                          </Button>
+                        )}
+                        {showAllSkipped && filterSkippedItems.length > 20 && (
+                          <Button
+                            type="link"
+                            size="small"
+                            className={styles.filterSkipShowAll}
+                            onClick={() => setShowAllSkipped(false)}
+                          >
+                            收起（仅显示前 20 条）
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  }
+                  title={`跳过 ${filterSkippedItems.length} 条数据`}
+                  trigger="click"
+                  placement="bottomRight"
+                  open={filterSkipPopoverOpen}
+                  onOpenChange={(open) => {
+                    setFilterSkipPopoverOpen(open);
+                    if (!open) {
+                      setShowAllSkipped(false);
+                    }
+                  }}
+                >
+                  <Badge count={filterSkippedItems.length} overflowCount={999} showZero={false}>
+                    <Button
+                      type="text"
+                      size="small"
+                      icon={<ExclamationCircleOutlined />}
+                      className={styles.filterSkipButton}
+                    >
+                      跳过详情
+                    </Button>
+                  </Badge>
+                </Popover>
               )}
             </div>
-            {filterSkippedExpanded && filterSkippedItems.length > 0 && (
-              <div className={styles.filterSkipList}>
-                {filterSkippedItems.slice(0, 20).map((item) => (
-                  <div key={`${item.code}-${item.reason}`} className={styles.filterSkipItem}>
-                    {item.name} ({item.code})：{item.reason}
-                  </div>
-                ))}
-                {filterSkippedItems.length > 20 && (
-                  <div className={styles.filterSkipMore}>仅展示前 20 条，其余已折叠。</div>
-                )}
-              </div>
-            )}
-          </>
+          </div>
         )}
 
         {/* 表格区域 */}

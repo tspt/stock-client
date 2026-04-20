@@ -54,6 +54,7 @@ interface OpportunityState {
 
   startAnalysis: (period: KLinePeriod, stocks: StockInfo[], count: number) => Promise<void>;
   cancelAnalysis: () => void;
+  retryFailedStocks: () => Promise<void>;
   loadCachedData: () => Promise<void>;
   updateColumnConfig: (config: ColumnConfig[]) => void;
   updateSortConfig: (config: OverviewSortConfig) => void;
@@ -197,6 +198,110 @@ export const useOpportunityStore = create<OpportunityState>((set, get) => ({
       cancelFn();
     }
     set({ loading: false, cancelFn: null });
+  },
+
+  retryFailedStocks: async () => {
+    const state = get();
+    const { errors, currentPeriod, currentCount, analysisData, klineDataCache } = state;
+
+    if (errors.length === 0) {
+      return;
+    }
+
+    // 提取失败股票
+    const failedStocks: StockInfo[] = errors.map((err) => ({
+      code: err.stock.code,
+      name: err.stock.name,
+      market: err.stock.code.startsWith('SH') ? 'SH' : 'SZ', // 根据代码推断市场
+    }));
+
+    set({
+      loading: true,
+      progress: { total: failedStocks.length, completed: 0, failed: 0, percent: 0 },
+    });
+
+    let cancelled = false;
+
+    try {
+      const { promise, cancel } = analyzeAllStocksOpportunity(
+        failedStocks,
+        currentPeriod,
+        currentCount,
+        (p) => {
+          if (!cancelled) {
+            set({ progress: p });
+          }
+        }
+      );
+
+      // 包装取消函数
+      set({
+        cancelFn: () => {
+          cancelled = true;
+          cancel();
+        },
+      });
+
+      const { results, errors: newErrors, klineDataMap } = await promise;
+
+      if (cancelled) {
+        set({ loading: false, cancelFn: null });
+        return;
+      }
+
+      // 增量合并：更新 analysisData
+      const existingDataMap = new Map(analysisData.map((d) => [d.code, d]));
+      results.forEach((result) => {
+        if (!result.error) {
+          existingDataMap.set(result.code, result); // 覆盖或添加
+        }
+      });
+      const mergedData = Array.from(existingDataMap.values());
+
+      // 更新 K线缓存
+      const newCache = new Map(klineDataCache);
+      klineDataMap.forEach((klineData, code) => {
+        newCache.set(code, klineData);
+      });
+      trimKlineDataCache(newCache);
+
+      // 更新错误列表：移除已成功的，保留仍失败的，添加新的失败
+      const successCodes = new Set(results.filter((r) => !r.error).map((r) => r.code));
+      const remainingErrors = errors.filter((err) => !successCodes.has(err.stock.code));
+      const formattedNewErrors = newErrors.map((err) => ({
+        stock: { code: err.stock.code, name: err.stock.name },
+        error: err.error.message,
+      }));
+      const mergedErrors = [...remainingErrors, ...formattedNewErrors];
+
+      // 保存更新后的数据到 IndexedDB
+      const klineDataCacheArray: Array<[string, KLineData[]]> = Array.from(newCache.entries());
+      const result: OpportunityAnalysisResult = {
+        data: mergedData,
+        timestamp: Date.now(),
+        period: currentPeriod,
+        count: currentCount,
+        groupId: '',
+        total: failedStocks.length,
+        success: results.filter((r) => !r.error).length,
+        failed: mergedErrors.length,
+        klineDataCache: klineDataCacheArray,
+      };
+
+      await saveOpportunityData(result);
+      await saveOpportunityHistory(result);
+
+      set({
+        analysisData: mergedData,
+        errors: mergedErrors,
+        klineDataCache: newCache,
+        loading: false,
+        cancelFn: null,
+      });
+    } catch (error) {
+      console.error('重试失败:', error);
+      set({ loading: false, cancelFn: null });
+    }
   },
 
   loadCachedData: async () => {

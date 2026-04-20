@@ -196,16 +196,16 @@ function parseRange(v: unknown): { min?: number; max?: number } {
   return out;
 }
 
-/** 解析失败或缺省时返回全部类型 */
+/** 解析失败或缺省时返回空数组（不选中任何横盘类型） */
 function parseConsolidationTypes(v: unknown): ConsolidationType[] {
-  if (!Array.isArray(v)) return [...VALID_CONSOLIDATION_TYPES];
+  if (!Array.isArray(v)) return [];
   const out: ConsolidationType[] = [];
   for (const item of v) {
     if (typeof item === 'string' && VALID_CONSOLIDATION_TYPES.includes(item as ConsolidationType)) {
       out.push(item as ConsolidationType);
     }
   }
-  return out.length > 0 ? out : [...VALID_CONSOLIDATION_TYPES];
+  return out;
 }
 
 /** 从 localStorage 读取并校验；无效则返回 null */
@@ -398,7 +398,7 @@ export function getDefaultFilterPrefsFields(): Omit<
     recentLimitDownCount: undefined,
     limitUpPeriod: 20,
     limitDownPeriod: 20,
-    consolidationTypes: [...VALID_CONSOLIDATION_TYPES],
+    consolidationTypes: [],
     consolidationLookback: OPPORTUNITY_DEFAULT_CONSOLIDATION.lookback,
     consolidationConsecutive: OPPORTUNITY_DEFAULT_CONSOLIDATION.consecutive,
     consolidationThreshold: OPPORTUNITY_DEFAULT_CONSOLIDATION.threshold,

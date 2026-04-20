@@ -333,6 +333,7 @@ export function analyzeAllStocksOpportunity(
       const manager = new ConcurrencyManager<{ code: string; data: StockOpportunityData }>({
         maxConcurrency: OPPORTUNITY_CONCURRENT_LIMIT,
         batchDelay: OPPORTUNITY_BATCH_DELAY,
+        taskTimeout: 5000, // 单个任务超时 5 秒
         onProgress: (p) => {
           // 计算全局进度：前面所有批次的总数 + 当前批次的进度 + 当前批次获取行情失败的数
           const currentGlobalCompleted = previousBatchesCompleted + p.completed;
