@@ -374,6 +374,19 @@ export interface OpportunityFiltersPanelProps {
   // 交易信号筛选
   tradingSignalTypes?: TradingSignalType[];
   setTradingSignalTypes: (v: TradingSignalType[]) => void;
+  // 行业板块筛选
+  industrySectors?: string[];
+  setIndustrySectors: (v: string[]) => void;
+  industrySectorOptions?: { label: string; value: string }[];
+  // 概念板块筛选
+  conceptSectors?: string[];
+  setConceptSectors: (v: string[]) => void;
+  conceptSectorOptions?: { label: string; value: string }[];
+  // 重置筛选按钮
+  resetFilterButton?: React.ReactNode;
+  // 外部控制的抽屉状态
+  drawerOpen?: boolean;
+  setDrawerOpen?: (open: boolean) => void;
 }
 
 export function OpportunityFiltersPanel({
@@ -528,8 +541,25 @@ export function OpportunityFiltersPanel({
   // 交易信号筛选
   tradingSignalTypes,
   setTradingSignalTypes,
+  // 行业板块筛选
+  industrySectors,
+  setIndustrySectors,
+  industrySectorOptions = [],
+  // 概念板块筛选
+  conceptSectors,
+  setConceptSectors,
+  conceptSectorOptions = [],
+  // 重置筛选按钮
+  resetFilterButton,
+  // 外部控制的抽屉状态
+  drawerOpen: externalDrawerOpen,
+  setDrawerOpen: externalSetDrawerOpen,
 }: OpportunityFiltersPanelProps) {
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [internalDrawerOpen, setInternalDrawerOpen] = useState(false);
+
+  // 如果外部提供了控制，则使用外部的；否则使用内部的
+  const drawerOpen = externalDrawerOpen !== undefined ? externalDrawerOpen : internalDrawerOpen;
+  const setDrawerOpen = externalSetDrawerOpen || setInternalDrawerOpen;
 
   const summaryText = useMemo(
     () =>
@@ -673,19 +703,23 @@ export function OpportunityFiltersPanel({
 
   return (
     <>
-      <div className={styles.filterCompactBar}>
-        <Button type="primary" icon={<FilterOutlined />} onClick={() => setDrawerOpen(true)}>
-          筛选条件
-        </Button>
-        <button
-          type="button"
-          className={styles.filterCompactSummaryBtn}
-          onClick={() => setDrawerOpen(true)}
-          title={summaryText}
-        >
-          {summaryText}
-        </button>
-      </div>
+      {/* 如果外部控制了抽屉，则不显示内部的按钮栏 */}
+      {!externalSetDrawerOpen && (
+        <div className={styles.filterCompactBar}>
+          <Button type="primary" icon={<FilterOutlined />} onClick={() => setDrawerOpen(true)}>
+            筛选条件
+          </Button>
+          {resetFilterButton}
+          <button
+            type="button"
+            className={styles.filterCompactSummaryBtn}
+            onClick={() => setDrawerOpen(true)}
+            title={summaryText}
+          >
+            {summaryText}
+          </button>
+        </div>
+      )}
       <Drawer
         title="筛选条件"
         placement="right"
@@ -695,6 +729,7 @@ export function OpportunityFiltersPanel({
         destroyOnClose={false}
         extra={
           <Space size={0} wrap className={styles.filterCardExtra}>
+            {resetFilterButton}
             <Button type="link" size="small" onClick={() => setFilterPanelActiveKey([...ALL_FILTER_PANEL_KEYS])}>
               展开全部
             </Button>

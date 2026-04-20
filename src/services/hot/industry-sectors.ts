@@ -214,8 +214,9 @@ export async function getIndustrySectors(
 
 /**
  * 所有行业分类缓存键（每日过期）
+ * @deprecated 已迁移到 unified-sectors.ts，保留此常量仅为向后兼容
  */
-const ALL_INDUSTRY_SECTORS_CACHE_KEY = 'all_industry_sectors_v1';
+const ALL_INDUSTRY_SECTORS_CACHE_KEY = 'unified_industry_basic_v1'; // 使用统一缓存键
 const ALL_INDUSTRY_SECTORS_CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24小时
 
 interface AllIndustrySectorsCache {
@@ -225,6 +226,7 @@ interface AllIndustrySectorsCache {
 
 /**
  * 读取所有行业分类缓存
+ * @deprecated 建议使用 getUnifiedIndustryBasic() from unified-sectors.ts
  */
 function readAllIndustrySectorsCache(): IndustrySectorBasicInfo[] | null {
   const raw = getStorage<AllIndustrySectorsCache | null>(ALL_INDUSTRY_SECTORS_CACHE_KEY, null);
@@ -245,6 +247,7 @@ let allIndustrySectorsFetchPromise: Promise<IndustrySectorBasicInfo[]> | null = 
 
 /**
  * 获取所有行业分类（带缓存，每日只拉取一次）
+ * @deprecated 建议使用 getUnifiedIndustryBasic() from unified-sectors.ts
  */
 export async function getAllIndustrySectors(): Promise<IndustrySectorBasicInfo[]> {
   const cached = readAllIndustrySectorsCache();

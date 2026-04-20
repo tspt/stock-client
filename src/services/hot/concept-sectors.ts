@@ -392,8 +392,9 @@ export async function getSingleConceptSector(
 
 /**
  * 所有概念分类缓存键（每日过期）
+ * @deprecated 已迁移到 unified-sectors.ts，保留此常量仅为向后兼容
  */
-const ALL_CONCEPT_SECTORS_CACHE_KEY = 'all_concept_sectors_v1';
+const ALL_CONCEPT_SECTORS_CACHE_KEY = 'unified_concept_basic_v1'; // 使用统一缓存键
 const ALL_CONCEPT_SECTORS_CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24小时
 
 interface AllConceptSectorsCache {
@@ -403,6 +404,7 @@ interface AllConceptSectorsCache {
 
 /**
  * 读取所有概念分类缓存
+ * @deprecated 建议使用 getUnifiedConceptBasic() from unified-sectors.ts
  */
 function readAllConceptSectorsCache(): ConceptSectorBasicInfo[] | null {
   const raw = getStorage<AllConceptSectorsCache | null>(ALL_CONCEPT_SECTORS_CACHE_KEY, null);
@@ -423,6 +425,7 @@ let allConceptSectorsFetchPromise: Promise<ConceptSectorBasicInfo[]> | null = nu
 
 /**
  * 获取所有概念分类（带缓存，每日只拉取一次）
+ * @deprecated 建议使用 getUnifiedConceptBasic() from unified-sectors.ts
  */
 export async function getAllConceptSectors(): Promise<ConceptSectorBasicInfo[]> {
   const cached = readAllConceptSectorsCache();

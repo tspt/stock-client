@@ -6,7 +6,8 @@ import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { Layout, Input, Table, Space, Select, Button, Typography, AutoComplete, message } from 'antd';
 import { SearchOutlined, ReloadOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
-import { getIndustrySectors, getAllIndustrySectors, getSingleIndustrySector } from '@/services/hot';
+import { getUnifiedIndustryBasic, getUnifiedIndustryRank } from '@/services/hot/unified-sectors';
+import { getSingleIndustrySector } from '@/services/hot/industry-sectors';
 import type { IndustrySectorRankData, IndustrySectorBasicInfo } from '@/types/stock';
 import { IndustrySectorStocksDrawer } from '@/components/IndustrySectorStocksDrawer/IndustrySectorStocksDrawer';
 import styles from './IndustrySectorPage.module.css';
@@ -72,7 +73,7 @@ export function IndustrySectorPage() {
   // 搜索防抖定时器
   const searchTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // 加载数据
+  // 加载数据（使用统一缓存服务）
   const loadData = useCallback(async (page: number = 1, silent: boolean = false) => {
     if (isFetchingRef.current) return;
 
@@ -81,7 +82,7 @@ export function IndustrySectorPage() {
       setLoading(true);
     }
     try {
-      const result = await getIndustrySectors('f3', sortOrder, pageSize, page);
+      const result = await getUnifiedIndustryRank(sortOrder, pageSize, page);
       setData(result.data);
       setTotal(result.total);
       setCurrentPage(page);
@@ -96,11 +97,11 @@ export function IndustrySectorPage() {
     }
   }, [sortOrder]);
 
-  // 加载所有行业分类（用于搜索）
+  // 加载所有行业分类（用于搜索，使用统一缓存服务）
   useEffect(() => {
     const loadAllSectors = async () => {
       try {
-        const sectors = await getAllIndustrySectors();
+        const sectors = await getUnifiedIndustryBasic();
         setAllSectors(sectors);
       } catch (error) {
         console.error('加载所有行业分类失败:', error);
@@ -126,13 +127,13 @@ export function IndustrySectorPage() {
     };
   }, []);
 
-  // 自动刷新 - 每10秒静默刷新当前页
+  // 自动刷新 - 每10秒静默刷新当前页（使用统一缓存服务）
   useEffect(() => {
     const interval = setInterval(async () => {
       try {
         if (viewMode === 'list') {
           // 行业列表模式：刷新行业列表
-          const result = await getIndustrySectors('f3', sortOrder, pageSize, currentPage);
+          const result = await getUnifiedIndustryRank(sortOrder, pageSize, currentPage);
           setData(result.data);
           setTotal(result.total);
         }

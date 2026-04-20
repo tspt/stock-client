@@ -13,6 +13,7 @@ import {
   ClearOutlined,
   DownOutlined,
   OrderedListOutlined,
+  FilterOutlined,
 } from '@ant-design/icons';
 import { useOpportunityStore } from '@/stores/opportunityStore';
 import {
@@ -44,6 +45,8 @@ import {
   OPPORTUNITY_DEFAULT_SHARP_MOVE,
   OPPORTUNITY_DEFAULT_TREND_LINE,
 } from '@/utils/opportunityAnalysisDefaults';
+import { getUnifiedSectorBasics } from '@/services/hot/unified-sectors';
+import type { IndustrySectorBasicInfo, ConceptSectorBasicInfo } from '@/types/stock';
 import styles from './OpportunityPage.module.css';
 
 const { Header, Content } = Layout;
@@ -285,6 +288,7 @@ export function OpportunityPage() {
   const tableCardRef = useRef<HTMLDivElement>(null); // 表格Card的引用
   const [aiAnalysisVisible, setAiAnalysisVisible] = useState(false);
   const [selectedStockForAI, setSelectedStockForAI] = useState<{ code: string; name: string } | null>(null);
+  const [filterDrawerOpen, setFilterDrawerOpen] = useState(false); // 筛选抽屉状态
 
   const [sharpMoveFilterEnabled, setSharpMoveFilterEnabled] = useState<boolean>(
     INITIAL_FILTER_STATE.sharpMoveFilterEnabled
@@ -393,6 +397,14 @@ export function OpportunityPage() {
     INITIAL_FILTER_STATE.aiEnableTimeDecay || false
   );
   const [tradingSignalTypes, setTradingSignalTypes] = useState<import('@/types/stock').TradingSignalType[]>([]);
+  // 行业板块筛选状态
+  const [industrySectors, setIndustrySectors] = useState<string[]>([]);
+  // 概念板块筛选状态
+  const [conceptSectors, setConceptSectors] = useState<string[]>([]);
+  // 行业板块选项
+  const [industrySectorOptions, setIndustrySectorOptions] = useState<{ label: string; value: string }[]>([]);
+  // 概念板块选项
+  const [conceptSectorOptions, setConceptSectorOptions] = useState<{ label: string; value: string }[]>([]);
 
   // 标记是否已完成初始恢复
   const isRestoredRef = useRef(false);
@@ -499,6 +511,29 @@ export function OpportunityPage() {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- 仅挂载时恢复缓存与偏好；setter 稳定
   }, [loadCachedData]);
+
+  // 加载行业和概念板块选项（使用统一缓存服务）
+  useEffect(() => {
+    let cancelled = false;
+    const loadSectors = async () => {
+      try {
+        const { industry: industryData, concept: conceptData } = await getUnifiedSectorBasics();
+        if (cancelled) return;
+        setIndustrySectorOptions(
+          industryData.map((s) => ({ label: s.name, value: s.code }))
+        );
+        setConceptSectorOptions(
+          conceptData.map((s) => ({ label: s.name, value: s.code }))
+        );
+      } catch (error) {
+        console.error('加载板块选项失败:', error);
+      }
+    };
+    loadSectors();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // 在页面卸载时保存当前的筛选条件
   useEffect(() => {
@@ -1160,6 +1195,9 @@ export function OpportunityPage() {
     setAiMinSignalCount(s.aiMinSignalCount);
     setAiPatternWinRateRange({ ...s.aiPatternWinRateRange });
     setAiMinRiskRewardRatio(s.aiMinRiskRewardRatio);
+    // 重置行业板块和概念板块筛选
+    setIndustrySectors([]);
+    setConceptSectors([]);
     patchSavedPrefsFiltersToDefaults();
     message.info('已恢复默认筛选条件');
   };
@@ -1312,73 +1350,121 @@ export function OpportunityPage() {
 
   return (
     <Layout className={styles.opportunityPage}>
+      {/* 第一行：查询条件 */}
+      <div className={styles.queryRow}>
+        <Space wrap size="small">
+          <Space.Compact className={styles.spaceCompact}>
+            <span className={styles.label}>市场：</span>
+            <Select
+              value={selectedMarket}
+              onChange={(value: string) => {
+                setSelectedMarket(value);
+                if (analysisData.length > 0) {
+                  message.info('市场已更改，请重新分析');
+                }
+              }}
+              options={MARKET_OPTIONS}
+              style={{ width: 110 }}
+              disabled={loading}
+            />
+          </Space.Compact>
+          <Space.Compact className={styles.spaceCompact}>
+            <span className={styles.label}>名称：</span>
+            <Select
+              value={nameType}
+              onChange={(value: string) => {
+                setNameType(value);
+                if (analysisData.length > 0) {
+                  message.info('名称类型已更改，请重新分析');
+                }
+              }}
+              options={NAME_TYPE_OPTIONS}
+              style={{ width: 100 }}
+              disabled={loading}
+            />
+          </Space.Compact>
+          <Space.Compact className={styles.spaceCompact} style={{ flex: 3, minWidth: 280 }}>
+            <span className={styles.label}>行业：</span>
+            <Select
+              mode="multiple"
+              allowClear
+              placeholder="请选择"
+              value={industrySectors}
+              onChange={(values: string[]) => {
+                setIndustrySectors(values);
+                if (analysisData.length > 0) {
+                  message.info('行业板块已更改，请重新分析');
+                }
+              }}
+              options={industrySectorOptions}
+              style={{ flex: 1, minWidth: 220 }}
+              disabled={loading}
+              maxTagCount={2}
+              maxTagPlaceholder={(omitted) => `+${omitted.length}`}
+            />
+          </Space.Compact>
+          <Space.Compact className={styles.spaceCompact} style={{ flex: 3, minWidth: 280 }}>
+            <span className={styles.label}>概念：</span>
+            <Select
+              mode="multiple"
+              allowClear
+              placeholder="请选择"
+              value={conceptSectors}
+              onChange={(values: string[]) => {
+                setConceptSectors(values);
+                if (analysisData.length > 0) {
+                  message.info('概念板块已更改，请重新分析');
+                }
+              }}
+              options={conceptSectorOptions}
+              style={{ flex: 1, minWidth: 220 }}
+              disabled={loading}
+              maxTagCount={2}
+              maxTagPlaceholder={(omitted) => `+${omitted.length}`}
+            />
+          </Space.Compact>
+          <Space.Compact className={styles.spaceCompact}>
+            <span className={styles.label}>周期：</span>
+            <Select
+              value={currentPeriod}
+              onChange={(value: KLinePeriod) => {
+                useOpportunityStore.setState({ currentPeriod: value });
+                if (analysisData.length > 0) {
+                  message.info('周期已更改，请重新分析');
+                }
+              }}
+              options={PERIOD_OPTIONS}
+              style={{ width: 90 }}
+              disabled={loading}
+            />
+          </Space.Compact>
+          <Space.Compact className={styles.spaceCompact}>
+            <span className={styles.label}>K线：</span>
+            <InputNumber
+              value={currentCount}
+              min={50}
+              max={1000}
+              step={10}
+              style={{ width: 100 }}
+              placeholder="count"
+              disabled={loading}
+              onChange={(v) => {
+                const next = typeof v === 'number' && isFinite(v) ? Math.floor(v) : 500;
+                useOpportunityStore.setState({ currentCount: next });
+                if (analysisData.length > 0) {
+                  message.info('count已更改，请重新分析');
+                }
+              }}
+            />
+          </Space.Compact>
+        </Space>
+      </div>
+
+      {/* 第二行：操作按钮 */}
       <Header className={styles.header}>
         <div className={styles.headerContent}>
+          <div style={{ flex: 1 }} />
           <Space>
-            <Space.Compact className={styles.spaceCompact}>
-              <span className={styles.label}>市场：</span>
-              <Select
-                value={selectedMarket}
-                onChange={(value: string) => {
-                  setSelectedMarket(value);
-                  if (analysisData.length > 0) {
-                    message.info('市场已更改，请重新分析');
-                  }
-                }}
-                options={MARKET_OPTIONS}
-                style={{ width: 120 }}
-                disabled={loading}
-              />
-            </Space.Compact>
-            <Space.Compact className={styles.spaceCompact}>
-              <span className={styles.label}>名称类型：</span>
-              <Select
-                value={nameType}
-                onChange={(value: string) => {
-                  setNameType(value);
-                  if (analysisData.length > 0) {
-                    message.info('名称类型已更改，请重新分析');
-                  }
-                }}
-                options={NAME_TYPE_OPTIONS}
-                style={{ width: 120 }}
-                disabled={loading}
-              />
-            </Space.Compact>
-            <Space.Compact className={styles.spaceCompact}>
-              <span className={styles.label}>周期：</span>
-              <Select
-                value={currentPeriod}
-                onChange={(value: KLinePeriod) => {
-                  useOpportunityStore.setState({ currentPeriod: value });
-                  if (analysisData.length > 0) {
-                    message.info('周期已更改，请重新分析');
-                  }
-                }}
-                options={PERIOD_OPTIONS}
-                style={{ width: 100 }}
-                disabled={loading}
-              />
-            </Space.Compact>
-            <Space className={styles.spaceCompact}>
-              <span className={styles.label}>K线数量：</span>
-              <InputNumber
-                value={currentCount}
-                min={50}
-                max={1000}
-                step={10}
-                style={{ width: 120 }}
-                placeholder="count"
-                disabled={loading}
-                onChange={(v) => {
-                  const next = typeof v === 'number' && isFinite(v) ? Math.floor(v) : 500;
-                  useOpportunityStore.setState({ currentCount: next });
-                  if (analysisData.length > 0) {
-                    message.info('count已更改，请重新分析');
-                  }
-                }}
-              />
-            </Space>
             <Button
               type="primary"
               icon={<PlayCircleOutlined />}
@@ -1389,45 +1475,47 @@ export function OpportunityPage() {
               一键分析
             </Button>
             <Button icon={<ClearOutlined />} onClick={handleResetQueryBar} disabled={loading}>
-              重置查询
-            </Button>
-            <Button icon={<ClearOutlined />} onClick={handleResetFilterForms} disabled={loading}>
-              重置筛选
+              重置
             </Button>
             {loading && (
               <Button icon={<StopOutlined />} onClick={handleCancel}>
                 取消
               </Button>
             )}
-            <Button
-              icon={<ExportOutlined />}
-              onClick={() => handleExport('excel')}
-              disabled={filteredAnalysisData.length === 0}
-            >
-              导出Excel
-            </Button>
             <Dropdown
               menu={{
                 items: [
-                  { key: 'png', label: '导出为图片（PNG）' },
-                  { key: 'xlsx', label: '导出为 Excel' },
+                  { key: 'excel', label: '导出Excel' },
+                  { type: 'divider' },
+                  { key: 'png', label: '导出名称(PNG)' },
+                  { key: 'names-xlsx', label: '导出名称(Excel)' },
+                  { type: 'divider' },
+                  { key: 'columns', label: '列设置', icon: <SettingOutlined /> }
                 ],
                 onClick: ({ key }) => {
-                  void handleExportNames(key === 'xlsx' ? 'excel' : 'png');
+                  if (key === 'columns') {
+                    setColumnSettingsVisible(true);
+                  } else if (key === 'excel') {
+                    void handleExport('excel');
+                  } else {
+                    void handleExportNames(key === 'names-xlsx' ? 'excel' : 'png');
+                  }
                 },
               }}
-              disabled={filteredAnalysisData.length === 0}
             >
-              <Button icon={<OrderedListOutlined />} disabled={filteredAnalysisData.length === 0}>
-                导出名称 <DownOutlined />
+              <Button icon={<ExportOutlined />}>
+                导出/设置 <DownOutlined />
               </Button>
             </Dropdown>
-            <Button icon={<SettingOutlined />} onClick={() => setColumnSettingsVisible(true)}>
-              列设置
+            <Button
+              icon={<FilterOutlined />}
+              onClick={() => setFilterDrawerOpen(true)}
+            >
+              筛选条件
             </Button>
           </Space>
-        </div >
-      </Header >
+        </div>
+      </Header>
 
       <Content className={styles.content}>
         {loading && (
@@ -1623,6 +1711,23 @@ export function OpportunityPage() {
             setAiEnableTimeDecay={setAiEnableTimeDecay}
             tradingSignalTypes={tradingSignalTypes}
             setTradingSignalTypes={setTradingSignalTypes}
+            // 行业板块筛选
+            industrySectors={industrySectors}
+            setIndustrySectors={setIndustrySectors}
+            industrySectorOptions={industrySectorOptions}
+            // 概念板块筛选
+            conceptSectors={conceptSectors}
+            setConceptSectors={setConceptSectors}
+            conceptSectorOptions={conceptSectorOptions}
+            // 重置筛选按钮
+            resetFilterButton={
+              <Button icon={<ClearOutlined />} onClick={handleResetFilterForms} disabled={loading}>
+                重置筛选
+              </Button>
+            }
+            // 外部控制抽屉状态
+            drawerOpen={filterDrawerOpen}
+            setDrawerOpen={setFilterDrawerOpen}
           />
         </div>
 
@@ -1630,7 +1735,8 @@ export function OpportunityPage() {
         {analysisData.length > 0 && (
           <>
             <div className={styles.filterResult}>
-              <span>
+              {/* 筛选结果计数 - 放在最左侧 */}
+              <span style={{ fontWeight: 500, whiteSpace: 'nowrap' }}>
                 {filteredAnalysisData.length !== analysisData.length ? (
                   <>
                     筛选结果：<strong>{filteredAnalysisData.length}</strong> /{' '}
@@ -1642,6 +1748,89 @@ export function OpportunityPage() {
                   </>
                 )}
               </span>
+
+              {/* 筛选条件摘要 - 放在右侧 */}
+              {(() => {
+                const summary = buildOpportunityFilterSummary({
+                  priceRange,
+                  marketCapRange,
+                  totalSharesRange,
+                  turnoverRateRange,
+                  peRatioRange,
+                  kdjJRange,
+                  recentLimitUpCount,
+                  recentLimitDownCount,
+                  limitUpPeriod,
+                  limitDownPeriod,
+                  consolidationFilterEnabled,
+                  consolidationTypes,
+                  consolidationLookback,
+                  consolidationConsecutive,
+                  consolidationThreshold,
+                  consolidationRequireAboveMa10,
+                  consolidationTypeOptions: CONSOLIDATION_TYPE_OPTIONS,
+                  trendLineFilterEnabled,
+                  trendLineLookback,
+                  trendLineConsecutive,
+                  sharpMoveFilterEnabled,
+                  sharpMoveWindowBars,
+                  sharpMoveMagnitude,
+                  sharpMoveFlatThreshold,
+                  sharpMoveOnlyDrop,
+                  sharpMoveOnlyRise,
+                  sharpMoveDropThenRiseLoose,
+                  sharpMoveRiseThenDropLoose,
+                  sharpMoveDropFlatRise,
+                  sharpMoveRiseFlatDrop,
+                  rsiRange,
+                  candlestickHammer,
+                  candlestickShootingStar,
+                  candlestickDoji,
+                  candlestickEngulfingBullish,
+                  candlestickEngulfingBearish,
+                  candlestickHaramiBullish,
+                  candlestickHaramiBearish,
+                  candlestickMorningStar,
+                  candlestickEveningStar,
+                  candlestickDarkCloudCover,
+                  candlestickPiercing,
+                  candlestickThreeBlackCrows,
+                  candlestickThreeWhiteSoldiers,
+                  candlestickLookback,
+                  trendUptrend,
+                  trendDowntrend,
+                  trendSideways,
+                  trendBreakout,
+                  trendBreakdown,
+                  trendLookback,
+                  aiAnalysisEnabled,
+                  aiTrendUp,
+                  aiTrendDown,
+                  aiTrendSideways,
+                  aiConfidenceRange,
+                  aiRecommendScoreRange,
+                  aiTechnicalScoreRange,
+                  aiPatternScoreRange,
+                  aiTrendScoreRange,
+                  aiRiskScoreRange,
+                  aiRequireSimilarPatterns,
+                  aiMinSimilarity,
+                  aiMinSignalCount,
+                  aiPatternWinRateRange,
+                  aiMinRiskRewardRatio,
+                });
+                return summary ? (
+                  <span
+                    className={styles.filterSummaryText}
+                    onClick={() => setFilterDrawerOpen(true)}
+                    style={{ cursor: 'pointer' }}
+                    title="点击打开筛选面板"
+                  >
+                    🔍 {summary}
+                  </span>
+                ) : null;
+              })()}
+
               {filteringAnalysisData && <span className={styles.filteringTag}>筛选中...</span>}
               {filterSkippedItems.length > 0 && (
                 <span className={styles.filterSkipSummary}>

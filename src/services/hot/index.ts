@@ -25,6 +25,14 @@ export {
   getAllIndustrySectors,
 } from './industry-sectors';
 export {
+  getUnifiedIndustryBasic,
+  getUnifiedIndustryRank,
+  getUnifiedConceptBasic,
+  getUnifiedConceptRank,
+  getUnifiedSectorBasics,
+  clearUnifiedSectorCache,
+} from './unified-sectors';
+export {
   getEastMoneyRisingSectors,
   getEastMoneyFallingSectors,
   getEastMoneySectorRanks,
