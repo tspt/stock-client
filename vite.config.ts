@@ -22,8 +22,8 @@ export default defineConfig(({ mode }) => {
           changeOrigin: true,
           rewrite: (path) => path.replace(/^\/api\/tencent\/rank/, '/cgi/cgi-bin/rank'),
           headers: {
-            Referer: 'https://finance.qq.com',
-            Origin: 'https://finance.qq.com',
+            Referer: env.VITE_TENCENT_RANK_REFERER,
+            Origin: env.VITE_TENCENT_RANK_ORIGIN,
           },
         },
         '/api/tencent': {
@@ -31,8 +31,8 @@ export default defineConfig(({ mode }) => {
           changeOrigin: true,
           rewrite: (path) => path.replace(/^\/api\/tencent/, ''),
           headers: {
-            Referer: 'https://finance.qq.com',
-            Origin: 'https://finance.qq.com',
+            Referer: env.VITE_TENCENT_REFERER,
+            Origin: env.VITE_TENCENT_ORIGIN,
           },
         },
         // 注意: 更具体的路径必须放在前面
@@ -41,8 +41,8 @@ export default defineConfig(({ mode }) => {
           changeOrigin: true,
           rewrite: (path) => path.replace(/^\/api\/eastmoney-data/, '/dataapi'),
           headers: {
-            Referer: 'https://data.eastmoney.com/bkzj/hy.html',
-            Origin: 'https://data.eastmoney.com',
+            Referer: env.VITE_EASTMONEY_REFERER,
+            Origin: env.VITE_EASTMONEY_ORIGIN,
             Cookie: env.VITE_EASTMONEY_COOKIE || '',
           },
         },
@@ -51,8 +51,8 @@ export default defineConfig(({ mode }) => {
           changeOrigin: true,
           rewrite: (path) => path.replace(/^\/api\/eastmoney/, '/api/qt'),
           headers: {
-            Referer: 'https://data.eastmoney.com/bkzj/gn.html',
-            Origin: 'https://data.eastmoney.com',
+            Referer: env.VITE_EASTMONEY_REFERER,
+            Origin: env.VITE_EASTMONEY_ORIGIN,
             Cookie: env.VITE_EASTMONEY_COOKIE || '',
           },
         },

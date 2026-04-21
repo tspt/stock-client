@@ -5,36 +5,36 @@ import http, { type Server } from 'http';
 import https from 'https';
 import { URL } from 'url';
 
+// 从环境变量读取配置
+const UA = process.env.VITE_USER_AGENT!;
+
 const PROXY_CONFIG: Record<string, { target: string; referer: string; origin: string }> = {
   '/api/sina': {
     target: 'https://hq.sinajs.cn',
-    referer: 'https://finance.sina.com.cn',
-    origin: 'https://finance.sina.com.cn',
+    referer: process.env.VITE_SINA_REFERER!,
+    origin: process.env.VITE_SINA_ORIGIN!,
   },
   '/api/tencent/rank': {
     target: 'https://proxy.finance.qq.com',
-    referer: 'https://finance.qq.com',
-    origin: 'https://finance.qq.com',
+    referer: process.env.VITE_TENCENT_RANK_REFERER!,
+    origin: process.env.VITE_TENCENT_RANK_ORIGIN!,
   },
   '/api/tencent': {
     target: 'https://qt.gtimg.cn',
-    referer: 'https://finance.qq.com',
-    origin: 'https://finance.qq.com',
+    referer: process.env.VITE_TENCENT_REFERER!,
+    origin: process.env.VITE_TENCENT_ORIGIN!,
   },
   '/api/kline': {
     target: 'https://proxy.finance.qq.com',
-    referer: 'https://proxy.finance.qq.com',
-    origin: 'https://proxy.finance.qq.com',
+    referer: process.env.VITE_KLINE_REFERER!,
+    origin: process.env.VITE_KLINE_ORIGIN!,
   },
   '/api/eastmoney': {
     target: 'https://push2.eastmoney.com',
-    referer: 'https://data.eastmoney.com',
-    origin: 'https://data.eastmoney.com',
+    referer: process.env.VITE_EASTMONEY_REFERER!,
+    origin: process.env.VITE_EASTMONEY_ORIGIN!,
   },
 };
-
-const UA =
-  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
 
 export function startEmbeddedApiProxy(port: number): Promise<Server> {
   return new Promise((resolve, reject) => {

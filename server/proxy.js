@@ -9,22 +9,25 @@ import { URL } from 'url';
 
 const PROXY_PORT = 3000;
 
+// 从环境变量读取配置
+const UA = process.env.VITE_USER_AGENT;
+
 // 代理配置
 const PROXY_CONFIG = {
   '/api/sina': {
     target: 'https://hq.sinajs.cn',
-    referer: 'https://finance.sina.com.cn',
-    origin: 'https://finance.sina.com.cn',
+    referer: process.env.VITE_SINA_REFERER,
+    origin: process.env.VITE_SINA_ORIGIN,
   },
   '/api/tencent': {
     target: 'https://qt.gtimg.cn',
-    referer: 'https://finance.qq.com',
-    origin: 'https://finance.qq.com',
+    referer: process.env.VITE_TENCENT_REFERER,
+    origin: process.env.VITE_TENCENT_ORIGIN,
   },
   '/api/kline': {
     target: 'https://proxy.finance.qq.com',
-    referer: 'https://proxy.finance.qq.com',
-    origin: 'https://proxy.finance.qq.com',
+    referer: process.env.VITE_KLINE_REFERER,
+    origin: process.env.VITE_KLINE_ORIGIN,
   },
 };
 
@@ -83,8 +86,7 @@ const server = http.createServer((req, res) => {
       ...req.headers,
       Referer: proxyConfig.referer,
       Origin: proxyConfig.origin,
-      'User-Agent':
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      'User-Agent': UA,
       Host: url.hostname,
     },
   };

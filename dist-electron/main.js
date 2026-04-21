@@ -35,7 +35,7 @@ function mainLog(msg, isError = false) {
 // 配置请求拦截，解决403和CORS问题
 function setupRequestInterceptor() {
     console.log('[主进程] 设置defaultSession请求拦截器');
-    const defaultUserAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
+    const defaultUserAgent = process.env.VITE_USER_AGENT;
     // 拦截新浪财经API请求 - 修改请求头
     // 使用更宽泛的URL匹配模式
     session.defaultSession.webRequest.onBeforeSendHeaders({
@@ -44,8 +44,8 @@ function setupRequestInterceptor() {
         console.log('[defaultSession拦截器] 拦截新浪API请求:', details.url);
         console.log('[defaultSession拦截器] 原始Referer:', details.requestHeaders['referer']);
         // Electron 文档：requestHeaders 的键一律为小写，用大写键不会覆盖实际发出的 referer，易导致新浪 403
-        details.requestHeaders['referer'] = 'https://finance.sina.com.cn/';
-        details.requestHeaders['origin'] = 'https://finance.sina.com.cn';
+        details.requestHeaders['referer'] = process.env.VITE_SINA_REFERER;
+        details.requestHeaders['origin'] = process.env.VITE_SINA_ORIGIN;
         details.requestHeaders['user-agent'] = defaultUserAgent;
         details.requestHeaders['accept'] = '*/*';
         details.requestHeaders['accept-language'] = 'zh-CN,zh;q=0.9';
@@ -82,8 +82,8 @@ function setupRequestInterceptor() {
         ],
     }, (details, callback) => {
         console.log('[拦截器] 拦截腾讯API请求:', details.url);
-        details.requestHeaders['referer'] = 'https://finance.qq.com/';
-        details.requestHeaders['origin'] = 'https://finance.qq.com';
+        details.requestHeaders['referer'] = process.env.VITE_TENCENT_REFERER;
+        details.requestHeaders['origin'] = process.env.VITE_TENCENT_ORIGIN;
         details.requestHeaders['user-agent'] = defaultUserAgent;
         details.requestHeaders['accept'] = '*/*';
         details.requestHeaders['accept-language'] = 'zh-CN,zh;q=0.9';
@@ -268,7 +268,7 @@ function createWindow() {
 }
 // 为特定窗口的session设置请求拦截
 function setupWindowRequestInterceptor(webSession) {
-    const defaultUserAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
+    const defaultUserAgent = process.env.VITE_USER_AGENT;
     console.log('[主进程] 开始设置窗口请求拦截器');
     // 使用更宽泛的URL匹配 - 拦截所有包含sinajs.cn的请求
     webSession.webRequest.onBeforeSendHeaders({
@@ -276,8 +276,8 @@ function setupWindowRequestInterceptor(webSession) {
     }, (details, callback) => {
         console.log('[窗口拦截器] 拦截新浪API请求:', details.url);
         console.log('[窗口拦截器] 原始Referer:', details.requestHeaders['referer']);
-        details.requestHeaders['referer'] = 'https://finance.sina.com.cn/';
-        details.requestHeaders['origin'] = 'https://finance.sina.com.cn';
+        details.requestHeaders['referer'] = process.env.VITE_SINA_REFERER;
+        details.requestHeaders['origin'] = process.env.VITE_SINA_ORIGIN;
         details.requestHeaders['user-agent'] = defaultUserAgent;
         details.requestHeaders['accept'] = '*/*';
         details.requestHeaders['accept-language'] = 'zh-CN,zh;q=0.9';
@@ -304,8 +304,8 @@ function setupWindowRequestInterceptor(webSession) {
         urls: ['*://*.gtimg.cn/*', '*://qt.gtimg.cn/*'],
     }, (details, callback) => {
         console.log('[窗口拦截器] 拦截腾讯API请求:', details.url);
-        details.requestHeaders['referer'] = 'https://finance.qq.com/';
-        details.requestHeaders['origin'] = 'https://finance.qq.com';
+        details.requestHeaders['referer'] = process.env.VITE_TENCENT_REFERER;
+        details.requestHeaders['origin'] = process.env.VITE_TENCENT_ORIGIN;
         details.requestHeaders['user-agent'] = defaultUserAgent;
         details.requestHeaders['accept'] = '*/*';
         details.requestHeaders['accept-language'] = 'zh-CN,zh;q=0.9';
