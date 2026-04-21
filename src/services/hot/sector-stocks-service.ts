@@ -50,17 +50,11 @@ let lastRequestTime = 0;
 const MIN_REQUEST_INTERVAL = 3000; // 最小间隔 3s
 
 /**
- * 全局请求节流：确保两次请求之间至少间隔指定时间
+ * 全局请求节流：在上一个请求完成后，强制等待指定时间
  */
 async function throttleRequest() {
-  const now = Date.now();
-  const timeSinceLastRequest = now - lastRequestTime;
-  if (timeSinceLastRequest < MIN_REQUEST_INTERVAL) {
-    const waitTime = MIN_REQUEST_INTERVAL - timeSinceLastRequest;
-    logger.debug(`[SectorStocks] 请求节流: 等待 ${waitTime}ms`);
-    await sleep(waitTime);
-  }
-  lastRequestTime = Date.now();
+  logger.debug(`[SectorStocks] 请求节流: 等待 ${MIN_REQUEST_INTERVAL}ms`);
+  await sleep(MIN_REQUEST_INTERVAL);
 }
 
 /**
@@ -87,7 +81,7 @@ async function fetchAllStocksForSector(
       throw new DOMException('用户取消了请求', 'AbortError');
     }
 
-    // 1. 请求前节流
+    // 1. 请求前节流（确保与上一次请求间隔 3s）
     await throttleRequest();
 
     try {
