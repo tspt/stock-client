@@ -21,6 +21,7 @@ import {
   formatTurnoverRate,
 } from '@/utils/format';
 import type { KLinePeriod } from '@/types/stock';
+import { DETAIL_KLINE_PERIOD_STORAGE_KEY } from '@/utils/constants';
 import styles from './DetailPage.module.css';
 
 const { Header, Content } = Layout;
@@ -93,7 +94,7 @@ export function DetailPage() {
   // 从localStorage恢复上次选择的周期，默认为'day'
   const [period, setPeriod] = useState<KLinePeriod>(() => {
     try {
-      const saved = localStorage.getItem('detail_kline_period');
+      const saved = localStorage.getItem(DETAIL_KLINE_PERIOD_STORAGE_KEY);
       if (saved && ['1min', '5min', '15min', '30min', '60min', 'day', 'week', 'month', 'year'].includes(saved)) {
         return saved as KLinePeriod;
       }
@@ -150,7 +151,7 @@ export function DetailPage() {
     setPeriod(value);
     // 保存周期偏好到localStorage
     try {
-      localStorage.setItem('detail_kline_period', value);
+      localStorage.setItem(DETAIL_KLINE_PERIOD_STORAGE_KEY, value);
     } catch (e) {
       console.warn('保存周期偏好失败:', e);
     }

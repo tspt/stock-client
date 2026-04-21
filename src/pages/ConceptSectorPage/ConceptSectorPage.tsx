@@ -8,7 +8,7 @@ import { SearchOutlined, ReloadOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { getUnifiedConceptBasic, getUnifiedConceptRank } from '@/services/hot/unified-sectors';
 import { getSingleConceptSector } from '@/services/hot/concept-sectors';
-import { POLLING_INTERVAL } from '@/utils/constants';
+import { POLLING_INTERVAL, SECTOR_PAGE_SIZE, SEARCH_DEBOUNCE_DELAY } from '@/utils/constants';
 import { usePolling } from '@/hooks/usePolling';
 import type { ConceptSectorRankData, ConceptSectorBasicInfo } from '@/types/stock';
 import { ConceptSectorStocksDrawer } from '@/components/ConceptSectorStocksDrawer/ConceptSectorStocksDrawer';
@@ -53,7 +53,7 @@ export function ConceptSectorPage() {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 50;
+  const pageSize = SECTOR_PAGE_SIZE;
 
   // 视图模式：'list' - 概念列表，'detail' - 概念详情
   const [viewMode, setViewMode] = useState<'list' | 'detail'>('list');
@@ -170,7 +170,7 @@ export function ConceptSectorPage() {
     searchTimerRef.current = setTimeout(() => {
       // 这里可以添加额外的搜索逻辑，如果需要的话
       // 目前只是更新搜索关键词，AutoComplete 会自动过滤
-    }, 300);
+    }, SEARCH_DEBOUNCE_DELAY);
   };
 
   // 处理概念选择 - 切换到概念详情模式

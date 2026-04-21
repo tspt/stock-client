@@ -8,7 +8,7 @@ import { SearchOutlined, ReloadOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { getUnifiedIndustryBasic, getUnifiedIndustryRank } from '@/services/hot/unified-sectors';
 import { getSingleIndustrySector } from '@/services/hot/industry-sectors';
-import { POLLING_INTERVAL } from '@/utils/constants';
+import { POLLING_INTERVAL, SECTOR_PAGE_SIZE, SEARCH_DEBOUNCE_DELAY } from '@/utils/constants';
 import { usePolling } from '@/hooks/usePolling';
 import type { IndustrySectorRankData, IndustrySectorBasicInfo } from '@/types/stock';
 import { IndustrySectorStocksDrawer } from '@/components/IndustrySectorStocksDrawer/IndustrySectorStocksDrawer';
@@ -53,7 +53,7 @@ export function IndustrySectorPage() {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 50;
+  const pageSize = SECTOR_PAGE_SIZE;
 
   // 视图模式：'list' - 行业列表，'detail' - 成分股详情
   const [viewMode, setViewMode] = useState<'list' | 'detail'>('list');
@@ -169,7 +169,7 @@ export function IndustrySectorPage() {
     searchTimerRef.current = setTimeout(() => {
       // 这里可以添加额外的搜索逻辑，如果需要的话
       // 目前只是更新搜索关键词，AutoComplete 会自动过滤
-    }, 300);
+    }, SEARCH_DEBOUNCE_DELAY);
   };
 
   // 处理行业选择 - 切换到行业详情模式

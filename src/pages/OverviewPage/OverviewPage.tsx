@@ -17,7 +17,7 @@ import { OverviewTable } from '@/components/OverviewTable/OverviewTable';
 import { ColumnSettings } from '@/components/ColumnSettings/ColumnSettings';
 import { exportToExcel } from '@/utils/exportUtils';
 import type { KLinePeriod } from '@/types/stock';
-import { BUILTIN_GROUP_SELF_ID, BUILTIN_GROUP_SELF_NAME } from '@/utils/constants';
+import { BUILTIN_GROUP_SELF_ID, BUILTIN_GROUP_SELF_NAME, GROUP_ALL_ID } from '@/utils/constants';
 import styles from './OverviewPage.module.css';
 
 const { Header, Content } = Layout;
@@ -29,8 +29,6 @@ const PERIOD_OPTIONS: { label: string; value: KLinePeriod }[] = [
   { label: '月', value: 'month' },
   { label: '年', value: 'year' },
 ];
-
-const GROUP_ALL_ID = '__all__';
 
 export function OverviewPage() {
   const {

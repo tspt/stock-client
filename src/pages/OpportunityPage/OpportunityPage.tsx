@@ -48,6 +48,13 @@ import {
 } from '@/utils/opportunityAnalysisDefaults';
 import { getUnifiedSectorBasics } from '@/services/hot/unified-sectors';
 import type { IndustrySectorBasicInfo, ConceptSectorBasicInfo } from '@/types/stock';
+import {
+  OPPORTUNITY_TABLE_HEIGHT_PADDING,
+  OPPORTUNITY_TABLE_HEIGHT_EXTRA_PADDING,
+  OPPORTUNITY_TABLE_HEIGHT_MARGIN,
+  SKIP_DETAIL_DISPLAY_COUNT,
+  FILTER_SAVE_DEBOUNCE_DELAY,
+} from '@/utils/constants';
 import styles from './OpportunityPage.module.css';
 
 const { Header, Content } = Layout;
@@ -775,7 +782,7 @@ export function OpportunityPage() {
         aiMinRiskRewardRatio,
       };
       saveOpportunityFilterPrefs(prefs);
-    }, 300); // 防抖300ms
+    }, FILTER_SAVE_DEBOUNCE_DELAY); // 防抖300ms
 
     return () => clearTimeout(timer);
   }, [
@@ -869,7 +876,7 @@ export function OpportunityPage() {
       const paginationHeight = pagination ? pagination.offsetHeight : 24;
 
       // 表格可用高度 = body高度 - 分页器高度 - 一些边距
-      const height = bodyHeight - paginationHeight - 40 - 38 - 10;
+      const height = bodyHeight - paginationHeight - OPPORTUNITY_TABLE_HEIGHT_PADDING - OPPORTUNITY_TABLE_HEIGHT_EXTRA_PADDING - OPPORTUNITY_TABLE_HEIGHT_MARGIN;
       setTableHeight(Math.max(100, height));
     }
   }, []);
@@ -1869,13 +1876,13 @@ export function OpportunityPage() {
                         <strong>跳过原因统计</strong>
                       </div>
                       <div className={styles.filterSkipList}>
-                        {(showAllSkipped ? filterSkippedItems : filterSkippedItems.slice(0, 20)).map((item) => (
+                        {(showAllSkipped ? filterSkippedItems : filterSkippedItems.slice(0, SKIP_DETAIL_DISPLAY_COUNT)).map((item) => (
                           <div key={`${item.code}-${item.reason}`} className={styles.filterSkipItem}>
                             <Tag color="warning">{item.code} {item.name}</Tag>
                             <span className={styles.filterSkipReason}>{item.reason}</span>
                           </div>
                         ))}
-                        {!showAllSkipped && filterSkippedItems.length > 20 && (
+                        {!showAllSkipped && filterSkippedItems.length > SKIP_DETAIL_DISPLAY_COUNT && (
                           <Button
                             type="link"
                             size="small"
@@ -1885,7 +1892,7 @@ export function OpportunityPage() {
                             查看全部 {filterSkippedItems.length} 条
                           </Button>
                         )}
-                        {showAllSkipped && filterSkippedItems.length > 20 && (
+                        {showAllSkipped && filterSkippedItems.length > SKIP_DETAIL_DISPLAY_COUNT && (
                           <Button
                             type="link"
                             size="small"

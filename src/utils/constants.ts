@@ -198,3 +198,30 @@ export const OPPORTUNITY_DEFAULT_COLUMNS = [
   { key: 'ma240', title: 'MA-240涨跌幅', visible: false, width: 130 },
   { key: 'ma360', title: 'MA-360涨跌幅', visible: false, width: 130 },
 ] as const;
+
+/** 板块页面每页显示数量 */
+export const SECTOR_PAGE_SIZE = 50;
+
+/** 搜索防抖延迟（毫秒） */
+export const SEARCH_DEBOUNCE_DELAY = 300;
+
+/** 详情页K线周期存储键名 */
+export const DETAIL_KLINE_PERIOD_STORAGE_KEY = 'detail_kline_period';
+
+/** 机会分析表格高度计算内边距 */
+export const OPPORTUNITY_TABLE_HEIGHT_PADDING = 40;
+
+/** 机会分析表格高度计算额外内边距 */
+export const OPPORTUNITY_TABLE_HEIGHT_EXTRA_PADDING = 38;
+
+/** 机会分析表格高度计算边距 */
+export const OPPORTUNITY_TABLE_HEIGHT_MARGIN = 10;
+
+/** 机会分析跳过详情默认显示数量 */
+export const SKIP_DETAIL_DISPLAY_COUNT = 20;
+
+/** 筛选条件保存防抖延迟（毫秒） */
+export const FILTER_SAVE_DEBOUNCE_DELAY = 300;
+
+/** 概况页全部分组ID */
+export const GROUP_ALL_ID = '__all__';
