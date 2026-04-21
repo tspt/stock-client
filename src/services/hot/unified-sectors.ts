@@ -59,7 +59,7 @@ async function fetchAllStocksForSector(
   const allStocks: SectorStockSummary[] = [];
   let pageNum = 1;
   let total = 0;
-  const pageSize = 100; // 使用测试后的最大容量
+  const pageSize = 50; // 使用测试后的最大容量
 
   do {
     const result = await (sectorType === 'industry'
@@ -99,7 +99,7 @@ export async function fetchAllSectorsStocks(
 
   const updateProgress = (name: string) => {
     processedCount++;
-    const percent = Math.round((processedCount / totalCount) * 100);
+    const percent = Math.round((processedCount / totalCount) * 50);
     onProgress?.({
       current: processedCount,
       total: totalCount,

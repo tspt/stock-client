@@ -1,3 +1,14 @@
+// ⚠️ dotenv 必须在所有其他导入之前加载，确保环境变量可用
+import dotenv from 'dotenv';
+import { resolve } from 'path';
+const envPath = resolve(process.cwd(), '.env');
+const dotEnvResult = dotenv.config({ path: envPath });
+if (dotEnvResult.error) {
+  console.error('[主进程] 环境变量加载失败:', dotEnvResult.error);
+} else {
+  console.log('[主进程] 环境变量加载成功，已加载的变量:', Object.keys(dotEnvResult.parsed || {}));
+}
+
 import {
   app,
   BrowserWindow,
@@ -8,7 +19,7 @@ import {
   ipcMain,
   Notification,
 } from 'electron';
-import { join, resolve } from 'path';
+import { join } from 'path';
 import { fileURLToPath } from 'url';
 import type { Server as HttpServer } from 'http';
 import { existsSync, appendFileSync } from 'fs';

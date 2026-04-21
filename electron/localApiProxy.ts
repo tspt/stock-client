@@ -1,11 +1,17 @@
 /**
  * 主进程内嵌 HTTP 代理（与 server/proxy.js 行为一致，不依赖子进程 / ELECTRON_RUN_AS_NODE）
  */
+import dotenv from 'dotenv';
+import { resolve } from 'path';
 import http, { type Server } from 'http';
 import https from 'https';
 import { URL } from 'url';
 
-// 从环境变量读取配置
+// ⚠️ 在模块初始化时加载环境变量（在读取 process.env 之前）
+const envPath = resolve(process.cwd(), '.env');
+dotenv.config({ path: envPath, override: true });
+
+// 从环境变量读取配置（在 dotenv.config() 之后）
 const UA = process.env.VITE_USER_AGENT!;
 
 const PROXY_CONFIG: Record<string, { target: string; referer: string; origin: string }> = {
@@ -86,9 +92,7 @@ export function startEmbeddedApiProxy(port: number): Promise<Server> {
         Origin: proxyConfig.origin,
         'User-Agent': UA,
         Host: u.hostname,
-        Cookie:
-          req.headers.cookie ||
-          'qgqp_b_id=51d6d555c5e243b0256ceb1ac9c36628; st_nvi=TnWN91Owg3cX5WszqJeo-f8e2; nid18=0d86f08b814c455b1d6ebd09256a5ade; nid18_create_time=1775911116025; gviem=VcbSKTlarodHzNMYoAptO452f; gviem_create_time=1775911116025; fullscreengg=1; fullscreengg2=1; st_si=84713527048044; st_pvi=13325294659680; st_sp=2025-03-30%2015%3A14%3A18; st_inirUrl=https%3A%2F%2Femcreative.eastmoney.com%2F; st_sn=10; st_psi=20260417210401477-113200301353-6617435904; st_asi=delete',
+        Cookie: req.headers.cookie || '',
       };
       delete headers.host;
       delete headers.connection;

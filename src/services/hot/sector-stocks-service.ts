@@ -47,7 +47,7 @@ export interface FetchProgress {
 // ==================== 全局频次控制 ====================
 
 let lastRequestTime = 0;
-const MIN_REQUEST_INTERVAL = 3000; // 最小间隔 3s
+const MIN_REQUEST_INTERVAL = 5000; // 最小间隔 5s
 
 /**
  * 全局请求节流：在上一个请求完成后，强制等待指定时间
