@@ -13,7 +13,6 @@ dist-electron
 release
 .DS_Store
 *.local
-.env
 
 # Editor directories and files
 .vscode/*
