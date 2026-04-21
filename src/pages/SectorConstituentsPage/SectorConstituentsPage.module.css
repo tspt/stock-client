@@ -4,6 +4,7 @@
   flex-direction: column;
   background: #f5f7fa;
   overflow: hidden;
+  position: relative; /* 为悬浮进度条提供定位参照 */
 }
 
 /* 深色主题 */
@@ -49,24 +50,33 @@
   color: var(--ant-color-text-secondary);
 }
 
-.progressContainer {
-  flex-shrink: 0;
-  padding: 12px 20px;
-  background: #fff;
-  border-bottom: 1px solid var(--ant-color-border-secondary);
+.progressOverlay {
+  position: absolute;
+  top: 89px; /* Header 高度 + padding */
+  left: 0;
+  right: 0;
+  z-index: 100;
+  padding: 12px 24px;
+  background: rgba(255, 255, 255, 0.85); /* 浅色模式半透明背景 */
+  backdrop-filter: blur(8px); /* 毛玻璃效果 */
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
 }
 
-[data-theme='dark'] .progressContainer {
-  background: #1f1f1f;
-  border-bottom-color: #303030;
+[data-theme='dark'] .progressOverlay {
+  background: rgba(31, 31, 31, 0.85); /* 深色模式半透明背景 */
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .progressInfo {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
   margin-bottom: 8px;
   font-size: 13px;
+  color: var(--ant-color-text);
 }
 
 .mainGrid {

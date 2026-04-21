@@ -8,8 +8,14 @@ import { getIndustrySectorStocks } from './industry-sectors';
 import { getConceptSectorStocks } from './concept-sectors';
 import type { IndustrySectorBasicInfo, ConceptSectorBasicInfo } from '@/types/stock';
 import { logger } from '@/utils/logger';
-import { getStorage, setStorage } from '@/utils/storage';
-import { CACHE_KEYS, CACHE_TTL } from '@/utils/constants';
+import { CACHE_TTL } from '@/utils/constants';
+import {
+  saveIndustrySectors,
+  saveConceptSectors,
+  getIndustrySectors,
+  getConceptSectors,
+  type SectorWithStocks,
+} from '@/utils/sectorStocksIndexedDB';
 
 // ==================== 类型定义 ====================
 
@@ -38,21 +44,10 @@ export interface FetchProgress {
   message: string;
 }
 
-interface CacheData {
-  savedAt: number;
-  industry: SectorFullData[];
-  concept: SectorFullData[];
-}
-
-// ==================== 缓存配置 ====================
-
-const CACHE_KEY = CACHE_KEYS.SECTOR_STOCKS_FULL;
-const CACHE_TTL_MS = CACHE_TTL.SECTOR_STOCKS_FULL;
-
 // ==================== 全局频次控制 ====================
 
 let lastRequestTime = 0;
-const MIN_REQUEST_INTERVAL = 2000; // 最小间隔 2s
+const MIN_REQUEST_INTERVAL = 3000; // 最小间隔 3s
 
 /**
  * 全局请求节流：确保两次请求之间至少间隔指定时间
@@ -78,7 +73,8 @@ const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
  */
 async function fetchAllStocksForSector(
   sectorCode: string,
-  sectorType: 'industry' | 'concept'
+  sectorType: 'industry' | 'concept',
+  signal?: AbortSignal
 ): Promise<StockSimpleInfo[]> {
   const allStocks: StockSimpleInfo[] = [];
   let pageNum = 1;
@@ -86,6 +82,11 @@ async function fetchAllStocksForSector(
   let hasMore = true;
 
   while (hasMore) {
+    // 检查是否已取消
+    if (signal?.aborted) {
+      throw new DOMException('用户取消了请求', 'AbortError');
+    }
+
     // 1. 请求前节流
     await throttleRequest();
 
@@ -107,7 +108,10 @@ async function fetchAllStocksForSector(
       } else {
         pageNum++;
       }
-    } catch (error) {
+    } catch (error: any) {
+      if (error.name === 'AbortError') {
+        throw error;
+      }
       logger.error(`获取板块 ${sectorCode} 第 ${pageNum} 页失败:`, error);
       throw error; // 抛出错误以便上层捕获并记录
     }
@@ -125,7 +129,8 @@ async function fetchAllStocksForSector(
 export async function fetchAllSectorsStocks(
   onProgress?: (progress: FetchProgress) => void,
   forceRefresh: boolean = false,
-  failedSectors: FailedSector[] = []
+  failedSectors: FailedSector[] = [],
+  signal?: AbortSignal
 ): Promise<{
   industry: SectorFullData[];
   concept: SectorFullData[];
@@ -133,10 +138,28 @@ export async function fetchAllSectorsStocks(
 }> {
   // 1. 检查缓存（仅在非重试且非强制刷新时）
   if (!forceRefresh && failedSectors.length === 0) {
-    const cached = getStorage<CacheData | null>(CACHE_KEY, null);
-    if (cached && Date.now() - cached.savedAt < CACHE_TTL_MS) {
-      logger.info('[SectorStocks] 使用缓存数据');
-      return { industry: cached.industry, concept: cached.concept, failed: [] };
+    try {
+      const [cachedIndustry, cachedConcept] = await Promise.all([
+        getIndustrySectors(),
+        getConceptSectors(),
+      ]);
+
+      if (
+        cachedIndustry.length > 0 &&
+        cachedConcept.length > 0 &&
+        cachedIndustry.every(
+          (s) => s.savedAt && Date.now() - s.savedAt < CACHE_TTL.SECTOR_STOCKS_FULL
+        )
+      ) {
+        logger.info('[SectorStocks] 使用 IndexedDB 缓存数据');
+        return {
+          industry: formatCachedData(cachedIndustry),
+          concept: formatCachedData(cachedConcept),
+          failed: [],
+        };
+      }
+    } catch (error) {
+      logger.warn('[SectorStocks] 读取 IndexedDB 缓存失败，将重新获取', error);
     }
   }
 
@@ -179,9 +202,13 @@ export async function fetchAllSectorsStocks(
 
   // 2. 串行获取行业板块成分股
   for (const sector of industryBasics) {
+    if (signal?.aborted) {
+      logger.info('[SectorStocks] 获取已被用户取消');
+      break;
+    }
     updateProgress(`正在获取行业: ${sector.name}`);
     try {
-      const stocks = await fetchAllStocksForSector(sector.code, 'industry');
+      const stocks = await fetchAllStocksForSector(sector.code, 'industry', signal);
       industryData.push({
         sectorCode: sector.code,
         sectorName: sector.name,
@@ -200,9 +227,13 @@ export async function fetchAllSectorsStocks(
 
   // 3. 串行获取概念板块成分股
   for (const sector of conceptBasics) {
+    if (signal?.aborted) {
+      logger.info('[SectorStocks] 获取已被用户取消');
+      break;
+    }
     updateProgress(`正在获取概念: ${sector.name}`);
     try {
-      const stocks = await fetchAllStocksForSector(sector.code, 'concept');
+      const stocks = await fetchAllStocksForSector(sector.code, 'concept', signal);
       conceptData.push({
         sectorCode: sector.code,
         sectorName: sector.name,
@@ -219,13 +250,28 @@ export async function fetchAllSectorsStocks(
     }
   }
 
-  // 4. 保存缓存（仅在全量获取且无失败时更新完整缓存）
+  // 4. 保存缓存到 IndexedDB（仅在全量获取且无失败时更新完整缓存）
   if (failedSectors.length === 0 && newFailed.length === 0) {
-    setStorage(CACHE_KEY, {
+    const industryToSave: SectorWithStocks[] = industryData.map((item) => ({
+      code: item.sectorCode,
+      name: item.sectorName,
+      children: item.stocks,
       savedAt: Date.now(),
-      industry: industryData,
-      concept: conceptData,
-    });
+    }));
+
+    const conceptToSave: SectorWithStocks[] = conceptData.map((item) => ({
+      code: item.sectorCode,
+      name: item.sectorName,
+      children: item.stocks,
+      savedAt: Date.now(),
+    }));
+
+    try {
+      await Promise.all([saveIndustrySectors(industryToSave), saveConceptSectors(conceptToSave)]);
+      logger.info('[SectorStocks] 数据已成功存入 IndexedDB');
+    } catch (error) {
+      logger.error('[SectorStocks] 存入 IndexedDB 失败:', error);
+    }
   }
 
   logger.info(
@@ -235,9 +281,21 @@ export async function fetchAllSectorsStocks(
 }
 
 /**
- * 清除缓存
+ * 格式化缓存数据
  */
-export function clearSectorStocksCache(): void {
-  setStorage(CACHE_KEY, null);
-  logger.info('[SectorStocks] 缓存已清除');
+function formatCachedData(sectors: SectorWithStocks[]): SectorFullData[] {
+  return sectors.map((s) => ({
+    sectorCode: s.code,
+    sectorName: s.name,
+    stocks: s.children,
+  }));
+}
+
+/**
+ * 清除 IndexedDB 中的板块成分股缓存
+ */
+export async function clearSectorStocksCache(): Promise<void> {
+  const { clearSectorStocksDB } = await import('@/utils/sectorStocksIndexedDB');
+  await clearSectorStocksDB();
+  logger.info('[SectorStocks] IndexedDB 缓存已清除');
 }

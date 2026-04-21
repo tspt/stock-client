@@ -2,10 +2,12 @@
  * 成分股大全页面 - 仪表盘式布局
  */
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { Layout, Button, Progress, Input, Typography, Empty, message } from 'antd';
 import { RocketOutlined, LoadingOutlined, ExportOutlined } from '@ant-design/icons';
 import { fetchAllSectorsStocks, type SectorFullData, type FetchProgress, type FailedSector } from '@/services/hot/sector-stocks-service';
+import { getIndustrySectors, getConceptSectors, type SectorWithStocks } from '@/utils/sectorStocksIndexedDB';
+import { CACHE_TTL } from '@/utils/constants';
 import styles from './SectorConstituentsPage.module.css';
 
 const { Header, Content } = Layout;
@@ -20,16 +22,62 @@ export function SectorConstituentsPage() {
   const [selectedSector, setSelectedSector] = useState<SectorFullData | null>(null);
   const [industrySearch, setIndustrySearch] = useState('');
   const [conceptSearch, setConceptSearch] = useState('');
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  // 页面加载时从 IndexedDB 读取缓存
+  useEffect(() => {
+    loadCachedData();
+  }, []);
+
+  const loadCachedData = async () => {
+    try {
+      const [cachedIndustry, cachedConcept] = await Promise.all([
+        getIndustrySectors(),
+        getConceptSectors(),
+      ]);
+
+      if (cachedIndustry.length > 0 || cachedConcept.length > 0) {
+        // 检查是否过期
+        const allSectors = [...cachedIndustry, ...cachedConcept];
+        const hasExpired = allSectors.some(
+          (s) => !s.savedAt || Date.now() - s.savedAt > CACHE_TTL.SECTOR_STOCKS_FULL
+        );
+
+        if (!hasExpired) {
+          setIndustryData(formatToDisplayData(cachedIndustry));
+          setConceptData(formatToDisplayData(cachedConcept));
+          message.success('已加载本地缓存数据');
+        } else {
+          message.warning('缓存数据已过期（超过一个月），请点击“开始全量获取”刷新');
+        }
+      }
+    } catch (error) {
+      console.error('加载缓存数据失败:', error);
+    }
+  };
+
+  const formatToDisplayData = (sectors: SectorWithStocks[]): SectorFullData[] => {
+    return sectors.map((s) => ({
+      sectorCode: s.code,
+      sectorName: s.name,
+      stocks: s.children,
+    }));
+  };
 
   // 开始获取数据
   const handleStartFetch = async (retryList?: FailedSector[]) => {
     setLoading(true);
     const sectorsToFetch = retryList || [];
+
+    // 创建新的 AbortController
+    abortControllerRef.current = new AbortController();
+    const signal = abortControllerRef.current.signal;
+
     setProgress({ current: 0, total: sectorsToFetch.length > 0 ? sectorsToFetch.length : 1, percent: 0, message: '准备中...' });
     try {
       const result = await fetchAllSectorsStocks((p) => {
         setProgress(p);
-      }, !retryList, sectorsToFetch); // 如果不是重试，则强制刷新
+      }, !retryList, sectorsToFetch, signal); // 传入 signal
 
       if (!retryList) {
         setIndustryData(result.industry);
@@ -42,17 +90,31 @@ export function SectorConstituentsPage() {
 
       setFailedSectors(result.failed);
       setProgress(null);
-      if (result.failed.length === 0) {
+      if (signal.aborted) {
+        message.info('已取消获取');
+      } else if (result.failed.length === 0) {
         message.success('数据获取完成');
       } else {
         message.warning(`获取完成，但有 ${result.failed.length} 个板块失败，可点击重试`);
       }
-    } catch (error) {
-      console.error('获取板块成分股失败:', error);
-      message.error('获取数据失败，请查看控制台');
+    } catch (error: any) {
+      if (error.name === 'AbortError') {
+        message.info('已取消获取');
+      } else {
+        console.error('获取板块成分股失败:', error);
+        message.error('获取数据失败，请查看控制台');
+      }
       setProgress(null);
     } finally {
       setLoading(false);
+      abortControllerRef.current = null;
+    }
+  };
+
+  // 取消获取
+  const handleCancelFetch = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
     }
   };
 
@@ -116,14 +178,19 @@ export function SectorConstituentsPage() {
             </Text>
           </div>
           <div style={{ display: 'flex', gap: '8px' }}>
-            {failedSectors.length > 0 && (
-              <Button
-                danger
-                onClick={() => handleStartFetch(failedSectors)}
-                disabled={loading}
-              >
-                重试失败项 ({failedSectors.length})
+            {loading ? (
+              <Button danger onClick={handleCancelFetch}>
+                取消获取
               </Button>
+            ) : (
+              failedSectors.length > 0 && (
+                <Button
+                  danger
+                  onClick={() => handleStartFetch(failedSectors)}
+                >
+                  重试失败项 ({failedSectors.length})
+                </Button>
+              )
             )}
             <Button
               type="primary"
@@ -138,14 +205,14 @@ export function SectorConstituentsPage() {
         </div>
       </Header>
 
-      {/* 进度条区域 */}
+      {/* 进度条悬浮层 */}
       {progress && (
-        <div className={styles.progressContainer}>
+        <div className={styles.progressOverlay}>
           <div className={styles.progressInfo}>
             <LoadingOutlined spin />
-            <Text>{progress.message}</Text>
+            <Text strong>{progress.message}</Text>
             <Text type="secondary">
-              {progress.current}/{progress.total}
+              ({progress.current}/{progress.total})
             </Text>
           </div>
           <Progress
@@ -153,6 +220,7 @@ export function SectorConstituentsPage() {
             status="active"
             showInfo={false}
             strokeColor="#1890ff"
+            size="small"
           />
         </div>
       )}

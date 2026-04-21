@@ -25,8 +25,6 @@ export const CACHE_KEYS = {
   INDUSTRY_BASIC: 'unified_industry_basic_v1',
   /** 概念板块基础信息 */
   CONCEPT_BASIC: 'unified_concept_basic_v1',
-  /** 板块成分股全量数据 */
-  SECTOR_STOCKS_FULL: 'sector_stocks_full_data_v2',
 } as const;
 
 export const CACHE_TTL = {
@@ -34,9 +32,15 @@ export const CACHE_TTL = {
   STOCK_LIST: 30 * 24 * 60 * 60 * 1000,
   /** 板块基础信息缓存：24小时 */
   SECTOR_BASIC: 24 * 60 * 60 * 1000,
-  /** 板块成分股全量缓存：24小时 */
-  SECTOR_STOCKS_FULL: 24 * 60 * 60 * 1000,
+  /** 板块成分股全量缓存：30天 (一个月) */
+  SECTOR_STOCKS_FULL: 30 * 24 * 60 * 60 * 1000,
 } as const;
+
+/** IndexedDB 相关常量 - 板块成分股 */
+export const SECTOR_STOCKS_DB_NAME = 'SectorStocksDB';
+export const SECTOR_STOCKS_DB_VERSION = 1;
+export const SECTOR_STOCKS_INDUSTRY_STORE = 'industry_sectors';
+export const SECTOR_STOCKS_CONCEPT_STORE = 'concept_sectors';
 
 /** 股票列表搜索最大返回数量 */
 export const MAX_SEARCH_RESULTS = 50;
