@@ -5,6 +5,7 @@
 import { useState, useEffect } from 'react';
 import { getStockDetail } from '@/services/stocks';
 import { usePolling } from './usePolling';
+import { POLLING_INTERVAL } from '@/utils/constants';
 import type { StockDetail } from '@/types/stock';
 
 /**
@@ -46,7 +47,7 @@ export function useStockDetail(code: string | null, enablePolling: boolean = fal
   // 轮询更新
   usePolling(fetchDetail, {
     enabled: enablePolling && !!code,
-    interval: 30000, // 30秒更新一次（详情数据更新频率较低）
+    interval: POLLING_INTERVAL, // 20秒更新一次
   });
 
   return {

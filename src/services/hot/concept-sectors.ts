@@ -9,6 +9,7 @@ import type {
 } from '@/types/stock';
 import { logger } from '@/utils/logger';
 import { getStorage, setStorage } from '@/utils/storage';
+import { EASTMONEY_COOKIE } from '@/config/apiConfig';
 
 /**
  * 东方财富概念板块原始数据
@@ -122,8 +123,7 @@ export async function getConceptSectors(
 
     const response = await fetch(url, {
       headers: {
-        Cookie:
-          'qgqp_b_id=51d6d555c5e243b0256ceb1ac9c36628; st_nvi=TnWN91Owg3cX5WszqJeo-f8e2; nid18=0d86f08b814c455b1d6ebd09256a5ade; nid18_create_time=1775911116025; gviem=VcbSKTlarodHzNMYoAptO452f; gviem_create_time=1775911116025; fullscreengg=1; fullscreengg2=1; st_si=84713527048044; st_pvi=13325294659680; st_sp=2025-03-30%2015%3A14%3A18; st_inirUrl=https%3A%2F%2Femcreative.eastmoney.com%2F; st_sn=10; st_psi=20260417210401477-113200301353-6617435904; st_asi=delete',
+        Cookie: EASTMONEY_COOKIE,
       },
     });
 
@@ -256,8 +256,7 @@ export async function getConceptSectorStocks(
 
     const response = await fetch(url, {
       headers: {
-        Cookie:
-          'qgqp_b_id=51d6d555c5e243b0256ceb1ac9c36628; st_nvi=TnWN91Owg3cX5WszqJeo-f8e2; nid18=0d86f08b814c455b1d6ebd09256a5ade; nid18_create_time=1775911116025; gviem=VcbSKTlarodHzNMYoAptO452f; gviem_create_time=1775911116025; fullscreengg=1; fullscreengg2=1; st_si=84713527048044; st_pvi=13325294659680; st_sp=2025-03-30%2015%3A14%3A18; st_inirUrl=https%3A%2F%2Femcreative.eastmoney.com%2F; st_sn=10; st_psi=20260417210401477-113200301353-6617435904; st_asi=delete',
+        Cookie: EASTMONEY_COOKIE,
       },
     });
 
