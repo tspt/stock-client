@@ -66,8 +66,8 @@ function setupRequestInterceptor() {
       details.requestHeaders['referer'] = process.env.VITE_SINA_REFERER!;
       details.requestHeaders['origin'] = process.env.VITE_SINA_ORIGIN!;
       details.requestHeaders['user-agent'] = defaultUserAgent;
-      details.requestHeaders['accept'] = '*/*';
-      details.requestHeaders['accept-language'] = 'zh-CN,zh;q=0.9';
+      details.requestHeaders['accept'] = process.env.VITE_ACCEPT!;
+      details.requestHeaders['accept-language'] = process.env.VITE_ACCEPT_LANGUAGE!;
 
       console.log('[defaultSession拦截器] 修改后的Referer:', details.requestHeaders['referer']);
 
@@ -114,8 +114,8 @@ function setupRequestInterceptor() {
       details.requestHeaders['referer'] = process.env.VITE_TENCENT_REFERER!;
       details.requestHeaders['origin'] = process.env.VITE_TENCENT_ORIGIN!;
       details.requestHeaders['user-agent'] = defaultUserAgent;
-      details.requestHeaders['accept'] = '*/*';
-      details.requestHeaders['accept-language'] = 'zh-CN,zh;q=0.9';
+      details.requestHeaders['accept'] = process.env.VITE_ACCEPT!;
+      details.requestHeaders['accept-language'] = process.env.VITE_ACCEPT_LANGUAGE!;
 
       callback({
         requestHeaders: details.requestHeaders,
@@ -343,8 +343,8 @@ function setupWindowRequestInterceptor(webSession: Electron.Session) {
       details.requestHeaders['referer'] = process.env.VITE_SINA_REFERER!;
       details.requestHeaders['origin'] = process.env.VITE_SINA_ORIGIN!;
       details.requestHeaders['user-agent'] = defaultUserAgent;
-      details.requestHeaders['accept'] = '*/*';
-      details.requestHeaders['accept-language'] = 'zh-CN,zh;q=0.9';
+      details.requestHeaders['accept'] = process.env.VITE_ACCEPT!;
+      details.requestHeaders['accept-language'] = process.env.VITE_ACCEPT_LANGUAGE!;
 
       console.log('[窗口拦截器] 修改后的Referer:', details.requestHeaders['referer']);
 
@@ -381,8 +381,8 @@ function setupWindowRequestInterceptor(webSession: Electron.Session) {
       details.requestHeaders['referer'] = process.env.VITE_TENCENT_REFERER!;
       details.requestHeaders['origin'] = process.env.VITE_TENCENT_ORIGIN!;
       details.requestHeaders['user-agent'] = defaultUserAgent;
-      details.requestHeaders['accept'] = '*/*';
-      details.requestHeaders['accept-language'] = 'zh-CN,zh;q=0.9';
+      details.requestHeaders['accept'] = process.env.VITE_ACCEPT!;
+      details.requestHeaders['accept-language'] = process.env.VITE_ACCEPT_LANGUAGE!;
 
       callback({
         requestHeaders: details.requestHeaders,

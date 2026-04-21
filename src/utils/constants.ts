@@ -17,6 +17,27 @@ export const API_TIMEOUT = 10000; // 10秒
 /** 默认缓存TTL（毫秒） */
 export const DEFAULT_CACHE_TTL = 5 * 60 * 1000; // 5分钟
 
+/** 缓存相关常量 */
+export const CACHE_KEYS = {
+  /** 全量股票列表 (biyingapi) */
+  BIYING_STOCK_LIST: 'biying_hslt_stock_list_v1',
+  /** 行业板块基础信息 */
+  INDUSTRY_BASIC: 'unified_industry_basic_v1',
+  /** 概念板块基础信息 */
+  CONCEPT_BASIC: 'unified_concept_basic_v1',
+  /** 板块成分股全量数据 */
+  SECTOR_STOCKS_FULL: 'sector_stocks_full_data_v2',
+} as const;
+
+export const CACHE_TTL = {
+  /** 股票列表缓存：30天 */
+  STOCK_LIST: 30 * 24 * 60 * 60 * 1000,
+  /** 板块基础信息缓存：24小时 */
+  SECTOR_BASIC: 24 * 60 * 60 * 1000,
+  /** 板块成分股全量缓存：24小时 */
+  SECTOR_STOCKS_FULL: 24 * 60 * 60 * 1000,
+} as const;
+
 /** 股票列表搜索最大返回数量 */
 export const MAX_SEARCH_RESULTS = 50;
 

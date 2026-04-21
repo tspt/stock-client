@@ -15,31 +15,10 @@ import {
   VOLUME_AMOUNT_UNIT_CONVERSION,
   API_TIMEOUT,
   DEFAULT_CACHE_TTL,
+  CACHE_KEYS,
+  CACHE_TTL,
 } from '@/utils/constants';
 import { logger } from '@/utils/logger';
-
-/** biyingapi 全量股票列表本地缓存（默认约 1 个月过期） */
-const BIYING_HSLT_LIST_CACHE_KEY = 'biying_hslt_stock_list_v1';
-const BIYING_HSLT_LIST_CACHE_TTL_MS = 30 * 24 * 60 * 60 * 1000;
-
-interface BiyingHsltListCache {
-  savedAt: number;
-  stocks: StockInfo[];
-}
-
-function readBiyingHsltListCache(): StockInfo[] | null {
-  const raw = getStorage<BiyingHsltListCache | null>(BIYING_HSLT_LIST_CACHE_KEY, null);
-  if (
-    raw &&
-    typeof raw.savedAt === 'number' &&
-    Array.isArray(raw.stocks) &&
-    raw.stocks.length > 0 &&
-    Date.now() - raw.savedAt < BIYING_HSLT_LIST_CACHE_TTL_MS
-  ) {
-    return raw.stocks;
-  }
-  return null;
-}
 
 /** 并发时复用同一次拉取，避免缓存失效瞬间多次打满接口 */
 let biyingHsltListFetchPromise: Promise<StockInfo[]> | null = null;
@@ -77,7 +56,7 @@ export async function getAllStocks(): Promise<StockInfo[]> {
         });
 
         if (stocks.length > 0) {
-          setStorage(BIYING_HSLT_LIST_CACHE_KEY, {
+          setStorage(CACHE_KEYS.BIYING_STOCK_LIST, {
             savedAt: Date.now(),
             stocks,
           });
@@ -97,6 +76,26 @@ export async function getAllStocks(): Promise<StockInfo[]> {
   })();
 
   return biyingHsltListFetchPromise;
+}
+
+/** biyingapi 全量股票列表本地缓存读取逻辑 */
+interface BiyingHsltListCache {
+  savedAt: number;
+  stocks: StockInfo[];
+}
+
+function readBiyingHsltListCache(): StockInfo[] | null {
+  const raw = getStorage<BiyingHsltListCache | null>(CACHE_KEYS.BIYING_STOCK_LIST, null);
+  if (
+    raw &&
+    typeof raw.savedAt === 'number' &&
+    Array.isArray(raw.stocks) &&
+    raw.stocks.length > 0 &&
+    Date.now() - raw.savedAt < CACHE_TTL.STOCK_LIST
+  ) {
+    return raw.stocks;
+  }
+  return null;
 }
 
 /**

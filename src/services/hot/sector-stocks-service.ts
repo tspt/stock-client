@@ -9,6 +9,7 @@ import { getConceptSectorStocks } from './concept-sectors';
 import type { IndustrySectorBasicInfo, ConceptSectorBasicInfo } from '@/types/stock';
 import { logger } from '@/utils/logger';
 import { getStorage, setStorage } from '@/utils/storage';
+import { CACHE_KEYS, CACHE_TTL } from '@/utils/constants';
 
 // ==================== 类型定义 ====================
 
@@ -43,8 +44,10 @@ interface CacheData {
   concept: SectorFullData[];
 }
 
-const CACHE_KEY = 'sector_stocks_full_data_v2';
-const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24小时
+// ==================== 缓存配置 ====================
+
+const CACHE_KEY = CACHE_KEYS.SECTOR_STOCKS_FULL;
+const CACHE_TTL_MS = CACHE_TTL.SECTOR_STOCKS_FULL;
 
 // ==================== 全局频次控制 ====================
 

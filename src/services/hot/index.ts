@@ -30,7 +30,6 @@ export {
   getUnifiedConceptBasic,
   getUnifiedConceptRank,
   getUnifiedSectorBasics,
-  clearUnifiedSectorCache,
 } from './unified-sectors';
 export {
   getEastMoneyRisingSectors,

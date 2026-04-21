@@ -15,6 +15,7 @@ import type {
 } from '@/types/stock';
 import { logger } from '@/utils/logger';
 import { getStorage, setStorage } from '@/utils/storage';
+import { CACHE_KEYS, CACHE_TTL } from '@/utils/constants';
 import { getAllIndustrySectors as fetchAllIndustrySectors } from './industry-sectors';
 import { getAllConceptSectors as fetchAllConceptSectors } from './concept-sectors';
 import {
@@ -137,19 +138,18 @@ export async function fetchAllSectorsStocks(
 /**
  * 缓存键定义
  * 注意：排行数据已禁用缓存，只缓存基础信息（板块列表相对稳定）
+ * 已迁移至 src/utils/constants.ts 统一管理
  */
-const CACHE_KEYS = {
-  INDUSTRY_BASIC: 'unified_industry_basic_v1',
-  CONCEPT_BASIC: 'unified_concept_basic_v1',
-  // 排行数据缓存键已废弃，保留仅为向后兼容
-  // INDUSTRY_RANK: 'unified_industry_rank_v1',
-  // CONCEPT_RANK: 'unified_concept_rank_v1',
-};
+// const CACHE_KEYS = {
+//   INDUSTRY_BASIC: 'unified_industry_basic_v1',
+//   CONCEPT_BASIC: 'unified_concept_basic_v1',
+// };
 
 /**
  * 缓存过期时间：24小时（每天更新一次）
+ * 已迁移至 src/utils/constants.ts 统一管理 (CACHE_TTL.SECTOR_BASIC)
  */
-const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
+// const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 
 // ==================== 缓存数据结构 ====================
 
@@ -170,7 +170,7 @@ function readCache<T>(key: string): T[] | null {
     typeof raw.savedAt === 'number' &&
     Array.isArray(raw.data) &&
     raw.data.length > 0 &&
-    Date.now() - raw.savedAt < CACHE_TTL_MS
+    Date.now() - raw.savedAt < CACHE_TTL.SECTOR_BASIC
   ) {
     return raw.data;
   }
@@ -364,27 +364,4 @@ export async function getUnifiedSectorBasics(): Promise<{
     getUnifiedConceptBasic(),
   ]);
   return { industry, concept };
-}
-
-/**
- * 清除所有板块缓存（用于手动刷新）
- * 包括新旧缓存键，确保完全清理
- */
-export function clearUnifiedSectorCache(): void {
-  // 新缓存键
-  const newKeys = [
-    'unified_industry_basic_v1',
-    'unified_concept_basic_v1',
-    'unified_industry_rank_v1',
-    'unified_concept_rank_v1',
-  ];
-
-  // 旧缓存键（向后兼容）
-  const oldKeys = ['all_industry_sectors_v1', 'all_concept_sectors_v1'];
-
-  [...newKeys, ...oldKeys].forEach((key) => {
-    setStorage(key, null);
-  });
-
-  logger.info('[UnifiedSectors] 已清除所有板块缓存（包括新旧缓存键）');
 }

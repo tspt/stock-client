@@ -391,10 +391,10 @@ export async function getSingleConceptSector(
 
 /**
  * 所有概念分类缓存键（每日过期）
- * @deprecated 已迁移到 unified-sectors.ts，保留此常量仅为向后兼容
+ * @deprecated 已迁移到 unified-sectors.ts 和 constants.ts，保留此注释仅为向后兼容
  */
-const ALL_CONCEPT_SECTORS_CACHE_KEY = 'unified_concept_basic_v1'; // 使用统一缓存键
-const ALL_CONCEPT_SECTORS_CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24小时
+// const ALL_CONCEPT_SECTORS_CACHE_KEY = 'unified_concept_basic_v1'; // 使用统一缓存键
+// const ALL_CONCEPT_SECTORS_CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24小时
 
 interface AllConceptSectorsCache {
   savedAt: number;
@@ -406,16 +406,7 @@ interface AllConceptSectorsCache {
  * @deprecated 建议使用 getUnifiedConceptBasic() from unified-sectors.ts
  */
 function readAllConceptSectorsCache(): ConceptSectorBasicInfo[] | null {
-  const raw = getStorage<AllConceptSectorsCache | null>(ALL_CONCEPT_SECTORS_CACHE_KEY, null);
-  if (
-    raw &&
-    typeof raw.savedAt === 'number' &&
-    Array.isArray(raw.sectors) &&
-    raw.sectors.length > 0 &&
-    Date.now() - raw.savedAt < ALL_CONCEPT_SECTORS_CACHE_TTL_MS
-  ) {
-    return raw.sectors;
-  }
+  // 逻辑已迁移至 unified-sectors.ts 中的 getUnifiedConceptBasic
   return null;
 }
 
@@ -473,13 +464,13 @@ export async function getAllConceptSectors(): Promise<ConceptSectorBasicInfo[]> 
         mainNetInflow: item.f62, // 主力净流入（元）
       }));
 
-      // 保存到缓存
-      if (sectors.length > 0) {
-        setStorage(ALL_CONCEPT_SECTORS_CACHE_KEY, {
-          savedAt: Date.now(),
-          sectors,
-        });
-      }
+      // 保存到缓存（逻辑已迁移至 unified-sectors.ts）
+      // if (sectors.length > 0) {
+      //   setStorage(ALL_CONCEPT_SECTORS_CACHE_KEY, {
+      //     savedAt: Date.now(),
+      //     sectors,
+      //   });
+      // }
 
       return sectors;
     } catch (error) {
