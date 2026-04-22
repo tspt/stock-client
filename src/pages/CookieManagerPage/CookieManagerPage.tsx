@@ -48,7 +48,7 @@ export function CookieManagerPage() {
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
   const [isAutoFetchModalVisible, setIsAutoFetchModalVisible] = useState(false);
   const [addCookieText, setAddCookieText] = useState('');
-  const [autoFetchCount, setAutoFetchCount] = useState(60);
+  const [autoFetchCount, setAutoFetchCount] = useState(100);
 
   // 进度状态
   const [fetchProgress, setFetchProgress] = useState<{
@@ -318,7 +318,7 @@ export function CookieManagerPage() {
               <Statistic
                 title="总数量"
                 value={stats.totalCount}
-                suffix={`/ 60`}
+                suffix={`/ 100`}
                 valueStyle={{ color: '#1890ff' }}
               />
             </Card>
@@ -409,7 +409,7 @@ export function CookieManagerPage() {
               setPagination({ current, pageSize });
             },
           }}
-          scroll={{ x: 1000 }}
+          scroll={{ x: 1000, y: 400 }}
           size="small"
         />
 
@@ -463,7 +463,7 @@ export function CookieManagerPage() {
       <Modal
         title="自动获取Cookie"
         open={isAutoFetchModalVisible}
-        bodyStyle={{ height: 400, overflowY: 'auto' }}
+        styles={{ body: { height: 400, overflowY: 'auto' } }}
         onCancel={() => {
           if (isFetching) {
             Modal.confirm({
@@ -505,9 +505,19 @@ export function CookieManagerPage() {
               <Input
                 type="number"
                 min={1}
-                max={60}
+                max={100}
                 value={autoFetchCount}
-                onChange={(e) => setAutoFetchCount(parseInt(e.target.value) || 60)}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (value === '') {
+                    setAutoFetchCount(1); // 空值时设置为最小值1
+                  } else {
+                    const num = parseInt(value);
+                    if (!isNaN(num)) {
+                      setAutoFetchCount(Math.min(Math.max(num, 1), 100)); // 限制在1-100范围内
+                    }
+                  }
+                }}
                 style={{ width: 120 }}
               />
               <div className={styles.warning}>
@@ -516,7 +526,7 @@ export function CookieManagerPage() {
                   <li>需要安装 Google Chrome 或 Microsoft Edge 浏览器</li>
                   <li>采用分批获取策略，每批12个，批次间暂停30-60秒</li>
                   <li>获取过程可能需要较长时间，请耐心等待</li>
-                  <li>建议每次获取不超过60个Cookie</li>
+                  <li>建议每次获取不超过100个Cookie</li>
                   <li>使用无痕模式，自动清除缓存，提高Cookie多样性</li>
                 </ul>
               </div>
