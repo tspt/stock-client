@@ -41,6 +41,7 @@ import {
 import type { OpportunityFilterPrefs } from '@/utils/opportunityFilterPrefs';
 import type { OpportunityFilterSnapshot } from '@/types/opportunityFilter';
 import { OpportunityFiltersPanel, buildOpportunityFilterSummary } from './OpportunityFiltersPanel';
+import { FilterDiagnosticsPanel } from '@/components/FilterDiagnosticsPanel';
 import {
   OPPORTUNITY_DEFAULT_CONSOLIDATION,
   OPPORTUNITY_DEFAULT_SHARP_MOVE,
@@ -1766,6 +1767,14 @@ export function OpportunityPage() {
             setDrawerOpen={setFilterDrawerOpen}
           />
         </div>
+
+        {/* AI筛选诊断仪表盘（原因+股票两者结合可视化，方案六核心UX改进） */}
+        {filterSkippedItems.length > 0 && (
+          <FilterDiagnosticsPanel 
+            skipped={filterSkippedItems}
+            filters={filterSnapshot}
+          />
+        )}
 
         {/* 筛选结果提示 - 仅在有数据时显示 */}
         {analysisData.length > 0 && (

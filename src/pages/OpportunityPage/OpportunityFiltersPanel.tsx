@@ -8,6 +8,7 @@ import { Button, Drawer, Space, Collapse, InputNumber, Checkbox, Select } from '
 import { FilterOutlined } from '@ant-design/icons';
 import type { ConsolidationType, TradingSignalType } from '@/types/stock';
 import { PatternTooltip } from '@/components/PatternTooltip/PatternTooltip';
+import { FilterDiagnosticsPanel } from '@/components/FilterDiagnosticsPanel';
 import styles from './OpportunityPage.module.css';
 
 const ALL_FILTER_PANEL_KEYS = ['data', 'consolidation', 'trendLine', 'sharpMove', 'technicalIndicators', 'aiAnalysis'] as const;
