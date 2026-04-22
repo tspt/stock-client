@@ -255,5 +255,5 @@ export const GROUP_ALL_ID = '__all__';
 export const COOKIE_POOL_DB_NAME = 'CookiePoolDB';
 export const COOKIE_POOL_DB_VERSION = 1;
 export const COOKIE_POOL_STORE_NAME = 'cookies';
-export const MAX_COOKIE_COUNT = 100; // 最大Cookie数量
+export const MAX_COOKIE_COUNT = 200; // 最大Cookie数量
 export const COOKIE_HEALTH_CHECK_INTERVAL = 60 * 60 * 1000; // 1小时检查一次

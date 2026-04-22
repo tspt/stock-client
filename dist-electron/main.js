@@ -513,6 +513,32 @@ function setupIpcHandlers() {
             return { success: false, error: errorMessage };
         }
     });
+    // 测试Cookie（在主进程中执行，避免CORS）
+    ipcMain.handle('test-cookie', async (event, cookieValue) => {
+        try {
+            const { net } = await import('electron');
+            return new Promise((resolve) => {
+                const request = net.request({
+                    url: 'https://push2.eastmoney.com/api/qt/clist/get?pn=1&pz=1&po=1&np=1&ut=bd1d9ddb04089700cf9c27f6f7426281&fltt=2&invt=2&wbp2u=|0|0|0|web&fid=f3&fs=b:MK0010,b:MK0021,b:MK0022,b:MK0023,b:MK0024&fields=f12,f14',
+                    method: 'GET',
+                });
+                request.setHeader('Cookie', cookieValue);
+                request.on('response', (response) => {
+                    const isValid = response.statusCode === 200;
+                    resolve({ success: true, isValid });
+                });
+                request.on('error', (error) => {
+                    resolve({ success: false, isValid: false, error: error.message });
+                });
+                request.end();
+            });
+        }
+        catch (error) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            mainLog(`[主进程] 测试Cookie失败: ${errorMessage}`, true);
+            return { success: false, isValid: false, error: errorMessage };
+        }
+    });
 }
 // 应用准备就绪
 app.whenReady().then(async () => {

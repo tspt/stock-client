@@ -40,6 +40,11 @@ try {
       return ipcRenderer.invoke('cancel-fetch-cookies');
     },
 
+    // 测试单个Cookie
+    testCookie: (cookieValue: string) => {
+      return ipcRenderer.invoke('test-cookie', cookieValue);
+    },
+
     // 监听Cookie获取进度
     onCookieFetchProgress: (callback: (progress: any) => void) => {
       const listener = (_event: any, progress: any) => callback(progress);

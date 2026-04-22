@@ -4,6 +4,7 @@
 
 import type { CookieEntry } from '@/types/cookie';
 import { COOKIE_POOL_DB_NAME, COOKIE_POOL_DB_VERSION, COOKIE_POOL_STORE_NAME } from './constants';
+import { logger } from './logger';
 
 let dbInstance: IDBDatabase | null = null;
 
@@ -248,4 +249,100 @@ export async function getCookieCount(): Promise<number> {
       reject(new Error('获取Cookie数量失败'));
     };
   });
+}
+
+/**
+ * 导出所有Cookie
+ * @param filter 过滤条件：'all' | 'active' | 'inactive'
+ */
+export async function exportCookies(
+  filter: 'all' | 'active' | 'inactive' = 'all'
+): Promise<CookieEntry[]> {
+  const db = await initCookiePoolDB();
+  const transaction = db.transaction([COOKIE_POOL_STORE_NAME], 'readonly');
+  const store = transaction.objectStore(COOKIE_POOL_STORE_NAME);
+
+  return new Promise((resolve, reject) => {
+    const request = store.getAll();
+
+    request.onsuccess = () => {
+      let cookies = request.result as CookieEntry[];
+
+      // 根据过滤条件筛选
+      if (filter === 'active') {
+        cookies = cookies.filter((c) => c.isActive);
+      } else if (filter === 'inactive') {
+        cookies = cookies.filter((c) => !c.isActive);
+      }
+
+      resolve(cookies);
+    };
+
+    request.onerror = () => {
+      reject(new Error('导出Cookie失败'));
+    };
+  });
+}
+
+/**
+ * 批量导入Cookie
+ * @param cookies Cookie数组
+ * @param skipDuplicates 是否跳过重复的Cookie（默认true）
+ * @returns 成功导入的数量和跳过的数量
+ */
+export async function importCookies(
+  cookies: CookieEntry[],
+  skipDuplicates: boolean = true
+): Promise<{ successCount: number; skippedCount: number; duplicateIds: string[] }> {
+  const db = await initCookiePoolDB();
+  let successCount = 0;
+  let skippedCount = 0;
+  const duplicateIds: string[] = [];
+
+  // 先获取现有的所有Cookie ID
+  const existingCookies = await getAllCookies();
+  const existingIds = new Set(existingCookies.map((c) => c.id));
+
+  for (const cookie of cookies) {
+    try {
+      // 验证必要字段
+      if (!cookie.id || !cookie.value) {
+        skippedCount++;
+        continue;
+      }
+
+      // 检查是否重复
+      if (existingIds.has(cookie.id)) {
+        if (skipDuplicates) {
+          skippedCount++;
+          duplicateIds.push(cookie.id);
+          continue;
+        } else {
+          // 如果不跳过，则覆盖
+          logger.info(`[CookiePoolDB] 覆盖重复Cookie: ${cookie.id.substring(0, 8)}...`);
+        }
+      }
+
+      const transaction = db.transaction([COOKIE_POOL_STORE_NAME], 'readwrite');
+      const store = transaction.objectStore(COOKIE_POOL_STORE_NAME);
+
+      await new Promise((resolve, reject) => {
+        const request = store.put(cookie);
+        request.onsuccess = () => resolve(true);
+        request.onerror = () => reject(new Error(`导入Cookie失败: ${cookie.id}`));
+      });
+
+      // 如果不是重复的，添加到现有ID集合
+      if (!existingIds.has(cookie.id)) {
+        existingIds.add(cookie.id);
+      }
+
+      successCount++;
+    } catch (error) {
+      console.warn(`[CookiePoolDB] 跳过无效Cookie:`, error);
+      skippedCount++;
+    }
+  }
+
+  return { successCount, skippedCount, duplicateIds };
 }

@@ -302,18 +302,20 @@ class CookiePoolManager {
     }
 
     try {
-      // 发送一个简单的测试请求
-      const response = await fetch(
-        'https://push2.eastmoney.com/api/qt/clist/get?pn=1&pz=1&po=1&np=1&ut=bd1d9ddb04089700cf9c27f6f7426281&fltt=2&invt=2&wbp2u=|0|0|0|web&fid=f3&fs=b:MK0010,b:MK0021,b:MK0022,b:MK0023,b:MK0024&fields=f12,f14',
-        {
-          headers: {
-            Cookie: cookie.value,
-          },
-          method: 'GET',
-        }
-      );
+      // 使用Electron主进程测试，避免CORS限制
+      const electronAPI = (window as any).electronAPI;
+      if (!electronAPI?.testCookie) {
+        logger.error('[CookiePool] Electron API不可用');
+        return false;
+      }
 
-      const isValid = response.ok;
+      const result = await electronAPI.testCookie(cookie.value);
+
+      if (!result.success) {
+        throw new Error(result.error || '测试失败');
+      }
+
+      const isValid = result.isValid;
 
       if (isValid) {
         await this.reportSuccess(cookie.value);
@@ -346,19 +348,234 @@ class CookiePoolManager {
   }
 
   /**
+   * 批量测试Cookie（并行执行）
+   * @param concurrency 并发数，默认5
+   */
+  async testCookiesBatch(cookieIds: string[], concurrency: number = 5): Promise<void> {
+    const total = cookieIds.length;
+    let completed = 0;
+
+    logger.info(`[CookiePool] 开始批量测试 ${total} 个Cookie，并发数: ${concurrency}`);
+
+    // 分批处理
+    for (let i = 0; i < total; i += concurrency) {
+      const batch = cookieIds.slice(i, i + concurrency);
+
+      // 并行测试当前批次
+      await Promise.all(
+        batch.map(async (cookieId) => {
+          try {
+            await this.testCookie(cookieId);
+          } catch (error) {
+            logger.error(`[CookiePool] 测试Cookie ${cookieId} 异常:`, error);
+          } finally {
+            completed++;
+            // 每完成10个输出一次进度
+            if (completed % 10 === 0 || completed === total) {
+              logger.info(
+                `[CookiePool] 测试进度: ${completed}/${total} (${(
+                  (completed / total) *
+                  100
+                ).toFixed(1)}%)`
+              );
+            }
+          }
+        })
+      );
+
+      // 批次间短暂暂停，避免请求过快
+      if (i + concurrency < total) {
+        await new Promise((resolve) => setTimeout(resolve, 200));
+      }
+    }
+
+    logger.info('[CookiePool] 批量测试完成');
+  }
+
+  /**
    * 测试所有Cookie
    */
   async testAllCookies(): Promise<void> {
     const cookies = Array.from(this.cookies.values());
-    logger.info(`[CookiePool] 开始测试 ${cookies.length} 个Cookie`);
+    const cookieIds = cookies.map((c) => c.id);
 
-    for (const cookie of cookies) {
-      await this.testCookie(cookie.id);
-      // 避免请求过快
-      await new Promise((resolve) => setTimeout(resolve, 500));
+    // 使用批量并行测试
+    await this.testCookiesBatch(cookieIds, 5);
+  }
+
+  /**
+   * 导出Cookie
+   * @param filter 过滤条件：'all' | 'active' | 'inactive'
+   * @param format 导出格式：'txt' | 'json'
+   */
+  async exportCookies(
+    filter: 'all' | 'active' | 'inactive' = 'all',
+    format: 'txt' | 'json' = 'json'
+  ): Promise<Blob> {
+    try {
+      const { exportCookies: exportCookiesFromDB } = await import('./cookiePoolDB');
+      const cookies = await exportCookiesFromDB(filter);
+
+      if (cookies.length === 0) {
+        throw new Error('没有可导出的Cookie');
+      }
+
+      let content: string;
+      let mimeType: string;
+      let extension: string;
+
+      if (format === 'json') {
+        // JSON格式 - 完整信息
+        const exportData = {
+          exportDate: new Date().toISOString(),
+          version: '1.0',
+          filter,
+          total: cookies.length,
+          active: cookies.filter((c) => c.isActive).length,
+          cookies: cookies.map((c) => ({
+            id: c.id,
+            value: c.value,
+            createdAt: c.createdAt,
+            lastUsedAt: c.lastUsedAt,
+            successCount: c.successCount,
+            failureCount: c.failureCount,
+            isActive: c.isActive,
+            healthScore: c.healthScore,
+          })),
+        };
+
+        content = JSON.stringify(exportData, null, 2);
+        mimeType = 'application/json';
+        extension = 'json';
+      } else {
+        // 文本格式 - 简洁版
+        const validCookies = cookies.filter((c) => c.value && c.value.trim().length > 0);
+
+        if (validCookies.length === 0) {
+          throw new Error('没有有效的Cookie可导出');
+        }
+
+        const lines = [
+          `# Cookie池导出 - ${new Date().toLocaleString('zh-CN')}`,
+          `# 总数: ${validCookies.length}, 活跃: ${
+            validCookies.filter((c) => c.isActive).length
+          }, 失效: ${validCookies.filter((c) => !c.isActive).length}`,
+          `# 过滤条件: ${filter === 'all' ? '全部' : filter === 'active' ? '仅活跃' : '仅失效'}`,
+          '',
+          ...validCookies.map((c) => c.value),
+        ];
+        content = lines.join('\n');
+        mimeType = 'text/plain';
+        extension = 'txt';
+      }
+
+      // 生成文件名
+      const timestamp = new Date()
+        .toISOString()
+        .replace(/[:.]/g, '-')
+        .replace('T', '_')
+        .substring(0, 19);
+      const filename = `cookies_${filter}_${timestamp}.${extension}`;
+
+      // 创建Blob
+      const blob = new Blob([content], { type: `${mimeType};charset=utf-8` });
+
+      // 附加文件名到Blob（某些浏览器支持）
+      (blob as any).name = filename;
+
+      logger.info(`[CookiePool] 成功导出 ${cookies.length} 个Cookie (${format.toUpperCase()})`);
+      return blob;
+    } catch (error) {
+      logger.error('[CookiePool] 导出Cookie失败:', error);
+      throw error;
     }
+  }
 
-    logger.info('[CookiePool] 所有Cookie测试完成');
+  /**
+   * 导入Cookie
+   * @param file JSON文件
+   * @returns 导入结果
+   */
+  async importCookies(
+    file: File
+  ): Promise<{
+    successCount: number;
+    skippedCount: number;
+    duplicateIds: string[];
+    error?: string;
+  }> {
+    try {
+      // 验证文件类型
+      if (!file.name.endsWith('.json')) {
+        throw new Error('只支持JSON格式的Cookie文件');
+      }
+
+      // 读取文件内容
+      const text = await file.text();
+      let data: any;
+
+      try {
+        data = JSON.parse(text);
+      } catch (error) {
+        throw new Error('JSON格式错误，文件可能已损坏');
+      }
+
+      // 验证数据结构
+      if (!data.cookies || !Array.isArray(data.cookies)) {
+        throw new Error('无效的Cookie文件格式');
+      }
+
+      // 验证版本兼容性
+      if (data.version && data.version !== '1.0') {
+        logger.warn(`[CookiePool] 警告: 导入文件版本 ${data.version} 与当前版本 1.0 不匹配`);
+      }
+
+      // 检查数量上限
+      const currentCount = this.cookies.size;
+      const importCount = data.cookies.length;
+      const { MAX_COOKIE_COUNT } = await import('./constants');
+
+      if (currentCount + importCount > MAX_COOKIE_COUNT) {
+        return {
+          successCount: 0,
+          skippedCount: importCount,
+          duplicateIds: [],
+          error: `导入后将超过上限（当前${currentCount}个 + 导入${importCount}个 > 上限${MAX_COOKIE_COUNT}个）`,
+        };
+      }
+
+      // 转换数据格式
+      const cookies = data.cookies.map((c: any) => ({
+        id: c.id,
+        value: c.value,
+        createdAt: c.createdAt || Date.now(),
+        lastUsedAt: c.lastUsedAt || 0,
+        successCount: c.successCount || 0,
+        failureCount: c.failureCount || 0,
+        isActive: c.isActive !== undefined ? c.isActive : true,
+        healthScore: c.healthScore !== undefined ? c.healthScore : 100,
+      }));
+
+      // 导入到数据库（自动跳过重复）
+      const { importCookies: importCookiesToDB } = await import('./cookiePoolDB');
+      const result = await importCookiesToDB(cookies, true);
+
+      // 重新加载内存中的Cookie
+      const { getAllCookies } = await import('./cookiePoolDB');
+      const allCookies = await getAllCookies();
+      this.cookies.clear();
+      allCookies.forEach((cookie) => {
+        this.cookies.set(cookie.id, cookie);
+      });
+
+      logger.info(
+        `[CookiePool] 成功导入 ${result.successCount} 个Cookie，跳过 ${result.skippedCount} 个`
+      );
+      return result;
+    } catch (error) {
+      logger.error('[CookiePool] 导入Cookie失败:', error);
+      throw error;
+    }
   }
 
   /**

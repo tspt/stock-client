@@ -17,6 +17,7 @@ import {
   Row,
   Col,
   Popconfirm,
+  Radio,
 } from 'antd';
 import {
   KeyOutlined,
@@ -27,6 +28,8 @@ import {
   CheckCircleOutlined,
   CloseCircleOutlined,
   StopOutlined,
+  DownloadOutlined,
+  UploadOutlined,
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import CookiePoolManager from '@/utils/cookiePoolManager';
@@ -48,7 +51,7 @@ export function CookieManagerPage() {
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
   const [isAutoFetchModalVisible, setIsAutoFetchModalVisible] = useState(false);
   const [addCookieText, setAddCookieText] = useState('');
-  const [autoFetchCount, setAutoFetchCount] = useState(100);
+  const [autoFetchCount, setAutoFetchCount] = useState(50);
 
   // 进度状态
   const [fetchProgress, setFetchProgress] = useState<{
@@ -68,6 +71,14 @@ export function CookieManagerPage() {
     current: 1,
     pageSize: 10,
   });
+
+  // 导出对话框状态
+  const [isExportModalVisible, setIsExportModalVisible] = useState(false);
+  const [exportFilter, setExportFilter] = useState<'all' | 'active' | 'inactive'>('all');
+  const [exporting, setExporting] = useState(false);
+
+  // 导入功能
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const cookiePool = CookiePoolManager.getInstance();
 
@@ -184,6 +195,77 @@ export function CookieManagerPage() {
     } catch (error) {
       message.error('取消失败');
     }
+  };
+
+  // 导出Cookie
+  const handleExportCookies = async () => {
+    setExporting(true);
+    try {
+      const blob = await cookiePool.exportCookies(exportFilter, 'json');
+
+      // 创建下载链接
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+
+      // 使用后端生成的文件名
+      const filename = (blob as any).name || 'cookies_export.json';
+      a.download = filename;
+
+      // 触发下载
+      document.body.appendChild(a);
+      a.click();
+
+      // 清理
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      message.success(`导出成功: ${filename}`);
+      setIsExportModalVisible(false);
+    } catch (error) {
+      message.error(`导出失败: ${error instanceof Error ? error.message : String(error)}`);
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  // 导入Cookie
+  const handleImportCookies = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // 验证文件类型
+    if (!file.name.endsWith('.json')) {
+      message.error('只支持JSON格式的Cookie文件');
+      return;
+    }
+
+    try {
+      const result = await cookiePool.importCookies(file);
+
+      if (result.error) {
+        message.error(result.error);
+      } else {
+        let msg = `成功导入 ${result.successCount} 个Cookie`;
+        if (result.skippedCount > 0) {
+          msg += `，跳过 ${result.skippedCount} 个重复`;
+        }
+        message.success(msg);
+        await loadData();
+      }
+    } catch (error) {
+      message.error(`导入失败: ${error instanceof Error ? error.message : String(error)}`);
+    } finally {
+      // 清空文件输入，允许重复选择同一文件
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  // 触发文件选择
+  const handleTriggerImport = () => {
+    fileInputRef.current?.click();
   };
 
   // 测试单个Cookie
@@ -318,7 +400,7 @@ export function CookieManagerPage() {
               <Statistic
                 title="总数量"
                 value={stats.totalCount}
-                suffix={`/ 100`}
+                suffix={`/ 200`}
                 valueStyle={{ color: '#1890ff' }}
               />
             </Card>
@@ -386,6 +468,19 @@ export function CookieManagerPage() {
                 清空全部
               </Button>
             </Popconfirm>
+            <Button icon={<UploadOutlined />} onClick={handleTriggerImport}>
+              导入Cookie
+            </Button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".json"
+              style={{ display: 'none' }}
+              onChange={handleImportCookies}
+            />
+            <Button icon={<DownloadOutlined />} onClick={() => setIsExportModalVisible(true)}>
+              导出Cookie
+            </Button>
           </Space>
         </div>
 
@@ -505,7 +600,7 @@ export function CookieManagerPage() {
               <Input
                 type="number"
                 min={1}
-                max={100}
+                max={200}
                 value={autoFetchCount}
                 onChange={(e) => {
                   const value = e.target.value;
@@ -514,7 +609,7 @@ export function CookieManagerPage() {
                   } else {
                     const num = parseInt(value);
                     if (!isNaN(num)) {
-                      setAutoFetchCount(Math.min(Math.max(num, 1), 100)); // 限制在1-100范围内
+                      setAutoFetchCount(Math.min(Math.max(num, 1), 200)); // 限制在1-200范围内
                     }
                   }
                 }}
@@ -526,7 +621,7 @@ export function CookieManagerPage() {
                   <li>需要安装 Google Chrome 或 Microsoft Edge 浏览器</li>
                   <li>采用分批获取策略，每批12个，批次间暂停30-60秒</li>
                   <li>获取过程可能需要较长时间，请耐心等待</li>
-                  <li>建议每次获取不超过100个Cookie</li>
+                  <li>建议每次获取不超过200个Cookie</li>
                   <li>使用无痕模式，自动清除缓存，提高Cookie多样性</li>
                 </ul>
               </div>
@@ -554,6 +649,43 @@ export function CookieManagerPage() {
               </div>
             </div>
           )}
+        </div>
+      </Modal>
+
+      {/* 导出Cookie对话框 */}
+      <Modal
+        title="导出Cookie"
+        open={isExportModalVisible}
+        onOk={handleExportCookies}
+        onCancel={() => setIsExportModalVisible(false)}
+        confirmLoading={exporting}
+        okText="导出"
+      >
+        <div style={{ padding: '16px 0' }}>
+          <div style={{ marginBottom: 24, padding: '12px', background: '#f5f5f5', borderRadius: '4px' }}>
+            <p style={{ margin: 0, fontSize: 13, color: '#595959' }}>
+              <strong>说明：</strong>仅支持JSON格式导出，包含完整元数据，可用于备份和恢复
+            </p>
+          </div>
+
+          <div>
+            <p style={{ fontWeight: 500, marginBottom: 12 }}>导出范围：</p>
+            <Radio.Group
+              value={exportFilter}
+              onChange={(e) => setExportFilter(e.target.value)}
+              style={{ width: '100%' }}
+            >
+              <Radio value="all" style={{ display: 'block', marginBottom: 8 }}>
+                全部Cookie ({stats.totalCount}个)
+              </Radio>
+              <Radio value="active" style={{ display: 'block', marginBottom: 8 }}>
+                仅活跃Cookie ({stats.activeCount}个)
+              </Radio>
+              <Radio value="inactive" style={{ display: 'block' }}>
+                仅失效Cookie ({stats.totalCount - stats.activeCount}个)
+              </Radio>
+            </Radio.Group>
+          </div>
         </div>
       </Modal>
     </div>

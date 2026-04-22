@@ -33,6 +33,10 @@ try {
         cancelFetchEastMoneyCookies: () => {
             return electron_1.ipcRenderer.invoke('cancel-fetch-cookies');
         },
+        // 测试单个Cookie
+        testCookie: (cookieValue) => {
+            return electron_1.ipcRenderer.invoke('test-cookie', cookieValue);
+        },
         // 监听Cookie获取进度
         onCookieFetchProgress: (callback) => {
             const listener = (_event, progress) => callback(progress);

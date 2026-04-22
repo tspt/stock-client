@@ -29,6 +29,11 @@ export interface ElectronAPI {
   /** 取消Cookie获取 */
   cancelFetchEastMoneyCookies: () => Promise<{ success: boolean; error?: string }>;
 
+  /** 测试单个Cookie */
+  testCookie: (
+    cookieValue: string
+  ) => Promise<{ success: boolean; isValid: boolean; error?: string }>;
+
   /** 监听Cookie获取进度 */
   onCookieFetchProgress: (
     callback: (progress: {
