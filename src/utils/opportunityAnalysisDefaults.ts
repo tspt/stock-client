@@ -16,5 +16,5 @@ export const OPPORTUNITY_DEFAULT_TREND_LINE = {
 
 export const OPPORTUNITY_DEFAULT_SHARP_MOVE = {
   windowBars: 20,
-  magnitude: 6,
+  magnitude: 5,
 } as const;
