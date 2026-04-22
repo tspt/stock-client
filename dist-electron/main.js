@@ -482,6 +482,37 @@ function setupIpcHandlers() {
         notification.show();
         console.log('[主进程] 已调用桌面通知 notification.show()');
     });
+    // 自动获取东方财富Cookie
+    ipcMain.handle('fetch-cookies', async (event, count) => {
+        try {
+            mainLog(`[主进程] 收到获取Cookie请求，数量: ${count}`);
+            const { autoFetchCookies } = await import('./cookieFetcher.js');
+            // 获取发送请求的窗口
+            const mainWindow = BrowserWindow.fromWebContents(event.sender);
+            const cookies = await autoFetchCookies(count, mainWindow);
+            mainLog(`[主进程] 成功获取 ${cookies.length} 个Cookie`);
+            return { success: true, cookies };
+        }
+        catch (error) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            mainLog(`[主进程] 获取Cookie失败: ${errorMessage}`, true);
+            return { success: false, error: errorMessage };
+        }
+    });
+    // 取消Cookie获取
+    ipcMain.handle('cancel-fetch-cookies', async () => {
+        try {
+            mainLog('[主进程] 收到取消获取Cookie请求');
+            const { cancelFetchCookies } = await import('./cookieFetcher.js');
+            cancelFetchCookies();
+            return { success: true };
+        }
+        catch (error) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            mainLog(`[主进程] 取消失败: ${errorMessage}`, true);
+            return { success: false, error: errorMessage };
+        }
+    });
 }
 // 应用准备就绪
 app.whenReady().then(async () => {

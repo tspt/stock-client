@@ -1,0 +1,132 @@
+.container {
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 16px;
+}
+
+.cardBox {
+  border: none;
+  border-radius: 0;
+  min-height: calc(100vh - 100px);
+}
+
+.statsRow {
+  margin-bottom: 16px;
+}
+
+.actionButtons {
+  margin-bottom: 16px;
+  padding: 12px;
+  background: var(--ant-color-bg-layout);
+  border-radius: 4px;
+}
+
+.logCard {
+  margin-top: 16px;
+}
+
+.logList {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.logItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--ant-color-border-secondary);
+}
+
+.logItem:last-child {
+  border-bottom: none;
+}
+
+.logTime {
+  font-size: 12px;
+  color: var(--ant-color-text-secondary);
+  min-width: 80px;
+}
+
+.logAction {
+  min-width: 60px;
+  text-align: center;
+}
+
+.logMessage {
+  flex: 1;
+  font-size: 13px;
+}
+
+.emptyLog {
+  text-align: center;
+  color: var(--ant-color-text-tertiary);
+  padding: 20px;
+}
+
+.idText {
+  font-family: monospace;
+  font-size: 12px;
+  color: var(--ant-color-text-secondary);
+}
+
+.hint {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--ant-color-text-secondary);
+}
+
+.autoFetchContent {
+  padding: 8px 0;
+}
+
+.warning {
+  margin-top: 16px;
+  padding: 12px;
+  background: #fff7e6;
+  border-left: 3px solid #faad14;
+  border-radius: 4px;
+}
+
+.warning p {
+  margin: 0 0 8px 0;
+  font-weight: 500;
+  color: #d46b08;
+}
+
+.warning ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.warning li {
+  margin: 4px 0;
+  font-size: 13px;
+  color: #873800;
+}
+
+.progressContainer {
+  padding: 20px 0;
+}
+
+.progressInfo {
+  margin-bottom: 20px;
+}
+
+.progressInfo p {
+  margin: 8px 0;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.progressTip {
+  margin-top: 16px;
+  padding: 12px;
+  background-color: #f0f5ff;
+  border-left: 3px solid #1890ff;
+  border-radius: 4px;
+  font-size: 13px;
+  color: #595959;
+}

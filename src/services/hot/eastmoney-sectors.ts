@@ -4,7 +4,7 @@
 
 import type { EastMoneySectorData } from '@/types/stock';
 import { logger } from '@/utils/logger';
-import { EASTMONEY_COOKIE } from '@/config/apiConfig';
+import { fetchWithCookieRetry } from '@/utils/fetchWithCookieRetry';
 
 /**
  * 东方财富热门板块原始数据
@@ -124,10 +124,7 @@ export async function getEastMoneyRisingSectors(
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000); // 10秒超时
 
-    const response = await fetch(url, {
-      headers: {
-        Cookie: EASTMONEY_COOKIE,
-      },
+    const response = await fetchWithCookieRetry(url, {
       signal: controller.signal,
     });
 
@@ -212,10 +209,7 @@ export async function getEastMoneyFallingSectors(
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000); // 10秒超时
 
-    const response = await fetch(url, {
-      headers: {
-        Cookie: EASTMONEY_COOKIE,
-      },
+    const response = await fetchWithCookieRetry(url, {
       signal: controller.signal,
     });
 

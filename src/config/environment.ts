@@ -4,7 +4,11 @@
  */
 
 // 环境检测
-export const isDev = import.meta.env?.DEV ?? process.env.NODE_ENV === 'development';
+// 在Vite环境中使用 import.meta.env，在Node/Electron环境中使用 process.env
+export const isDev =
+  typeof import.meta !== 'undefined' && (import.meta as any).env?.DEV
+    ? (import.meta as any).env.DEV
+    : process.env.NODE_ENV === 'development';
 
 export const isElectronShell =
   typeof window !== 'undefined' &&

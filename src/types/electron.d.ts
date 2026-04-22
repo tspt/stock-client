@@ -20,6 +20,26 @@ export interface ElectronAPI {
 
   /** 移除股票导航监听 */
   removeNavigateToStockListener: () => void;
+
+  /** 自动获取东方财富Cookie */
+  fetchEastMoneyCookies: (
+    count: number
+  ) => Promise<{ success: boolean; cookies?: string[]; error?: string }>;
+
+  /** 取消Cookie获取 */
+  cancelFetchEastMoneyCookies: () => Promise<{ success: boolean; error?: string }>;
+
+  /** 监听Cookie获取进度 */
+  onCookieFetchProgress: (
+    callback: (progress: {
+      current: number;
+      total: number;
+      batch: number;
+      totalBatches: number;
+      status: string;
+      cookie?: string;
+    }) => void
+  ) => () => void;
 }
 
 declare global {

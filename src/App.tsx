@@ -4,7 +4,7 @@
 
 import { Suspense, lazy, useEffect, useState } from 'react';
 import { ConfigProvider, App as AntdApp, theme, Layout, Tabs, Spin } from 'antd';
-import { StockOutlined, BellOutlined, BarChartOutlined, FireOutlined, ClusterOutlined, AppstoreOutlined, PartitionOutlined } from '@ant-design/icons';
+import { StockOutlined, BellOutlined, BarChartOutlined, FireOutlined, ClusterOutlined, AppstoreOutlined, PartitionOutlined, KeyOutlined } from '@ant-design/icons';
 import zhCN from 'antd/locale/zh_CN';
 import { useTheme } from '@/hooks/useTheme';
 import { useStockStore } from '@/stores/stockStore';
@@ -12,6 +12,7 @@ import { initNotificationNavigation } from '@/services/alerts';
 import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { ErrorBoundary } from '@/components/ErrorBoundary/ErrorBoundary';
 import { logger } from '@/utils/logger';
+import CookiePoolManager from '@/utils/cookiePoolManager';
 import styles from './App.module.css';
 import { POLLING_INTERVAL } from '@/utils/constants';
 
@@ -26,13 +27,14 @@ const HotPage = lazy(() => import('@/pages/HotPage/HotPage').then((m) => ({ defa
 const IndustrySectorPage = lazy(() => import('@/pages/IndustrySectorPage/IndustrySectorPage').then((m) => ({ default: m.IndustrySectorPage })));
 const ConceptSectorPage = lazy(() => import('@/pages/ConceptSectorPage/ConceptSectorPage').then((m) => ({ default: m.ConceptSectorPage })));
 const SectorConstituentsPage = lazy(() => import('@/pages/SectorConstituentsPage/SectorConstituentsPage').then((m) => ({ default: m.SectorConstituentsPage })));
+const CookieManagerPage = lazy(() => import('@/pages/CookieManagerPage/CookieManagerPage').then((m) => ({ default: m.CookieManagerPage })));
 
 const { Header, Content } = Layout;
 
 function AppContent() {
   const { theme: currentTheme } = useTheme();
   const { setSelectedStock } = useStockStore();
-  const [activeTab, setActiveTab] = useState('hot');
+  const [activeTab, setActiveTab] = useState('cookie-manager');
 
   // 检查 electronAPI 是否可用
   useEffect(() => {
@@ -82,6 +84,18 @@ function AppContent() {
     });
     return cleanup;
   }, [setSelectedStock]);
+
+  // 初始化Cookie池管理器
+  useEffect(() => {
+    CookiePoolManager.getInstance()
+      .initialize()
+      .then(() => {
+        logger.info('[App] Cookie池管理器初始化完成');
+      })
+      .catch((error) => {
+        logger.error('[App] Cookie池管理器初始化失败:', error);
+      });
+  }, []);
 
   // 当切换到提醒管理/数据概况/机会分析 tab 时，清除选中的股票
   useEffect(() => {
@@ -295,6 +309,28 @@ function AppContent() {
                         >
                           <div className={styles.overviewLayout}>
                             <OverviewPage />
+                          </div>
+                        </Suspense>
+                      ),
+                    },
+                    {
+                      key: 'cookie-manager',
+                      label: (
+                        <span>
+                          <KeyOutlined className={styles.mgr6} />
+                          Cookie管理
+                        </span>
+                      ),
+                      children: (
+                        <Suspense
+                          fallback={
+                            <div className={styles.suspenseFallback}>
+                              <Spin size="large" />
+                            </div>
+                          }
+                        >
+                          <div className={styles.cookieManagerLayout}>
+                            <CookieManagerPage />
                           </div>
                         </Suspense>
                       ),

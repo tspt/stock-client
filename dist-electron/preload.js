@@ -25,6 +25,22 @@ try {
         removeNavigateToStockListener: () => {
             electron_1.ipcRenderer.removeAllListeners('navigate-to-stock');
         },
+        // 自动获取东方财富Cookie
+        fetchEastMoneyCookies: (count) => {
+            return electron_1.ipcRenderer.invoke('fetch-cookies', count);
+        },
+        // 取消Cookie获取
+        cancelFetchEastMoneyCookies: () => {
+            return electron_1.ipcRenderer.invoke('cancel-fetch-cookies');
+        },
+        // 监听Cookie获取进度
+        onCookieFetchProgress: (callback) => {
+            const listener = (_event, progress) => callback(progress);
+            electron_1.ipcRenderer.on('cookie-fetch-progress', listener);
+            return () => {
+                electron_1.ipcRenderer.removeListener('cookie-fetch-progress', listener);
+            };
+        },
     });
     console.log('[Preload] electronAPI 已成功暴露到 window');
 }

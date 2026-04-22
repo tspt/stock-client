@@ -10,6 +10,6 @@
     "skipLibCheck": true,
     "allowImportingTsExtensions": false
   },
-  "include": ["main.ts", "localApiProxy.ts"],
+  "include": ["main.ts", "localApiProxy.ts", "cookieFetcher.ts"],
   "exclude": ["preload.ts"]
 }

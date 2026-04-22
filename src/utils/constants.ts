@@ -250,3 +250,10 @@ export const FILTER_SAVE_DEBOUNCE_DELAY = 300;
 
 /** 概况页全部分组ID */
 export const GROUP_ALL_ID = '__all__';
+
+/** Cookie池相关常量 */
+export const COOKIE_POOL_DB_NAME = 'CookiePoolDB';
+export const COOKIE_POOL_DB_VERSION = 1;
+export const COOKIE_POOL_STORE_NAME = 'cookies';
+export const MAX_COOKIE_COUNT = 60; // 最大Cookie数量
+export const COOKIE_HEALTH_CHECK_INTERVAL = 60 * 60 * 1000; // 1小时检查一次

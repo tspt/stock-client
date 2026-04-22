@@ -9,7 +9,7 @@ import type {
 } from '@/types/stock';
 import { logger } from '@/utils/logger';
 import { getStorage, setStorage } from '@/utils/storage';
-import { EASTMONEY_COOKIE } from '@/config/apiConfig';
+import { fetchWithCookieRetry } from '@/utils/fetchWithCookieRetry';
 
 /**
  * 东方财富概念板块原始数据
@@ -121,11 +121,7 @@ export async function getConceptSectors(
 
     const url = `${baseUrl}?${params.toString()}`;
 
-    const response = await fetch(url, {
-      headers: {
-        Cookie: EASTMONEY_COOKIE,
-      },
-    });
+    const response = await fetchWithCookieRetry(url);
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -254,11 +250,7 @@ export async function getConceptSectorStocks(
 
     const url = `${baseUrl}?${params.toString()}`;
 
-    const response = await fetch(url, {
-      headers: {
-        Cookie: EASTMONEY_COOKIE,
-      },
-    });
+    const response = await fetchWithCookieRetry(url);
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);

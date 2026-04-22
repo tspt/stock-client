@@ -3,7 +3,7 @@
  */
 
 import { logger } from '@/utils/logger';
-import { EASTMONEY_COOKIE } from '@/config/apiConfig';
+import { fetchWithCookieRetry } from '@/utils/fetchWithCookieRetry';
 
 /**
  * 指数数据接口
@@ -177,16 +177,10 @@ export async function getEastMoneyIndices(
     const timeoutId = setTimeout(() => controller.abort(), 10000); // 10秒超时
 
     const [indexResponse, rankResponse] = await Promise.all([
-      fetch(`${indexBaseUrl}?${indexParams.toString()}`, {
-        headers: {
-          Cookie: EASTMONEY_COOKIE,
-        },
+      fetchWithCookieRetry(`${indexBaseUrl}?${indexParams.toString()}`, {
         signal: controller.signal,
       }),
-      fetch(`${rankBaseUrl}?${rankParams.toString()}`, {
-        headers: {
-          Cookie: EASTMONEY_COOKIE,
-        },
+      fetchWithCookieRetry(`${rankBaseUrl}?${rankParams.toString()}`, {
         signal: controller.signal,
       }),
     ]);
