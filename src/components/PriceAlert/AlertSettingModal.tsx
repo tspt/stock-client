@@ -7,8 +7,8 @@ import { Modal, Form, Radio, InputNumber, Select, Checkbox, message } from 'antd
 import type { PriceAlert, AlertType, NotificationConfig, IndicatorType } from '@/types/stock';
 import { useAlertStore } from '@/stores/alertStore';
 import { useStockStore } from '@/stores/stockStore';
-import { ALERT_TIME_PERIODS } from '@/utils/constants';
-import { formatPrice } from '@/utils/format';
+import { ALERT_TIME_PERIODS } from '@/utils/config/constants';
+import { formatPrice } from '@/utils/format/format';
 
 interface AlertSettingModalProps {
   /** 是否显示 */

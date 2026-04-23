@@ -5,7 +5,7 @@
 
 import { Component, type ErrorInfo, type ReactNode } from 'react';
 import { Result, Button } from 'antd';
-import { logger } from '@/utils/logger';
+import { logger } from '@/utils/business/logger';
 
 interface Props {
   children: ReactNode;

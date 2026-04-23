@@ -17,11 +17,11 @@ import {
   saveOpportunityData,
   getOpportunityData,
   saveOpportunityHistory,
-} from '@/utils/opportunityIndexedDB';
+} from '@/utils/storage/opportunityIndexedDB';
 import {
   MAX_OPPORTUNITY_KLINE_CACHE_ENTRIES,
   OPPORTUNITY_DEFAULT_COLUMNS,
-} from '@/utils/constants';
+} from '@/utils/config/constants';
 
 function trimKlineDataCache(map: Map<string, KLineData[]>) {
   if (map.size <= MAX_OPPORTUNITY_KLINE_CACHE_ENTRIES) return;

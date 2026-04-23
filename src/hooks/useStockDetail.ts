@@ -5,7 +5,7 @@
 import { useState, useEffect } from 'react';
 import { getStockDetail } from '@/services/stocks';
 import { usePolling } from './usePolling';
-import { POLLING_INTERVAL } from '@/utils/constants';
+import { POLLING_INTERVAL } from '@/utils/config/constants';
 import type { StockDetail } from '@/types/stock';
 
 /**

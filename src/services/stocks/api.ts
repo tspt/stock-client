@@ -5,9 +5,9 @@
 
 import axios from 'axios';
 import type { StockInfo, StockQuote, KLineData, StockDetail } from '@/types/stock';
-import { getPureCode, getMarketFromCode } from '@/utils/format';
-import { getStorage, setStorage } from '@/utils/storage';
-import { apiCache } from '@/utils/apiCache';
+import { getPureCode, getMarketFromCode } from '@/utils/format/format';
+import { getStorage, setStorage } from '@/utils/storage/storage';
+import { apiCache } from '@/utils/storage/apiCache';
 import { API_BASE, useLocalProxy } from '@/config/environment';
 import { safeApiCall, handleApiError } from '../core/errors';
 import {
@@ -17,8 +17,8 @@ import {
   DEFAULT_CACHE_TTL,
   CACHE_KEYS,
   CACHE_TTL,
-} from '@/utils/constants';
-import { logger } from '@/utils/logger';
+} from '@/utils/config/constants';
+import { logger } from '@/utils/business/logger';
 
 /** 并发时复用同一次拉取，避免缓存失效瞬间多次打满接口 */
 let biyingHsltListFetchPromise: Promise<StockInfo[]> | null = null;

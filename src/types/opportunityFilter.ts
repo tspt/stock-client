@@ -76,6 +76,11 @@ export interface OpportunityFilterSnapshot {
   candlestickThreeWhiteSoldiers: boolean;
   /** K线形态回溯窗口大小（根数） */
   candlestickLookback: number;
+  /** K线形态识别高级配置 */
+  patternUseVolumeConfirmation: boolean;
+  patternRequireVolumeForReversal: boolean;
+  patternTrendBackgroundLookback: number;
+  patternVolumeMultiplier: number;
   /** 趋势形态筛选 */
   trendUptrend: boolean;
   trendDowntrend: boolean;

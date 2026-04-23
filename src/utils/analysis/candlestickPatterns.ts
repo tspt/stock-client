@@ -77,6 +77,10 @@ export interface PatternDetectionConfig {
   useVolumeConfirmation?: boolean;
   /** 成交量放大倍数 */
   volumeMultiplier?: number;
+  /** 反转形态强制成交量确认 */
+  requireVolumeForReversal?: boolean;
+  /** 趋势背景回溯周期（用于验证形态的趋势环境），默认10 */
+  trendBackgroundLookback?: number;
 }
 
 /** 默认配置 */
@@ -85,8 +89,10 @@ const DEFAULT_CONFIG: Required<PatternDetectionConfig> = {
   smallBodyThreshold: 0.33,
   largeBodyThreshold: 0.66,
   shadowBodyRatio: 2,
-  useVolumeConfirmation: false,
+  useVolumeConfirmation: true,
   volumeMultiplier: 1.5,
+  requireVolumeForReversal: true,
+  trendBackgroundLookback: 10,
 };
 
 /**
@@ -141,31 +147,144 @@ function calculateAvgVolume(precomputed: PrecomputedKLine[], lookback: number = 
   return sum / window.length;
 }
 
+/**
+ * 检查短期下降趋势（用于锤头线等看涨反转形态的背景验证）
+ */
+function checkShortTermDowntrend(klineData: KLineData[], lookback: number = 10): boolean {
+  if (klineData.length < 5) return false;
+
+  const recent = klineData.slice(-lookback);
+  if (recent.length < 5) return false;
+
+  // 简单判断：最近收盘价低于早期收盘价
+  const earlyClose = recent[0].close;
+  const lateClose = recent[recent.length - 1].close;
+
+  // 同时检查线性回归斜率为负
+  let sumX = 0,
+    sumY = 0,
+    sumXY = 0,
+    sumX2 = 0;
+  const n = recent.length;
+
+  for (let i = 0; i < n; i++) {
+    sumX += i;
+    sumY += recent[i].close;
+    sumXY += i * recent[i].close;
+    sumX2 += i * i;
+  }
+
+  const denominator = n * sumX2 - sumX * sumX;
+  if (denominator === 0) return false;
+
+  const slope = (n * sumXY - sumX * sumY) / denominator;
+  const avgPrice = sumY / n;
+
+  // 斜率为负且价格确实下降
+  return slope < -avgPrice * 0.003 && lateClose < earlyClose;
+}
+
+/**
+ * 检查短期上升趋势（用于射击之星等看跌反转形态的背景验证）
+ */
+function checkShortTermUptrend(klineData: KLineData[], lookback: number = 10): boolean {
+  if (klineData.length < 5) return false;
+
+  const recent = klineData.slice(-lookback);
+  if (recent.length < 5) return false;
+
+  // 简单判断：最近收盘价高于早期收盘价
+  const earlyClose = recent[0].close;
+  const lateClose = recent[recent.length - 1].close;
+
+  // 同时检查线性回归斜率为正
+  let sumX = 0,
+    sumY = 0,
+    sumXY = 0,
+    sumX2 = 0;
+  const n = recent.length;
+
+  for (let i = 0; i < n; i++) {
+    sumX += i;
+    sumY += recent[i].close;
+    sumXY += i * recent[i].close;
+    sumX2 += i * i;
+  }
+
+  const denominator = n * sumX2 - sumX * sumX;
+  if (denominator === 0) return false;
+
+  const slope = (n * sumXY - sumX * sumY) / denominator;
+  const avgPrice = sumY / n;
+
+  // 斜率为正且价格确实上升
+  return slope > avgPrice * 0.003 && lateClose > earlyClose;
+}
+
+/**
+ * 计算指定位置前的平均成交量
+ */
+function calculateAverageVolumeBefore(
+  klineData: KLineData[],
+  currentIndex: number,
+  lookback: number
+): number {
+  const start = Math.max(0, currentIndex - lookback);
+  const end = currentIndex;
+  const window = klineData.slice(start, end);
+
+  if (window.length === 0) return 0;
+
+  const sum = window.reduce((acc, k) => acc + k.volume, 0);
+  return sum / window.length;
+}
+
 // ==================== 基础形态检测函数 ====================
 
 /**
  * 判断是否为锤头线（Hammer）
  * 特征：实体小，下影线长（至少是实体的2倍），上影线很短或没有
+ * 增强：需要出现在下降趋势后，且建议伴随成交量放大
  */
-export function isHammer(kline: KLineData, config: PatternDetectionConfig = {}): boolean {
+export function isHammer(
+  kline: KLineData,
+  config: PatternDetectionConfig = {},
+  klineData?: KLineData[],
+  index?: number
+): boolean {
   const cfg = { ...DEFAULT_CONFIG, ...config };
   const p = precomputeKLine(kline);
 
   if (p.range <= 0) return false;
 
-  // 实体要小
+  // 1. 基本形态判断
   if (!p.isSmallBody) return false;
-
-  // 下影线要长（至少是实体的2倍）
   if (p.lowerShadow < p.body * cfg.shadowBodyRatio) return false;
-
-  // 上影线要短（小于范围的1/3）
   if (p.upperShadow >= p.range / 3) return false;
 
-  // 成交量确认（可选）
-  if (cfg.useVolumeConfirmation && p.volume > 0) {
-    // 锤头线通常伴随放量
-    // 这个检查在 detectPatternsInWindow 中进行
+  // 2. 趋势背景验证：锤头线应出现在下降趋势后
+  if (klineData && index !== undefined && cfg.trendBackgroundLookback) {
+    const trendData = klineData.slice(0, index);
+    if (trendData.length >= 5) {
+      const isDowntrend = checkShortTermDowntrend(trendData, cfg.trendBackgroundLookback);
+      if (!isDowntrend) {
+        return false; // 锤头线应出现在下降趋势后
+      }
+    }
+  }
+
+  // 3. 成交量确认（如果启用）
+  if (cfg.useVolumeConfirmation && klineData && index !== undefined) {
+    const avgVolume = calculateAverageVolumeBefore(
+      klineData,
+      index,
+      cfg.trendBackgroundLookback || 10
+    );
+    if (avgVolume > 0 && p.volume < avgVolume * cfg.volumeMultiplier) {
+      if (cfg.requireVolumeForReversal) {
+        return false; // 反转形态强制要求成交量放大
+      }
+    }
   }
 
   return true;
@@ -174,21 +293,48 @@ export function isHammer(kline: KLineData, config: PatternDetectionConfig = {}):
 /**
  * 判断是否为射击之星（Shooting Star）
  * 特征：实体小，上影线长（至少是实体的2倍），下影线很短或没有
+ * 增强：需要出现在上升趋势后，且建议伴随成交量放大
  */
-export function isShootingStar(kline: KLineData, config: PatternDetectionConfig = {}): boolean {
+export function isShootingStar(
+  kline: KLineData,
+  config: PatternDetectionConfig = {},
+  klineData?: KLineData[],
+  index?: number
+): boolean {
   const cfg = { ...DEFAULT_CONFIG, ...config };
   const p = precomputeKLine(kline);
 
   if (p.range <= 0) return false;
 
-  // 实体要小
+  // 1. 基本形态判断
   if (!p.isSmallBody) return false;
-
-  // 上影线要长（至少是实体的2倍）
   if (p.upperShadow < p.body * cfg.shadowBodyRatio) return false;
-
-  // 下影线要短（小于范围的1/3）
   if (p.lowerShadow >= p.range / 3) return false;
+
+  // 2. 趋势背景验证：射击之星应出现在上升趋势后
+  if (klineData && index !== undefined && cfg.trendBackgroundLookback) {
+    const trendData = klineData.slice(0, index);
+    if (trendData.length >= 5) {
+      const isUptrend = checkShortTermUptrend(trendData, cfg.trendBackgroundLookback);
+      if (!isUptrend) {
+        return false; // 射击之星应出现在上升趋势后
+      }
+    }
+  }
+
+  // 3. 成交量确认（如果启用）
+  if (cfg.useVolumeConfirmation && klineData && index !== undefined) {
+    const avgVolume = calculateAverageVolumeBefore(
+      klineData,
+      index,
+      cfg.trendBackgroundLookback || 10
+    );
+    if (avgVolume > 0 && p.volume < avgVolume * cfg.volumeMultiplier) {
+      if (cfg.requireVolumeForReversal) {
+        return false; // 反转形态强制要求成交量放大
+      }
+    }
+  }
 
   return true;
 }
@@ -196,21 +342,48 @@ export function isShootingStar(kline: KLineData, config: PatternDetectionConfig 
 /**
  * 判断是否为倒锤头线（Inverted Hammer）
  * 特征：实体小，上影线长，下影线短，出现在下降趋势底部
+ * 增强：需要出现在下降趋势后，且建议伴随成交量放大
  */
-export function isInvertedHammer(kline: KLineData, config: PatternDetectionConfig = {}): boolean {
+export function isInvertedHammer(
+  kline: KLineData,
+  config: PatternDetectionConfig = {},
+  klineData?: KLineData[],
+  index?: number
+): boolean {
   const cfg = { ...DEFAULT_CONFIG, ...config };
   const p = precomputeKLine(kline);
 
   if (p.range <= 0) return false;
 
-  // 实体要小
+  // 1. 基本形态判断
   if (!p.isSmallBody) return false;
-
-  // 上影线要长（至少是实体的2倍）
   if (p.upperShadow < p.body * cfg.shadowBodyRatio) return false;
-
-  // 下影线要短
   if (p.lowerShadow >= p.range / 3) return false;
+
+  // 2. 趋势背景验证：倒锤头线应出现在下降趋势后
+  if (klineData && index !== undefined && cfg.trendBackgroundLookback) {
+    const trendData = klineData.slice(0, index);
+    if (trendData.length >= 5) {
+      const isDowntrend = checkShortTermDowntrend(trendData, cfg.trendBackgroundLookback);
+      if (!isDowntrend) {
+        return false;
+      }
+    }
+  }
+
+  // 3. 成交量确认
+  if (cfg.useVolumeConfirmation && klineData && index !== undefined) {
+    const avgVolume = calculateAverageVolumeBefore(
+      klineData,
+      index,
+      cfg.trendBackgroundLookback || 10
+    );
+    if (avgVolume > 0 && p.volume < avgVolume * cfg.volumeMultiplier) {
+      if (cfg.requireVolumeForReversal) {
+        return false;
+      }
+    }
+  }
 
   return true;
 }
@@ -218,21 +391,48 @@ export function isInvertedHammer(kline: KLineData, config: PatternDetectionConfi
 /**
  * 判断是否为上吊线（Hanging Man）
  * 特征：实体小，下影线长，出现在上升趋势顶部
+ * 增强：需要出现在上升趋势后，且建议伴随成交量放大
  */
-export function isHangingMan(kline: KLineData, config: PatternDetectionConfig = {}): boolean {
+export function isHangingMan(
+  kline: KLineData,
+  config: PatternDetectionConfig = {},
+  klineData?: KLineData[],
+  index?: number
+): boolean {
   const cfg = { ...DEFAULT_CONFIG, ...config };
   const p = precomputeKLine(kline);
 
   if (p.range <= 0) return false;
 
-  // 实体要小
+  // 1. 基本形态判断
   if (!p.isSmallBody) return false;
-
-  // 下影线要长（至少是实体的2倍）
   if (p.lowerShadow < p.body * cfg.shadowBodyRatio) return false;
-
-  // 上影线要短
   if (p.upperShadow >= p.range / 3) return false;
+
+  // 2. 趋势背景验证：上吊线应出现在上升趋势后
+  if (klineData && index !== undefined && cfg.trendBackgroundLookback) {
+    const trendData = klineData.slice(0, index);
+    if (trendData.length >= 5) {
+      const isUptrend = checkShortTermUptrend(trendData, cfg.trendBackgroundLookback);
+      if (!isUptrend) {
+        return false;
+      }
+    }
+  }
+
+  // 3. 成交量确认
+  if (cfg.useVolumeConfirmation && klineData && index !== undefined) {
+    const avgVolume = calculateAverageVolumeBefore(
+      klineData,
+      index,
+      cfg.trendBackgroundLookback || 10
+    );
+    if (avgVolume > 0 && p.volume < avgVolume * cfg.volumeMultiplier) {
+      if (cfg.requireVolumeForReversal) {
+        return false;
+      }
+    }
+  }
 
   return true;
 }
@@ -330,11 +530,13 @@ export function isBearishEngulfing(prev: PrecomputedKLine, curr: PrecomputedKLin
 /**
  * 判断是否为早晨之星（Morning Star）
  * 需要三根K线：大阴线 + 小实体 + 大阳线
+ * 增强：需要出现在下降趋势后，且建议伴随成交量放大
  */
 export function isMorningStar(
   precomputed: PrecomputedKLine[],
   index: number,
-  config: PatternDetectionConfig = {}
+  config: PatternDetectionConfig = {},
+  klineData?: KLineData[]
 ): boolean {
   if (index < 2) return false;
 
@@ -343,6 +545,7 @@ export function isMorningStar(
   const second = precomputed[index - 1];
   const third = precomputed[index];
 
+  // 1. 基本形态判断
   // 第一根是大阴线
   if (!first.isBearish || first.body <= 0) return false;
 
@@ -354,17 +557,50 @@ export function isMorningStar(
 
   // 第三根收盘价应该进入第一根实体的一半以上
   const firstMidpoint = (first.open + first.close) / 2;
-  return third.close > firstMidpoint;
+  if (!(third.close > firstMidpoint)) return false;
+
+  // 2. 趋势背景验证：早晨之星应出现在下降趋势后
+  if (klineData && cfg.trendBackgroundLookback) {
+    const trendStart = Math.max(0, index - cfg.trendBackgroundLookback - 2);
+    const trendEnd = index - 2;
+    if (trendEnd > trendStart) {
+      const trendData = klineData.slice(trendStart, trendEnd);
+      if (trendData.length >= 5) {
+        const isDowntrend = checkShortTermDowntrend(trendData, cfg.trendBackgroundLookback);
+        if (!isDowntrend) {
+          return false;
+        }
+      }
+    }
+  }
+
+  // 3. 成交量确认：第三根阳线应该放量
+  if (cfg.useVolumeConfirmation && klineData) {
+    const avgVolume = calculateAverageVolumeBefore(
+      klineData,
+      index,
+      cfg.trendBackgroundLookback || 10
+    );
+    if (avgVolume > 0 && third.volume < avgVolume * cfg.volumeMultiplier) {
+      if (cfg.requireVolumeForReversal) {
+        return false;
+      }
+    }
+  }
+
+  return true;
 }
 
 /**
  * 判断是否为黄昏之星（Evening Star）
  * 需要三根K线：大阳线 + 小实体 + 大阴线
+ * 增强：需要出现在上升趋势后，且建议伴随成交量放大
  */
 export function isEveningStar(
   precomputed: PrecomputedKLine[],
   index: number,
-  config: PatternDetectionConfig = {}
+  config: PatternDetectionConfig = {},
+  klineData?: KLineData[]
 ): boolean {
   if (index < 2) return false;
 
@@ -373,6 +609,7 @@ export function isEveningStar(
   const second = precomputed[index - 1];
   const third = precomputed[index];
 
+  // 1. 基本形态判断
   // 第一根是大阳线
   if (!first.isBullish || first.body <= 0) return false;
 
@@ -384,7 +621,38 @@ export function isEveningStar(
 
   // 第三根收盘价应该进入第一根实体的一半以下
   const firstMidpoint = (first.open + first.close) / 2;
-  return third.close < firstMidpoint;
+  if (!(third.close < firstMidpoint)) return false;
+
+  // 2. 趋势背景验证：黄昏之星应出现在上升趋势后
+  if (klineData && cfg.trendBackgroundLookback) {
+    const trendStart = Math.max(0, index - cfg.trendBackgroundLookback - 2);
+    const trendEnd = index - 2;
+    if (trendEnd > trendStart) {
+      const trendData = klineData.slice(trendStart, trendEnd);
+      if (trendData.length >= 5) {
+        const isUptrend = checkShortTermUptrend(trendData, cfg.trendBackgroundLookback);
+        if (!isUptrend) {
+          return false;
+        }
+      }
+    }
+  }
+
+  // 3. 成交量确认：第三根阴线应该放量
+  if (cfg.useVolumeConfirmation && klineData) {
+    const avgVolume = calculateAverageVolumeBefore(
+      klineData,
+      index,
+      cfg.trendBackgroundLookback || 10
+    );
+    if (avgVolume > 0 && third.volume < avgVolume * cfg.volumeMultiplier) {
+      if (cfg.requireVolumeForReversal) {
+        return false;
+      }
+    }
+  }
+
+  return true;
 }
 
 // ==================== 新增形态函数 ====================
@@ -595,8 +863,8 @@ export function detectCandlestickPatterns(
   const prev = len >= 2 ? precomputed[lastIdx - 1] : null;
 
   // 单根K线形态
-  result.hammer = isHammer(klineData[lastIdx], config);
-  result.shootingStar = isShootingStar(klineData[lastIdx], config);
+  result.hammer = isHammer(klineData[lastIdx], config, klineData, lastIdx);
+  result.shootingStar = isShootingStar(klineData[lastIdx], config, klineData, lastIdx);
   result.doji = last.isDojiBody;
 
   // 双根K线形态
@@ -609,8 +877,8 @@ export function detectCandlestickPatterns(
 
   // 三根K线形态
   if (len >= 3) {
-    result.morningStar = isMorningStar(precomputed, lastIdx, config);
-    result.eveningStar = isEveningStar(precomputed, lastIdx, config);
+    result.morningStar = isMorningStar(precomputed, lastIdx, config, klineData);
+    result.eveningStar = isEveningStar(precomputed, lastIdx, config, klineData);
     result.darkCloudCover = isDarkCloudCover(precomputed, lastIdx, config);
     result.piercing = isPiercing(precomputed, lastIdx, config);
     result.threeBlackCrows = isThreeBlackCrows(precomputed, lastIdx, config);
@@ -670,25 +938,23 @@ export function detectCandlestickPatternsInWindow(
   for (let i = 0; i < windowLen; i++) {
     const kline = windowData[i];
     const p = precomputed[i];
+    // 计算在完整数据中的实际索引
+    const actualIndex = windowStart + i;
 
-    if (!result.hammer && isHammer(kline, config)) {
-      // 成交量确认
-      const volumeMultiplier = config.volumeMultiplier || 1.5;
-      if (!config.useVolumeConfirmation || p.volume >= avgVolume * volumeMultiplier) {
-        result.hammer = true;
-      }
+    if (!result.hammer && isHammer(kline, config, klineData, actualIndex)) {
+      result.hammer = true;
     }
-    if (!result.shootingStar && isShootingStar(kline, config)) {
+    if (!result.shootingStar && isShootingStar(kline, config, klineData, actualIndex)) {
       result.shootingStar = true;
     }
     if (!result.doji && p.isDojiBody) {
       result.doji = true;
     }
     // 新增形态检测
-    if (!result.invertedHammer && isInvertedHammer(kline, config)) {
+    if (!result.invertedHammer && isInvertedHammer(kline, config, klineData, actualIndex)) {
       result.invertedHammer = true;
     }
-    if (!result.hangingMan && isHangingMan(kline, config)) {
+    if (!result.hangingMan && isHangingMan(kline, config, klineData, actualIndex)) {
       result.hangingMan = true;
     }
     if (!result.dragonflyDoji && isDragonflyDoji(kline, config)) {
@@ -741,11 +1007,14 @@ export function detectCandlestickPatternsInWindow(
 
   // 检测三根K线形态
   for (let i = 2; i < windowLen; i++) {
+    // 计算在完整数据中的实际索引
+    const actualIndex = windowStart + i;
+
     if (!result.morningStar) {
-      result.morningStar = isMorningStar(precomputed, i, config);
+      result.morningStar = isMorningStar(precomputed, i, config, klineData);
     }
     if (!result.eveningStar) {
-      result.eveningStar = isEveningStar(precomputed, i, config);
+      result.eveningStar = isEveningStar(precomputed, i, config, klineData);
     }
     if (!result.darkCloudCover) {
       result.darkCloudCover = isDarkCloudCover(precomputed, i, config);

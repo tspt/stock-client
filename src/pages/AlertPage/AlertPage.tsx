@@ -9,9 +9,9 @@ import { EditOutlined, DeleteOutlined, BellOutlined, BellTwoTone } from '@ant-de
 import { useAlertStore } from '@/stores/alertStore';
 import { useStockStore } from '@/stores/stockStore';
 import { AlertSettingModal } from '@/components/PriceAlert/AlertSettingModal';
-import { formatPrice, formatChangePercent } from '@/utils/format';
+import { formatPrice, formatChangePercent } from '@/utils/format/format';
 import type { PriceAlert } from '@/types/stock';
-import { ALERT_TIME_PERIODS } from '@/utils/constants';
+import { ALERT_TIME_PERIODS } from '@/utils/config/constants';
 import styles from './AlertPage.module.css';
 
 export function AlertPage() {

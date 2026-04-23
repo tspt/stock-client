@@ -6,7 +6,7 @@
  */
 
 import { useEffect, useRef, useState } from 'react';
-import { POLLING_INTERVAL } from '@/utils/constants';
+import { POLLING_INTERVAL } from '@/utils/config/constants';
 
 interface UsePollingOptions {
   /** 轮询间隔（毫秒），默认10秒 */

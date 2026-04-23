@@ -78,6 +78,11 @@ export function buildOpportunityFilterSummary(p: {
   candlestickThreeBlackCrows: boolean;
   candlestickThreeWhiteSoldiers: boolean;
   candlestickLookback: number;
+  // K线形态识别高级配置
+  patternUseVolumeConfirmation: boolean;
+  patternRequireVolumeForReversal: boolean;
+  patternTrendBackgroundLookback: number;
+  patternVolumeMultiplier: number;
   // 趋势形态筛选
   trendUptrend: boolean;
   trendDowntrend: boolean;
@@ -301,6 +306,15 @@ export interface OpportunityFiltersPanelProps {
   setCandlestickThreeWhiteSoldiers: (v: boolean) => void;
   candlestickLookback: number;
   setCandlestickLookback: (v: number) => void;
+  // K线形态识别高级配置 props
+  patternUseVolumeConfirmation: boolean;
+  setPatternUseVolumeConfirmation: (v: boolean) => void;
+  patternRequireVolumeForReversal: boolean;
+  setPatternRequireVolumeForReversal: (v: boolean) => void;
+  patternTrendBackgroundLookback: number;
+  setPatternTrendBackgroundLookback: (v: number) => void;
+  patternVolumeMultiplier: number;
+  setPatternVolumeMultiplier: (v: number) => void;
   // 趋势形态筛选 props
   trendUptrend: boolean;
   setTrendUptrend: (v: boolean) => void;
@@ -449,6 +463,15 @@ export function OpportunityFiltersPanel({
   setCandlestickThreeWhiteSoldiers,
   candlestickLookback,
   setCandlestickLookback,
+  // K线形态识别高级配置
+  patternUseVolumeConfirmation,
+  setPatternUseVolumeConfirmation,
+  patternRequireVolumeForReversal,
+  setPatternRequireVolumeForReversal,
+  patternTrendBackgroundLookback,
+  setPatternTrendBackgroundLookback,
+  patternVolumeMultiplier,
+  setPatternVolumeMultiplier,
   // 趋势形态筛选
   trendUptrend,
   setTrendUptrend,
@@ -499,6 +522,7 @@ export function OpportunityFiltersPanel({
   setDrawerOpen: externalSetDrawerOpen,
 }: OpportunityFiltersPanelProps) {
   const [internalDrawerOpen, setInternalDrawerOpen] = useState(false);
+  const [showPatternAdvanced, setShowPatternAdvanced] = useState(false);
 
   // 如果外部提供了控制，则使用外部的；否则使用内部的
   const drawerOpen = externalDrawerOpen !== undefined ? externalDrawerOpen : internalDrawerOpen;
@@ -552,6 +576,10 @@ export function OpportunityFiltersPanel({
         candlestickThreeBlackCrows,
         candlestickThreeWhiteSoldiers,
         candlestickLookback,
+        patternUseVolumeConfirmation,
+        patternRequireVolumeForReversal,
+        patternTrendBackgroundLookback,
+        patternVolumeMultiplier,
         trendUptrend,
         trendDowntrend,
         trendSideways,
@@ -615,6 +643,10 @@ export function OpportunityFiltersPanel({
       candlestickThreeBlackCrows,
       candlestickThreeWhiteSoldiers,
       candlestickLookback,
+      patternUseVolumeConfirmation,
+      patternRequireVolumeForReversal,
+      patternTrendBackgroundLookback,
+      patternVolumeMultiplier,
       trendUptrend,
       trendDowntrend,
       trendSideways,
@@ -705,7 +737,7 @@ export function OpportunityFiltersPanel({
                   <div className={styles.filterContent}>
                     <div className={styles.filterRow}>
                       <div className={styles.filterItem}>
-                        <span className={styles.filterLabel}>价格范围：</span>
+                        <span className={styles.filterLabel}>价格：</span>
                         <InputNumber
                           value={priceRange.min}
                           min={0}
@@ -1007,263 +1039,262 @@ export function OpportunityFiltersPanel({
                 key: 'aiAnalysis',
                 label: 'AI分析筛选',
                 children: (
-                  <div className={styles.filterContent}>
-                    <div className={styles.filterRow}>
-                      <div className={styles.filterItem}>
-                        <Checkbox
-                          checked={aiAnalysisEnabled}
-                          onChange={(e) => setAiAnalysisEnabled(e.target.checked)}
-                        >
-                          启用AI分析筛选
-                        </Checkbox>
-                      </div>
-                    </div>
-                    <div className={styles.filterRow}>
-                      <div className={styles.filterItem} style={{ flexWrap: 'wrap', gap: 8 }}>
-                        <span className={styles.filterLabel}>趋势预测：</span>
-                        <Checkbox
-                          checked={aiTrendUp}
-                          onChange={(e) => setAiTrendUp(e.target.checked)}
-                          disabled={!aiAnalysisEnabled}
-                        >
-                          看涨
-                        </Checkbox>
-                        <Checkbox
-                          checked={aiTrendDown}
-                          onChange={(e) => setAiTrendDown(e.target.checked)}
-                          disabled={!aiAnalysisEnabled}
-                        >
-                          看跌
-                        </Checkbox>
-                        <Checkbox
-                          checked={aiTrendSideways}
-                          onChange={(e) => setAiTrendSideways(e.target.checked)}
-                          disabled={!aiAnalysisEnabled}
-                        >
-                          横盘
-                        </Checkbox>
-                      </div>
-                    </div>
-                    <div className={styles.filterRow}>
-                      <div className={styles.filterItem}>
-                        <span className={styles.filterLabel}>推荐评分：</span>
-                        <InputNumber
-                          value={aiRecommendScoreRange.min}
-                          min={0}
-                          max={100}
-                          step={1}
-                          style={{ width: 80 }}
-                          placeholder="最低分"
-                          disabled={!aiAnalysisEnabled}
-                          onChange={(v) => {
-                            setAiRecommendScoreRange((prev) => ({
-                              ...prev,
-                              min: typeof v === 'number' && isFinite(v) ? v : undefined,
-                            }));
-                          }}
-                        />
-                        <span style={{ margin: '0 4px' }}>~</span>
-                        <InputNumber
-                          value={aiRecommendScoreRange.max}
-                          min={0}
-                          max={100}
-                          step={1}
-                          style={{ width: 80 }}
-                          placeholder="最高分"
-                          disabled={!aiAnalysisEnabled}
-                          onChange={(v) => {
-                            setAiRecommendScoreRange((prev) => ({
-                              ...prev,
-                              max: typeof v === 'number' && isFinite(v) ? v : undefined,
-                            }));
-                          }}
-                        />
-                      </div>
-                    </div>
-                    <div className={styles.filterRow}>
-                      <div className={styles.filterItem}>
-                        <span className={styles.filterLabel}>置信度：</span>
-                        <InputNumber
-                          value={aiConfidenceRange.min}
-                          min={0}
-                          max={100}
-                          step={1}
-                          style={{ width: 80 }}
-                          placeholder="最低%"
-                          disabled={!aiAnalysisEnabled}
-                          onChange={(v) => {
-                            setAiConfidenceRange((prev) => ({
-                              ...prev,
-                              min: typeof v === 'number' && isFinite(v) ? v : undefined,
-                            }));
-                          }}
-                        />
-                        <span style={{ margin: '0 4px' }}>~</span>
-                        <InputNumber
-                          value={aiConfidenceRange.max}
-                          min={0}
-                          max={100}
-                          step={1}
-                          style={{ width: 80 }}
-                          placeholder="最高%"
-                          disabled={!aiAnalysisEnabled}
-                          onChange={(v) => {
-                            setAiConfidenceRange((prev) => ({
-                              ...prev,
-                              max: typeof v === 'number' && isFinite(v) ? v : undefined,
-                            }));
-                          }}
-                        />
-                      </div>
-                    </div>
-                    <div className={styles.filterRow}>
-                      <div className={styles.filterItem}>
-                        <span className={styles.filterLabel}>技术面评分：</span>
-                        <InputNumber
-                          value={aiTechnicalScoreRange.min}
-                          min={0}
-                          max={100}
-                          step={1}
-                          style={{ width: 80 }}
-                          placeholder="最低"
-                          disabled={!aiAnalysisEnabled}
-                          onChange={(v) => {
-                            setAiTechnicalScoreRange((prev) => ({
-                              ...prev,
-                              min: typeof v === 'number' && isFinite(v) ? v : undefined,
-                            }));
-                          }}
-                        />
-                        <span style={{ margin: '0 4px' }}>~</span>
-                        <InputNumber
-                          value={aiTechnicalScoreRange.max}
-                          min={0}
-                          max={100}
-                          step={1}
-                          style={{ width: 80 }}
-                          placeholder="最高"
-                          disabled={!aiAnalysisEnabled}
-                          onChange={(v) => {
-                            setAiTechnicalScoreRange((prev) => ({
-                              ...prev,
-                              max: typeof v === 'number' && isFinite(v) ? v : undefined,
-                            }));
-                          }}
-                        />
-                      </div>
-                    </div>
-                    <div className={styles.filterRow}>
-                      <div className={styles.filterItem}>
-                        <span className={styles.filterLabel}>形态评分：</span>
-                        <InputNumber
-                          value={aiPatternScoreRange.min}
-                          min={0}
-                          max={100}
-                          step={1}
-                          style={{ width: 80 }}
-                          placeholder="最低"
-                          disabled={!aiAnalysisEnabled}
-                          onChange={(v) => {
-                            setAiPatternScoreRange((prev) => ({
-                              ...prev,
-                              min: typeof v === 'number' && isFinite(v) ? v : undefined,
-                            }));
-                          }}
-                        />
-                        <span style={{ margin: '0 4px' }}>~</span>
-                        <InputNumber
-                          value={aiPatternScoreRange.max}
-                          min={0}
-                          max={100}
-                          step={1}
-                          style={{ width: 80 }}
-                          placeholder="最高"
-                          disabled={!aiAnalysisEnabled}
-                          onChange={(v) => {
-                            setAiPatternScoreRange((prev) => ({
-                              ...prev,
-                              max: typeof v === 'number' && isFinite(v) ? v : undefined,
-                            }));
-                          }}
-                        />
-                      </div>
-                    </div>
-                    <div className={styles.filterRow}>
-                      <div className={styles.filterItem}>
-                        <span className={styles.filterLabel}>趋势评分：</span>
-                        <InputNumber
-                          value={aiTrendScoreRange.min}
-                          min={0}
-                          max={100}
-                          step={1}
-                          style={{ width: 80 }}
-                          placeholder="最低"
-                          disabled={!aiAnalysisEnabled}
-                          onChange={(v) => {
-                            setAiTrendScoreRange((prev) => ({
-                              ...prev,
-                              min: typeof v === 'number' && isFinite(v) ? v : undefined,
-                            }));
-                          }}
-                        />
-                        <span style={{ margin: '0 4px' }}>~</span>
-                        <InputNumber
-                          value={aiTrendScoreRange.max}
-                          min={0}
-                          max={100}
-                          step={1}
-                          style={{ width: 80 }}
-                          placeholder="最高"
-                          disabled={!aiAnalysisEnabled}
-                          onChange={(v) => {
-                            setAiTrendScoreRange((prev) => ({
-                              ...prev,
-                              max: typeof v === 'number' && isFinite(v) ? v : undefined,
-                            }));
-                          }}
-                        />
-                      </div>
-                    </div>
-                    <div className={styles.filterRow}>
-                      <div className={styles.filterItem}>
-                        <span className={styles.filterLabel}>风险评分：</span>
-                        <InputNumber
-                          value={aiRiskScoreRange.min}
-                          min={0}
-                          max={100}
-                          step={1}
-                          style={{ width: 80 }}
-                          placeholder="最低"
-                          disabled={!aiAnalysisEnabled}
-                          onChange={(v) => {
-                            setAiRiskScoreRange((prev) => ({
-                              ...prev,
-                              min: typeof v === 'number' && isFinite(v) ? v : undefined,
-                            }));
-                          }}
-                        />
-                        <span style={{ margin: '0 4px' }}>~</span>
-                        <InputNumber
-                          value={aiRiskScoreRange.max}
-                          min={0}
-                          max={100}
-                          step={1}
-                          style={{ width: 80 }}
-                          placeholder="最高"
-                          disabled={!aiAnalysisEnabled}
-                          onChange={(v) => {
-                            setAiRiskScoreRange((prev) => ({
-                              ...prev,
-                              max: typeof v === 'number' && isFinite(v) ? v : undefined,
-                            }));
-                          }}
-                        />
-                        <span style={{ marginLeft: 8, color: 'var(--ant-color-text-secondary)', fontSize: 12 }}>
-                          （分数越高风险越低）
-                        </span>
-                      </div>
+                  <div className={styles.filterContent} style={{ display: 'flex', flexWrap: 'wrap', gap: '2px 16px' }}>
+                    {/* 启用开关 */}
+                    <div className={styles.filterItem} style={{ width: '100%', marginBottom: 8 }}>
+                      <Checkbox
+                        checked={aiAnalysisEnabled}
+                        onChange={(e) => setAiAnalysisEnabled(e.target.checked)}
+                        style={{ fontWeight: 'bold' }}
+                      >
+                        启用 AI 分析筛选
+                      </Checkbox>
                     </div>
 
+                    {/* 趋势预测 */}
+                    <div className={styles.filterItem} style={{ flexWrap: 'wrap', gap: 8, width: '100%' }}>
+                      <span className={styles.filterLabel}>趋势预测：</span>
+                      <Checkbox
+                        checked={aiTrendUp}
+                        onChange={(e) => setAiTrendUp(e.target.checked)}
+                        disabled={!aiAnalysisEnabled}
+                      >
+                        看涨
+                      </Checkbox>
+                      <Checkbox
+                        checked={aiTrendDown}
+                        onChange={(e) => setAiTrendDown(e.target.checked)}
+                        disabled={!aiAnalysisEnabled}
+                      >
+                        看跌
+                      </Checkbox>
+                      <Checkbox
+                        checked={aiTrendSideways}
+                        onChange={(e) => setAiTrendSideways(e.target.checked)}
+                        disabled={!aiAnalysisEnabled}
+                      >
+                        横盘
+                      </Checkbox>
+                    </div>
+
+                    {/* 推荐评分 */}
+                    <div className={styles.filterItem} style={{ minWidth: 240 }}>
+                      <span className={styles.filterLabel}>推荐评分：</span>
+                      <InputNumber
+                        value={aiRecommendScoreRange.min}
+                        min={0}
+                        max={100}
+                        step={1}
+                        style={{ width: 70 }}
+                        placeholder="最低"
+                        disabled={!aiAnalysisEnabled}
+                        onChange={(v) => {
+                          setAiRecommendScoreRange((prev) => ({
+                            ...prev,
+                            min: typeof v === 'number' && isFinite(v) ? v : undefined,
+                          }));
+                        }}
+                      />
+                      <span style={{ margin: '0 4px' }}>~</span>
+                      <InputNumber
+                        value={aiRecommendScoreRange.max}
+                        min={0}
+                        max={100}
+                        step={1}
+                        style={{ width: 70 }}
+                        placeholder="最高"
+                        disabled={!aiAnalysisEnabled}
+                        onChange={(v) => {
+                          setAiRecommendScoreRange((prev) => ({
+                            ...prev,
+                            max: typeof v === 'number' && isFinite(v) ? v : undefined,
+                          }));
+                        }}
+                      />
+                    </div>
+
+                    {/* 置信度 */}
+                    <div className={styles.filterItem} style={{ minWidth: 240 }}>
+                      <span className={styles.filterLabel}>置信度：</span>
+                      <InputNumber
+                        value={aiConfidenceRange.min}
+                        min={0}
+                        max={100}
+                        step={1}
+                        style={{ width: 70 }}
+                        placeholder="最低%"
+                        disabled={!aiAnalysisEnabled}
+                        onChange={(v) => {
+                          setAiConfidenceRange((prev) => ({
+                            ...prev,
+                            min: typeof v === 'number' && isFinite(v) ? v : undefined,
+                          }));
+                        }}
+                      />
+                      <span style={{ margin: '0 4px' }}>~</span>
+                      <InputNumber
+                        value={aiConfidenceRange.max}
+                        min={0}
+                        max={100}
+                        step={1}
+                        style={{ width: 70 }}
+                        placeholder="最高%"
+                        disabled={!aiAnalysisEnabled}
+                        onChange={(v) => {
+                          setAiConfidenceRange((prev) => ({
+                            ...prev,
+                            max: typeof v === 'number' && isFinite(v) ? v : undefined,
+                          }));
+                        }}
+                      />
+                    </div>
+
+                    {/* 技术面评分 */}
+                    <div className={styles.filterItem} style={{ minWidth: 240 }}>
+                      <span className={styles.filterLabel}>技术面评分：</span>
+                      <InputNumber
+                        value={aiTechnicalScoreRange.min}
+                        min={0}
+                        max={100}
+                        step={1}
+                        style={{ width: 70 }}
+                        placeholder="最低"
+                        disabled={!aiAnalysisEnabled}
+                        onChange={(v) => {
+                          setAiTechnicalScoreRange((prev) => ({
+                            ...prev,
+                            min: typeof v === 'number' && isFinite(v) ? v : undefined,
+                          }));
+                        }}
+                      />
+                      <span style={{ margin: '0 4px' }}>~</span>
+                      <InputNumber
+                        value={aiTechnicalScoreRange.max}
+                        min={0}
+                        max={100}
+                        step={1}
+                        style={{ width: 70 }}
+                        placeholder="最高"
+                        disabled={!aiAnalysisEnabled}
+                        onChange={(v) => {
+                          setAiTechnicalScoreRange((prev) => ({
+                            ...prev,
+                            max: typeof v === 'number' && isFinite(v) ? v : undefined,
+                          }));
+                        }}
+                      />
+                    </div>
+
+                    {/* 形态评分 */}
+                    <div className={styles.filterItem} style={{ minWidth: 240 }}>
+                      <span className={styles.filterLabel}>形态评分：</span>
+                      <InputNumber
+                        value={aiPatternScoreRange.min}
+                        min={0}
+                        max={100}
+                        step={1}
+                        style={{ width: 70 }}
+                        placeholder="最低"
+                        disabled={!aiAnalysisEnabled}
+                        onChange={(v) => {
+                          setAiPatternScoreRange((prev) => ({
+                            ...prev,
+                            min: typeof v === 'number' && isFinite(v) ? v : undefined,
+                          }));
+                        }}
+                      />
+                      <span style={{ margin: '0 4px' }}>~</span>
+                      <InputNumber
+                        value={aiPatternScoreRange.max}
+                        min={0}
+                        max={100}
+                        step={1}
+                        style={{ width: 70 }}
+                        placeholder="最高"
+                        disabled={!aiAnalysisEnabled}
+                        onChange={(v) => {
+                          setAiPatternScoreRange((prev) => ({
+                            ...prev,
+                            max: typeof v === 'number' && isFinite(v) ? v : undefined,
+                          }));
+                        }}
+                      />
+                    </div>
+
+                    {/* 趋势评分 */}
+                    <div className={styles.filterItem} style={{ minWidth: 240 }}>
+                      <span className={styles.filterLabel}>趋势评分：</span>
+                      <InputNumber
+                        value={aiTrendScoreRange.min}
+                        min={0}
+                        max={100}
+                        step={1}
+                        style={{ width: 70 }}
+                        placeholder="最低"
+                        disabled={!aiAnalysisEnabled}
+                        onChange={(v) => {
+                          setAiTrendScoreRange((prev) => ({
+                            ...prev,
+                            min: typeof v === 'number' && isFinite(v) ? v : undefined,
+                          }));
+                        }}
+                      />
+                      <span style={{ margin: '0 4px' }}>~</span>
+                      <InputNumber
+                        value={aiTrendScoreRange.max}
+                        min={0}
+                        max={100}
+                        step={1}
+                        style={{ width: 70 }}
+                        placeholder="最高"
+                        disabled={!aiAnalysisEnabled}
+                        onChange={(v) => {
+                          setAiTrendScoreRange((prev) => ({
+                            ...prev,
+                            max: typeof v === 'number' && isFinite(v) ? v : undefined,
+                          }));
+                        }}
+                      />
+                    </div>
+
+                    {/* 风险评分 */}
+                    <div className={styles.filterItem} style={{ minWidth: 320 }}>
+                      <span className={styles.filterLabel}>风险评分：</span>
+                      <InputNumber
+                        value={aiRiskScoreRange.min}
+                        min={0}
+                        max={100}
+                        step={1}
+                        style={{ width: 70 }}
+                        placeholder="最低"
+                        disabled={!aiAnalysisEnabled}
+                        onChange={(v) => {
+                          setAiRiskScoreRange((prev) => ({
+                            ...prev,
+                            min: typeof v === 'number' && isFinite(v) ? v : undefined,
+                          }));
+                        }}
+                      />
+                      <span style={{ margin: '0 4px' }}>~</span>
+                      <InputNumber
+                        value={aiRiskScoreRange.max}
+                        min={0}
+                        max={100}
+                        step={1}
+                        style={{ width: 70 }}
+                        placeholder="最高"
+                        disabled={!aiAnalysisEnabled}
+                        onChange={(v) => {
+                          setAiRiskScoreRange((prev) => ({
+                            ...prev,
+                            max: typeof v === 'number' && isFinite(v) ? v : undefined,
+                          }));
+                        }}
+                      />
+                      <span style={{ marginLeft: 8, color: 'var(--ant-color-text-secondary)', fontSize: 12 }}>
+                        （分数越高风险越低）
+                      </span>
+                    </div>
                   </div>
                 ),
               },
@@ -1544,6 +1575,112 @@ export function OpportunityFiltersPanel({
                         />
                         <span style={{ marginLeft: 4 }}>根</span>
                       </div>
+                    </div>
+
+                    {/* K线形态识别高级配置 */}
+                    <div className={styles.filterRow}>
+                      <Collapse
+                        ghost
+                        activeKey={showPatternAdvanced ? ['advanced'] : []}
+                        onChange={(keys) => setShowPatternAdvanced((keys as string[]).includes('advanced'))}
+                      >
+                        <Collapse.Panel
+                          key="advanced"
+                          header={<span style={{ fontSize: 13, color: '#666' }}>🔧 形态识别高级配置</span>}
+                        >
+                          {/* 启用成交量确认 */}
+                          <div className={styles.filterRow}>
+                            <div className={styles.filterItem}>
+                              <Checkbox
+                                checked={patternUseVolumeConfirmation}
+                                onChange={(e) => setPatternUseVolumeConfirmation(e.target.checked)}
+                              >
+                                启用成交量确认
+                              </Checkbox>
+                            </div>
+                          </div>
+
+                          {patternUseVolumeConfirmation && (
+                            <>
+                              <div className={styles.filterRow}>
+                                <div className={styles.filterItem}>
+                                  <span className={styles.filterLabel}>成交量倍数：</span>
+                                  <InputNumber
+                                    value={patternVolumeMultiplier}
+                                    min={1.0}
+                                    max={5.0}
+                                    step={0.1}
+                                    precision={1}
+                                    style={{ width: 80 }}
+                                    onChange={(v) => {
+                                      const next = typeof v === 'number' && isFinite(v) ? v : 1.5;
+                                      setPatternVolumeMultiplier(Math.max(1.0, Math.min(5.0, next)));
+                                    }}
+                                  />
+                                  <span style={{ marginLeft: 4, fontSize: 12, color: '#999' }}>倍</span>
+                                </div>
+                              </div>
+
+                              <div className={styles.filterRow}>
+                                <div className={styles.filterItem}>
+                                  <Checkbox
+                                    checked={patternRequireVolumeForReversal}
+                                    onChange={(e) => setPatternRequireVolumeForReversal(e.target.checked)}
+                                  >
+                                    反转形态强制成交量确认
+                                  </Checkbox>
+                                </div>
+                              </div>
+                            </>
+                          )}
+
+                          {/* 趋势背景周期 */}
+                          <div className={styles.filterRow}>
+                            <div className={styles.filterItem}>
+                              <span className={styles.filterLabel}>趋势背景周期：</span>
+                              <InputNumber
+                                value={patternTrendBackgroundLookback}
+                                min={5}
+                                max={30}
+                                step={1}
+                                style={{ width: 80 }}
+                                onChange={(v) => {
+                                  const next = typeof v === 'number' && isFinite(v) ? Math.floor(v) : 10;
+                                  setPatternTrendBackgroundLookback(Math.min(30, Math.max(5, next)));
+                                }}
+                              />
+                              <span style={{ marginLeft: 4, fontSize: 12, color: '#999' }}>根K线</span>
+                            </div>
+                          </div>
+
+                          {/* 说明文字 */}
+                          <div
+                            style={{
+                              marginTop: 8,
+                              padding: 8,
+                              background: '#f5f5f5',
+                              borderRadius: 4,
+                              fontSize: 12,
+                              color: '#666',
+                            }}
+                          >
+                            <div>
+                              💡 <strong>说明：</strong>
+                            </div>
+                            <ul style={{ margin: '4px 0 0 0', paddingLeft: 20 }}>
+                              <li>
+                                <strong>成交量确认</strong>：形态出现时成交量需放大到均量的指定倍数
+                              </li>
+                              <li>
+                                <strong>趋势背景</strong>：检查形态前N根K线的趋势方向，确保形态出现在合适的趋势环境中
+                              </li>
+                              <li>
+                                <strong>强制确认</strong>：开启后，反转形态必须满足成交量条件才有效
+                              </li>
+                            </ul>
+                          </div>
+                        </Collapse.Panel>
+                      </Collapse>
                     </div>
 
                     {/* K线形态筛选 - 单根 */}

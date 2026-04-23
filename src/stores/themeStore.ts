@@ -3,8 +3,8 @@
  */
 
 import { create } from 'zustand';
-import { getStorage, setStorage } from '@/utils/storage';
-import { STORAGE_KEYS } from '@/utils/constants';
+import { getStorage, setStorage } from '@/utils/storage/storage';
+import { STORAGE_KEYS } from '@/utils/config/constants';
 
 export type Theme = 'light' | 'dark';
 
@@ -36,4 +36,3 @@ export const useThemeStore = create<ThemeState>((set, get) => ({
     get().setTheme(saved);
   },
 }));
-

@@ -7,9 +7,9 @@ import type {
   ConceptSectorStockData,
   ConceptSectorBasicInfo,
 } from '@/types/stock';
-import { logger } from '@/utils/logger';
-import { getStorage, setStorage } from '@/utils/storage';
-import { fetchWithCookieRetry } from '@/utils/fetchWithCookieRetry';
+import { logger } from '@/utils/business/logger';
+import { getStorage, setStorage } from '@/utils/storage/storage';
+import { fetchWithCookieRetry } from '@/utils/network/fetchWithCookieRetry';
 
 /**
  * 东方财富概念板块原始数据

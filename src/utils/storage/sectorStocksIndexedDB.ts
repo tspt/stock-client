@@ -8,8 +8,8 @@ import {
   SECTOR_STOCKS_DB_VERSION,
   SECTOR_STOCKS_INDUSTRY_STORE,
   SECTOR_STOCKS_CONCEPT_STORE,
-} from './constants';
-import { logger } from './logger';
+} from '../config/constants';
+import { logger } from '../business/logger';
 
 export interface SectorWithStocks {
   code: string;

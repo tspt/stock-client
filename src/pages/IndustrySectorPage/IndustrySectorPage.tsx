@@ -8,7 +8,7 @@ import { SearchOutlined, ReloadOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { getUnifiedIndustryBasic, getUnifiedIndustryRank } from '@/services/hot/unified-sectors';
 import { getSingleIndustrySector } from '@/services/hot/industry-sectors';
-import { POLLING_INTERVAL, SECTOR_PAGE_SIZE, SEARCH_DEBOUNCE_DELAY } from '@/utils/constants';
+import { POLLING_INTERVAL, SECTOR_PAGE_SIZE, SEARCH_DEBOUNCE_DELAY } from '@/utils/config/constants';
 import { usePolling } from '@/hooks/usePolling';
 import type { IndustrySectorRankData, IndustrySectorBasicInfo } from '@/types/stock';
 import { IndustrySectorStocksDrawer } from '@/components/IndustrySectorStocksDrawer/IndustrySectorStocksDrawer';

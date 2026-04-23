@@ -1,6 +1,6 @@
-import { calculateConsolidationInLookback } from '@/utils/consolidationAnalysis';
-import { analyzeSharpMovePatterns } from '@/utils/sharpMovePatterns';
-import { calculateTrendLineInLookback } from '@/utils/trendLineAnalysis';
+import { calculateConsolidationInLookback } from '@/utils/analysis/consolidationAnalysis';
+import { analyzeSharpMovePatterns } from '@/utils/analysis/sharpMovePatterns';
+import { calculateTrendLineInLookback } from '@/utils/analysis/trendLineAnalysis';
 import {
   calculateRSI,
   calculateMACD,
@@ -11,9 +11,9 @@ import {
   isNearUpperBand,
   isNearMiddleBand,
   isNearLowerBand,
-} from '@/utils/technicalIndicators';
-import { detectCandlestickPatternsInWindow } from '@/utils/candlestickPatterns';
-import { detectTrendPatterns } from '@/utils/trendPatterns';
+} from '@/utils/analysis/technicalIndicators';
+import { detectCandlestickPatternsInWindow } from '@/utils/analysis/candlestickPatterns';
+import { detectTrendPatterns } from '@/utils/analysis/trendPatterns';
 import type { KLineData, SharpMovePatternAnalysis, StockOpportunityData } from '@/types/stock';
 import type { OpportunityFilterSnapshot } from '@/types/opportunityFilter';
 import type {
@@ -225,7 +225,12 @@ function passesTechnicalIndicatorsFilter(
     filters.candlestickThreeWhiteSoldiers
   ) {
     const candlestickLookback = filters.candlestickLookback || 20;
-    const patterns = detectCandlestickPatternsInWindow(klineData, candlestickLookback);
+    const patterns = detectCandlestickPatternsInWindow(klineData, candlestickLookback, {
+      useVolumeConfirmation: filters.patternUseVolumeConfirmation ?? true,
+      requireVolumeForReversal: filters.patternRequireVolumeForReversal ?? true,
+      trendBackgroundLookback: filters.patternTrendBackgroundLookback ?? 10,
+      volumeMultiplier: filters.patternVolumeMultiplier ?? 1.5,
+    });
 
     // 单根形态
     const singlePatternMatched =

@@ -3,8 +3,12 @@
  */
 
 import type { CookieEntry } from '@/types/cookie';
-import { COOKIE_POOL_DB_NAME, COOKIE_POOL_DB_VERSION, COOKIE_POOL_STORE_NAME } from './constants';
-import { logger } from './logger';
+import {
+  COOKIE_POOL_DB_NAME,
+  COOKIE_POOL_DB_VERSION,
+  COOKIE_POOL_STORE_NAME,
+} from '../config/constants';
+import { logger } from '../business/logger';
 
 let dbInstance: IDBDatabase | null = null;
 

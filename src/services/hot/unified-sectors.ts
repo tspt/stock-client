@@ -13,9 +13,9 @@ import type {
   ConceptSectorBasicInfo,
   ConceptSectorRankData,
 } from '@/types/stock';
-import { logger } from '@/utils/logger';
-import { getStorage, setStorage } from '@/utils/storage';
-import { CACHE_KEYS, CACHE_TTL } from '@/utils/constants';
+import { logger } from '@/utils/business/logger';
+import { getStorage, setStorage } from '@/utils/storage/storage';
+import { CACHE_KEYS, CACHE_TTL } from '@/utils/config/constants';
 import { getAllIndustrySectors as fetchAllIndustrySectors } from './industry-sectors';
 import { getAllConceptSectors as fetchAllConceptSectors } from './concept-sectors';
 import {

@@ -19,9 +19,9 @@ import {
   formatMarketCap,
   formatRatio,
   formatTurnoverRate,
-} from '@/utils/format';
+} from '@/utils/format/format';
 import type { KLinePeriod } from '@/types/stock';
-import { DETAIL_KLINE_PERIOD_STORAGE_KEY } from '@/utils/constants';
+import { DETAIL_KLINE_PERIOD_STORAGE_KEY } from '@/utils/config/constants';
 import styles from './DetailPage.module.css';
 
 const { Header, Content } = Layout;

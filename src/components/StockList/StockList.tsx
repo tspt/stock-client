@@ -22,10 +22,10 @@ import {
 import { useStockList } from '@/hooks/useStockList';
 import { useStockStore } from '@/stores/stockStore';
 import { StockGroupSelector } from '@/components/StockGroupSelector/StockGroupSelector';
-import { formatPrice, formatChangePercent, formatVolume } from '@/utils/format';
+import { formatPrice, formatChangePercent, formatVolume } from '@/utils/format/format';
 import { AlertSettingModal } from '@/components/PriceAlert/AlertSettingModal';
 import { message } from 'antd';
-import { BUILTIN_GROUP_SELF_COLOR, BUILTIN_GROUP_SELF_ID, BUILTIN_GROUP_SELF_NAME } from '@/utils/constants';
+import { BUILTIN_GROUP_SELF_COLOR, BUILTIN_GROUP_SELF_ID, BUILTIN_GROUP_SELF_NAME } from '@/utils/config/constants';
 import styles from './StockList.module.css';
 
 /** 与 .listItem min-height + padding 对齐，供虚拟列表固定行高 */

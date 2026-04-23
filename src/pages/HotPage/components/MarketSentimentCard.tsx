@@ -4,7 +4,7 @@
 
 import { Typography, Divider } from 'antd';
 import type { MarketOverview } from '@/services/hot';
-import { formatChangePercent } from '@/utils/format';
+import { formatChangePercent } from '@/utils/format/format';
 import styles from '../HotPage.module.css';
 
 const { Text } = Typography;

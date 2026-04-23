@@ -6,7 +6,7 @@ import { useEffect, useMemo } from 'react';
 import { useStockStore } from '@/stores/stockStore';
 import { useAlertStore } from '@/stores/alertStore';
 import { getStockQuotes } from '@/services/stocks';
-import { BUILTIN_GROUP_SELF_ID } from '@/utils/constants';
+import { BUILTIN_GROUP_SELF_ID } from '@/utils/config/constants';
 import { usePolling } from './usePolling';
 
 /**

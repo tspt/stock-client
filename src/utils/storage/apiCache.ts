@@ -4,8 +4,8 @@
  */
 
 import { cacheManager } from '@/services/core/cache';
-import { logger } from './logger';
-import { DEFAULT_CACHE_TTL } from '@/utils/constants';
+import { logger } from '../business/logger';
+import { DEFAULT_CACHE_TTL } from '@/utils/config/constants';
 
 /**
  * @deprecated 请使用 cacheManager 替代

@@ -15,7 +15,7 @@ import {
   formatRatio,
   formatTurnoverRate,
   formatTotalShares,
-} from '@/utils/format';
+} from '@/utils/format/format';
 import styles from './OverviewTable.module.css';
 
 interface OverviewTableProps {

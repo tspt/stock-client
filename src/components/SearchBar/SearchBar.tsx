@@ -10,7 +10,7 @@ import { useStockStore } from '@/stores/stockStore';
 import { useStockList } from '@/hooks/useStockList';
 import { StockGroupSelector } from '@/components/StockGroupSelector/StockGroupSelector';
 import type { StockInfo, SortType, Group } from '@/types/stock';
-import { BUILTIN_GROUP_SELF_COLOR, BUILTIN_GROUP_SELF_ID, BUILTIN_GROUP_SELF_NAME } from '@/utils/constants';
+import { BUILTIN_GROUP_SELF_COLOR, BUILTIN_GROUP_SELF_ID, BUILTIN_GROUP_SELF_NAME } from '@/utils/config/constants';
 import styles from './SearchBar.module.css';
 
 export function SearchBar() {

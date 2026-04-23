@@ -7,15 +7,15 @@ import { getUnifiedIndustryBasic, getUnifiedConceptBasic } from './unified-secto
 import { getIndustrySectorStocks } from './industry-sectors';
 import { getConceptSectorStocks } from './concept-sectors';
 import type { IndustrySectorBasicInfo, ConceptSectorBasicInfo } from '@/types/stock';
-import { logger } from '@/utils/logger';
-import { CACHE_TTL } from '@/utils/constants';
+import { logger } from '@/utils/business/logger';
+import { CACHE_TTL } from '@/utils/config/constants';
 import {
   saveIndustrySectors,
   saveConceptSectors,
   getIndustrySectors,
   getConceptSectors,
   type SectorWithStocks,
-} from '@/utils/sectorStocksIndexedDB';
+} from '@/utils/storage/sectorStocksIndexedDB';
 
 // ==================== 类型定义 ====================
 
@@ -289,7 +289,7 @@ function formatCachedData(sectors: SectorWithStocks[]): SectorFullData[] {
  * 清除 IndexedDB 中的板块成分股缓存
  */
 export async function clearSectorStocksCache(): Promise<void> {
-  const { clearSectorStocksDB } = await import('@/utils/sectorStocksIndexedDB');
+  const { clearSectorStocksDB } = await import('@/utils/storage/sectorStocksIndexedDB');
   await clearSectorStocksDB();
   logger.info('[SectorStocks] IndexedDB 缓存已清除');
 }

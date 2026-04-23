@@ -8,7 +8,7 @@ import {
   OPPORTUNITY_DEFAULT_CONSOLIDATION,
   OPPORTUNITY_DEFAULT_SHARP_MOVE,
   OPPORTUNITY_DEFAULT_TREND_LINE,
-} from '@/utils/opportunityAnalysisDefaults';
+} from '@/utils/config/opportunityAnalysisDefaults';
 
 export const OPPORTUNITY_FILTER_PREFS_KEY = 'opportunity_filter_prefs';
 

@@ -3,7 +3,7 @@
  */
 
 import { Layout, Skeleton } from 'antd';
-import { POLLING_INTERVAL } from '@/utils/constants';
+import { POLLING_INTERVAL } from '@/utils/config/constants';
 import {
   useIndices,
   useIndicesLoading,

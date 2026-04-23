@@ -13,7 +13,7 @@ import {
   clearAllCookies,
   getCookieCount,
 } from './cookiePoolDB';
-import { logger } from './logger';
+import { logger } from '../business/logger';
 
 /**
  * Cookie池管理器类
@@ -496,9 +496,7 @@ class CookiePoolManager {
    * @param file JSON文件
    * @returns 导入结果
    */
-  async importCookies(
-    file: File
-  ): Promise<{
+  async importCookies(file: File): Promise<{
     successCount: number;
     skippedCount: number;
     duplicateIds: string[];
@@ -533,7 +531,7 @@ class CookiePoolManager {
       // 检查数量上限
       const currentCount = this.cookies.size;
       const importCount = data.cookies.length;
-      const { MAX_COOKIE_COUNT } = await import('./constants');
+      const { MAX_COOKIE_COUNT } = await import('../config/constants');
 
       if (currentCount + importCount > MAX_COOKIE_COUNT) {
         return {

@@ -3,8 +3,8 @@
  */
 
 import type { EastMoneySectorData } from '@/types/stock';
-import { logger } from '@/utils/logger';
-import { fetchWithCookieRetry } from '@/utils/fetchWithCookieRetry';
+import { logger } from '@/utils/business/logger';
+import { fetchWithCookieRetry } from '@/utils/network/fetchWithCookieRetry';
 
 /**
  * 东方财富热门板块原始数据

@@ -4,19 +4,19 @@
 
 import { create } from 'zustand';
 import type { StockInfo, StockQuote, SortType, Group, StockWatchListData } from '@/types/stock';
-import { getStorage, setStorage } from '@/utils/storage';
+import { getStorage, setStorage } from '@/utils/storage/storage';
 import {
   STORAGE_KEYS,
   MAX_GROUP_COUNT,
   BUILTIN_GROUP_SELF_ID,
   BUILTIN_GROUP_SELF_NAME,
-} from '@/utils/constants';
+} from '@/utils/config/constants';
 import {
   generateGroupId,
   validateGroupName,
   ensureSelectedGroupIdForWatchList,
-} from '@/utils/groupUtils';
-import { debounce } from '@/utils/helpers';
+} from '@/utils/business/groupUtils';
+import { debounce } from '@/utils/format/helpers';
 import { message, Modal } from 'antd';
 
 interface StockState {

@@ -5,7 +5,7 @@
 
 import { Tooltip } from 'antd';
 import type { ReactNode } from 'react';
-import { getPatternSVG, type CandlestickPatternType, PATTERN_NAMES } from '@/utils/candlestickPatternSVGs';
+import { getPatternSVG, type CandlestickPatternType, PATTERN_NAMES } from '@/utils/analysis/candlestickPatternSVGs';
 
 interface PatternTooltipProps {
   /** 形态类型 */

@@ -4,13 +4,13 @@
 
 import { create } from 'zustand';
 import type { PriceAlert, StockQuote, KLineData } from '@/types/stock';
-import { getStorage, setStorage } from '@/utils/storage';
-import { STORAGE_KEYS } from '@/utils/constants';
+import { getStorage, setStorage } from '@/utils/storage/storage';
+import { STORAGE_KEYS } from '@/utils/config/constants';
 import {
   identifySupportResistance,
   detectVolumeAnomaly,
   detectIndicatorCross,
-} from '@/utils/alertEnhancements';
+} from '@/utils/analysis/alertEnhancements';
 
 interface AlertState {
   // 提醒列表

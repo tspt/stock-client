@@ -16,7 +16,7 @@ import {
   formatRatio,
   formatTurnoverRate,
   formatTotalShares,
-} from '@/utils/format';
+} from '@/utils/format/format';
 import styles from './OpportunityTable.module.css';
 
 interface OpportunityTableProps {

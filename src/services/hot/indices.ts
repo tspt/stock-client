@@ -2,8 +2,8 @@
  * 东方财富指数数据服务
  */
 
-import { logger } from '@/utils/logger';
-import { fetchWithCookieRetry } from '@/utils/fetchWithCookieRetry';
+import { logger } from '@/utils/business/logger';
+import { fetchWithCookieRetry } from '@/utils/network/fetchWithCookieRetry';
 
 /**
  * 指数数据接口

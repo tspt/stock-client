@@ -6,10 +6,10 @@ import { useMemo, useRef } from 'react';
 import ReactECharts from 'echarts-for-react';
 import type { EChartsOption } from 'echarts';
 import type { KLineData, KLinePeriod } from '@/types/stock';
-import { calculateAllMA, calculateKDJ, calculateAllRSI } from '@/utils/indicators';
-import { formatVolume } from '@/utils/format';
-import { detectCandlestickPatternsInWindow, type CandlestickPatternResult } from '@/utils/candlestickPatterns';
-import { getMultiplePatternsSVG, type CandlestickPatternType } from '@/utils/candlestickPatternSVGs';
+import { calculateAllMA, calculateKDJ, calculateAllRSI } from '@/utils/analysis/indicators';
+import { formatVolume } from '@/utils/format/format';
+import { detectCandlestickPatternsInWindow, type CandlestickPatternResult } from '@/utils/analysis/candlestickPatterns';
+import { getMultiplePatternsSVG, type CandlestickPatternType } from '@/utils/analysis/candlestickPatternSVGs';
 import styles from './KLineChart.module.css';
 
 interface KLineChartProps {

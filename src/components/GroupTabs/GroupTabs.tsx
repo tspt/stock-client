@@ -5,7 +5,7 @@
 import { Tabs, Button } from 'antd';
 import { SettingOutlined } from '@ant-design/icons';
 import type { Group } from '@/types/stock';
-import { BUILTIN_GROUP_SELF_COLOR, BUILTIN_GROUP_SELF_ID, BUILTIN_GROUP_SELF_NAME } from '@/utils/constants';
+import { BUILTIN_GROUP_SELF_COLOR, BUILTIN_GROUP_SELF_ID, BUILTIN_GROUP_SELF_NAME } from '@/utils/config/constants';
 import styles from './GroupTabs.module.css';
 
 interface GroupTabsProps {

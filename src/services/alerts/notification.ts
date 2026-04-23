@@ -4,7 +4,7 @@
  */
 
 import type { PriceAlert, StockQuote } from '@/types/stock';
-import { formatPrice, formatChangePercent } from '@/utils/format';
+import { formatPrice, formatChangePercent } from '@/utils/format/format';
 
 /**
  * 发送提醒通知

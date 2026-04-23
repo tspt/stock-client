@@ -11,8 +11,8 @@ import type {
 } from '@/types/stock';
 import type { ColumnConfig } from '@/types/common';
 import { analyzeAllStocks } from '@/services/overview';
-import { saveOverviewData, getOverviewData, saveOverviewHistory } from '@/utils/indexedDB';
-import { OVERVIEW_DEFAULT_COLUMNS } from '@/utils/constants';
+import { saveOverviewData, getOverviewData, saveOverviewHistory } from '@/utils/storage/indexedDB';
+import { OVERVIEW_DEFAULT_COLUMNS } from '@/utils/config/constants';
 import { useStockStore } from './stockStore';
 
 interface OverviewState {

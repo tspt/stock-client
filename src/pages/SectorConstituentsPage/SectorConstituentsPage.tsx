@@ -6,8 +6,8 @@ import { useState, useMemo, useEffect, useRef } from 'react';
 import { Layout, Button, Progress, Input, Typography, Empty, message } from 'antd';
 import { RocketOutlined, LoadingOutlined, ExportOutlined } from '@ant-design/icons';
 import { fetchAllSectorsStocks, type SectorFullData, type FetchProgress, type FailedSector } from '@/services/hot/sector-stocks-service';
-import { getIndustrySectors, getConceptSectors, type SectorWithStocks } from '@/utils/sectorStocksIndexedDB';
-import { CACHE_TTL } from '@/utils/constants';
+import { getIndustrySectors, getConceptSectors, type SectorWithStocks } from '@/utils/storage/sectorStocksIndexedDB';
+import { CACHE_TTL } from '@/utils/config/constants';
 import styles from './SectorConstituentsPage.module.css';
 
 const { Header, Content } = Layout;

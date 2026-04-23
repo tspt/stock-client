@@ -6,12 +6,12 @@
 
 import type { KLinePeriod, StockInfo, StockOpportunityData, KLineData } from '@/types/stock';
 import { getKLineData, getStockDetail, getStockQuotes } from '../stocks/api';
-import { calcAllIndicators, formatKDJValues } from '@/utils/indicators';
-import { calculateConsolidationInLookback } from '@/utils/consolidationAnalysis';
-import { analyzeSharpMovePatterns } from '@/utils/sharpMovePatterns';
-import { calculateTrendLineInLookback } from '@/utils/trendLineAnalysis';
+import { calcAllIndicators, formatKDJValues } from '@/utils/analysis/indicators';
+import { calculateConsolidationInLookback } from '@/utils/analysis/consolidationAnalysis';
+import { analyzeSharpMovePatterns } from '@/utils/analysis/sharpMovePatterns';
+import { calculateTrendLineInLookback } from '@/utils/analysis/trendLineAnalysis';
 import { performAIAnalysis } from './ai';
-import { ConcurrencyManager } from '@/utils/concurrencyManager';
+import { ConcurrencyManager } from '@/utils/business/concurrencyManager';
 import {
   OPPORTUNITY_BATCH_DELAY,
   OPPORTUNITY_CONCURRENT_LIMIT,
@@ -20,13 +20,13 @@ import {
   QUOTES_BATCH_SIZE,
   VOLUME_AMOUNT_UNIT_CONVERSION,
   PROGRESS_BASE,
-} from '@/utils/constants';
+} from '@/utils/config/constants';
 import {
   OPPORTUNITY_DEFAULT_CONSOLIDATION,
   OPPORTUNITY_DEFAULT_SHARP_MOVE,
   OPPORTUNITY_DEFAULT_TREND_LINE,
-} from '@/utils/opportunityAnalysisDefaults';
-import { logger } from '@/utils/logger';
+} from '@/utils/config/opportunityAnalysisDefaults';
+import { logger } from '@/utils/business/logger';
 
 async function analyzeOneStock(
   stock: StockInfo,

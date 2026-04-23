@@ -3,8 +3,8 @@
  * 提供内存、localStorage、IndexedDB 多种存储策略
  */
 
-import { logger } from '@/utils/logger';
-import { DEFAULT_CACHE_TTL } from '@/utils/constants';
+import { logger } from '@/utils/business/logger';
+import { DEFAULT_CACHE_TTL } from '@/utils/config/constants';
 
 interface CacheItem<T> {
   data: T;

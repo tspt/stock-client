@@ -19,17 +19,17 @@ import {
 import { useOpportunityStore } from '@/stores/opportunityStore';
 import {
   CONSOLIDATION_TYPE_LABELS,
-} from '@/utils/consolidationAnalysis';
+} from '@/utils/analysis/consolidationAnalysis';
 import { OpportunityTable } from '@/components/OpportunityTable/OpportunityTable';
 import { ColumnSettings } from '@/components/ColumnSettings/ColumnSettings';
 import { AIAnalysisModal } from '@/components/AIAnalysisModal';
-import { exportOpportunityToExcel } from '@/utils/opportunityExportUtils';
-import { exportStockNamesToExcel, exportStockNamesToPng } from '@/utils/stockNamesExportUtils';
-import { detectTradingSignal } from '@/utils/signalDetector';
+import { exportOpportunityToExcel } from '@/utils/export/opportunityExportUtils';
+import { exportStockNamesToExcel, exportStockNamesToPng } from '@/utils/export/stockNamesExportUtils';
+import { detectTradingSignal } from '@/utils/analysis/signalDetector';
 import type { ConsolidationType, KLinePeriod, StockInfo, StockOpportunityData } from '@/types/stock';
 import { useAllStocks } from '@/hooks/useAllStocks';
 import { useOpportunityFilterEngine } from '@/hooks/useOpportunityFilterEngine';
-import { getPureCode } from '@/utils/format';
+import { getPureCode } from '@/utils/format/format';
 import {
   applyOpportunityFilterPrefsToState,
   loadOpportunityFilterPrefs,
@@ -37,8 +37,8 @@ import {
   patchSavedPrefsQueryToDefaults,
   saveOpportunityFilterPrefs,
   visibilityFromActiveFilterPanelKey,
-} from '@/utils/opportunityFilterPrefs';
-import type { OpportunityFilterPrefs } from '@/utils/opportunityFilterPrefs';
+} from '@/utils/config/opportunityFilterPrefs';
+import type { OpportunityFilterPrefs } from '@/utils/config/opportunityFilterPrefs';
 import type { OpportunityFilterSnapshot } from '@/types/opportunityFilter';
 import { OpportunityFiltersPanel, buildOpportunityFilterSummary } from './OpportunityFiltersPanel';
 import { FilterDiagnosticsPanel } from '@/components/FilterDiagnosticsPanel';
@@ -46,7 +46,14 @@ import {
   OPPORTUNITY_DEFAULT_CONSOLIDATION,
   OPPORTUNITY_DEFAULT_SHARP_MOVE,
   OPPORTUNITY_DEFAULT_TREND_LINE,
-} from '@/utils/opportunityAnalysisDefaults';
+  OPPORTUNITY_DEFAULT_CANDLESTICK,
+  OPPORTUNITY_DEFAULT_TREND_PATTERN,
+  OPPORTUNITY_DEFAULT_AI_ANALYSIS,
+  OPPORTUNITY_DEFAULT_INDICATORS,
+  OPPORTUNITY_DEFAULT_LIMIT_MOVES,
+  OPPORTUNITY_DEFAULT_BASIC_FILTERS,
+  OPPORTUNITY_DEFAULT_SHARP_MOVE_FULL,
+} from '@/utils/config/opportunityAnalysisDefaults';
 import { getUnifiedSectorBasics } from '@/services/hot/unified-sectors';
 import type { IndustrySectorBasicInfo, ConceptSectorBasicInfo } from '@/types/stock';
 import {
@@ -55,7 +62,7 @@ import {
   OPPORTUNITY_TABLE_HEIGHT_MARGIN,
   SKIP_DETAIL_DISPLAY_COUNT,
   FILTER_SAVE_DEBOUNCE_DELAY,
-} from '@/utils/constants';
+} from '@/utils/config/constants';
 import styles from './OpportunityPage.module.css';
 
 const { Header, Content } = Layout;
@@ -89,94 +96,99 @@ const DEFAULT_CONSOLIDATION_TYPES: ConsolidationType[] = [];
 
 /** 与下方 useState 初始值保持一致，供「重置」同步恢复 */
 const INITIAL_FILTER_STATE = {
-  selectedMarket: 'hs_main' as const,
-  nameType: 'non_st' as const,
-  priceRange: { min: 3, max: 30 } as { min?: number; max?: number },
-  marketCapRange: { min: 30, max: 500 } as { min?: number; max?: number },
-  totalSharesRange: { min: 1, max: 50 } as { min?: number; max?: number },
-  turnoverRateRange: { min: 1 } as { min?: number; max?: number },
+  // 基础筛选
+  selectedMarket: OPPORTUNITY_DEFAULT_BASIC_FILTERS.selectedMarket,
+  nameType: OPPORTUNITY_DEFAULT_BASIC_FILTERS.nameType,
+  priceRange: { ...OPPORTUNITY_DEFAULT_BASIC_FILTERS.priceRange },
+  marketCapRange: { ...OPPORTUNITY_DEFAULT_BASIC_FILTERS.marketCapRange },
+  totalSharesRange: { ...OPPORTUNITY_DEFAULT_BASIC_FILTERS.totalSharesRange },
+  turnoverRateRange: { ...OPPORTUNITY_DEFAULT_BASIC_FILTERS.turnoverRateRange },
   peRatioRange: {} as { min?: number; max?: number },
   kdjJRange: {} as { min?: number; max?: number },
+
+  // 涨跌停筛选
   recentLimitUpCount: undefined as number | undefined,
   recentLimitDownCount: undefined as number | undefined,
-  limitUpPeriod: 20,
-  limitDownPeriod: 20,
+  limitUpPeriod: OPPORTUNITY_DEFAULT_LIMIT_MOVES.period,
+  limitDownPeriod: OPPORTUNITY_DEFAULT_LIMIT_MOVES.period,
+
+  // 横盘筛选
   consolidationTypes: DEFAULT_CONSOLIDATION_TYPES,
   consolidationLookback: OPPORTUNITY_DEFAULT_CONSOLIDATION.lookback,
   consolidationConsecutive: OPPORTUNITY_DEFAULT_CONSOLIDATION.consecutive,
   consolidationThreshold: OPPORTUNITY_DEFAULT_CONSOLIDATION.threshold,
-  /** 连续 N 根横盘段内每日收盘价是否要求 ≥ 当日 MA10 */
   consolidationRequireAboveMa10: OPPORTUNITY_DEFAULT_CONSOLIDATION.requireClosesAboveMa10,
-  /** 是否按横盘条件过滤列表（与趋势线可同时开启，关系为 AND） */
   consolidationFilterEnabled: false,
+
+  // 趋势线筛选
   trendLineLookback: OPPORTUNITY_DEFAULT_TREND_LINE.lookback,
   trendLineConsecutive: OPPORTUNITY_DEFAULT_TREND_LINE.consecutive,
   trendLineFilterEnabled: false,
+
+  // 异动筛选
   sharpMoveFilterEnabled: true,
-  sharpMoveWindowBars: OPPORTUNITY_DEFAULT_SHARP_MOVE.windowBars,
-  sharpMoveMagnitude: OPPORTUNITY_DEFAULT_SHARP_MOVE.magnitude,
-  sharpMoveFlatThreshold: 3,
-  sharpMoveOnlyDrop: true,
-  sharpMoveOnlyRise: true,
-  sharpMoveDropThenRiseLoose: true,
-  sharpMoveRiseThenDropLoose: true,
-  sharpMoveDropFlatRise: false,
-  sharpMoveRiseFlatDrop: false,
-  /** RSI指标范围 */
+  sharpMoveWindowBars: OPPORTUNITY_DEFAULT_SHARP_MOVE_FULL.windowBars,
+  sharpMoveMagnitude: OPPORTUNITY_DEFAULT_SHARP_MOVE_FULL.magnitude,
+  sharpMoveFlatThreshold: OPPORTUNITY_DEFAULT_SHARP_MOVE_FULL.flatThreshold,
+  sharpMoveOnlyDrop: OPPORTUNITY_DEFAULT_SHARP_MOVE_FULL.onlyDrop,
+  sharpMoveOnlyRise: OPPORTUNITY_DEFAULT_SHARP_MOVE_FULL.onlyRise,
+  sharpMoveDropThenRiseLoose: OPPORTUNITY_DEFAULT_SHARP_MOVE_FULL.dropThenRiseLoose,
+  sharpMoveRiseThenDropLoose: OPPORTUNITY_DEFAULT_SHARP_MOVE_FULL.riseThenDropLoose,
+  sharpMoveDropFlatRise: OPPORTUNITY_DEFAULT_SHARP_MOVE_FULL.dropFlatRise,
+  sharpMoveRiseFlatDrop: OPPORTUNITY_DEFAULT_SHARP_MOVE_FULL.riseFlatDrop,
+
+  // 技术指标筛选
   rsiRange: {} as { min?: number; max?: number },
-  /** RSI周期 */
-  rsiPeriod: 14,
-  /** 布林带阈值（0-1之间，默认0.02即2%） */
-  bollingerThreshold: 0.02,
-  /** MACD金叉 */
+  rsiPeriod: OPPORTUNITY_DEFAULT_INDICATORS.rsiPeriod,
+  bollingerThreshold: OPPORTUNITY_DEFAULT_INDICATORS.bollingerThreshold,
   macdGoldenCross: false,
-  /** MACD死叉 */
   macdDeathCross: false,
-  /** MACD背离 */
   macdDivergence: false,
-  /** 布林带上轨 */
   bollingerUpper: false,
-  /** 布林带中轨 */
   bollingerMiddle: false,
-  /** 布林带下轨 */
   bollingerLower: false,
-  /** K线形态筛选 - 单根 */
+
+  // K线形态筛选
   candlestickHammer: false,
   candlestickShootingStar: false,
   candlestickDoji: false,
-  /** K线形态筛选 - 双根 */
   candlestickEngulfingBullish: false,
   candlestickEngulfingBearish: false,
   candlestickHaramiBullish: false,
   candlestickHaramiBearish: false,
-  /** K线形态筛选 - 三根 */
   candlestickMorningStar: false,
   candlestickEveningStar: false,
   candlestickDarkCloudCover: false,
   candlestickPiercing: false,
   candlestickThreeBlackCrows: false,
   candlestickThreeWhiteSoldiers: false,
-  /** K线形态回溯窗口大小（根数） */
-  candlestickLookback: 20,
-  /** 趋势形态筛选 */
+  candlestickLookback: OPPORTUNITY_DEFAULT_CANDLESTICK.lookback,
+
+  // K线形态识别高级配置
+  patternUseVolumeConfirmation: OPPORTUNITY_DEFAULT_CANDLESTICK.useVolumeConfirmation,
+  patternRequireVolumeForReversal: OPPORTUNITY_DEFAULT_CANDLESTICK.requireVolumeForReversal,
+  patternTrendBackgroundLookback: OPPORTUNITY_DEFAULT_CANDLESTICK.trendBackgroundLookback,
+  patternVolumeMultiplier: OPPORTUNITY_DEFAULT_CANDLESTICK.volumeMultiplier,
+
+  // 趋势形态筛选
   trendUptrend: false,
   trendDowntrend: false,
   trendSideways: false,
   trendBreakout: false,
   trendBreakdown: false,
-  /** 趋势形态回溯窗口大小（根数） */
-  trendLookback: 20,
-  /** AI分析筛选 */
-  aiAnalysisEnabled: true,
-  aiTrendUp: true,
-  aiTrendDown: false,
-  aiTrendSideways: false,
+  trendLookback: OPPORTUNITY_DEFAULT_TREND_PATTERN.lookback,
+
+  // AI分析筛选
+  aiAnalysisEnabled: OPPORTUNITY_DEFAULT_AI_ANALYSIS.enabled,
+  aiTrendUp: OPPORTUNITY_DEFAULT_AI_ANALYSIS.trendUp,
+  aiTrendDown: OPPORTUNITY_DEFAULT_AI_ANALYSIS.trendDown,
+  aiTrendSideways: OPPORTUNITY_DEFAULT_AI_ANALYSIS.trendSideways,
   aiConfidenceRange: {},
   aiRecommendScoreRange: {},
   aiTechnicalScoreRange: {},
   aiPatternScoreRange: {},
-  aiTrendScoreRange: { min: 50 },
-  aiRiskScoreRange: { min: 50 },
+  aiTrendScoreRange: { min: OPPORTUNITY_DEFAULT_AI_ANALYSIS.trendScoreMin },
+  aiRiskScoreRange: { min: OPPORTUNITY_DEFAULT_AI_ANALYSIS.riskScoreMin },
 };
 
 /** 与 opportunityStore 初始值一致，用于「重置」恢复周期与 K 线数量 */
@@ -343,6 +355,20 @@ export function OpportunityPage() {
   const [candlestickThreeBlackCrows, setCandlestickThreeBlackCrows] = useState<boolean>(INITIAL_FILTER_STATE.candlestickThreeBlackCrows);
   const [candlestickThreeWhiteSoldiers, setCandlestickThreeWhiteSoldiers] = useState<boolean>(INITIAL_FILTER_STATE.candlestickThreeWhiteSoldiers);
   const [candlestickLookback, setCandlestickLookback] = useState<number>(INITIAL_FILTER_STATE.candlestickLookback);
+
+  // K线形态识别高级配置状态
+  const [patternUseVolumeConfirmation, setPatternUseVolumeConfirmation] = useState<boolean>(
+    INITIAL_FILTER_STATE.patternUseVolumeConfirmation
+  );
+  const [patternRequireVolumeForReversal, setPatternRequireVolumeForReversal] = useState<boolean>(
+    INITIAL_FILTER_STATE.patternRequireVolumeForReversal
+  );
+  const [patternTrendBackgroundLookback, setPatternTrendBackgroundLookback] = useState<number>(
+    INITIAL_FILTER_STATE.patternTrendBackgroundLookback
+  );
+  const [patternVolumeMultiplier, setPatternVolumeMultiplier] = useState<number>(
+    INITIAL_FILTER_STATE.patternVolumeMultiplier
+  );
 
   // 趋势形态筛选状态
   const [trendUptrend, setTrendUptrend] = useState<boolean>(INITIAL_FILTER_STATE.trendUptrend);
@@ -1242,6 +1268,10 @@ export function OpportunityPage() {
           candlestickThreeBlackCrows,
           candlestickThreeWhiteSoldiers,
           candlestickLookback,
+          patternUseVolumeConfirmation,
+          patternRequireVolumeForReversal,
+          patternTrendBackgroundLookback,
+          patternVolumeMultiplier,
           trendUptrend,
           trendDowntrend,
           trendSideways,
@@ -1614,6 +1644,15 @@ export function OpportunityPage() {
             setCandlestickThreeWhiteSoldiers={setCandlestickThreeWhiteSoldiers}
             candlestickLookback={candlestickLookback}
             setCandlestickLookback={setCandlestickLookback}
+            // K线形态识别高级配置 props
+            patternUseVolumeConfirmation={patternUseVolumeConfirmation}
+            setPatternUseVolumeConfirmation={setPatternUseVolumeConfirmation}
+            patternRequireVolumeForReversal={patternRequireVolumeForReversal}
+            setPatternRequireVolumeForReversal={setPatternRequireVolumeForReversal}
+            patternTrendBackgroundLookback={patternTrendBackgroundLookback}
+            setPatternTrendBackgroundLookback={setPatternTrendBackgroundLookback}
+            patternVolumeMultiplier={patternVolumeMultiplier}
+            setPatternVolumeMultiplier={setPatternVolumeMultiplier}
             // 趋势形态筛选 props
             trendUptrend={trendUptrend}
             setTrendUptrend={setTrendUptrend}
@@ -1742,6 +1781,10 @@ export function OpportunityPage() {
                   candlestickThreeBlackCrows,
                   candlestickThreeWhiteSoldiers,
                   candlestickLookback,
+                  patternUseVolumeConfirmation,
+                  patternRequireVolumeForReversal,
+                  patternTrendBackgroundLookback,
+                  patternVolumeMultiplier,
                   trendUptrend,
                   trendDowntrend,
                   trendSideways,

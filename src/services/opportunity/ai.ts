@@ -11,9 +11,13 @@ import type {
   AIAnalysisResult,
   StockOpportunityData,
 } from '@/types/stock';
-import { calculateRSI, calculateMACD, calculateBollingerBands } from '@/utils/technicalIndicators';
-import { detectTrendPatterns } from '@/utils/trendPatterns';
-import { detectCandlestickPatternsInWindow } from '@/utils/candlestickPatterns';
+import {
+  calculateRSI,
+  calculateMACD,
+  calculateBollingerBands,
+} from '@/utils/analysis/technicalIndicators';
+import { detectTrendPatterns } from '@/utils/analysis/trendPatterns';
+import { detectCandlestickPatternsInWindow } from '@/utils/analysis/candlestickPatterns';
 
 /**
  * 简单的移动平均计算（用于number数组）

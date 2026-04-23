@@ -4,11 +4,11 @@
 
 import { useState, useEffect } from 'react';
 import { getKLineData } from '@/services/stocks';
-import { KLINE_POLLING_INTERVAL_MS } from '@/utils/constants';
+import { KLINE_POLLING_INTERVAL_MS } from '@/utils/config/constants';
 import { usePolling } from './usePolling';
-import { klineCache } from '@/utils/klineCache';
+import { klineCache } from '@/utils/storage/klineCache';
 import type { KLineData, KLinePeriod } from '@/types/stock';
-import { logger } from '@/utils/logger';
+import { logger } from '@/utils/business/logger';
 
 interface UseKLineDataOptions {
   /** 股票代码 */

@@ -4,14 +4,14 @@
 
 import type { StockInfo, StockOverviewData, KLinePeriod } from '@/types/stock';
 import { getStockQuotes, getStockDetail, getKLineData } from '../stocks/api';
-import { ConcurrencyManager } from '@/utils/concurrencyManager';
+import { ConcurrencyManager } from '@/utils/business/concurrencyManager';
 import {
   OVERVIEW_CONCURRENT_LIMIT,
   OVERVIEW_BATCH_DELAY,
   VOLUME_AMOUNT_UNIT_CONVERSION,
-} from '@/utils/constants';
-import { calcAllIndicators, formatKDJValues } from '@/utils/indicators';
-import { logger } from '@/utils/logger';
+} from '@/utils/config/constants';
+import { calcAllIndicators, formatKDJValues } from '@/utils/analysis/indicators';
+import { logger } from '@/utils/business/logger';
 
 /**
  * 分析单只股票

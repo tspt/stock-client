@@ -11,11 +11,11 @@ import type {
   IndustryComparison,
   ResearchReportSummary,
 } from '@/types/stock';
-import { getPureCode, getMarketFromCode } from '@/utils/format';
-import { apiCache } from '@/utils/apiCache';
+import { getPureCode, getMarketFromCode } from '@/utils/format/format';
+import { apiCache } from '@/utils/storage/apiCache';
 import { API_BASE } from '@/config/environment';
-import { logger } from '@/utils/logger';
-import { API_TIMEOUT, DEFAULT_CACHE_TTL } from '@/utils/constants';
+import { logger } from '@/utils/business/logger';
+import { API_TIMEOUT, DEFAULT_CACHE_TTL } from '@/utils/config/constants';
 
 /**
  * 获取股票基本面分析数据

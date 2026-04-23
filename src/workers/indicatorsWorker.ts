@@ -4,8 +4,8 @@
  */
 
 import type { KLineData } from '@/types/stock';
-import { calculateAllMA, calculateKDJ, calculateAllRSI } from '@/utils/indicators';
-import { detectCandlestickPatternsInWindow } from '@/utils/candlestickPatterns';
+import { calculateAllMA, calculateKDJ, calculateAllRSI } from '@/utils/analysis/indicators';
+import { detectCandlestickPatternsInWindow } from '@/utils/analysis/candlestickPatterns';
 
 interface WorkerMessage {
   type: 'CALCULATE_INDICATORS';

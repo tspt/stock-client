@@ -3,7 +3,7 @@
  */
 
 import type { SectorRankData } from '@/types/stock';
-import { logger } from '@/utils/logger';
+import { logger } from '@/utils/business/logger';
 
 /**
  * 腾讯财经板块排行原始数据

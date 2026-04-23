@@ -2,7 +2,7 @@
  * 市场概览服务 - 获取上证指数、深证成指等市场数据
  */
 
-import { logger } from '@/utils/logger';
+import { logger } from '@/utils/business/logger';
 
 /**
  * 市场概览数据类型

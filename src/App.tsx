@@ -11,10 +11,10 @@ import { useStockStore } from '@/stores/stockStore';
 import { initNotificationNavigation } from '@/services/alerts';
 import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { ErrorBoundary } from '@/components/ErrorBoundary/ErrorBoundary';
-import { logger } from '@/utils/logger';
-import CookiePoolManager from '@/utils/cookiePoolManager';
+import { logger } from '@/utils/business/logger';
+import CookiePoolManager from '@/utils/storage/cookiePoolManager';
 import styles from './App.module.css';
-import { POLLING_INTERVAL } from '@/utils/constants';
+import { POLLING_INTERVAL } from '@/utils/config/constants';
 
 const ListPage = lazy(() => import('@/pages/ListPage/ListPage').then((m) => ({ default: m.ListPage })));
 const DetailPage = lazy(() => import('@/pages/DetailPage/DetailPage').then((m) => ({ default: m.DetailPage })));

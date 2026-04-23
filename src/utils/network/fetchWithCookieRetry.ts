@@ -3,8 +3,8 @@
  * 自动从Cookie池获取Cookie，失败时自动切换
  */
 
-import CookiePoolManager from './cookiePoolManager';
-import { logger } from './logger';
+import CookiePoolManager from '../storage/cookiePoolManager';
+import { logger } from '../business/logger';
 
 /**
  * 带Cookie重试的fetch函数

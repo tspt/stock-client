@@ -11,7 +11,7 @@ import {
   formatMarketCap,
   formatRatio,
   formatTurnoverRate,
-} from './format';
+} from '../format/format';
 
 function formatValue(value: any, key: string, record?: StockOpportunityData): string {
   if (key === 'consolidationStatus') {

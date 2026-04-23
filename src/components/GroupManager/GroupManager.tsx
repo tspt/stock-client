@@ -25,7 +25,7 @@ import {
 } from '@ant-design/icons';
 import type { Group, StockInfo } from '@/types/stock';
 import { useStockStore } from '@/stores/stockStore';
-import { PRESET_COLORS, MAX_GROUP_COUNT } from '@/utils/constants';
+import { PRESET_COLORS, MAX_GROUP_COUNT } from '@/utils/config/constants';
 import styles from './GroupManager.module.css';
 
 interface GroupManagerProps {
@@ -256,9 +256,8 @@ export function GroupManager({ visible, onClose }: GroupManagerProps) {
 
               return (
                 <List.Item
-                  className={`${styles.groupItem} ${editingGroup?.id === group.id ? styles.editing : ''} ${
-                    draggedIndex === index ? styles.dragging : ''
-                  } ${dragOverIndex === index ? styles.dragOver : ''}`}
+                  className={`${styles.groupItem} ${editingGroup?.id === group.id ? styles.editing : ''} ${draggedIndex === index ? styles.dragging : ''
+                    } ${dragOverIndex === index ? styles.dragOver : ''}`}
                 >
                   <div
                     className={styles.groupItemContent}
@@ -392,9 +391,8 @@ export function GroupManager({ visible, onClose }: GroupManagerProps) {
                     {PRESET_COLORS.map((color) => (
                       <div
                         key={color}
-                        className={`${styles.colorOption} ${
-                          selectedColor === color ? styles.selected : ''
-                        }`}
+                        className={`${styles.colorOption} ${selectedColor === color ? styles.selected : ''
+                          }`}
                         style={{ backgroundColor: color }}
                         onClick={() => {
                           setSelectedColor(color);

@@ -3,9 +3,9 @@
  */
 
 import type { IndustrySectorRankData, IndustrySectorBasicInfo } from '@/types/stock';
-import { logger } from '@/utils/logger';
-import { getStorage, setStorage } from '@/utils/storage';
-import { fetchWithCookieRetry } from '@/utils/fetchWithCookieRetry';
+import { logger } from '@/utils/business/logger';
+import { getStorage, setStorage } from '@/utils/storage/storage';
+import { fetchWithCookieRetry } from '@/utils/network/fetchWithCookieRetry';
 
 /**
  * 板块成分股分页大小常量
