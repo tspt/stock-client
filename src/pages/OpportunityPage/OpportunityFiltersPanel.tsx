@@ -13,7 +13,7 @@ import styles from './OpportunityPage.module.css';
 const ALL_FILTER_PANEL_KEYS = ['data', 'aiAnalysis', 'consolidation', 'trendLine', 'sharpMove', 'technicalIndicators'] as const;
 
 /** 筛选抽屉宽度：加宽以减少表单项折行与纵向滚动 */
-const FILTER_DRAWER_WIDTH = 'min(1000px, calc(100vw - 24px))' as const;
+const FILTER_DRAWER_WIDTH = 'min(1000px, calc(100vw - 48px))' as const;
 
 type NumRange = { min?: number; max?: number };
 

@@ -112,6 +112,11 @@ function AppContent() {
         token: {
           colorPrimary: '#1890ff',
         },
+        components: {
+          Spin: {
+            colorBgContainer: '#f5f7fa',
+          },
+        },
       }}
     >
       <AntdApp>

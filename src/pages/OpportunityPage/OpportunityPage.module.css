@@ -2,6 +2,7 @@
   height: 100%;
   display: flex;
   flex-direction: column;
+  background: #f5f7fa;
 }
 
 /* 统一的工具栏：查询条件 + 操作按钮 */

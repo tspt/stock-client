@@ -65,11 +65,13 @@ export const FilterDiagnosticsDrawer: React.FC<FilterDiagnosticsDrawerProps> = (
       title: '股票',
       dataIndex: 'stock',
       key: 'stock',
+      width: 140,
     },
     {
       title: '被筛次数',
       dataIndex: 'count',
       key: 'count',
+      width: 90,
       render: (count: number) => <Tag color="red">{count}</Tag>,
     },
     {
@@ -87,9 +89,10 @@ export const FilterDiagnosticsDrawer: React.FC<FilterDiagnosticsDrawerProps> = (
     <Drawer
       title={`筛选诊断 - 共筛除 ${totalSkipped} 只股票`}
       placement="right"
-      width={650}
+      width="min(1000px, calc(100vw - 48px))"
       open={open}
       onClose={onClose}
+      styles={{ body: { paddingTop: 8 } }}
       destroyOnClose={false}
     >
       <Tabs defaultActiveKey="list">
@@ -97,7 +100,7 @@ export const FilterDiagnosticsDrawer: React.FC<FilterDiagnosticsDrawerProps> = (
           <div className={styles.diagnosticsList}>
             {(showAllSkipped ? skipped : skipped.slice(0, SKIP_DETAIL_DISPLAY_COUNT)).map((item, index) => (
               <div key={`${item.code}-${item.reason}-${index}`} className={styles.diagnosticsListItem}>
-                <Tag color="warning">{item.code} {item.name}</Tag>
+                <Tag color="warning" style={{ flexShrink: 0, width: 122 }}>{item.code} {item.name}</Tag>
                 <span className={styles.diagnosticsListReason}>{item.reason}</span>
               </div>
             ))}
@@ -132,13 +135,14 @@ export const FilterDiagnosticsDrawer: React.FC<FilterDiagnosticsDrawerProps> = (
                 title="筛除总数"
                 value={totalSkipped}
                 suffix="只"
-                valueStyle={{ fontSize: 20 }}
+                valueStyle={{ fontSize: 18 }}
               />
               <Statistic
                 title="主要原因"
                 value={topReason[0] || '无'}
                 suffix={topReason[1] > 0 ? `(${topReason[1]}次)` : ''}
-                valueStyle={{ fontSize: 14 }}
+                valueStyle={{ fontSize: 13 }}
+                style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
               />
               <div style={{ textAlign: 'center' }}>
                 <Progress
@@ -159,7 +163,7 @@ export const FilterDiagnosticsDrawer: React.FC<FilterDiagnosticsDrawerProps> = (
                 <div className={styles.reasonBars}>
                   {reasonStats.map(([reason, count], index) => (
                     <div key={index} className={styles.reasonBar}>
-                      <div className={styles.reasonLabel}>{reason}</div>
+                      <div className={styles.reasonLabel} title={reason}>{reason}</div>
                       <Progress
                         percent={Math.round((count / totalSkipped) * 100)}
                         format={() => count.toString()}
@@ -181,7 +185,6 @@ export const FilterDiagnosticsDrawer: React.FC<FilterDiagnosticsDrawerProps> = (
                   columns={stockColumns}
                   pagination={false}
                   size="small"
-                  scroll={{ y: 300 }}
                 />
               </div>
             )}
