@@ -176,16 +176,7 @@ const INITIAL_FILTER_STATE = {
   aiTechnicalScoreRange: {},
   aiPatternScoreRange: {},
   aiTrendScoreRange: { min: 50 },
-  aiRiskScoreRange: { max: 50 },
-  aiRequireSimilarPatterns: false,
-  aiMinSimilarity: undefined,
-  aiMinSignalCount: undefined as number | undefined,
-  aiPatternWinRateRange: {} as { min?: number; max?: number },
-  aiMinRiskRewardRatio: undefined as number | undefined,
-  /** 专业版筛选增强功能 */
-  aiEnableWeightedScoring: false,
-  aiMinCompositeScore: undefined as number | undefined,
-  aiEnableTimeDecay: false,
+  aiRiskScoreRange: { min: 50 },
 };
 
 /** 与 opportunityStore 初始值一致，用于「重置」恢复周期与 K 线数量 */
@@ -384,32 +375,7 @@ export function OpportunityPage() {
   const [aiRiskScoreRange, setAiRiskScoreRange] = useState<{ min?: number; max?: number }>(
     INITIAL_FILTER_STATE.aiRiskScoreRange
   );
-  const [aiRequireSimilarPatterns, setAiRequireSimilarPatterns] = useState<boolean>(
-    INITIAL_FILTER_STATE.aiRequireSimilarPatterns
-  );
-  const [aiMinSimilarity, setAiMinSimilarity] = useState<number | undefined>(
-    INITIAL_FILTER_STATE.aiMinSimilarity
-  );
-  const [aiMinSignalCount, setAiMinSignalCount] = useState<number | undefined>(
-    INITIAL_FILTER_STATE.aiMinSignalCount
-  );
-  const [aiPatternWinRateRange, setAiPatternWinRateRange] = useState<{ min?: number; max?: number }>(
-    INITIAL_FILTER_STATE.aiPatternWinRateRange
-  );
-  const [aiMinRiskRewardRatio, setAiMinRiskRewardRatio] = useState<number | undefined>(
-    INITIAL_FILTER_STATE.aiMinRiskRewardRatio
-  );
-  // 专业版筛选增强功能状态
-  const [aiEnableWeightedScoring, setAiEnableWeightedScoring] = useState<boolean>(
-    INITIAL_FILTER_STATE.aiEnableWeightedScoring || false
-  );
-  const [aiMinCompositeScore, setAiMinCompositeScore] = useState<number | undefined>(
-    INITIAL_FILTER_STATE.aiMinCompositeScore
-  );
-  const [aiEnableTimeDecay, setAiEnableTimeDecay] = useState<boolean>(
-    INITIAL_FILTER_STATE.aiEnableTimeDecay || false
-  );
-  const [tradingSignalTypes, setTradingSignalTypes] = useState<import('@/types/stock').TradingSignalType[]>([]);
+
   // 行业板块筛选状态
   const [industrySectors, setIndustrySectors] = useState<string[]>([]);
   // 概念板块筛选状态
@@ -501,11 +467,6 @@ export function OpportunityPage() {
           setAiPatternScoreRange,
           setAiTrendScoreRange,
           setAiRiskScoreRange,
-          setAiRequireSimilarPatterns,
-          setAiMinSimilarity,
-          setAiMinSignalCount,
-          setAiPatternWinRateRange,
-          setAiMinRiskRewardRatio,
         });
       }
       const st = useOpportunityStore.getState();
@@ -619,11 +580,6 @@ export function OpportunityPage() {
         aiPatternScoreRange: { ...aiPatternScoreRange },
         aiTrendScoreRange: { ...aiTrendScoreRange },
         aiRiskScoreRange: { ...aiRiskScoreRange },
-        aiRequireSimilarPatterns,
-        aiMinSimilarity,
-        aiMinSignalCount,
-        aiPatternWinRateRange: { ...aiPatternWinRateRange },
-        aiMinRiskRewardRatio,
       };
       saveOpportunityFilterPrefs(prefs);
     };
@@ -693,11 +649,6 @@ export function OpportunityPage() {
     aiPatternScoreRange,
     aiTrendScoreRange,
     aiRiskScoreRange,
-    aiRequireSimilarPatterns,
-    aiMinSimilarity,
-    aiMinSignalCount,
-    aiPatternWinRateRange,
-    aiMinRiskRewardRatio,
   ]);
 
   // 筛选条件变化时自动保存（防抖300ms）
@@ -776,11 +727,6 @@ export function OpportunityPage() {
         aiPatternScoreRange: { ...aiPatternScoreRange },
         aiTrendScoreRange: { ...aiTrendScoreRange },
         aiRiskScoreRange: { ...aiRiskScoreRange },
-        aiRequireSimilarPatterns,
-        aiMinSimilarity,
-        aiMinSignalCount,
-        aiPatternWinRateRange: { ...aiPatternWinRateRange },
-        aiMinRiskRewardRatio,
       };
       saveOpportunityFilterPrefs(prefs);
     }, FILTER_SAVE_DEBOUNCE_DELAY); // 防抖300ms
@@ -852,11 +798,6 @@ export function OpportunityPage() {
     aiPatternScoreRange,
     aiTrendScoreRange,
     aiRiskScoreRange,
-    aiRequireSimilarPatterns,
-    aiMinSimilarity,
-    aiMinSignalCount,
-    aiPatternWinRateRange,
-    aiMinRiskRewardRatio,
   ]);
 
   // 计算表格高度
@@ -1025,12 +966,6 @@ export function OpportunityPage() {
       aiPatternScoreRange,
       aiTrendScoreRange,
       aiRiskScoreRange,
-      aiRequireSimilarPatterns,
-      aiMinSimilarity,
-      aiMinSignalCount,
-      aiPatternWinRateRange,
-      aiMinRiskRewardRatio,
-      tradingSignalTypes,
     }),
     [
       priceRange,
@@ -1100,12 +1035,6 @@ export function OpportunityPage() {
       aiPatternScoreRange,
       aiTrendScoreRange,
       aiRiskScoreRange,
-      aiRequireSimilarPatterns,
-      aiMinSimilarity,
-      aiMinSignalCount,
-      aiPatternWinRateRange,
-      aiMinRiskRewardRatio,
-      tradingSignalTypes,
     ]
   );
 
@@ -1203,11 +1132,6 @@ export function OpportunityPage() {
     setAiPatternScoreRange({ ...s.aiPatternScoreRange });
     setAiTrendScoreRange({ ...s.aiTrendScoreRange });
     setAiRiskScoreRange({ ...s.aiRiskScoreRange });
-    setAiRequireSimilarPatterns(s.aiRequireSimilarPatterns);
-    setAiMinSimilarity(s.aiMinSimilarity);
-    setAiMinSignalCount(s.aiMinSignalCount);
-    setAiPatternWinRateRange({ ...s.aiPatternWinRateRange });
-    setAiMinRiskRewardRatio(s.aiMinRiskRewardRatio);
     // 重置行业板块和概念板块筛选
     setIndustrySectors([]);
     setConceptSectors([]);
@@ -1334,11 +1258,6 @@ export function OpportunityPage() {
           aiPatternScoreRange,
           aiTrendScoreRange,
           aiRiskScoreRange,
-          aiRequireSimilarPatterns,
-          aiMinSimilarity,
-          aiMinSignalCount,
-          aiPatternWinRateRange,
-          aiMinRiskRewardRatio,
         });
 
         await exportStockNamesToPng(names, {
@@ -1729,25 +1648,6 @@ export function OpportunityPage() {
             setAiTrendScoreRange={setAiTrendScoreRange}
             aiRiskScoreRange={aiRiskScoreRange}
             setAiRiskScoreRange={setAiRiskScoreRange}
-            aiRequireSimilarPatterns={aiRequireSimilarPatterns}
-            setAiRequireSimilarPatterns={setAiRequireSimilarPatterns}
-            aiMinSimilarity={aiMinSimilarity}
-            setAiMinSimilarity={setAiMinSimilarity}
-            aiMinSignalCount={aiMinSignalCount}
-            setAiMinSignalCount={setAiMinSignalCount}
-            aiPatternWinRateRange={aiPatternWinRateRange}
-            setAiPatternWinRateRange={setAiPatternWinRateRange}
-            aiMinRiskRewardRatio={aiMinRiskRewardRatio}
-            setAiMinRiskRewardRatio={setAiMinRiskRewardRatio}
-            // 专业版筛选增强功能
-            aiEnableWeightedScoring={aiEnableWeightedScoring}
-            setAiEnableWeightedScoring={setAiEnableWeightedScoring}
-            aiMinCompositeScore={aiMinCompositeScore}
-            setAiMinCompositeScore={setAiMinCompositeScore}
-            aiEnableTimeDecay={aiEnableTimeDecay}
-            setAiEnableTimeDecay={setAiEnableTimeDecay}
-            tradingSignalTypes={tradingSignalTypes}
-            setTradingSignalTypes={setTradingSignalTypes}
             // 行业板块筛选
             industrySectors={industrySectors}
             setIndustrySectors={setIndustrySectors}
@@ -1770,7 +1670,7 @@ export function OpportunityPage() {
 
         {/* AI筛选诊断仪表盘（原因+股票两者结合可视化，方案六核心UX改进） */}
         {filterSkippedItems.length > 0 && (
-          <FilterDiagnosticsPanel 
+          <FilterDiagnosticsPanel
             skipped={filterSkippedItems}
             filters={filterSnapshot}
           />
@@ -1858,11 +1758,6 @@ export function OpportunityPage() {
                   aiPatternScoreRange,
                   aiTrendScoreRange,
                   aiRiskScoreRange,
-                  aiRequireSimilarPatterns,
-                  aiMinSimilarity,
-                  aiMinSignalCount,
-                  aiPatternWinRateRange,
-                  aiMinRiskRewardRatio,
                 });
                 return summary ? (
                   <span

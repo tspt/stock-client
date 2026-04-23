@@ -6,12 +6,12 @@ import { useMemo, useState } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 import { Button, Drawer, Space, Collapse, InputNumber, Checkbox, Select } from 'antd';
 import { FilterOutlined } from '@ant-design/icons';
-import type { ConsolidationType, TradingSignalType } from '@/types/stock';
+import type { ConsolidationType } from '@/types/stock';
 import { PatternTooltip } from '@/components/PatternTooltip/PatternTooltip';
 import { FilterDiagnosticsPanel } from '@/components/FilterDiagnosticsPanel';
 import styles from './OpportunityPage.module.css';
 
-const ALL_FILTER_PANEL_KEYS = ['data', 'consolidation', 'trendLine', 'sharpMove', 'technicalIndicators', 'aiAnalysis'] as const;
+const ALL_FILTER_PANEL_KEYS = ['data', 'aiAnalysis', 'consolidation', 'trendLine', 'sharpMove', 'technicalIndicators'] as const;
 
 /** 筛选抽屉宽度：加宽以减少表单项折行与纵向滚动 */
 const FILTER_DRAWER_WIDTH = 'min(1000px, calc(100vw - 24px))' as const;
@@ -96,11 +96,6 @@ export function buildOpportunityFilterSummary(p: {
   aiPatternScoreRange: NumRange;
   aiTrendScoreRange: NumRange;
   aiRiskScoreRange: NumRange;
-  aiRequireSimilarPatterns: boolean;
-  aiMinSimilarity?: number;
-  aiMinSignalCount?: number;
-  aiPatternWinRateRange: NumRange;
-  aiMinRiskRewardRatio?: number;
 }): string {
   const parts: string[] = [];
   pushRange(parts, '价', p.priceRange);
@@ -201,21 +196,6 @@ export function buildOpportunityFilterSummary(p: {
     }
     if (p.aiRiskScoreRange.min != null || p.aiRiskScoreRange.max != null) {
       pushRange(parts, 'AI风险', p.aiRiskScoreRange);
-    }
-    if (p.aiRequireSimilarPatterns) {
-      parts.push('AI相似形态');
-    }
-    if (p.aiMinSimilarity != null) {
-      parts.push(`相似度≥${p.aiMinSimilarity}%`);
-    }
-    if (p.aiMinSignalCount != null) {
-      parts.push(`信号共识≥${p.aiMinSignalCount}`);
-    }
-    if (p.aiPatternWinRateRange.min != null || p.aiPatternWinRateRange.max != null) {
-      pushRange(parts, '形态胜率', p.aiPatternWinRateRange, '%');
-    }
-    if (p.aiMinRiskRewardRatio != null) {
-      parts.push(`风险收益比≥${p.aiMinRiskRewardRatio}`);
     }
   }
 
@@ -355,26 +335,7 @@ export interface OpportunityFiltersPanelProps {
   setAiTrendScoreRange: SetRange;
   aiRiskScoreRange: { min?: number; max?: number };
   setAiRiskScoreRange: SetRange;
-  aiRequireSimilarPatterns: boolean;
-  setAiRequireSimilarPatterns: (v: boolean) => void;
-  aiMinSimilarity?: number;
-  setAiMinSimilarity: (v: number | undefined) => void;
-  aiMinSignalCount?: number;
-  setAiMinSignalCount: (v: number | undefined) => void;
-  aiPatternWinRateRange: { min?: number; max?: number };
-  setAiPatternWinRateRange: SetRange;
-  aiMinRiskRewardRatio?: number;
-  setAiMinRiskRewardRatio: (v: number | undefined) => void;
-  // 专业版筛选增强功能
-  aiEnableWeightedScoring?: boolean;
-  setAiEnableWeightedScoring: (v: boolean) => void;
-  aiMinCompositeScore?: number;
-  setAiMinCompositeScore: (v: number | undefined) => void;
-  aiEnableTimeDecay?: boolean;
-  setAiEnableTimeDecay: (v: boolean) => void;
-  // 交易信号筛选
-  tradingSignalTypes?: TradingSignalType[];
-  setTradingSignalTypes: (v: TradingSignalType[]) => void;
+
   // 行业板块筛选
   industrySectors?: string[];
   setIndustrySectors: (v: string[]) => void;
@@ -522,26 +483,7 @@ export function OpportunityFiltersPanel({
   setAiTrendScoreRange,
   aiRiskScoreRange,
   setAiRiskScoreRange,
-  aiRequireSimilarPatterns,
-  setAiRequireSimilarPatterns,
-  aiMinSimilarity,
-  setAiMinSimilarity,
-  aiMinSignalCount,
-  setAiMinSignalCount,
-  aiPatternWinRateRange,
-  setAiPatternWinRateRange,
-  aiMinRiskRewardRatio,
-  setAiMinRiskRewardRatio,
-  // 专业版筛选增强功能
-  aiEnableWeightedScoring,
-  setAiEnableWeightedScoring,
-  aiMinCompositeScore,
-  setAiMinCompositeScore,
-  aiEnableTimeDecay,
-  setAiEnableTimeDecay,
-  // 交易信号筛选
-  tradingSignalTypes,
-  setTradingSignalTypes,
+
   // 行业板块筛选
   industrySectors,
   setIndustrySectors,
@@ -626,11 +568,6 @@ export function OpportunityFiltersPanel({
         aiPatternScoreRange,
         aiTrendScoreRange,
         aiRiskScoreRange,
-        aiRequireSimilarPatterns,
-        aiMinSimilarity,
-        aiMinSignalCount,
-        aiPatternWinRateRange,
-        aiMinRiskRewardRatio,
       }),
     [
       priceRange,
@@ -694,11 +631,6 @@ export function OpportunityFiltersPanel({
       aiPatternScoreRange,
       aiTrendScoreRange,
       aiRiskScoreRange,
-      aiRequireSimilarPatterns,
-      aiMinSimilarity,
-      aiMinSignalCount,
-      aiPatternWinRateRange,
-      aiMinRiskRewardRatio,
     ]
   );
 
@@ -1068,6 +1000,270 @@ export function OpportunityFiltersPanel({
                         <span style={{ marginLeft: 4 }}>天</span>
                       </div>
                     </div>
+                  </div>
+                ),
+              },
+              {
+                key: 'aiAnalysis',
+                label: 'AI分析筛选',
+                children: (
+                  <div className={styles.filterContent}>
+                    <div className={styles.filterRow}>
+                      <div className={styles.filterItem}>
+                        <Checkbox
+                          checked={aiAnalysisEnabled}
+                          onChange={(e) => setAiAnalysisEnabled(e.target.checked)}
+                        >
+                          启用AI分析筛选
+                        </Checkbox>
+                      </div>
+                    </div>
+                    <div className={styles.filterRow}>
+                      <div className={styles.filterItem} style={{ flexWrap: 'wrap', gap: 8 }}>
+                        <span className={styles.filterLabel}>趋势预测：</span>
+                        <Checkbox
+                          checked={aiTrendUp}
+                          onChange={(e) => setAiTrendUp(e.target.checked)}
+                          disabled={!aiAnalysisEnabled}
+                        >
+                          看涨
+                        </Checkbox>
+                        <Checkbox
+                          checked={aiTrendDown}
+                          onChange={(e) => setAiTrendDown(e.target.checked)}
+                          disabled={!aiAnalysisEnabled}
+                        >
+                          看跌
+                        </Checkbox>
+                        <Checkbox
+                          checked={aiTrendSideways}
+                          onChange={(e) => setAiTrendSideways(e.target.checked)}
+                          disabled={!aiAnalysisEnabled}
+                        >
+                          横盘
+                        </Checkbox>
+                      </div>
+                    </div>
+                    <div className={styles.filterRow}>
+                      <div className={styles.filterItem}>
+                        <span className={styles.filterLabel}>推荐评分：</span>
+                        <InputNumber
+                          value={aiRecommendScoreRange.min}
+                          min={0}
+                          max={100}
+                          step={1}
+                          style={{ width: 80 }}
+                          placeholder="最低分"
+                          disabled={!aiAnalysisEnabled}
+                          onChange={(v) => {
+                            setAiRecommendScoreRange((prev) => ({
+                              ...prev,
+                              min: typeof v === 'number' && isFinite(v) ? v : undefined,
+                            }));
+                          }}
+                        />
+                        <span style={{ margin: '0 4px' }}>~</span>
+                        <InputNumber
+                          value={aiRecommendScoreRange.max}
+                          min={0}
+                          max={100}
+                          step={1}
+                          style={{ width: 80 }}
+                          placeholder="最高分"
+                          disabled={!aiAnalysisEnabled}
+                          onChange={(v) => {
+                            setAiRecommendScoreRange((prev) => ({
+                              ...prev,
+                              max: typeof v === 'number' && isFinite(v) ? v : undefined,
+                            }));
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <div className={styles.filterRow}>
+                      <div className={styles.filterItem}>
+                        <span className={styles.filterLabel}>置信度：</span>
+                        <InputNumber
+                          value={aiConfidenceRange.min}
+                          min={0}
+                          max={100}
+                          step={1}
+                          style={{ width: 80 }}
+                          placeholder="最低%"
+                          disabled={!aiAnalysisEnabled}
+                          onChange={(v) => {
+                            setAiConfidenceRange((prev) => ({
+                              ...prev,
+                              min: typeof v === 'number' && isFinite(v) ? v : undefined,
+                            }));
+                          }}
+                        />
+                        <span style={{ margin: '0 4px' }}>~</span>
+                        <InputNumber
+                          value={aiConfidenceRange.max}
+                          min={0}
+                          max={100}
+                          step={1}
+                          style={{ width: 80 }}
+                          placeholder="最高%"
+                          disabled={!aiAnalysisEnabled}
+                          onChange={(v) => {
+                            setAiConfidenceRange((prev) => ({
+                              ...prev,
+                              max: typeof v === 'number' && isFinite(v) ? v : undefined,
+                            }));
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <div className={styles.filterRow}>
+                      <div className={styles.filterItem}>
+                        <span className={styles.filterLabel}>技术面评分：</span>
+                        <InputNumber
+                          value={aiTechnicalScoreRange.min}
+                          min={0}
+                          max={100}
+                          step={1}
+                          style={{ width: 80 }}
+                          placeholder="最低"
+                          disabled={!aiAnalysisEnabled}
+                          onChange={(v) => {
+                            setAiTechnicalScoreRange((prev) => ({
+                              ...prev,
+                              min: typeof v === 'number' && isFinite(v) ? v : undefined,
+                            }));
+                          }}
+                        />
+                        <span style={{ margin: '0 4px' }}>~</span>
+                        <InputNumber
+                          value={aiTechnicalScoreRange.max}
+                          min={0}
+                          max={100}
+                          step={1}
+                          style={{ width: 80 }}
+                          placeholder="最高"
+                          disabled={!aiAnalysisEnabled}
+                          onChange={(v) => {
+                            setAiTechnicalScoreRange((prev) => ({
+                              ...prev,
+                              max: typeof v === 'number' && isFinite(v) ? v : undefined,
+                            }));
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <div className={styles.filterRow}>
+                      <div className={styles.filterItem}>
+                        <span className={styles.filterLabel}>形态评分：</span>
+                        <InputNumber
+                          value={aiPatternScoreRange.min}
+                          min={0}
+                          max={100}
+                          step={1}
+                          style={{ width: 80 }}
+                          placeholder="最低"
+                          disabled={!aiAnalysisEnabled}
+                          onChange={(v) => {
+                            setAiPatternScoreRange((prev) => ({
+                              ...prev,
+                              min: typeof v === 'number' && isFinite(v) ? v : undefined,
+                            }));
+                          }}
+                        />
+                        <span style={{ margin: '0 4px' }}>~</span>
+                        <InputNumber
+                          value={aiPatternScoreRange.max}
+                          min={0}
+                          max={100}
+                          step={1}
+                          style={{ width: 80 }}
+                          placeholder="最高"
+                          disabled={!aiAnalysisEnabled}
+                          onChange={(v) => {
+                            setAiPatternScoreRange((prev) => ({
+                              ...prev,
+                              max: typeof v === 'number' && isFinite(v) ? v : undefined,
+                            }));
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <div className={styles.filterRow}>
+                      <div className={styles.filterItem}>
+                        <span className={styles.filterLabel}>趋势评分：</span>
+                        <InputNumber
+                          value={aiTrendScoreRange.min}
+                          min={0}
+                          max={100}
+                          step={1}
+                          style={{ width: 80 }}
+                          placeholder="最低"
+                          disabled={!aiAnalysisEnabled}
+                          onChange={(v) => {
+                            setAiTrendScoreRange((prev) => ({
+                              ...prev,
+                              min: typeof v === 'number' && isFinite(v) ? v : undefined,
+                            }));
+                          }}
+                        />
+                        <span style={{ margin: '0 4px' }}>~</span>
+                        <InputNumber
+                          value={aiTrendScoreRange.max}
+                          min={0}
+                          max={100}
+                          step={1}
+                          style={{ width: 80 }}
+                          placeholder="最高"
+                          disabled={!aiAnalysisEnabled}
+                          onChange={(v) => {
+                            setAiTrendScoreRange((prev) => ({
+                              ...prev,
+                              max: typeof v === 'number' && isFinite(v) ? v : undefined,
+                            }));
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <div className={styles.filterRow}>
+                      <div className={styles.filterItem}>
+                        <span className={styles.filterLabel}>风险评分：</span>
+                        <InputNumber
+                          value={aiRiskScoreRange.min}
+                          min={0}
+                          max={100}
+                          step={1}
+                          style={{ width: 80 }}
+                          placeholder="最低"
+                          disabled={!aiAnalysisEnabled}
+                          onChange={(v) => {
+                            setAiRiskScoreRange((prev) => ({
+                              ...prev,
+                              min: typeof v === 'number' && isFinite(v) ? v : undefined,
+                            }));
+                          }}
+                        />
+                        <span style={{ margin: '0 4px' }}>~</span>
+                        <InputNumber
+                          value={aiRiskScoreRange.max}
+                          min={0}
+                          max={100}
+                          step={1}
+                          style={{ width: 80 }}
+                          placeholder="最高"
+                          disabled={!aiAnalysisEnabled}
+                          onChange={(v) => {
+                            setAiRiskScoreRange((prev) => ({
+                              ...prev,
+                              max: typeof v === 'number' && isFinite(v) ? v : undefined,
+                            }));
+                          }}
+                        />
+                        <span style={{ marginLeft: 8, color: 'var(--ant-color-text-secondary)', fontSize: 12 }}>
+                          （分数越高风险越低）
+                        </span>
+                      </div>
+                    </div>
+
                   </div>
                 ),
               },
@@ -1474,481 +1670,6 @@ export function OpportunityFiltersPanel({
                         </Checkbox>
                         <Checkbox checked={trendBreakdown} onChange={(e) => setTrendBreakdown(e.target.checked)}>
                           跌破形态
-                        </Checkbox>
-                      </div>
-                    </div>
-                  </div>
-                ),
-              },
-              {
-                key: 'aiAnalysis',
-                label: 'AI分析筛选',
-                children: (
-                  <div className={styles.filterContent}>
-                    {/* 专业模式说明提示 */}
-                    <div style={{
-                      padding: '10px 14px',
-                      marginBottom: 12,
-                      backgroundColor: 'var(--ant-color-bg-layout)',
-                      borderRadius: 6,
-                      fontSize: 12,
-                      lineHeight: 1.6,
-                      color: 'var(--ant-color-text-secondary)',
-                      borderLeft: '3px solid var(--ant-color-primary)'
-                    }}>
-                      <div style={{ fontWeight: 'bold', marginBottom: 4, color: 'var(--ant-color-text)' }}>💡 专业筛选模式说明：</div>
-                      <div><strong>A. 传统模式：</strong>关闭下方高级开关，仅使用数值区间进行硬性过滤。</div>
-                      <div><strong>B. 加权模式（推荐）：</strong>开启“加权综合评分”，系统会自动平衡置信度、技术面和风险，选出综合素质最高的股票。</div>
-                      <div><strong>C. 时效模式：</strong>开启“信号时效性衰减”，分析时间越久的数据得分越低，强迫关注最新信号。</div>
-                    </div>
-
-                    <div className={styles.filterRow}>
-                      <div className={styles.filterItem}>
-                        <Checkbox
-                          checked={aiAnalysisEnabled}
-                          onChange={(e) => setAiAnalysisEnabled(e.target.checked)}
-                        >
-                          启用AI分析筛选
-                        </Checkbox>
-                      </div>
-                    </div>
-                    <div className={styles.filterRow}>
-                      <div className={styles.filterItem} style={{ flexWrap: 'wrap', gap: 8 }}>
-                        <span className={styles.filterLabel}>趋势预测：</span>
-                        <Checkbox
-                          checked={aiTrendUp}
-                          onChange={(e) => setAiTrendUp(e.target.checked)}
-                          disabled={!aiAnalysisEnabled}
-                        >
-                          看涨
-                        </Checkbox>
-                        <Checkbox
-                          checked={aiTrendDown}
-                          onChange={(e) => setAiTrendDown(e.target.checked)}
-                          disabled={!aiAnalysisEnabled}
-                        >
-                          看跌
-                        </Checkbox>
-                        <Checkbox
-                          checked={aiTrendSideways}
-                          onChange={(e) => setAiTrendSideways(e.target.checked)}
-                          disabled={!aiAnalysisEnabled}
-                        >
-                          横盘
-                        </Checkbox>
-                      </div>
-                    </div>
-                    <div className={styles.filterRow}>
-                      <div className={styles.filterItem}>
-                        <span className={styles.filterLabel}>推荐评分：</span>
-                        <InputNumber
-                          value={aiRecommendScoreRange.min}
-                          min={0}
-                          max={100}
-                          step={1}
-                          style={{ width: 80 }}
-                          placeholder="最低分"
-                          disabled={!aiAnalysisEnabled}
-                          onChange={(v) => {
-                            setAiRecommendScoreRange((prev) => ({
-                              ...prev,
-                              min: typeof v === 'number' && isFinite(v) ? v : undefined,
-                            }));
-                          }}
-                        />
-                        <span style={{ margin: '0 4px' }}>~</span>
-                        <InputNumber
-                          value={aiRecommendScoreRange.max}
-                          min={0}
-                          max={100}
-                          step={1}
-                          style={{ width: 80 }}
-                          placeholder="最高分"
-                          disabled={!aiAnalysisEnabled}
-                          onChange={(v) => {
-                            setAiRecommendScoreRange((prev) => ({
-                              ...prev,
-                              max: typeof v === 'number' && isFinite(v) ? v : undefined,
-                            }));
-                          }}
-                        />
-                      </div>
-                    </div>
-                    <div className={styles.filterRow}>
-                      <div className={styles.filterItem}>
-                        <span className={styles.filterLabel}>置信度：</span>
-                        <InputNumber
-                          value={aiConfidenceRange.min}
-                          min={0}
-                          max={100}
-                          step={1}
-                          style={{ width: 80 }}
-                          placeholder="最低%"
-                          disabled={!aiAnalysisEnabled}
-                          onChange={(v) => {
-                            setAiConfidenceRange((prev) => ({
-                              ...prev,
-                              min: typeof v === 'number' && isFinite(v) ? v : undefined,
-                            }));
-                          }}
-                        />
-                        <span style={{ margin: '0 4px' }}>~</span>
-                        <InputNumber
-                          value={aiConfidenceRange.max}
-                          min={0}
-                          max={100}
-                          step={1}
-                          style={{ width: 80 }}
-                          placeholder="最高%"
-                          disabled={!aiAnalysisEnabled}
-                          onChange={(v) => {
-                            setAiConfidenceRange((prev) => ({
-                              ...prev,
-                              max: typeof v === 'number' && isFinite(v) ? v : undefined,
-                            }));
-                          }}
-                        />
-                      </div>
-                    </div>
-                    <div className={styles.filterRow}>
-                      <div className={styles.filterItem}>
-                        <span className={styles.filterLabel}>技术面评分：</span>
-                        <InputNumber
-                          value={aiTechnicalScoreRange.min}
-                          min={0}
-                          max={100}
-                          step={1}
-                          style={{ width: 80 }}
-                          placeholder="最低"
-                          disabled={!aiAnalysisEnabled}
-                          onChange={(v) => {
-                            setAiTechnicalScoreRange((prev) => ({
-                              ...prev,
-                              min: typeof v === 'number' && isFinite(v) ? v : undefined,
-                            }));
-                          }}
-                        />
-                        <span style={{ margin: '0 4px' }}>~</span>
-                        <InputNumber
-                          value={aiTechnicalScoreRange.max}
-                          min={0}
-                          max={100}
-                          step={1}
-                          style={{ width: 80 }}
-                          placeholder="最高"
-                          disabled={!aiAnalysisEnabled}
-                          onChange={(v) => {
-                            setAiTechnicalScoreRange((prev) => ({
-                              ...prev,
-                              max: typeof v === 'number' && isFinite(v) ? v : undefined,
-                            }));
-                          }}
-                        />
-                      </div>
-                    </div>
-                    <div className={styles.filterRow}>
-                      <div className={styles.filterItem}>
-                        <span className={styles.filterLabel}>形态评分：</span>
-                        <InputNumber
-                          value={aiPatternScoreRange.min}
-                          min={0}
-                          max={100}
-                          step={1}
-                          style={{ width: 80 }}
-                          placeholder="最低"
-                          disabled={!aiAnalysisEnabled}
-                          onChange={(v) => {
-                            setAiPatternScoreRange((prev) => ({
-                              ...prev,
-                              min: typeof v === 'number' && isFinite(v) ? v : undefined,
-                            }));
-                          }}
-                        />
-                        <span style={{ margin: '0 4px' }}>~</span>
-                        <InputNumber
-                          value={aiPatternScoreRange.max}
-                          min={0}
-                          max={100}
-                          step={1}
-                          style={{ width: 80 }}
-                          placeholder="最高"
-                          disabled={!aiAnalysisEnabled}
-                          onChange={(v) => {
-                            setAiPatternScoreRange((prev) => ({
-                              ...prev,
-                              max: typeof v === 'number' && isFinite(v) ? v : undefined,
-                            }));
-                          }}
-                        />
-                      </div>
-                    </div>
-                    <div className={styles.filterRow}>
-                      <div className={styles.filterItem}>
-                        <span className={styles.filterLabel}>趋势评分：</span>
-                        <InputNumber
-                          value={aiTrendScoreRange.min}
-                          min={0}
-                          max={100}
-                          step={1}
-                          style={{ width: 80 }}
-                          placeholder="最低"
-                          disabled={!aiAnalysisEnabled}
-                          onChange={(v) => {
-                            setAiTrendScoreRange((prev) => ({
-                              ...prev,
-                              min: typeof v === 'number' && isFinite(v) ? v : undefined,
-                            }));
-                          }}
-                        />
-                        <span style={{ margin: '0 4px' }}>~</span>
-                        <InputNumber
-                          value={aiTrendScoreRange.max}
-                          min={0}
-                          max={100}
-                          step={1}
-                          style={{ width: 80 }}
-                          placeholder="最高"
-                          disabled={!aiAnalysisEnabled}
-                          onChange={(v) => {
-                            setAiTrendScoreRange((prev) => ({
-                              ...prev,
-                              max: typeof v === 'number' && isFinite(v) ? v : undefined,
-                            }));
-                          }}
-                        />
-                      </div>
-                    </div>
-                    <div className={styles.filterRow}>
-                      <div className={styles.filterItem}>
-                        <span className={styles.filterLabel}>风险评分：</span>
-                        <InputNumber
-                          value={aiRiskScoreRange.min}
-                          min={0}
-                          max={100}
-                          step={1}
-                          style={{ width: 80 }}
-                          placeholder="最低"
-                          disabled={!aiAnalysisEnabled}
-                          onChange={(v) => {
-                            setAiRiskScoreRange((prev) => ({
-                              ...prev,
-                              min: typeof v === 'number' && isFinite(v) ? v : undefined,
-                            }));
-                          }}
-                        />
-                        <span style={{ margin: '0 4px' }}>~</span>
-                        <InputNumber
-                          value={aiRiskScoreRange.max}
-                          min={0}
-                          max={100}
-                          step={1}
-                          style={{ width: 80 }}
-                          placeholder="最高"
-                          disabled={!aiAnalysisEnabled}
-                          onChange={(v) => {
-                            setAiRiskScoreRange((prev) => ({
-                              ...prev,
-                              max: typeof v === 'number' && isFinite(v) ? v : undefined,
-                            }));
-                          }}
-                        />
-                        <span style={{ marginLeft: 8, color: 'var(--ant-color-text-secondary)', fontSize: 12 }}>
-                          （分数越高风险越低）
-                        </span>
-                      </div>
-                    </div>
-                    <div className={styles.filterRow}>
-                      <div className={styles.filterItem}>
-                        <span className={styles.filterLabel}>最低相似度：</span>
-                        <InputNumber
-                          value={aiMinSimilarity}
-                          min={0}
-                          max={100}
-                          step={1}
-                          style={{ width: 100 }}
-                          placeholder="百分比"
-                          disabled={!aiAnalysisEnabled}
-                          onChange={(v) => {
-                            setAiMinSimilarity(typeof v === 'number' && isFinite(v) ? v : undefined);
-                          }}
-                        />
-                        <span style={{ marginLeft: 4 }}>（0-100%）</span>
-                      </div>
-                    </div>
-                    <div className={styles.filterRow}>
-                      <div className={styles.filterItem}>
-                        <Checkbox
-                          checked={aiRequireSimilarPatterns}
-                          onChange={(e) => setAiRequireSimilarPatterns(e.target.checked)}
-                          disabled={!aiAnalysisEnabled}
-                        >
-                          要求有相似形态匹配
-                        </Checkbox>
-                      </div>
-                    </div>
-                    <div className={styles.filterRow}>
-                      <div className={styles.filterItem}>
-                        <span className={styles.filterLabel}>信号共识：</span>
-                        <InputNumber
-                          value={aiMinSignalCount}
-                          min={1}
-                          max={10}
-                          step={1}
-                          style={{ width: 100 }}
-                          placeholder="最少个数"
-                          disabled={!aiAnalysisEnabled}
-                          onChange={(v) => {
-                            setAiMinSignalCount(typeof v === 'number' && isFinite(v) ? v : undefined);
-                          }}
-                        />
-                        <span style={{ marginLeft: 4 }}>
-                          （要求N+个指标信号方向一致）
-                        </span>
-                      </div>
-                    </div>
-                    <div className={styles.filterRow}>
-                      <div className={styles.filterItem}>
-                        <span className={styles.filterLabel}>形态胜率：</span>
-                        <InputNumber
-                          value={aiPatternWinRateRange.min}
-                          min={0}
-                          max={100}
-                          step={5}
-                          style={{ width: 80 }}
-                          placeholder="最低%"
-                          disabled={!aiAnalysisEnabled}
-                          onChange={(v) => {
-                            setAiPatternWinRateRange((prev) => ({
-                              ...prev,
-                              min: typeof v === 'number' && isFinite(v) ? v : undefined,
-                            }));
-                          }}
-                        />
-                        <span style={{ margin: '0 4px' }}>~</span>
-                        <InputNumber
-                          value={aiPatternWinRateRange.max}
-                          min={0}
-                          max={100}
-                          step={5}
-                          style={{ width: 80 }}
-                          placeholder="最高%"
-                          disabled={!aiAnalysisEnabled}
-                          onChange={(v) => {
-                            setAiPatternWinRateRange((prev) => ({
-                              ...prev,
-                              max: typeof v === 'number' && isFinite(v) ? v : undefined,
-                            }));
-                          }}
-                        />
-                        <span style={{ marginLeft: 4 }}>（相似形态历史盈利比例）</span>
-                      </div>
-                    </div>
-                    <div className={styles.filterRow}>
-                      <div className={styles.filterItem}>
-                        <span className={styles.filterLabel}>风险收益比：</span>
-                        <InputNumber
-                          value={aiMinRiskRewardRatio}
-                          min={0.1}
-                          max={20}
-                          step={0.1}
-                          precision={1}
-                          style={{ width: 100 }}
-                          placeholder="最低值"
-                          disabled={!aiAnalysisEnabled}
-                          onChange={(v) => {
-                            setAiMinRiskRewardRatio(
-                              typeof v === 'number' && isFinite(v) && v > 0 ? v : undefined
-                            );
-                          }}
-                        />
-                        <span style={{ marginLeft: 4 }}>
-                          （收益空间/亏损空间，越高越好）
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* 专业版功能：加权评分 */}
-                    <div className={styles.filterRow}>
-                      <div className={styles.filterItem}>
-                        <Checkbox
-                          checked={aiEnableWeightedScoring}
-                          onChange={(e) => setAiEnableWeightedScoring(e.target.checked)}
-                          disabled={!aiAnalysisEnabled}
-                        >
-                          启用加权综合评分模式
-                        </Checkbox>
-                      </div>
-                    </div>
-                    {aiEnableWeightedScoring && (
-                      <div className={styles.filterRow}>
-                        <div className={styles.filterItem}>
-                          <span className={styles.filterLabel}>最低加权得分：</span>
-                          <InputNumber
-                            value={aiMinCompositeScore}
-                            min={0}
-                            max={100}
-                            step={1}
-                            style={{ width: 80 }}
-                            disabled={!aiAnalysisEnabled}
-                            onChange={(v) => {
-                              setAiMinCompositeScore(
-                                typeof v === 'number' && isFinite(v) ? v : undefined
-                              );
-                            }}
-                          />
-                        </div>
-                      </div>
-                    )}
-
-                    {/* 专业版功能：时间衰减 */}
-                    <div className={styles.filterRow}>
-                      <div className={styles.filterItem}>
-                        <Checkbox
-                          checked={aiEnableTimeDecay}
-                          onChange={(e) => setAiEnableTimeDecay(e.target.checked)}
-                          disabled={!aiAnalysisEnabled}
-                        >
-                          启用信号时效性衰减
-                        </Checkbox>
-                      </div>
-                    </div>
-
-                    {/* 交易信号筛选 */}
-                    <div className={styles.filterRow}>
-                      <div className={styles.filterItem} style={{ flexWrap: 'wrap', gap: 8 }}>
-                        <span className={styles.filterLabel}>今日信号：</span>
-                        <Checkbox
-                          checked={tradingSignalTypes?.includes('STRONG_BUY') || false}
-                          onChange={(e) => {
-                            const newTypes = e.target.checked
-                              ? [...(tradingSignalTypes || []), 'STRONG_BUY'] as TradingSignalType[]
-                              : (tradingSignalTypes || []).filter((t): t is TradingSignalType => t !== 'STRONG_BUY');
-                            setTradingSignalTypes(newTypes);
-                          }}
-                        >
-                          🟢 强烈买入
-                        </Checkbox>
-                        <Checkbox
-                          checked={tradingSignalTypes?.includes('BUY') || false}
-                          onChange={(e) => {
-                            const newTypes = e.target.checked
-                              ? [...(tradingSignalTypes || []), 'BUY'] as TradingSignalType[]
-                              : (tradingSignalTypes || []).filter((t): t is TradingSignalType => t !== 'BUY');
-                            setTradingSignalTypes(newTypes);
-                          }}
-                        >
-                          🟢 建议买入
-                        </Checkbox>
-                        <Checkbox
-                          checked={tradingSignalTypes?.includes('SELL') || false}
-                          onChange={(e) => {
-                            const newTypes = e.target.checked
-                              ? [...(tradingSignalTypes || []), 'SELL'] as TradingSignalType[]
-                              : (tradingSignalTypes || []).filter((t): t is TradingSignalType => t !== 'SELL');
-                            setTradingSignalTypes(newTypes);
-                          }}
-                        >
-                          🔴 卖出
                         </Checkbox>
                       </div>
                     </div>

@@ -156,28 +156,6 @@ export interface OpportunityFilterPrefs {
   aiPatternScoreRange: { min?: number; max?: number };
   aiTrendScoreRange: { min?: number; max?: number };
   aiRiskScoreRange: { min?: number; max?: number };
-  aiRequireSimilarPatterns: boolean;
-  aiMinSimilarity?: number;
-  aiMinSignalCount?: number;
-  aiPatternWinRateRange: { min?: number; max?: number };
-  aiMinRiskRewardRatio?: number;
-
-  // --- 专业版筛选增强功能 ---
-  aiEnableWeightedScoring?: boolean;
-  aiWeights?: {
-    confidence: number;
-    totalScore: number;
-    technicalScore: number;
-    riskScore: number;
-  };
-  aiMinCompositeScore?: number;
-  aiEnableConsistencyCheck?: boolean;
-  aiMaxDivergence?: number;
-  aiTopPercentile?: number;
-  aiEnableTimeDecay?: boolean;
-  aiDecayRate?: number;
-  aiMinHistoricalWinRate?: number;
-  aiMinAvgRiskReward?: number;
 }
 
 function isRecord(v: unknown): v is Record<string, unknown> {
@@ -325,38 +303,6 @@ export function loadOpportunityFilterPrefs(): OpportunityFilterPrefs | null {
       aiPatternScoreRange: parseRange(p.aiPatternScoreRange),
       aiTrendScoreRange: parseRange(p.aiTrendScoreRange),
       aiRiskScoreRange: parseRange(p.aiRiskScoreRange),
-      aiRequireSimilarPatterns: p.aiRequireSimilarPatterns === true,
-      aiMinSimilarity: isFiniteNumber(p.aiMinSimilarity) ? p.aiMinSimilarity : undefined,
-      aiMinSignalCount: isFiniteNumber(p.aiMinSignalCount) ? p.aiMinSignalCount : undefined,
-      aiPatternWinRateRange: parseRange(p.aiPatternWinRateRange),
-      aiMinRiskRewardRatio:
-        isFiniteNumber(p.aiMinRiskRewardRatio) && p.aiMinRiskRewardRatio > 0
-          ? p.aiMinRiskRewardRatio
-          : undefined,
-      // 专业版筛选增强功能
-      aiEnableWeightedScoring: p.aiEnableWeightedScoring === true,
-      aiWeights: isRecord(p.aiWeights)
-        ? {
-            confidence: isFiniteNumber(p.aiWeights.confidence) ? p.aiWeights.confidence : 0.3,
-            totalScore: isFiniteNumber(p.aiWeights.totalScore) ? p.aiWeights.totalScore : 0.4,
-            technicalScore: isFiniteNumber(p.aiWeights.technicalScore)
-              ? p.aiWeights.technicalScore
-              : 0.2,
-            riskScore: isFiniteNumber(p.aiWeights.riskScore) ? p.aiWeights.riskScore : 0.1,
-          }
-        : undefined,
-      aiMinCompositeScore: isFiniteNumber(p.aiMinCompositeScore)
-        ? p.aiMinCompositeScore
-        : undefined,
-      aiEnableConsistencyCheck: p.aiEnableConsistencyCheck === true,
-      aiMaxDivergence: isFiniteNumber(p.aiMaxDivergence) ? p.aiMaxDivergence : undefined,
-      aiTopPercentile: isFiniteNumber(p.aiTopPercentile) ? p.aiTopPercentile : undefined,
-      aiEnableTimeDecay: p.aiEnableTimeDecay === true,
-      aiDecayRate: isFiniteNumber(p.aiDecayRate) ? p.aiDecayRate : undefined,
-      aiMinHistoricalWinRate: isFiniteNumber(p.aiMinHistoricalWinRate)
-        ? p.aiMinHistoricalWinRate
-        : undefined,
-      aiMinAvgRiskReward: isFiniteNumber(p.aiMinAvgRiskReward) ? p.aiMinAvgRiskReward : undefined,
     };
 
     return prefs;
@@ -458,11 +404,6 @@ export function getDefaultFilterPrefsFields(): Omit<
     aiPatternScoreRange: {},
     aiTrendScoreRange: {},
     aiRiskScoreRange: {},
-    aiRequireSimilarPatterns: false,
-    aiMinSimilarity: undefined,
-    aiMinSignalCount: undefined,
-    aiPatternWinRateRange: {},
-    aiMinRiskRewardRatio: undefined,
   };
 }
 
@@ -568,11 +509,6 @@ export interface OpportunityFilterPrefsApplyActions {
   setAiPatternScoreRange: (v: { min?: number; max?: number }) => void;
   setAiTrendScoreRange: (v: { min?: number; max?: number }) => void;
   setAiRiskScoreRange: (v: { min?: number; max?: number }) => void;
-  setAiRequireSimilarPatterns: (v: boolean) => void;
-  setAiMinSimilarity: (v: number | undefined) => void;
-  setAiMinSignalCount: (v: number | undefined) => void;
-  setAiPatternWinRateRange: (v: { min?: number; max?: number }) => void;
-  setAiMinRiskRewardRatio: (v: number | undefined) => void;
 }
 
 export function applyOpportunityFilterPrefsToState(
@@ -649,9 +585,4 @@ export function applyOpportunityFilterPrefsToState(
   actions.setAiPatternScoreRange({ ...prefs.aiPatternScoreRange });
   actions.setAiTrendScoreRange({ ...prefs.aiTrendScoreRange });
   actions.setAiRiskScoreRange({ ...prefs.aiRiskScoreRange });
-  actions.setAiRequireSimilarPatterns(prefs.aiRequireSimilarPatterns);
-  actions.setAiMinSimilarity(prefs.aiMinSimilarity);
-  actions.setAiMinSignalCount(prefs.aiMinSignalCount);
-  actions.setAiPatternWinRateRange({ ...prefs.aiPatternWinRateRange });
-  actions.setAiMinRiskRewardRatio(prefs.aiMinRiskRewardRatio);
 }

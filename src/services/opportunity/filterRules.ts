@@ -4,7 +4,7 @@
  * 这解决了可维护性问题，并支持AI按需计算
  */
 
-import type { ConsolidationType, TradingSignalType } from '@/types/stock';
+import type { ConsolidationType } from '@/types/stock';
 import type { NumberRange } from '@/types/opportunityFilter';
 
 export interface FilterRule {
@@ -85,9 +85,9 @@ export const defaultFilterRules: FilterRule[] = [
 ];
 
 export function getRulesByCategory(category: FilterRule['category']): FilterRule[] {
-  return defaultFilterRules.filter(rule => rule.category === category);
+  return defaultFilterRules.filter((rule) => rule.category === category);
 }
 
 export function getAIRules(): FilterRule[] {
-  return defaultFilterRules.filter(rule => rule.category === 'ai');
+  return defaultFilterRules.filter((rule) => rule.category === 'ai');
 }

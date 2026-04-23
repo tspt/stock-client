@@ -1,4 +1,4 @@
-import type { ConsolidationType, StockOpportunityData, TradingSignalType } from '@/types/stock';
+import type { ConsolidationType, StockOpportunityData } from '@/types/stock';
 
 export interface NumberRange {
   min?: number;
@@ -102,49 +102,6 @@ export interface OpportunityFilterSnapshot {
   aiTrendScoreRange: NumberRange;
   /** AI风险评分范围（0-100，分数越高风险越低） */
   aiRiskScoreRange: NumberRange;
-  /** 是否要求有相似形态匹配 */
-  aiRequireSimilarPatterns: boolean;
-  /** 相似形态最低相似度（0-1，转换为0-100显示） */
-  aiMinSimilarity?: number;
-  /** AI信号共识：要求最少N个信号方向一致 */
-  aiMinSignalCount?: number;
-  /** AI相似形态历史胜率范围（0-100%） */
-  aiPatternWinRateRange: NumberRange;
-  /** AI最低风险收益比 */
-  aiMinRiskRewardRatio?: number;
-
-  // --- 专业版筛选增强功能 ---
-
-  /** 1. 加权评分模式开关 */
-  aiEnableWeightedScoring?: boolean;
-  /** 各维度权重 (总和应为 1) */
-  aiWeights?: {
-    confidence: number;
-    totalScore: number;
-    technicalScore: number;
-    riskScore: number;
-  };
-  /** 最低综合加权得分 */
-  aiMinCompositeScore?: number;
-
-  /** 2. 一致性校验开关 */
-  aiEnableConsistencyCheck?: boolean;
-  /** 允许的最大分歧度 (例如：看涨时风险评分不能低于此值) */
-  aiMaxDivergence?: number;
-
-  /** 3. 相对排名筛选 (百分位) */
-  aiTopPercentile?: number; // 例如 10 代表前 10%
-
-  /** 4. 时间衰减因子 */
-  aiEnableTimeDecay?: boolean;
-  aiDecayRate?: number; // 衰减速率
-
-  /** 5. 回测胜率联动 */
-  aiMinHistoricalWinRate?: number; // 最低历史胜率 (%)
-  aiMinAvgRiskReward?: number; // 最低平均盈亏比
-
-  /** 6. 交易信号筛选 */
-  tradingSignalTypes?: TradingSignalType[];
 }
 
 export interface FilterSkippedItem {

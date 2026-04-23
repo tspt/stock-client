@@ -52,20 +52,7 @@ export function checkFilterCompatibility(filters: OpportunityFilterSnapshot): st
     warnings.push('💡 同时勾选MACD金叉和死叉：将匹配任一条件（OR关系）');
   }
 
-  // 7. AI加权模式与单项评分范围同时使用
-  if (filters.aiEnableWeightedScoring && filters.aiAnalysisEnabled) {
-    const hasScoreRange =
-      filters.aiRecommendScoreRange.min !== undefined ||
-      filters.aiRecommendScoreRange.max !== undefined ||
-      filters.aiTechnicalScoreRange.min !== undefined ||
-      filters.aiTechnicalScoreRange.max !== undefined;
-
-    if (hasScoreRange) {
-      warnings.push('💡 开启加权综合评分后，单项评分范围将被忽略');
-    }
-  }
-
-  // 8. RSI超买超卖与趋势方向矛盾
+  // 7. RSI超买超卖与趋势方向矛盾
   if (filters.rsiRange.max !== undefined && filters.rsiRange.max < 30 && filters.trendUptrend) {
     warnings.push('⚠️ RSI上限<30（超卖区）与上升趋势可能矛盾');
   }
@@ -131,9 +118,6 @@ export function getFilterComplexityScore(filters: OpportunityFilterSnapshot): nu
   // AI分析（最复杂）
   if (filters.aiAnalysisEnabled) {
     score += 20;
-    if (filters.aiEnableWeightedScoring) score += 5;
-    if (filters.aiEnableTimeDecay) score += 3;
-    if (filters.aiEnableConsistencyCheck) score += 5;
   }
 
   return Math.min(100, score);
