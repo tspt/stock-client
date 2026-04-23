@@ -8,7 +8,6 @@ import { Button, Drawer, Space, Collapse, InputNumber, Checkbox, Select } from '
 import { FilterOutlined } from '@ant-design/icons';
 import type { ConsolidationType } from '@/types/stock';
 import { PatternTooltip } from '@/components/PatternTooltip/PatternTooltip';
-import { FilterDiagnosticsPanel } from '@/components/FilterDiagnosticsPanel';
 import styles from './OpportunityPage.module.css';
 
 const ALL_FILTER_PANEL_KEYS = ['data', 'aiAnalysis', 'consolidation', 'trendLine', 'sharpMove', 'technicalIndicators'] as const;
@@ -101,6 +100,11 @@ export function buildOpportunityFilterSummary(p: {
   aiPatternScoreRange: NumRange;
   aiTrendScoreRange: NumRange;
   aiRiskScoreRange: NumRange;
+  // 行业与概念板块
+  industrySectors?: string[];
+  conceptSectors?: string[];
+  industrySectorOptions?: { label: string; value: string }[];
+  conceptSectorOptions?: { label: string; value: string }[];
 }): string {
   const parts: string[] = [];
   pushRange(parts, '价', p.priceRange);
@@ -202,6 +206,24 @@ export function buildOpportunityFilterSummary(p: {
     if (p.aiRiskScoreRange.min != null || p.aiRiskScoreRange.max != null) {
       pushRange(parts, 'AI风险', p.aiRiskScoreRange);
     }
+  }
+
+  // 行业板块汇总
+  if (p.industrySectors && p.industrySectors.length > 0) {
+    const labels = p.industrySectors.map((code) => {
+      const opt = p.industrySectorOptions?.find((o) => o.value === code);
+      return opt ? opt.label : code;
+    });
+    parts.push(`行业${labels.join('、')}`);
+  }
+
+  // 概念板块汇总
+  if (p.conceptSectors && p.conceptSectors.length > 0) {
+    const labels = p.conceptSectors.map((code) => {
+      const opt = p.conceptSectorOptions?.find((o) => o.value === code);
+      return opt ? opt.label : code;
+    });
+    parts.push(`概念${labels.join('、')}`);
   }
 
   return parts.join(' · ');

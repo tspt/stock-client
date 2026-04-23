@@ -741,6 +741,10 @@ self.onmessage = (event: MessageEvent<OpportunityFilterWorkerMessage>) => {
     cancelledThroughRequestId = Math.max(cancelledThroughRequestId, message.requestId);
     return;
   }
+  if (message.type === 'clear-ai-cache') {
+    aiCacheMap.clear();
+    return;
+  }
 
   if (latestRequestId > 0) {
     cancelledThroughRequestId = Math.max(cancelledThroughRequestId, latestRequestId);

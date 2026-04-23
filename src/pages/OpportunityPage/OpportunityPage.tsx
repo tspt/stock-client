@@ -41,7 +41,7 @@ import {
 import type { OpportunityFilterPrefs } from '@/utils/config/opportunityFilterPrefs';
 import type { OpportunityFilterSnapshot } from '@/types/opportunityFilter';
 import { OpportunityFiltersPanel, buildOpportunityFilterSummary } from './OpportunityFiltersPanel';
-import { FilterDiagnosticsPanel } from '@/components/FilterDiagnosticsPanel';
+import { FilterDiagnosticsDrawer } from '@/components/FilterDiagnosticsDrawer';
 import {
   OPPORTUNITY_DEFAULT_CONSOLIDATION,
   OPPORTUNITY_DEFAULT_SHARP_MOVE,
@@ -60,7 +60,6 @@ import {
   OPPORTUNITY_TABLE_HEIGHT_PADDING,
   OPPORTUNITY_TABLE_HEIGHT_EXTRA_PADDING,
   OPPORTUNITY_TABLE_HEIGHT_MARGIN,
-  SKIP_DETAIL_DISPLAY_COUNT,
   FILTER_SAVE_DEBOUNCE_DELAY,
 } from '@/utils/config/constants';
 import styles from './OpportunityPage.module.css';
@@ -302,8 +301,7 @@ export function OpportunityPage() {
   const [aiAnalysisVisible, setAiAnalysisVisible] = useState(false);
   const [selectedStockForAI, setSelectedStockForAI] = useState<{ code: string; name: string } | null>(null);
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false); // 筛选抽屉状态
-  const [showAllSkipped, setShowAllSkipped] = useState(false); // 是否显示全部跳过数据
-  const [filterSkipPopoverOpen, setFilterSkipPopoverOpen] = useState(false); // 跳过详情弹窗状态
+  const [filterDiagnosticsDrawerOpen, setFilterDiagnosticsDrawerOpen] = useState(false); // 筛选诊断抽屉状态
   const [errorExpanded, setErrorExpanded] = useState(false); // 失败详情展开状态
 
   const [sharpMoveFilterEnabled, setSharpMoveFilterEnabled] = useState<boolean>(
@@ -976,6 +974,10 @@ export function OpportunityPage() {
       candlestickThreeBlackCrows,
       candlestickThreeWhiteSoldiers,
       candlestickLookback,
+      patternUseVolumeConfirmation,
+      patternRequireVolumeForReversal,
+      patternTrendBackgroundLookback,
+      patternVolumeMultiplier,
       trendUptrend,
       trendDowntrend,
       trendSideways,
@@ -1045,6 +1047,10 @@ export function OpportunityPage() {
       candlestickThreeBlackCrows,
       candlestickThreeWhiteSoldiers,
       candlestickLookback,
+      patternUseVolumeConfirmation,
+      patternRequireVolumeForReversal,
+      patternTrendBackgroundLookback,
+      patternVolumeMultiplier,
       trendUptrend,
       trendDowntrend,
       trendSideways,
@@ -1064,11 +1070,13 @@ export function OpportunityPage() {
     ]
   );
 
-  const { filteredData: filteredAnalysisData, filtering: filteringAnalysisData, skipped: filterSkippedItems } =
+  const { filteredData: filteredAnalysisData, filtering: filteringAnalysisData, skipped: filterSkippedItems, clearAICache } =
     useOpportunityFilterEngine({
       analysisData: processedData as StockOpportunityData[],
       klineDataCache,
       filters: filterSnapshot,
+      industrySectors,
+      conceptSectors,
     });
 
   useEffect(() => {
@@ -1170,6 +1178,9 @@ export function OpportunityPage() {
       message.warning('当前市场暂无股票数据');
       return;
     }
+
+    // 清空 AI 缓存，防止跨周期数据污染
+    clearAICache();
 
     // 直接开始分析，不需要保存筛选条件（已通过useEffect自动保存）
     await startAnalysis(currentPeriod, filteredStocks, currentCount);
@@ -1292,7 +1303,77 @@ export function OpportunityPage() {
 
         await exportStockNamesToPng(names, {
           fileNamePrefix: '机会分析_股票名称',
-          filterSummary: filterSummary || undefined
+          filterSummary: buildOpportunityFilterSummary({
+            priceRange,
+            marketCapRange,
+            totalSharesRange,
+            turnoverRateRange,
+            peRatioRange,
+            kdjJRange,
+            recentLimitUpCount,
+            recentLimitDownCount,
+            limitUpPeriod,
+            limitDownPeriod,
+            consolidationFilterEnabled,
+            consolidationTypes,
+            consolidationLookback,
+            consolidationConsecutive,
+            consolidationThreshold,
+            consolidationRequireAboveMa10,
+            consolidationTypeOptions: CONSOLIDATION_TYPE_OPTIONS,
+            trendLineFilterEnabled,
+            trendLineLookback,
+            trendLineConsecutive,
+            sharpMoveFilterEnabled,
+            sharpMoveWindowBars,
+            sharpMoveMagnitude,
+            sharpMoveFlatThreshold,
+            sharpMoveOnlyDrop,
+            sharpMoveOnlyRise,
+            sharpMoveDropThenRiseLoose,
+            sharpMoveRiseThenDropLoose,
+            sharpMoveDropFlatRise,
+            sharpMoveRiseFlatDrop,
+            rsiRange,
+            candlestickHammer,
+            candlestickShootingStar,
+            candlestickDoji,
+            candlestickEngulfingBullish,
+            candlestickEngulfingBearish,
+            candlestickHaramiBullish,
+            candlestickHaramiBearish,
+            candlestickMorningStar,
+            candlestickEveningStar,
+            candlestickDarkCloudCover,
+            candlestickPiercing,
+            candlestickThreeBlackCrows,
+            candlestickThreeWhiteSoldiers,
+            candlestickLookback,
+            patternUseVolumeConfirmation,
+            patternRequireVolumeForReversal,
+            patternTrendBackgroundLookback,
+            patternVolumeMultiplier,
+            trendUptrend,
+            trendDowntrend,
+            trendSideways,
+            trendBreakout,
+            trendBreakdown,
+            trendLookback,
+            aiAnalysisEnabled,
+            aiTrendUp,
+            aiTrendDown,
+            aiTrendSideways,
+            aiConfidenceRange,
+            aiRecommendScoreRange,
+            aiTechnicalScoreRange,
+            aiPatternScoreRange,
+            aiTrendScoreRange,
+            aiRiskScoreRange,
+            industrySectors,
+            conceptSectors,
+            industrySectorOptions,
+            conceptSectorOptions,
+          }) || undefined
         });
         message.success('名称列表已导出为图片');
       }
@@ -1319,9 +1400,10 @@ export function OpportunityPage() {
 
   return (
     <Layout className={styles.opportunityPage}>
-      {/* 第一行：查询条件 */}
-      <div className={styles.queryRow}>
-        <Space wrap size="small">
+      {/* 统一的工具栏：查询条件 + 操作按钮 */}
+      <div className={styles.toolbarRow}>
+        <Space wrap size="small" align="center">
+          {/* 查询条件 */}
           <Space.Compact className={styles.spaceCompact}>
             <span className={styles.label}>市场：</span>
             <Select
@@ -1426,65 +1508,58 @@ export function OpportunityPage() {
               }}
             />
           </Space.Compact>
+
+          {/* 操作按钮 */}
+          <Button
+            type="primary"
+            icon={<PlayCircleOutlined />}
+            onClick={handleAnalyze}
+            loading={loading}
+            disabled={loading || filteredStocks.length === 0}
+          >
+            一键分析
+          </Button>
+          <Button icon={<ClearOutlined />} onClick={handleResetQueryBar} disabled={loading}>
+            重置
+          </Button>
+          {loading && (
+            <Button icon={<StopOutlined />} onClick={handleCancel}>
+              取消
+            </Button>
+          )}
+          <Dropdown
+            menu={{
+              items: [
+                { key: 'excel', label: '导出Excel' },
+                { type: 'divider' },
+                { key: 'png', label: '导出名称(PNG)' },
+                { key: 'names-xlsx', label: '导出名称(Excel)' },
+                { type: 'divider' },
+                { key: 'columns', label: '列设置', icon: <SettingOutlined /> }
+              ],
+              onClick: ({ key }) => {
+                if (key === 'columns') {
+                  setColumnSettingsVisible(true);
+                } else if (key === 'excel') {
+                  void handleExport('excel');
+                } else {
+                  void handleExportNames(key === 'names-xlsx' ? 'excel' : 'png');
+                }
+              },
+            }}
+          >
+            <Button icon={<ExportOutlined />}>
+              导出/设置 <DownOutlined />
+            </Button>
+          </Dropdown>
+          <Button
+            icon={<FilterOutlined />}
+            onClick={() => setFilterDrawerOpen(true)}
+          >
+            筛选条件
+          </Button>
         </Space>
       </div>
-
-      {/* 第二行：操作按钮 */}
-      <Header className={styles.header}>
-        <div className={styles.headerContent}>
-          <div style={{ flex: 1 }} />
-          <Space>
-            <Button
-              type="primary"
-              icon={<PlayCircleOutlined />}
-              onClick={handleAnalyze}
-              loading={loading}
-              disabled={loading || filteredStocks.length === 0}
-            >
-              一键分析
-            </Button>
-            <Button icon={<ClearOutlined />} onClick={handleResetQueryBar} disabled={loading}>
-              重置
-            </Button>
-            {loading && (
-              <Button icon={<StopOutlined />} onClick={handleCancel}>
-                取消
-              </Button>
-            )}
-            <Dropdown
-              menu={{
-                items: [
-                  { key: 'excel', label: '导出Excel' },
-                  { type: 'divider' },
-                  { key: 'png', label: '导出名称(PNG)' },
-                  { key: 'names-xlsx', label: '导出名称(Excel)' },
-                  { type: 'divider' },
-                  { key: 'columns', label: '列设置', icon: <SettingOutlined /> }
-                ],
-                onClick: ({ key }) => {
-                  if (key === 'columns') {
-                    setColumnSettingsVisible(true);
-                  } else if (key === 'excel') {
-                    void handleExport('excel');
-                  } else {
-                    void handleExportNames(key === 'names-xlsx' ? 'excel' : 'png');
-                  }
-                },
-              }}
-            >
-              <Button icon={<ExportOutlined />}>
-                导出/设置 <DownOutlined />
-              </Button>
-            </Dropdown>
-            <Button
-              icon={<FilterOutlined />}
-              onClick={() => setFilterDrawerOpen(true)}
-            >
-              筛选条件
-            </Button>
-          </Space>
-        </div>
-      </Header>
 
       <Content className={styles.content}>
         {loading && (
@@ -1707,13 +1782,7 @@ export function OpportunityPage() {
           />
         </div>
 
-        {/* AI筛选诊断仪表盘（原因+股票两者结合可视化，方案六核心UX改进） */}
-        {filterSkippedItems.length > 0 && (
-          <FilterDiagnosticsPanel
-            skipped={filterSkippedItems}
-            filters={filterSnapshot}
-          />
-        )}
+
 
         {/* 筛选结果提示 - 仅在有数据时显示 */}
         {analysisData.length > 0 && (
@@ -1801,6 +1870,10 @@ export function OpportunityPage() {
                   aiPatternScoreRange,
                   aiTrendScoreRange,
                   aiRiskScoreRange,
+                  industrySectors,
+                  conceptSectors,
+                  industrySectorOptions,
+                  conceptSectorOptions,
                 });
                 return summary ? (
                   <span
@@ -1816,64 +1889,17 @@ export function OpportunityPage() {
 
               {filteringAnalysisData && <span className={styles.filteringTag}>筛选中...</span>}
               {filterSkippedItems.length > 0 && (
-                <Popover
-                  content={
-                    <div className={styles.filterSkipPopover}>
-                      <div className={styles.filterSkipHeader}>
-                        <strong>跳过原因统计</strong>
-                      </div>
-                      <div className={styles.filterSkipList}>
-                        {(showAllSkipped ? filterSkippedItems : filterSkippedItems.slice(0, SKIP_DETAIL_DISPLAY_COUNT)).map((item) => (
-                          <div key={`${item.code}-${item.reason}`} className={styles.filterSkipItem}>
-                            <Tag color="warning">{item.code} {item.name}</Tag>
-                            <span className={styles.filterSkipReason}>{item.reason}</span>
-                          </div>
-                        ))}
-                        {!showAllSkipped && filterSkippedItems.length > SKIP_DETAIL_DISPLAY_COUNT && (
-                          <Button
-                            type="link"
-                            size="small"
-                            className={styles.filterSkipShowAll}
-                            onClick={() => setShowAllSkipped(true)}
-                          >
-                            查看全部 {filterSkippedItems.length} 条
-                          </Button>
-                        )}
-                        {showAllSkipped && filterSkippedItems.length > SKIP_DETAIL_DISPLAY_COUNT && (
-                          <Button
-                            type="link"
-                            size="small"
-                            className={styles.filterSkipShowAll}
-                            onClick={() => setShowAllSkipped(false)}
-                          >
-                            收起（仅显示前 20 条）
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  }
-                  title={`跳过 ${filterSkippedItems.length} 条数据`}
-                  trigger="click"
-                  placement="bottomRight"
-                  open={filterSkipPopoverOpen}
-                  onOpenChange={(open) => {
-                    setFilterSkipPopoverOpen(open);
-                    if (!open) {
-                      setShowAllSkipped(false);
-                    }
-                  }}
-                >
-                  <Badge count={filterSkippedItems.length} overflowCount={999} showZero={false}>
-                    <Button
-                      type="text"
-                      size="small"
-                      icon={<ExclamationCircleOutlined />}
-                      className={styles.filterSkipButton}
-                    >
-                      跳过详情
-                    </Button>
-                  </Badge>
-                </Popover>
+                <Badge count={filterSkippedItems.length} overflowCount={999} showZero={false}>
+                  <Button
+                    type="text"
+                    size="small"
+                    icon={<ExclamationCircleOutlined />}
+                    className={styles.filterSkipButton}
+                    onClick={() => setFilterDiagnosticsDrawerOpen(true)}
+                  >
+                    跳过详情
+                  </Button>
+                </Badge>
               )}
             </div>
           </div>
@@ -1918,6 +1944,12 @@ export function OpportunityPage() {
           setAiAnalysisVisible(false);
           setSelectedStockForAI(null);
         }}
+      />
+
+      <FilterDiagnosticsDrawer
+        open={filterDiagnosticsDrawerOpen}
+        onClose={() => setFilterDiagnosticsDrawerOpen(false)}
+        skipped={filterSkippedItems}
       />
     </Layout >
   );

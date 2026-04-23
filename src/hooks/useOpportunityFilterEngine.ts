@@ -60,18 +60,23 @@ interface UseOpportunityFilterEngineArgs {
   analysisData: StockOpportunityData[];
   klineDataCache: Map<string, KLineData[]>;
   filters: OpportunityFilterSnapshot;
+  industrySectors?: string[];
+  conceptSectors?: string[];
 }
 
 interface UseOpportunityFilterEngineResult {
   filteredData: StockOpportunityData[];
   filtering: boolean;
   skipped: FilterSkippedItem[];
+  clearAICache: () => void;
 }
 
 export function useOpportunityFilterEngine({
   analysisData,
   klineDataCache,
   filters,
+  industrySectors,
+  conceptSectors,
 }: UseOpportunityFilterEngineArgs): UseOpportunityFilterEngineResult {
   const [filteredData, setFilteredData] = useState<StockOpportunityData[]>([]);
   const [filtering, setFiltering] = useState(false);
@@ -215,9 +220,29 @@ export function useOpportunityFilterEngine({
       return;
     }
 
-    const lightFiltered = currentAnalysisData.filter((item) =>
-      passLightFilters(item, currentFilters)
-    );
+    const lightFiltered = currentAnalysisData.filter((item) => {
+      if (!passLightFilters(item, currentFilters)) return false;
+
+      // 行业板块筛选
+      if (industrySectors && industrySectors.length > 0) {
+        if (!item.industry || !industrySectors.includes(item.industry)) {
+          return false;
+        }
+      }
+
+      // 概念板块筛选
+      if (conceptSectors && conceptSectors.length > 0) {
+        if (!item.concepts || item.concepts.length === 0) {
+          return false;
+        }
+        const hasMatchingConcept = item.concepts.some((c) => conceptSectors.includes(c));
+        if (!hasMatchingConcept) {
+          return false;
+        }
+      }
+
+      return true;
+    });
 
     // 筛选时传递给 Worker 的数据不做 K 线缓存数量限制，保证筛选结果完整性
     // K 线缓存限制仅用于控制内存，不影响筛选逻辑
@@ -272,11 +297,19 @@ export function useOpportunityFilterEngine({
         clearTimeout(debounceTimerRef.current);
       }
     };
-  }, [analysisData, filters, dataVersion, triggerDebouncedFilter]);
+  }, [analysisData, filters, dataVersion, triggerDebouncedFilter, industrySectors, conceptSectors]);
+
+  const clearAICache = useCallback(() => {
+    const worker = workerRef.current;
+    if (worker) {
+      worker.postMessage({ type: 'clear-ai-cache' });
+    }
+  }, []);
 
   return {
     filteredData,
     filtering,
     skipped,
+    clearAICache,
   };
 }

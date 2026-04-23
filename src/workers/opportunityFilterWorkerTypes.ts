@@ -24,11 +24,16 @@ export interface OpportunityFilterWorkerCancelRequest {
   requestId: number;
 }
 
+export interface OpportunityFilterWorkerClearAICacheRequest {
+  type: 'clear-ai-cache';
+}
+
 export type OpportunityFilterWorkerMessage =
   | OpportunityFilterWorkerRequest
   | OpportunityFilterWorkerSetDataFullRequest
   | OpportunityFilterWorkerSetDataPatchRequest
-  | OpportunityFilterWorkerCancelRequest;
+  | OpportunityFilterWorkerCancelRequest
+  | OpportunityFilterWorkerClearAICacheRequest;
 
 export interface OpportunityFilterWorkerResponse {
   type: 'result';
