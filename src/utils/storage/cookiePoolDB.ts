@@ -2,13 +2,13 @@
  * Cookie池 IndexedDB 存储工具
  */
 
-import type { CookieEntry } from '@/types/cookie';
+import type { CookieEntry } from '../../types/cookie.js';
 import {
   COOKIE_POOL_DB_NAME,
   COOKIE_POOL_DB_VERSION,
   COOKIE_POOL_STORE_NAME,
-} from '../config/constants';
-import { logger } from '../business/logger';
+} from '../config/constants.js';
+import { logger } from '../business/logger.js';
 
 let dbInstance: IDBDatabase | null = null;
 

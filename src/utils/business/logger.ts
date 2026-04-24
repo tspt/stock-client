@@ -3,7 +3,7 @@
  * 生产环境自动禁用调试日志，保留错误日志
  */
 
-import { isDev } from '@/config/environment';
+import { isDev } from '../../config/environment.js';
 
 export const logger = {
   /** 调试日志 - 仅开发环境输出 */

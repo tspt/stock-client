@@ -2,7 +2,7 @@
  * Cookie管理页面
  */
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   Card,
   Table,
@@ -161,8 +161,21 @@ export function CookieManagerPage() {
       const result = await electronAPI.fetchEastMoneyCookies(autoFetchCount);
 
       if (result.success && result.cookies) {
-        const successCount = await cookiePool.addCookiesBatch(result.cookies, 'auto');
-        message.success(`成功获取并添加 ${successCount} 个Cookie`);
+        // 如果有UA信息，则分别保存
+        if (result.userAgents && result.userAgents.length > 0) {
+          let successCount = 0;
+          for (let i = 0; i < result.cookies.length; i++) {
+            const cookieValue = result.cookies[i];
+            const userAgent = result.userAgents[i];
+            const added = await cookiePool.addCookieWithUA(cookieValue, userAgent, 'auto');
+            if (added) successCount++;
+          }
+          message.success(`成功获取并添加 ${successCount} 个Cookie（带UA绑定）`);
+        } else {
+          // 兼容旧版本，没有UA信息
+          const successCount = await cookiePool.addCookiesBatch(result.cookies, 'auto');
+          message.success(`成功获取并添加 ${successCount} 个Cookie`);
+        }
         setIsAutoFetchModalVisible(false);
         await loadData();
       } else {
@@ -300,6 +313,34 @@ export function CookieManagerPage() {
       message.error('清空失败');
     }
   };
+
+  // 删除所有有失败记录的Cookie
+  const handleDeleteFailedCookies = async () => {
+    try {
+      // 统计全局有失败记录的Cookie数量
+      const allCookies = cookiePool.getAllCookies();
+      const failedCookies = allCookies.filter((c) => c.failureCount > 0);
+
+      if (failedCookies.length === 0) {
+        message.info('没有失败记录的Cookie');
+        return;
+      }
+
+      for (const cookie of failedCookies) {
+        await cookiePool.removeCookie(cookie.id);
+      }
+
+      message.success(`已删除 ${failedCookies.length} 个有失败记录的Cookie`);
+      await loadData();
+    } catch (error) {
+      message.error('删除失败');
+    }
+  };
+
+  // 计算当前有失败记录的Cookie数量（用于按钮显示）
+  const failedCookiesCount = useMemo(() => {
+    return cookies.filter((c) => c.failureCount > 0).length;
+  }, [cookies]);
 
   // 表格列定义
   const columns: ColumnsType<CookieEntry> = [
@@ -466,6 +507,21 @@ export function CookieManagerPage() {
             >
               <Button danger icon={<ClearOutlined />}>
                 清空全部
+              </Button>
+            </Popconfirm>
+            <Popconfirm
+              title={`确定删除所有有失败记录的Cookie？共 ${failedCookiesCount} 个`}
+              onConfirm={handleDeleteFailedCookies}
+              okText="确定"
+              cancelText="取消"
+              okButtonProps={{ danger: true }}
+            >
+              <Button
+                danger
+                icon={<DeleteOutlined />}
+                disabled={failedCookiesCount === 0}
+              >
+                删除失败 ({failedCookiesCount})
               </Button>
             </Popconfirm>
             <Button icon={<UploadOutlined />} onClick={handleTriggerImport}>

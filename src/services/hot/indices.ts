@@ -4,6 +4,7 @@
 
 import { logger } from '@/utils/business/logger';
 import { fetchWithCookieRetry } from '@/utils/network/fetchWithCookieRetry';
+import { getEastMoneyClistJsonpData } from '@/utils/network/eastMoneyClistClient';
 
 /**
  * 指数数据接口
@@ -136,8 +137,7 @@ export async function getEastMoneyIndices(
   }
 
   try {
-    // 1. 获取指数行情数据
-    const indexBaseUrl = '/api/eastmoney/clist/get';
+    // 1. 指数行情（clist） 2. 涨跌家数（ulist 仍走本地代理）
     const indexParams = new URLSearchParams({
       np: '1',
       fltt: '1',
@@ -155,7 +155,6 @@ export async function getEastMoneyIndices(
       _: Date.now().toString(),
     });
 
-    // 2. 获取指数涨跌家数数据
     const rankBaseUrl = '/api/eastmoney/ulist/get';
     const rankParams = new URLSearchParams({
       fltt: '1',
@@ -172,14 +171,11 @@ export async function getEastMoneyIndices(
       _: Date.now().toString(),
     });
 
-    // 并发请求两个接口，添加超时控制
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10秒超时
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
 
-    const [indexResponse, rankResponse] = await Promise.all([
-      fetchWithCookieRetry(`${indexBaseUrl}?${indexParams.toString()}`, {
-        signal: controller.signal,
-      }),
+    const [indexDataRaw, rankResponse] = await Promise.all([
+      getEastMoneyClistJsonpData(indexParams, 3, controller.signal),
       fetchWithCookieRetry(`${rankBaseUrl}?${rankParams.toString()}`, {
         signal: controller.signal,
       }),
@@ -187,28 +183,21 @@ export async function getEastMoneyIndices(
 
     clearTimeout(timeoutId);
 
-    if (!indexResponse.ok) {
-      throw new Error(`获取指数行情数据失败: ${indexResponse.status}`);
-    }
     if (!rankResponse.ok) {
       throw new Error(`获取指数涨跌家数失败: ${rankResponse.status}`);
     }
 
-    const indexText = await indexResponse.text();
+    const indexData: RawEastMoneyIndexResponse = indexDataRaw as RawEastMoneyIndexResponse;
     const rankText = await rankResponse.text();
-
-    // 解析JSONP响应
-    const indexJsonMatch = indexText.match(/\((.*)\)/);
     const rankJsonMatch = rankText.match(/\((.*)\)/);
 
-    if (!indexJsonMatch || !indexJsonMatch[1]) {
+    if (indexData === null || indexData === undefined || typeof (indexData as { rc?: number }).rc !== 'number') {
       throw new Error('无法解析指数行情JSONP响应');
     }
     if (!rankJsonMatch || !rankJsonMatch[1]) {
       throw new Error('无法解析指数涨跌家数JSONP响应');
     }
 
-    const indexData: RawEastMoneyIndexResponse = JSON.parse(indexJsonMatch[1]);
     const rankData: RawEastMoneyIndexRankResponse = JSON.parse(rankJsonMatch[1]);
 
     if (indexData.rc !== 0) {

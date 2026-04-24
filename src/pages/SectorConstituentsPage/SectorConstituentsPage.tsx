@@ -5,7 +5,7 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { Layout, Button, Progress, Input, Typography, Empty, message } from 'antd';
 import { RocketOutlined, LoadingOutlined, ExportOutlined } from '@ant-design/icons';
-import { fetchAllSectorsStocks, type SectorFullData, type FetchProgress, type FailedSector } from '@/services/hot/sector-stocks-service';
+import { fetchAllSectorsStocks, fetchRemainingSectorsStocks, type SectorFullData, type FetchProgress, type FailedSector } from '@/services/hot/sector-stocks-service';
 import { getIndustrySectors, getConceptSectors, type SectorWithStocks } from '@/utils/storage/sectorStocksIndexedDB';
 import { CACHE_TTL } from '@/utils/config/constants';
 import styles from './SectorConstituentsPage.module.css';
@@ -23,13 +23,17 @@ export function SectorConstituentsPage() {
   const [industrySearch, setIndustrySearch] = useState('');
   const [conceptSearch, setConceptSearch] = useState('');
   const abortControllerRef = useRef<AbortController | null>(null);
+  const hasLoadedRef = useRef(false);
 
   // 页面加载时从 IndexedDB 读取缓存
   useEffect(() => {
-    loadCachedData();
+    if (!hasLoadedRef.current) {
+      hasLoadedRef.current = true;
+      loadCachedData();
+    }
   }, []);
 
-  const loadCachedData = async () => {
+  const loadCachedData = async (showMessage: boolean = true) => {
     try {
       const [cachedIndustry, cachedConcept] = await Promise.all([
         getIndustrySectors(),
@@ -46,9 +50,13 @@ export function SectorConstituentsPage() {
         if (!hasExpired) {
           setIndustryData(formatToDisplayData(cachedIndustry));
           setConceptData(formatToDisplayData(cachedConcept));
-          message.success('已加载本地缓存数据');
+          if (showMessage) {
+            message.success('已加载本地缓存数据');
+          }
         } else {
-          message.warning('缓存数据已过期（超过一个月），请点击“开始全量获取”刷新');
+          if (showMessage) {
+            message.warning('缓存数据已过期（超过一个月），请点击“开始全量获取”刷新');
+          }
         }
       }
     } catch (error) {
@@ -100,6 +108,8 @@ export function SectorConstituentsPage() {
     } catch (error: any) {
       if (error.name === 'AbortError') {
         message.info('已取消获取');
+        // 注意：此时 result 未定义，需要从 IndexedDB 重新加载（不显示提示）
+        await loadCachedData(false);
       } else {
         console.error('获取板块成分股失败:', error);
         message.error('获取数据失败，请查看控制台');
@@ -115,6 +125,60 @@ export function SectorConstituentsPage() {
   const handleCancelFetch = () => {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
+    }
+  };
+
+  // 开始增量获取数据(剩余全量获取)
+  const handleStartRemainingFetch = async () => {
+    setLoading(true);
+
+    // 创建新的 AbortController
+    abortControllerRef.current = new AbortController();
+    const signal = abortControllerRef.current.signal;
+
+    setProgress({ current: 0, total: 1, percent: 0, message: '检查缓存中...' });
+
+    try {
+      const result = await fetchRemainingSectorsStocks((p) => {
+        setProgress(p);
+      }, signal);
+
+      // 合并数据到现有状态
+      setIndustryData((prev) => {
+        const existingCodes = new Set(prev.map((s) => s.sectorCode));
+        const newItems = result.industry.filter((s) => !existingCodes.has(s.sectorCode));
+        return [...prev, ...newItems];
+      });
+
+      setConceptData((prev) => {
+        const existingCodes = new Set(prev.map((s) => s.sectorCode));
+        const newItems = result.concept.filter((s) => !existingCodes.has(s.sectorCode));
+        return [...prev, ...newItems];
+      });
+
+      setFailedSectors(result.failed);
+      setProgress(null);
+
+      if (signal.aborted) {
+        message.info('已取消获取');
+      } else if (result.failed.length === 0) {
+        message.success('剩余数据获取完成');
+      } else {
+        message.warning(`获取完成,但有 ${result.failed.length} 个板块失败,可点击重试`);
+      }
+    } catch (error: any) {
+      if (error.name === 'AbortError') {
+        message.info('已取消获取');
+        // 注意：此时 result 未定义，需要从 IndexedDB 重新加载（不显示提示）
+        await loadCachedData(false);
+      } else {
+        console.error('获取剩余板块成分股失败:', error);
+        message.error('获取数据失败,请查看控制台');
+      }
+      setProgress(null);
+    } finally {
+      setLoading(false);
+      abortControllerRef.current = null;
     }
   };
 
@@ -192,6 +256,14 @@ export function SectorConstituentsPage() {
                 </Button>
               )
             )}
+            <Button
+              icon={<RocketOutlined />}
+              onClick={handleStartRemainingFetch}
+              loading={loading}
+              disabled={loading}
+            >
+              剩余全量获取
+            </Button>
             <Button
               type="primary"
               icon={loading ? <LoadingOutlined /> : <RocketOutlined />}

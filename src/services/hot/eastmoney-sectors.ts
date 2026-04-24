@@ -4,7 +4,7 @@
 
 import type { EastMoneySectorData } from '@/types/stock';
 import { logger } from '@/utils/business/logger';
-import { fetchWithCookieRetry } from '@/utils/network/fetchWithCookieRetry';
+import { getEastMoneyClistJsonpData } from '@/utils/network/eastMoneyClistClient';
 
 /**
  * 东方财富热门板块原始数据
@@ -99,7 +99,6 @@ export async function getEastMoneyRisingSectors(
   }
 
   try {
-    const baseUrl = '/api/eastmoney/clist/get';
     const params = new URLSearchParams({
       np: '1',
       fltt: '1',
@@ -118,31 +117,12 @@ export async function getEastMoneyRisingSectors(
       _: Date.now().toString(),
     });
 
-    const url = `${baseUrl}?${params.toString()}`;
-
-    // 添加超时控制
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000); // 10秒超时
 
-    const response = await fetchWithCookieRetry(url, {
-      signal: controller.signal,
-    });
+    const data = (await getEastMoneyClistJsonpData(params, 3, controller.signal)) as RawEastMoneySectorResponse;
 
     clearTimeout(timeoutId);
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const text = await response.text();
-
-    // 解析JSONP响应
-    const jsonMatch = text.match(/\((.*)\)/);
-    if (!jsonMatch || !jsonMatch[1]) {
-      throw new Error('无法解析JSONP响应');
-    }
-
-    const data: RawEastMoneySectorResponse = JSON.parse(jsonMatch[1]);
 
     if (data.rc !== 0) {
       throw new Error('获取东方财富领涨板块数据失败');
@@ -184,7 +164,6 @@ export async function getEastMoneyFallingSectors(
   }
 
   try {
-    const baseUrl = '/api/eastmoney/clist/get';
     const params = new URLSearchParams({
       np: '1',
       fltt: '1',
@@ -203,31 +182,12 @@ export async function getEastMoneyFallingSectors(
       _: Date.now().toString(),
     });
 
-    const url = `${baseUrl}?${params.toString()}`;
-
-    // 添加超时控制
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000); // 10秒超时
 
-    const response = await fetchWithCookieRetry(url, {
-      signal: controller.signal,
-    });
+    const data = (await getEastMoneyClistJsonpData(params, 3, controller.signal)) as RawEastMoneySectorResponse;
 
     clearTimeout(timeoutId);
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const text = await response.text();
-
-    // 解析JSONP响应
-    const jsonMatch = text.match(/\((.*)\)/);
-    if (!jsonMatch || !jsonMatch[1]) {
-      throw new Error('无法解析JSONP响应');
-    }
-
-    const data: RawEastMoneySectorResponse = JSON.parse(jsonMatch[1]);
 
     if (data.rc !== 0) {
       throw new Error('获取东方财富领跌板块数据失败');

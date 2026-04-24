@@ -2,6 +2,14 @@
  * 应用常量
  */
 
+/**
+ * 浏览器 fetch 禁止设置 `Cookie` 请求头，Cookie 池通过此自定义头传给本地 3000 代理（须与 localApiProxy 一致）
+ */
+export const STOCK_CLIENT_COOKIE_POOL_HEADER = 'X-Stock-Client-Cookie';
+
+/** 渲染进程经 fetch 与 Cookie 同传，主进程对东财拉齐 TLS 对端所见的「浏览器身份」（fetch 不能可靠覆盖 UA 时仍用此头） */
+export const STOCK_CLIENT_UA_HEADER = 'X-Stock-Client-User-Agent';
+
 /** 轮询间隔（毫秒） */
 export const POLLING_INTERVAL = 20000; // 20秒
 

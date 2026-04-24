@@ -24,6 +24,7 @@ import { fileURLToPath } from 'url';
 import type { Server as HttpServer } from 'http';
 import { existsSync, appendFileSync } from 'fs';
 import { startEmbeddedApiProxy, stopEmbeddedApiProxy } from './localApiProxy.js';
+import { deriveEastmoneyRefererOrigin, isEastmoneyJsonpUrl } from './eastMoneyPush2Context.js';
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 
@@ -162,9 +163,25 @@ function setupRequestInterceptor() {
       urls: ['<all_urls>'],
     },
     (details, callback) => {
+      const du = details.url;
+      // 渲染进程 JSONP 直连 push2 时默认 Referer 为 localhost，与内嵌代理不一致，对端可能拒答；按 URL 中 fs 补齐与 localApiProxy 相同
+      if (du.includes('push2.eastmoney.com') && du.includes('/api/qt/')) {
+        const ro = deriveEastmoneyRefererOrigin(
+          du,
+          process.env.VITE_EASTMONEY_REFERER!,
+          process.env.VITE_EASTMONEY_ORIGIN!
+        );
+        if (isEastmoneyJsonpUrl(du)) {
+          details.requestHeaders['referer'] = ro.referer;
+          delete details.requestHeaders['origin'];
+        } else {
+          details.requestHeaders['referer'] = ro.referer;
+          details.requestHeaders['origin'] = ro.origin;
+        }
+      }
       // 只处理目标API的请求
-      if (details.url.includes('sinajs.cn') || details.url.includes('gtimg.cn')) {
-        console.log('[defaultSession全局拦截器] 检测到API请求:', details.url);
+      if (du.includes('sinajs.cn') || du.includes('gtimg.cn')) {
+        console.log('[defaultSession全局拦截器] 检测到API请求:', du);
         console.log('[defaultSession全局拦截器] 当前Referer:', details.requestHeaders['referer']);
       }
       callback({ requestHeaders: details.requestHeaders });
@@ -178,9 +195,8 @@ function createWindow() {
   // preload 脚本路径配置
   // 源代码：electron/preload.ts
   // 编译后：dist-electron/preload.js
-  // 运行时：main.js 在 dist-electron 目录，所以 __dirname 指向 dist-electron
-  // 因此 preload.js 应该在同一个目录（__dirname）
-  const preloadPath = resolve(__dirname, 'preload.js');
+  // 运行时：main.js 在 dist-electron/electron/，__dirname 指向该目录，preload 在上一级
+  const preloadPath = resolve(__dirname, '../preload.js');
 
   console.log('[主进程] ========== Preload 脚本配置 ==========');
   console.log('[主进程] 源代码位置: electron/preload.ts');
@@ -240,7 +256,7 @@ function createWindow() {
     mainWindow.loadURL('http://localhost:5173');
     mainWindow.webContents.openDevTools();
   } else {
-    mainWindow.loadFile(join(__dirname, '../dist/index.html'));
+    mainWindow.loadFile(join(__dirname, '../../dist/index.html'));
   }
 
   // 监听 preload 脚本加载错误
@@ -598,9 +614,15 @@ function setupIpcHandlers() {
       // 获取发送请求的窗口
       const mainWindow = BrowserWindow.fromWebContents(event.sender);
 
-      const cookies = await autoFetchCookies(count, mainWindow);
-      mainLog(`[主进程] 成功获取 ${cookies.length} 个Cookie`);
-      return { success: true, cookies };
+      const cookiesWithUA = await autoFetchCookies(count, mainWindow);
+      mainLog(`[主进程] 成功获取 ${cookiesWithUA.length} 个Cookie`);
+
+      // 返回 Cookie 和 UA 的组合信息
+      return {
+        success: true,
+        cookies: cookiesWithUA.map((item) => item.cookie),
+        userAgents: cookiesWithUA.map((item) => item.userAgent),
+      };
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
       mainLog(`[主进程] 获取Cookie失败: ${errorMessage}`, true);
@@ -651,6 +673,50 @@ function setupIpcHandlers() {
       mainLog(`[主进程] 测试Cookie失败: ${errorMessage}`, true);
       return { success: false, isValid: false, error: errorMessage };
     }
+  });
+
+  /**
+   * 将池内 Cookie 字符串写入主窗口同 session，供渲染进程 JSONP 请求 push2 时自动带 Cookie（不经 Node 主进程代发）
+   */
+  ipcMain.handle('sync-eastmoney-session-cookies', async (_event, raw: string) => {
+    const ses =
+      mainWindow && !mainWindow.isDestroyed() ? mainWindow.webContents.session : session.defaultSession;
+    const base = 'https://push2.eastmoney.com/';
+    try {
+      const existing = await ses.cookies.get({ url: base });
+      for (const c of existing) {
+        try {
+          await ses.cookies.remove(base, c.name);
+        } catch {
+          /* 忽略 */
+        }
+      }
+    } catch (e) {
+      console.warn('[主进程] 清东财 push2 旧 cookies:', e);
+    }
+    if (!raw || !raw.trim()) {
+      return { ok: true as const };
+    }
+    for (const part of raw.split(';')) {
+      const s = part.trim();
+      if (!s) continue;
+      const p = s.indexOf('=');
+      if (p < 0) continue;
+      const name = s.slice(0, p).trim();
+      const value = s.slice(p + 1).trim();
+      if (!name) continue;
+      try {
+        await ses.cookies.set({
+          url: base,
+          name,
+          value,
+          sameSite: 'no_restriction',
+        });
+      } catch (e) {
+        console.warn('[主进程] cookies.set', name, e);
+      }
+    }
+    return { ok: true as const };
   });
 }
 

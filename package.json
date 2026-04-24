@@ -2,7 +2,7 @@
   "name": "stock-client",
   "version": "1.0.0",
   "description": "破忒头工具桌面应用",
-  "main": "dist-electron/main.js",
+  "main": "dist-electron/electron/main.js",
   "type": "module",
   "scripts": {
     "postinstall": "patch-package",

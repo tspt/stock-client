@@ -46,14 +46,21 @@ export default defineConfig(({ mode }) => {
             Cookie: env.VITE_EASTMONEY_COOKIE || '',
           },
         },
+        // ⚠️ 开发环境下将东方财富请求转发到 Electron 代理（3000端口）以支持 Cookie 池和 UA 绑定
         '/api/eastmoney': {
-          target: 'https://push2.eastmoney.com',
-          changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/api\/eastmoney/, '/api/qt'),
-          headers: {
-            Referer: env.VITE_EASTMONEY_REFERER,
-            Origin: env.VITE_EASTMONEY_ORIGIN,
-            Cookie: env.VITE_EASTMONEY_COOKIE || '',
+          target: 'http://localhost:3000',
+          changeOrigin: false,
+          configure: (proxy, options) => {
+            // 添加代理事件监听，用于调试
+            proxy.on('error', (err, req, res) => {
+              console.log('[Vite代理错误]', err.message);
+            });
+            proxy.on('proxyReq', (proxyReq, req, res) => {
+              console.log('[Vite代理转发]', req.url, '->', options.target + req.url);
+            });
+            proxy.on('proxyRes', (proxyRes, req, res) => {
+              console.log('[Vite代理响应]', req.url, '状态码:', proxyRes.statusCode);
+            });
           },
         },
       },

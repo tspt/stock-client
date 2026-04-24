@@ -1,0 +1,229 @@
+/**
+ * 应用常量
+ */
+/**
+ * 浏览器 fetch 禁止设置 `Cookie` 请求头，Cookie 池通过此自定义头传给本地 3000 代理（须与 localApiProxy 一致）
+ */
+export const STOCK_CLIENT_COOKIE_POOL_HEADER = 'X-Stock-Client-Cookie';
+/** 渲染进程经 fetch 与 Cookie 同传，主进程对东财拉齐 TLS 对端所见的「浏览器身份」（fetch 不能可靠覆盖 UA 时仍用此头） */
+export const STOCK_CLIENT_UA_HEADER = 'X-Stock-Client-User-Agent';
+/** 轮询间隔（毫秒） */
+export const POLLING_INTERVAL = 20000; // 20秒
+/** K 线增量轮询间隔：与通用轮询保持一致 */
+export const KLINE_POLLING_INTERVAL_MS = 20000;
+/** 机会分析 K 线缓存 Map 最大条数（超出则删除最旧条目，控制内存） */
+export const MAX_OPPORTUNITY_KLINE_CACHE_ENTRIES = 400;
+/** API超时时间（毫秒） */
+export const API_TIMEOUT = 10000; // 10秒
+/** 默认缓存TTL（毫秒） */
+export const DEFAULT_CACHE_TTL = 5 * 60 * 1000; // 5分钟
+/** 缓存相关常量 */
+export const CACHE_KEYS = {
+    /** 全量股票列表 (biyingapi) */
+    BIYING_STOCK_LIST: 'biying_hslt_stock_list_v1',
+    /** 行业板块基础信息 */
+    INDUSTRY_BASIC: 'unified_industry_basic_v1',
+    /** 概念板块基础信息 */
+    CONCEPT_BASIC: 'unified_concept_basic_v1',
+};
+export const CACHE_TTL = {
+    /** 股票列表缓存：30天 */
+    STOCK_LIST: 30 * 24 * 60 * 60 * 1000,
+    /** 板块基础信息缓存：24小时 */
+    SECTOR_BASIC: 24 * 60 * 60 * 1000,
+    /** 板块成分股全量缓存：30天 (一个月) */
+    SECTOR_STOCKS_FULL: 30 * 24 * 60 * 60 * 1000,
+};
+/** IndexedDB 相关常量 - 板块成分股 */
+export const SECTOR_STOCKS_DB_NAME = 'SectorStocksDB';
+export const SECTOR_STOCKS_DB_VERSION = 1;
+export const SECTOR_STOCKS_INDUSTRY_STORE = 'industry_sectors';
+export const SECTOR_STOCKS_CONCEPT_STORE = 'concept_sectors';
+/** 股票列表搜索最大返回数量 */
+export const MAX_SEARCH_RESULTS = 50;
+/** 成交量/成交额单位转换系数（从元转为亿） */
+export const VOLUME_AMOUNT_UNIT_CONVERSION = 100000000; // 1亿
+/** 进度计算基数 */
+export const PROGRESS_BASE = 100;
+/** LocalStorage键名 */
+export const STORAGE_KEYS = {
+    /** 自选股列表 */
+    WATCH_LIST: 'stock_watch_list',
+    /** 主题设置 */
+    THEME: 'stock_theme',
+    /** 价格提醒列表 */
+    PRICE_ALERTS: 'stock_price_alerts',
+    /** 排序类型 */
+    SORT_TYPE: 'stock_sort_type',
+};
+/** MA周期配置 */
+export const MA_PERIODS = [5, 10, 20, 30, 60, 120, 240, 360];
+/** MACD默认参数 */
+export const MACD_PARAMS = {
+    fast: 12,
+    slow: 26,
+    signal: 9,
+};
+/** KDJ默认参数 */
+export const KDJ_PARAMS = {
+    n: 9,
+    m1: 3,
+    m2: 3,
+};
+/** RSI周期配置 */
+export const RSI_PERIODS = [6, 12, 24];
+/** 分组相关常量 */
+/** 最大分组数量 */
+export const MAX_GROUP_COUNT = 10;
+/** 分组名称最大长度 */
+export const MAX_GROUP_NAME_LENGTH = 10;
+/** 默认分组ID */
+export const DEFAULT_GROUP_ID = 'default';
+/** 默认分组名称 */
+export const DEFAULT_GROUP_NAME = '默认分组';
+/** 默认分组颜色 */
+export const DEFAULT_GROUP_COLOR = '#1890ff';
+/** 预设颜色列表 */
+export const PRESET_COLORS = [
+    '#1890ff', // 蓝色
+    '#52c41a', // 绿色
+    '#ff4d4f', // 红色
+    '#faad14', // 橙色
+    '#722ed1', // 紫色
+    '#13c2c2', // 青色
+    '#eb2f96', // 粉色
+    '#fa8c16', // 橙红色
+    '#2f54eb', // 深蓝色
+    '#a0d911', // 浅绿色
+];
+/** 内置分组：自选（不在分组管理中展示） */
+export const BUILTIN_GROUP_SELF_ID = '__self__';
+export const BUILTIN_GROUP_SELF_NAME = '自选';
+export const BUILTIN_GROUP_SELF_COLOR = '#1890ff';
+/** 提醒时间周期选项 */
+export const ALERT_TIME_PERIODS = [
+    { label: '当天', value: 'day' },
+    { label: '本周', value: 'week' },
+    { label: '本月', value: 'month' },
+    { label: '永久', value: 'permanent' },
+];
+/** 数据概况相关常量 */
+/** IndexedDB 数据库名 */
+export const OVERVIEW_DB_NAME = 'StockOverviewDB';
+/** IndexedDB 版本 */
+export const OVERVIEW_DB_VERSION = 1;
+/** 对象存储名称 */
+export const OVERVIEW_STORE_NAME = 'overviewData';
+/** 历史存储名称 */
+export const OVERVIEW_HISTORY_STORE_NAME = 'overviewHistory';
+/** 默认并发数 */
+export const OVERVIEW_CONCURRENT_LIMIT = 5;
+/** 批次间延迟（毫秒） */
+export const OVERVIEW_BATCH_DELAY = 100;
+/** 默认列配置 */
+export const OVERVIEW_DEFAULT_COLUMNS = [
+    { key: 'name', title: '股票名称', visible: true, width: 88 },
+    { key: 'price', title: '当前价', visible: true, width: 88 },
+    { key: 'change', title: '当日涨跌额', visible: false, width: 110 },
+    { key: 'changePercent', title: '当日涨跌幅', visible: true, width: 110 },
+    { key: 'turnoverRate', title: '换手率', visible: true, width: 88 },
+    { key: 'volume', title: '成交量(亿)', visible: false, width: 100 },
+    { key: 'amount', title: '成交额(亿)', visible: true, width: 100 },
+    { key: 'totalShares', title: '总股数', visible: false, width: 100 },
+    { key: 'marketCap', title: '总市值', visible: true, width: 100 },
+    { key: 'circulatingMarketCap', title: '流通市值', visible: true, width: 100 },
+    { key: 'peRatio', title: '市盈率(PE)', visible: true, width: 100 },
+    { key: 'kdjK', title: 'KDJ-K', visible: false, width: 88 },
+    { key: 'kdjD', title: 'KDJ-D', visible: false, width: 88 },
+    { key: 'kdjJ', title: 'KDJ-J', visible: true, width: 88 },
+    { key: 'avgPrice', title: '区间平均价', visible: false, width: 110 },
+    { key: 'highPrice', title: '区间最高价', visible: false, width: 110 },
+    { key: 'lowPrice', title: '区间最低价', visible: true, width: 110 },
+    { key: 'opportunityChangePercent', title: '区间最大值回撤比', visible: true, width: 150 },
+    { key: 'ma5', title: 'MA-5涨跌幅', visible: true },
+    { key: 'ma10', title: 'MA-10涨跌幅', visible: true },
+    { key: 'ma20', title: 'MA-20涨跌幅', visible: true },
+    { key: 'ma30', title: 'MA-30涨跌幅', visible: true },
+    { key: 'ma60', title: 'MA-60涨跌幅', visible: true },
+    { key: 'ma120', title: 'MA-120涨跌幅', visible: true, width: 130 },
+    { key: 'ma240', title: 'MA-240涨跌幅', visible: false, width: 130 },
+    { key: 'ma360', title: 'MA-360涨跌幅', visible: false, width: 130 },
+];
+/** 机会分析相关常量 */
+/** IndexedDB 数据库名 */
+export const OPPORTUNITY_DB_NAME = 'StockOpportunityDB';
+/** IndexedDB 版本 */
+export const OPPORTUNITY_DB_VERSION = 1;
+/** 对象存储名称 */
+export const OPPORTUNITY_STORE_NAME = 'opportunityData';
+/** 历史存储名称 */
+export const OPPORTUNITY_HISTORY_STORE_NAME = 'opportunityHistory';
+/** 默认并发数（每批股票数，与 OPPORTUNITY_BATCH_DELAY 配合控频） */
+export const OPPORTUNITY_CONCURRENT_LIMIT = 8;
+/** 批次间延迟（毫秒） */
+export const OPPORTUNITY_BATCH_DELAY = 500;
+/** 行情批次间延迟（毫秒） */
+export const QUOTES_BATCH_DELAY = 100;
+/** 行情并发数 */
+export const QUOTES_CONCURRENT_LIMIT = 8;
+/** 行情批次大小 */
+export const QUOTES_BATCH_SIZE = 100;
+/** 默认列配置 */
+export const OPPORTUNITY_DEFAULT_COLUMNS = [
+    { key: 'name', title: '股票名称', visible: true, width: 88 },
+    { key: 'price', title: '当前价', visible: true, width: 88 },
+    { key: 'change', title: '当日涨跌额', visible: false, width: 110 },
+    { key: 'changePercent', title: '当日涨跌幅', visible: true, width: 110 },
+    { key: 'turnoverRate', title: '换手率', visible: true, width: 88 },
+    { key: 'volume', title: '成交量(亿)', visible: false, width: 100 },
+    { key: 'amount', title: '成交额(亿)', visible: true, width: 100 },
+    { key: 'totalShares', title: '总股数', visible: true, width: 100 },
+    { key: 'marketCap', title: '总市值', visible: true, width: 100 },
+    { key: 'circulatingMarketCap', title: '流通市值', visible: false, width: 100 },
+    { key: 'peRatio', title: '市盈率(PE)', visible: true, width: 100 },
+    { key: 'kdjK', title: 'KDJ-K', visible: false, width: 88 },
+    { key: 'kdjD', title: 'KDJ-D', visible: false, width: 88 },
+    { key: 'kdjJ', title: 'KDJ-J', visible: true, width: 88 },
+    { key: 'avgPrice', title: '区间平均价', visible: false, width: 110 },
+    { key: 'highPrice', title: '区间最高价', visible: false, width: 110 },
+    { key: 'lowPrice', title: '区间最低价', visible: true, width: 110 },
+    { key: 'opportunityChangePercent', title: '区间最大值回撤比', visible: true, width: 150 },
+    { key: 'consolidationStatus', title: '横盘状态', visible: true, width: 100 },
+    { key: 'consolidationTypes', title: '命中类型', visible: true, width: 280 },
+    { key: 'consolidationReason', title: '命中说明', visible: true, width: 280 },
+    { key: 'trendLineStatus', title: '趋势线', visible: true, width: 88 },
+    { key: 'trendLineReason', title: '趋势线说明', visible: true, width: 220 },
+    { key: 'sharpMoveLabels', title: '单日异动', visible: true, width: 220 },
+    { key: 'ma5', title: 'MA-5涨跌幅', visible: false },
+    { key: 'ma10', title: 'MA-10涨跌幅', visible: false },
+    { key: 'ma20', title: 'MA-20涨跌幅', visible: false },
+    { key: 'ma30', title: 'MA-30涨跌幅', visible: false },
+    { key: 'ma60', title: 'MA-60涨跌幅', visible: false },
+    { key: 'ma120', title: 'MA-120涨跌幅', visible: false, width: 130 },
+    { key: 'ma240', title: 'MA-240涨跌幅', visible: false, width: 130 },
+    { key: 'ma360', title: 'MA-360涨跌幅', visible: false, width: 130 },
+];
+/** 板块页面每页显示数量 */
+export const SECTOR_PAGE_SIZE = 50;
+/** 搜索防抖延迟（毫秒） */
+export const SEARCH_DEBOUNCE_DELAY = 300;
+/** 详情页K线周期存储键名 */
+export const DETAIL_KLINE_PERIOD_STORAGE_KEY = 'detail_kline_period';
+/** 机会分析表格高度计算内边距 */
+export const OPPORTUNITY_TABLE_HEIGHT_PADDING = 40;
+/** 机会分析表格高度计算额外内边距 */
+export const OPPORTUNITY_TABLE_HEIGHT_EXTRA_PADDING = 38;
+/** 机会分析表格高度计算边距 */
+export const OPPORTUNITY_TABLE_HEIGHT_MARGIN = 10;
+/** 机会分析跳过详情默认显示数量 */
+export const SKIP_DETAIL_DISPLAY_COUNT = 20;
+/** 筛选条件保存防抖延迟（毫秒） */
+export const FILTER_SAVE_DEBOUNCE_DELAY = 300;
+/** 概况页全部分组ID */
+export const GROUP_ALL_ID = '__all__';
+/** Cookie池相关常量 */
+export const COOKIE_POOL_DB_NAME = 'CookiePoolDB';
+export const COOKIE_POOL_DB_VERSION = 1;
+export const COOKIE_POOL_STORE_NAME = 'cookies';
+export const MAX_COOKIE_COUNT = 200; // 最大Cookie数量
+export const COOKIE_HEALTH_CHECK_INTERVAL = 60 * 60 * 1000; // 1小时检查一次

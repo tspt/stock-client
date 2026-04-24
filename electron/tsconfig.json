@@ -10,6 +10,6 @@
     "skipLibCheck": true,
     "allowImportingTsExtensions": false
   },
-  "include": ["main.ts", "localApiProxy.ts", "cookieFetcher.ts"],
+  "include": ["main.ts", "localApiProxy.ts", "eastMoneyPush2Context.ts", "cookieFetcher.ts"],
   "exclude": ["preload.ts"]
 }

@@ -45,6 +45,11 @@ try {
       return ipcRenderer.invoke('test-cookie', cookieValue);
     },
 
+    /** 将池 Cookie 写入主窗口 session，供渲染进程对 push2 发 JSONP 时使用 */
+    syncEastMoneySessionCookies: (raw: string) => {
+      return ipcRenderer.invoke('sync-eastmoney-session-cookies', raw);
+    },
+
     // 监听Cookie获取进度
     onCookieFetchProgress: (callback: (progress: any) => void) => {
       const listener = (_event: any, progress: any) => callback(progress);

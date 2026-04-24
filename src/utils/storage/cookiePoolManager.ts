@@ -3,7 +3,7 @@
  * 负责Cookie的智能选择、健康管理和状态跟踪
  */
 
-import type { CookieEntry, CookiePoolStats, CookieOperationLog } from '@/types/cookie';
+import type { CookieEntry, CookiePoolStats, CookieOperationLog } from '../../types/cookie.js';
 import {
   addCookie,
   getActiveCookies,
@@ -12,8 +12,8 @@ import {
   removeCookie,
   clearAllCookies,
   getCookieCount,
-} from './cookiePoolDB';
-import { logger } from '../business/logger';
+} from './cookiePoolDB.js';
+import { logger } from '../business/logger.js';
 
 /**
  * Cookie池管理器类
@@ -66,7 +66,7 @@ class CookiePoolManager {
 
   /**
    * 智能获取下一个Cookie
-   * 策略：按健康评分排序，取前5个中随机选择一个
+   * 策略：按健康评分排序，取前20个中随机选择一个，并应用冷却机制
    */
   getNextCookie(): string | null {
     const activeCookies = Array.from(this.cookies.values()).filter((c) => c.isActive);
@@ -79,8 +79,19 @@ class CookiePoolManager {
     // 按健康评分降序排序
     activeCookies.sort((a, b) => b.healthScore - a.healthScore);
 
-    // 取前5个（或全部如果不足5个）
-    const topCookies = activeCookies.slice(0, 5);
+    // 过滤掉还在冷却期的Cookie（30秒冷却时间）
+    const now = Date.now();
+    const COOLDOWN_TIME = 30 * 1000; // 30秒
+    const availableCookies = activeCookies.filter((c) => {
+      const timeSinceLastUse = now - c.lastUsedAt;
+      return timeSinceLastUse >= COOLDOWN_TIME;
+    });
+
+    // 如果所有Cookie都在冷却期，则从所有活跃Cookie中选择（降级策略）
+    const candidateCookies = availableCookies.length > 0 ? availableCookies : activeCookies;
+
+    // 取前20个（或全部如果不足20个）
+    const topCookies = candidateCookies.slice(0, 20);
 
     // 加权随机选择（健康评分高的被选中概率更大）
     const totalScore = topCookies.reduce((sum, c) => sum + c.healthScore, 0);
@@ -107,6 +118,64 @@ class CookiePoolManager {
     );
 
     return selected.value;
+  }
+
+  /**
+   * 获取下一个Cookie及其对应的User-Agent（用于东方财富接口）
+   * @returns { cookie: string, userAgent?: string } | null
+   */
+  getNextCookieWithUA(): { cookie: string; userAgent?: string } | null {
+    const activeCookies = Array.from(this.cookies.values()).filter((c) => c.isActive);
+
+    if (activeCookies.length === 0) {
+      logger.warn('[CookiePool] 没有可用的活跃Cookie');
+      return null;
+    }
+
+    // 按健康评分降序排序
+    activeCookies.sort((a, b) => b.healthScore - a.healthScore);
+
+    // 过滤掉还在冷却期的Cookie（30秒冷却时间）
+    const now = Date.now();
+    const COOLDOWN_TIME = 30 * 1000; // 30秒
+    const availableCookies = activeCookies.filter((c) => {
+      const timeSinceLastUse = now - c.lastUsedAt;
+      return timeSinceLastUse >= COOLDOWN_TIME;
+    });
+
+    // 如果所有Cookie都在冷却期，则从所有活跃Cookie中选择（降级策略）
+    const candidateCookies = availableCookies.length > 0 ? availableCookies : activeCookies;
+
+    // 取前20个（或全部如果不足20个）
+    const topCookies = candidateCookies.slice(0, 20);
+
+    // 加权随机选择（健康评分高的被选中概率更大）
+    const totalScore = topCookies.reduce((sum, c) => sum + c.healthScore, 0);
+    let random = Math.random() * totalScore;
+    let selected = topCookies[0];
+
+    for (const cookie of topCookies) {
+      random -= cookie.healthScore;
+      if (random <= 0) {
+        selected = cookie;
+        break;
+      }
+    }
+
+    // 更新最后使用时间
+    selected.lastUsedAt = Date.now();
+    this.cookies.set(selected.id, selected);
+
+    logger.debug(
+      `[CookiePool] 选择Cookie: ${selected.id.substring(0, 8)}..., UA: ${
+        selected.userAgent || '未设置'
+      }, 健康评分: ${selected.healthScore.toFixed(1)}`
+    );
+
+    return {
+      cookie: selected.value,
+      userAgent: selected.userAgent,
+    };
   }
 
   /**
@@ -183,6 +252,65 @@ class CookiePoolManager {
       logger.debug(`[CookiePool] Cookie ${cookie.id.substring(0, 8)}... 报告失败`);
     } catch (error) {
       logger.error('[CookiePool] 报告失败失败:', error);
+    }
+  }
+
+  /**
+   * 添加单个Cookie（带UA信息）
+   */
+  async addCookieWithUA(
+    cookieString: string,
+    userAgent: string,
+    source: 'manual' | 'auto' = 'manual'
+  ): Promise<boolean> {
+    try {
+      // 验证Cookie格式
+      if (!cookieString || cookieString.trim().length < 10) {
+        logger.warn('[CookiePool] Cookie格式无效');
+        return false;
+      }
+
+      // 生成唯一ID
+      const id = `cookie_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+
+      const cookie: CookieEntry = {
+        id,
+        value: cookieString.trim(),
+        createdAt: Date.now(),
+        lastUsedAt: 0,
+        successCount: 0,
+        failureCount: 0,
+        isActive: true,
+        healthScore: 100,
+        userAgent: userAgent,
+      };
+
+      // 保存到IndexedDB
+      await addCookie(cookie);
+
+      // 更新内存
+      this.cookies.set(id, cookie);
+
+      this.addLog({
+        timestamp: Date.now(),
+        action: 'add',
+        success: true,
+        message: `添加Cookie（带UA）`,
+        cookieId: id,
+      });
+
+      const sourceText = source === 'auto' ? '自动获取' : '手动添加';
+      logger.info(`[CookiePool] ${sourceText}Cookie成功 (UA: ${userAgent.substring(0, 30)}...)`);
+      return true;
+    } catch (error) {
+      logger.error('[CookiePool] 添加Cookie失败:', error);
+      this.addLog({
+        timestamp: Date.now(),
+        action: 'add',
+        success: false,
+        message: `添加Cookie失败: ${error instanceof Error ? error.message : String(error)}`,
+      });
+      return false;
     }
   }
 

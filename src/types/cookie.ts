@@ -22,6 +22,8 @@ export interface CookieEntry {
   isActive: boolean;
   /** 健康评分 (0-100) */
   healthScore: number;
+  /** 获取Cookie时使用的User-Agent（仅用于东方财富接口） */
+  userAgent?: string;
 }
 
 /**

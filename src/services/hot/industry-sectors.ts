@@ -5,7 +5,7 @@
 import type { IndustrySectorRankData, IndustrySectorBasicInfo } from '@/types/stock';
 import { logger } from '@/utils/business/logger';
 import { getStorage, setStorage } from '@/utils/storage/storage';
-import { fetchWithCookieRetry } from '@/utils/network/fetchWithCookieRetry';
+import { getEastMoneyClistJsonpData } from '@/utils/network/eastMoneyClistClient';
 
 /**
  * 板块成分股分页大小常量
@@ -166,8 +166,7 @@ export async function getIndustrySectors(
   pageNum: number = 1
 ): Promise<{ data: IndustrySectorRankData[]; total: number }> {
   try {
-    // 构建API URL - 使用 m:90 s:4 表示行业板块
-    const baseUrl = '/api/eastmoney/clist/get';
+    // 使用 m:90 s:4 表示行业板块
     const params = new URLSearchParams({
       cb: `jQuery${Date.now()}_${Math.random().toString().slice(2, 11)}`,
       fid: sortType,
@@ -182,23 +181,7 @@ export async function getIndustrySectors(
       fields: 'f12,f14,f2,f3,f62,f184,f66,f69,f72,f75,f78,f81,f84,f87,f204,f205,f124,f1,f13',
     });
 
-    const url = `${baseUrl}?${params.toString()}`;
-
-    const response = await fetchWithCookieRetry(url);
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const text = await response.text();
-
-    // 解析JSONP响应
-    const jsonMatch = text.match(/\((.*)\)/);
-    if (!jsonMatch || !jsonMatch[1]) {
-      throw new Error('无法解析JSONP响应');
-    }
-
-    const data: RawIndustrySectorResponse = JSON.parse(jsonMatch[1]);
+    const data = (await getEastMoneyClistJsonpData(params, 3)) as RawIndustrySectorResponse;
 
     if (data.rc !== 0) {
       throw new Error('获取行业板块数据失败');
@@ -356,17 +339,17 @@ export async function getIndustrySectorRanks(count: number = 20): Promise<{
  * @param sortOrder 排序方向: 1-降序, 0-升序
  * @param pageSize 每页数量
  * @param pageNum 页码
+ * @param signal AbortSignal 用于取消请求
  */
 export async function getIndustrySectorStocks(
   sectorCode: string,
   sortType: string = 'f3',
   sortOrder: number = 1,
   pageSize: number = 50,
-  pageNum: number = 1
+  pageNum: number = 1,
+  signal?: AbortSignal
 ): Promise<{ data: IndustrySectorRankData[]; total: number }> {
   try {
-    // 构建API URL - 使用 b:板块代码 表示获取该板块的成分股
-    const baseUrl = '/api/eastmoney/clist/get';
     const params = new URLSearchParams({
       cb: `jQuery${Date.now()}_${Math.random().toString().slice(2, 11)}`,
       fid: sortType,
@@ -381,23 +364,7 @@ export async function getIndustrySectorStocks(
       fields: 'f12,f14,f2,f3,f62,f184,f66,f69,f72,f75,f78,f81,f84,f87,f204,f205,f124,f1,f13',
     });
 
-    const url = `${baseUrl}?${params.toString()}`;
-
-    const response = await fetchWithCookieRetry(url);
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const text = await response.text();
-
-    // 解析JSONP响应
-    const jsonMatch = text.match(/\((.*)\)/);
-    if (!jsonMatch || !jsonMatch[1]) {
-      throw new Error('无法解析JSONP响应');
-    }
-
-    const data: RawIndustrySectorResponse = JSON.parse(jsonMatch[1]);
+    const data = (await getEastMoneyClistJsonpData(params, 3, signal)) as RawIndustrySectorResponse;
 
     if (data.rc !== 0) {
       throw new Error('获取行业板块成分股数据失败');
@@ -407,7 +374,11 @@ export async function getIndustrySectorStocks(
       data: parseIndustrySectorData(data),
       total: data.data.total,
     };
-  } catch (error) {
+  } catch (error: any) {
+    // 如果是取消错误，直接抛出
+    if (error.name === 'AbortError') {
+      throw error;
+    }
     logger.error('获取行业板块成分股数据失败:', error);
     throw error;
   }

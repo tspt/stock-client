@@ -35,6 +35,14 @@ function sendProgress(
 }
 
 /**
+ * Cookie条目（带UA信息）
+ */
+export interface CookieWithUA {
+  cookie: string;
+  userAgent: string;
+}
+
+/**
  * 常见的User-Agent列表，用于模拟不同浏览器
  */
 const USER_AGENTS = [
@@ -80,12 +88,12 @@ function findBrowserPath(): string {
  * 自动获取东方财富Cookie
  * @param count 需要获取的Cookie数量
  * @param mainWindow 主窗口引用，用于发送进度
- * @returns Cookie字符串数组
+ * @returns Cookie字符串数组（包含UA信息）
  */
 export async function autoFetchCookies(
   count: number,
   mainWindow: BrowserWindow | null = null
-): Promise<string[]> {
+): Promise<CookieWithUA[]> {
   // 重置取消标志
   isCancelled = false;
 
@@ -111,7 +119,7 @@ export async function autoFetchCookies(
   });
 
   const browserPath = findBrowserPath();
-  const cookies: string[] = [];
+  const cookiesWithUA: CookieWithUA[] = [];
   const seenCookies = new Set<string>();
 
   let browser: any = null;
@@ -129,7 +137,7 @@ export async function autoFetchCookies(
       if (isCancelled) {
         log('操作已取消');
         sendProgress(mainWindow, {
-          current: cookies.length,
+          current: cookiesWithUA.length,
           total: count,
           batch: batch + 1,
           totalBatches,
@@ -143,7 +151,7 @@ export async function autoFetchCookies(
 
       // 发送批次开始进度
       sendProgress(mainWindow, {
-        current: cookies.length,
+        current: cookiesWithUA.length,
         total: count,
         batch: batch + 1,
         totalBatches,
@@ -170,7 +178,7 @@ export async function autoFetchCookies(
           // 检查是否被取消
           if (isCancelled) {
             log('操作已取消');
-            return cookies;
+            return cookiesWithUA;
           }
 
           log(`获取第 ${i + 1}/${count} 个Cookie...`);
@@ -189,6 +197,7 @@ export async function autoFetchCookies(
 
           // 随机设置User-Agent，模拟不同浏览器
           const userAgent = getRandomUserAgent();
+          log(`[Cookie获取] 使用UA: ${userAgent}`);
           await page.setUserAgent(userAgent);
 
           // 访问东方财富网站
@@ -220,8 +229,8 @@ export async function autoFetchCookies(
           // 去重
           if (!seenCookies.has(cookieString)) {
             seenCookies.add(cookieString);
-            cookies.push(cookieString);
-            log(`✅ 成功获取唯一Cookie (${cookies.length}/${count})`);
+            cookiesWithUA.push({ cookie: cookieString, userAgent });
+            log(`✅ 成功获取唯一Cookie (${cookiesWithUA.length}/${count})`);
 
             // 发送成功进度
             sendProgress(mainWindow, {
@@ -229,7 +238,7 @@ export async function autoFetchCookies(
               total: count,
               batch: batch + 1,
               totalBatches,
-              status: `成功 ${cookies.length}/${count}`,
+              status: `成功 ${cookiesWithUA.length}/${count}`,
               cookie: cookieString.substring(0, 50) + '...',
             });
           } else {
@@ -268,7 +277,7 @@ export async function autoFetchCookies(
 
         // 发送暂停进度
         sendProgress(mainWindow, {
-          current: cookies.length,
+          current: cookiesWithUA.length,
           total: count,
           batch: batch + 1,
           totalBatches,
@@ -280,23 +289,23 @@ export async function autoFetchCookies(
     }
 
     log(`\n===== 全部完成 =====`);
-    log(`共获取 ${cookies.length} 个唯一Cookie（目标: ${count}）`);
+    log(`共获取 ${cookiesWithUA.length} 个唯一Cookie（目标: ${count}）`);
 
     // 发送完成进度
     sendProgress(mainWindow, {
-      current: cookies.length,
+      current: cookiesWithUA.length,
       total: count,
       batch: totalBatches,
       totalBatches,
       status: isCancelled ? '已取消' : '完成',
     });
 
-    if (cookies.length < count && !isCancelled) {
+    if (cookiesWithUA.length < count && !isCancelled) {
       warn(`注意: 实际获取数量少于目标，可能是Cookie重复率较高`);
       log('建议: 可以再次运行获取更多，或手动添加补充');
     }
 
-    return cookies;
+    return cookiesWithUA;
   } catch (err) {
     error('获取Cookie过程中出错:', err);
     throw err;

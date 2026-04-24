@@ -24,7 +24,7 @@ export interface ElectronAPI {
   /** 自动获取东方财富Cookie */
   fetchEastMoneyCookies: (
     count: number
-  ) => Promise<{ success: boolean; cookies?: string[]; error?: string }>;
+  ) => Promise<{ success: boolean; cookies?: string[]; userAgents?: string[]; error?: string }>;
 
   /** 取消Cookie获取 */
   cancelFetchEastMoneyCookies: () => Promise<{ success: boolean; error?: string }>;
@@ -33,6 +33,9 @@ export interface ElectronAPI {
   testCookie: (
     cookieValue: string
   ) => Promise<{ success: boolean; isValid: boolean; error?: string }>;
+
+  /** 将东财池 Cookie 写入与页面同 session，供 JSONP 直连 push2 */
+  syncEastMoneySessionCookies: (raw: string) => Promise<{ ok: boolean }>;
 
   /** 监听Cookie获取进度 */
   onCookieFetchProgress: (

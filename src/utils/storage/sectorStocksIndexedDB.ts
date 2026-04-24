@@ -19,6 +19,7 @@ export interface SectorWithStocks {
     name: string;
     code: string;
   }>;
+  total?: number; // 新增:板块成分股总数
   savedAt?: number;
 }
 
@@ -69,16 +70,25 @@ export async function initSectorStocksDB(): Promise<IDBDatabase> {
 /**
  * 保存行业板块数据
  */
-export async function saveIndustrySectors(data: SectorWithStocks[]): Promise<void> {
+export async function saveIndustrySectors(
+  data: SectorWithStocks[],
+  incremental: boolean = false
+): Promise<void> {
   const db = await initSectorStocksDB();
   const transaction = db.transaction([SECTOR_STOCKS_INDUSTRY_STORE], 'readwrite');
   const store = transaction.objectStore(SECTOR_STOCKS_INDUSTRY_STORE);
 
   return new Promise((resolve, reject) => {
-    // 先清空旧数据
-    const clearRequest = store.clear();
+    // 仅在非增量模式下清空旧数据
+    if (!incremental) {
+      const clearRequest = store.clear();
+      clearRequest.onsuccess = () => saveData();
+      clearRequest.onerror = () => reject(new Error('清空行业板块旧数据失败'));
+    } else {
+      saveData();
+    }
 
-    clearRequest.onsuccess = () => {
+    function saveData() {
       let completed = 0;
       const total = data.length;
 
@@ -99,27 +109,32 @@ export async function saveIndustrySectors(data: SectorWithStocks[]): Promise<voi
           reject(new Error(`保存行业板块 ${item.name} 失败`));
         };
       });
-    };
-
-    clearRequest.onerror = () => {
-      reject(new Error('清空行业板块旧数据失败'));
-    };
+    }
   });
 }
 
 /**
  * 保存概念板块数据
  */
-export async function saveConceptSectors(data: SectorWithStocks[]): Promise<void> {
+export async function saveConceptSectors(
+  data: SectorWithStocks[],
+  incremental: boolean = false
+): Promise<void> {
   const db = await initSectorStocksDB();
   const transaction = db.transaction([SECTOR_STOCKS_CONCEPT_STORE], 'readwrite');
   const store = transaction.objectStore(SECTOR_STOCKS_CONCEPT_STORE);
 
   return new Promise((resolve, reject) => {
-    // 先清空旧数据
-    const clearRequest = store.clear();
+    // 仅在非增量模式下清空旧数据
+    if (!incremental) {
+      const clearRequest = store.clear();
+      clearRequest.onsuccess = () => saveData();
+      clearRequest.onerror = () => reject(new Error('清空概念板块旧数据失败'));
+    } else {
+      saveData();
+    }
 
-    clearRequest.onsuccess = () => {
+    function saveData() {
       let completed = 0;
       const total = data.length;
 
@@ -140,11 +155,7 @@ export async function saveConceptSectors(data: SectorWithStocks[]): Promise<void
           reject(new Error(`保存概念板块 ${item.name} 失败`));
         };
       });
-    };
-
-    clearRequest.onerror = () => {
-      reject(new Error('清空概念板块旧数据失败'));
-    };
+    }
   });
 }
 
@@ -222,5 +233,34 @@ export async function clearSectorStocksDB(): Promise<void> {
     const conceptStore = transaction.objectStore(SECTOR_STOCKS_CONCEPT_STORE);
     const conceptRequest = conceptStore.clear();
     conceptRequest.onsuccess = checkComplete;
+  });
+}
+
+/**
+ * 检查单个板块数据是否完整
+ */
+export function isSectorDataComplete(sector: SectorWithStocks): boolean {
+  if (!sector.total || sector.total === 0) {
+    return false;
+  }
+  return sector.children.length >= sector.total;
+}
+
+/**
+ * 获取需要更新的板块列表(不完整或未缓存的板块)
+ */
+export async function getIncompleteSectors(
+  allSectors: Array<{ code: string; name: string }>,
+  cachedSectors: SectorWithStocks[],
+  sectorType: 'industry' | 'concept'
+): Promise<Array<{ code: string; name: string }>> {
+  const cachedMap = new Map(cachedSectors.map((s) => [s.code, s]));
+
+  return allSectors.filter((sector) => {
+    const cached = cachedMap.get(sector.code);
+    if (!cached) {
+      return true; // 未缓存,需要获取
+    }
+    return !isSectorDataComplete(cached); // 已缓存但不完整,需要重新获取
   });
 }
