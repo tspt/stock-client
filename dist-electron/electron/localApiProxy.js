@@ -252,17 +252,17 @@ export function startEmbeddedApiProxy(port) {
                     });
                     // 准备请求头（移除 Connection 等 hop-by-hop 头，添加完整的浏览器请求头）
                     const nodeHeaders = {
-                        'Accept': '*/*',
+                        Accept: '*/*',
                         'Accept-Encoding': 'gzip, deflate, br',
                         'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
-                        'Connection': 'keep-alive',
-                        'Host': uReq.hostname,
-                        'Referer': eastmoneyCtx?.referer || 'https://quote.eastmoney.com/',
+                        Connection: 'keep-alive',
+                        Host: uReq.hostname,
+                        Referer: eastmoneyCtx?.referer || 'https://quote.eastmoney.com/',
                         'Sec-Fetch-Dest': 'script',
                         'Sec-Fetch-Mode': 'no-cors',
                         'Sec-Fetch-Site': 'cross-site',
                         'User-Agent': finalUA,
-                        ...(poolCookie ? { 'Cookie': poolCookie } : {}),
+                        ...(poolCookie ? { Cookie: poolCookie } : {}),
                     };
                     // 对于非JSONP请求，添加Origin和X-Requested-With
                     const isJsonp = isEastmoneyJsonpUrl(forwardUrl);

@@ -33,6 +33,25 @@ class CookiePoolManager {
             writable: true,
             value: false
         });
+        // Cookie负载均衡配置常量
+        Object.defineProperty(this, "USAGE_TOLERANCE", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: 5
+        }); // 使用次数容忍度
+        Object.defineProperty(this, "HEALTH_THRESHOLD", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: 70
+        }); // 健康评分门槛
+        Object.defineProperty(this, "HEALTH_THRESHOLD_FALLBACK", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: 50
+        }); // 降级门槛
     }
     /**
      * 获取单例实例
@@ -69,7 +88,10 @@ class CookiePoolManager {
     }
     /**
      * 智能获取下一个Cookie
-     * 策略：按健康评分排序，取前20个中随机选择一个，并应用冷却机制
+     * 策略：分层轮询 + 健康评分过滤，实现负载均衡
+     * 1. 优先选择使用次数最少的Cookie
+     * 2. 在使用次数接近的Cookie中，筛选健康评分>=70的
+     * 3. 在符合条件的Cookie中随机选择
      */
     getNextCookie() {
         const activeCookies = Array.from(this.cookies.values()).filter((c) => c.isActive);
@@ -77,34 +99,46 @@ class CookiePoolManager {
             logger.warn('[CookiePool] 没有可用的活跃Cookie');
             return null;
         }
-        // 按健康评分降序排序
-        activeCookies.sort((a, b) => b.healthScore - a.healthScore);
-        // 过滤掉还在冷却期的Cookie（30秒冷却时间）
+        // 1. 过滤冷却期Cookie（30秒）
         const now = Date.now();
-        const COOLDOWN_TIME = 30 * 1000; // 30秒
+        const COOLDOWN_TIME = 30 * 1000;
         const availableCookies = activeCookies.filter((c) => {
             const timeSinceLastUse = now - c.lastUsedAt;
             return timeSinceLastUse >= COOLDOWN_TIME;
         });
-        // 如果所有Cookie都在冷却期，则从所有活跃Cookie中选择（降级策略）
+        // 如果所有Cookie都在冷却期，降级使用所有活跃Cookie
         const candidateCookies = availableCookies.length > 0 ? availableCookies : activeCookies;
-        // 取前20个（或全部如果不足20个）
-        const topCookies = candidateCookies.slice(0, 20);
-        // 加权随机选择（健康评分高的被选中概率更大）
-        const totalScore = topCookies.reduce((sum, c) => sum + c.healthScore, 0);
-        let random = Math.random() * totalScore;
-        let selected = topCookies[0];
-        for (const cookie of topCookies) {
-            random -= cookie.healthScore;
-            if (random <= 0) {
-                selected = cookie;
-                break;
-            }
+        // 2. 计算每个Cookie的总使用次数
+        const usageMap = new Map();
+        candidateCookies.forEach((c) => {
+            usageMap.set(c.id, c.successCount + c.failureCount);
+        });
+        // 3. 找出最少使用次数
+        const minUsage = Math.min(...Array.from(usageMap.values()));
+        // 4. 选取使用次数接近最少的Cookie（允许±USAGE_TOLERANCE次偏差）
+        const leastUsedCookies = candidateCookies.filter((c) => {
+            const usage = usageMap.get(c.id) || 0;
+            return usage <= minUsage + this.USAGE_TOLERANCE;
+        });
+        // 5. 从最少使用的Cookie中，筛选健康评分>=HEALTH_THRESHOLD的
+        let healthyLeastUsed = leastUsedCookies.filter((c) => c.healthScore >= this.HEALTH_THRESHOLD);
+        // 降级策略：如果没有健康的，放宽到HEALTH_THRESHOLD_FALLBACK
+        if (healthyLeastUsed.length === 0) {
+            healthyLeastUsed = leastUsedCookies.filter((c) => c.healthScore >= this.HEALTH_THRESHOLD_FALLBACK);
         }
+        // 最终候选池
+        const selectedPool = healthyLeastUsed.length > 0 ? healthyLeastUsed : leastUsedCookies;
+        // 6. 在最终候选池中均匀随机选择（不再加权）
+        const randomIndex = Math.floor(Math.random() * selectedPool.length);
+        const selected = selectedPool[randomIndex];
         // 更新最后使用时间
         selected.lastUsedAt = Date.now();
         this.cookies.set(selected.id, selected);
-        logger.debug(`[CookiePool] 选择Cookie: ${selected.id.substring(0, 8)}..., 健康评分: ${selected.healthScore.toFixed(1)}`);
+        const totalUsage = selected.successCount + selected.failureCount;
+        logger.debug(`[CookiePool] 选择Cookie: ${selected.id.substring(0, 8)}..., ` +
+            `使用次数: ${totalUsage}, ` +
+            `健康评分: ${selected.healthScore.toFixed(1)}, ` +
+            `最小使用次数: ${minUsage}`);
         return selected.value;
     }
     /**
@@ -117,34 +151,47 @@ class CookiePoolManager {
             logger.warn('[CookiePool] 没有可用的活跃Cookie');
             return null;
         }
-        // 按健康评分降序排序
-        activeCookies.sort((a, b) => b.healthScore - a.healthScore);
-        // 过滤掉还在冷却期的Cookie（30秒冷却时间）
+        // 1. 过滤冷却期Cookie（30秒）
         const now = Date.now();
-        const COOLDOWN_TIME = 30 * 1000; // 30秒
+        const COOLDOWN_TIME = 30 * 1000;
         const availableCookies = activeCookies.filter((c) => {
             const timeSinceLastUse = now - c.lastUsedAt;
             return timeSinceLastUse >= COOLDOWN_TIME;
         });
-        // 如果所有Cookie都在冷却期，则从所有活跃Cookie中选择（降级策略）
+        // 如果所有Cookie都在冷却期，降级使用所有活跃Cookie
         const candidateCookies = availableCookies.length > 0 ? availableCookies : activeCookies;
-        // 取前20个（或全部如果不足20个）
-        const topCookies = candidateCookies.slice(0, 20);
-        // 加权随机选择（健康评分高的被选中概率更大）
-        const totalScore = topCookies.reduce((sum, c) => sum + c.healthScore, 0);
-        let random = Math.random() * totalScore;
-        let selected = topCookies[0];
-        for (const cookie of topCookies) {
-            random -= cookie.healthScore;
-            if (random <= 0) {
-                selected = cookie;
-                break;
-            }
+        // 2. 计算每个Cookie的总使用次数
+        const usageMap = new Map();
+        candidateCookies.forEach((c) => {
+            usageMap.set(c.id, c.successCount + c.failureCount);
+        });
+        // 3. 找出最少使用次数
+        const minUsage = Math.min(...Array.from(usageMap.values()));
+        // 4. 选取使用次数接近最少的Cookie（允许±USAGE_TOLERANCE次偏差）
+        const leastUsedCookies = candidateCookies.filter((c) => {
+            const usage = usageMap.get(c.id) || 0;
+            return usage <= minUsage + this.USAGE_TOLERANCE;
+        });
+        // 5. 从最少使用的Cookie中，筛选健康评分>=HEALTH_THRESHOLD的
+        let healthyLeastUsed = leastUsedCookies.filter((c) => c.healthScore >= this.HEALTH_THRESHOLD);
+        // 降级策略：如果没有健康的，放宽到HEALTH_THRESHOLD_FALLBACK
+        if (healthyLeastUsed.length === 0) {
+            healthyLeastUsed = leastUsedCookies.filter((c) => c.healthScore >= this.HEALTH_THRESHOLD_FALLBACK);
         }
+        // 最终候选池
+        const selectedPool = healthyLeastUsed.length > 0 ? healthyLeastUsed : leastUsedCookies;
+        // 6. 在最终候选池中均匀随机选择
+        const randomIndex = Math.floor(Math.random() * selectedPool.length);
+        const selected = selectedPool[randomIndex];
         // 更新最后使用时间
         selected.lastUsedAt = Date.now();
         this.cookies.set(selected.id, selected);
-        logger.debug(`[CookiePool] 选择Cookie: ${selected.id.substring(0, 8)}..., UA: ${selected.userAgent || '未设置'}, 健康评分: ${selected.healthScore.toFixed(1)}`);
+        const totalUsage = selected.successCount + selected.failureCount;
+        logger.debug(`[CookiePool] 选择Cookie(UA): ${selected.id.substring(0, 8)}..., ` +
+            `使用次数: ${totalUsage}, ` +
+            `健康评分: ${selected.healthScore.toFixed(1)}, ` +
+            `UA: ${selected.userAgent ? selected.userAgent.substring(0, 30) + '...' : '未设置'}, ` +
+            `最小使用次数: ${minUsage}`);
         return {
             cookie: selected.value,
             userAgent: selected.userAgent,
@@ -700,6 +747,47 @@ class CookiePoolManager {
         if (this.operationLogs.length > 100) {
             this.operationLogs = this.operationLogs.slice(-100);
         }
+    }
+    /**
+     * 获取Cookie使用分布统计（用于监控负载均衡效果）
+     */
+    getUsageDistribution() {
+        const allCookies = Array.from(this.cookies.values());
+        if (allCookies.length === 0) {
+            return {
+                minUsage: 0,
+                maxUsage: 0,
+                avgUsage: 0,
+                stdDeviation: 0,
+                distribution: [],
+            };
+        }
+        const usages = allCookies.map((c) => c.successCount + c.failureCount);
+        const minUsage = Math.min(...usages);
+        const maxUsage = Math.max(...usages);
+        const avgUsage = usages.reduce((sum, u) => sum + u, 0) / usages.length;
+        // 计算标准差
+        const variance = usages.reduce((sum, u) => sum + Math.pow(u - avgUsage, 2), 0) / usages.length;
+        const stdDeviation = Math.sqrt(variance);
+        // 生成分布区间
+        const ranges = [
+            { min: 0, max: 10, label: '0-10次' },
+            { min: 11, max: 50, label: '11-50次' },
+            { min: 51, max: 100, label: '51-100次' },
+            { min: 101, max: 500, label: '101-500次' },
+            { min: 501, max: Infinity, label: '500+次' },
+        ];
+        const distribution = ranges.map((range) => ({
+            range: range.label,
+            count: usages.filter((u) => u >= range.min && u <= range.max).length,
+        }));
+        return {
+            minUsage,
+            maxUsage,
+            avgUsage: Math.round(avgUsage),
+            stdDeviation: Math.round(stdDeviation),
+            distribution,
+        };
     }
 }
 Object.defineProperty(CookiePoolManager, "instance", {
