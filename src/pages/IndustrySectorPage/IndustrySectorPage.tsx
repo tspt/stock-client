@@ -3,7 +3,7 @@
  */
 
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
-import { Layout, Input, Table, Space, Select, Button, Typography, AutoComplete, message } from 'antd';
+import { Layout, Input, Table, Space, Select, Button, Typography, AutoComplete, App } from 'antd';
 import { SearchOutlined, ReloadOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { getUnifiedIndustryBasic, getUnifiedIndustryRank } from '@/services/hot/unified-sectors';
@@ -48,6 +48,7 @@ const formatRatio = (value?: number): JSX.Element => {
 };
 
 export function IndustrySectorPage() {
+  const { message } = App.useApp();
   const [searchKeyword, setSearchKeyword] = useState('');
   const [sortOrder, setSortOrder] = useState<number>(1); // 1: 降序, 0: 升序
   const [data, setData] = useState<IndustrySectorRankData[]>([]);

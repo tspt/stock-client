@@ -3,7 +3,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Modal, Form, Radio, InputNumber, Select, Checkbox, message } from 'antd';
+import { Modal, Form, Radio, InputNumber, Select, Checkbox, App } from 'antd';
 import type { PriceAlert, AlertType, NotificationConfig, IndicatorType } from '@/types/stock';
 import { useAlertStore } from '@/stores/alertStore';
 import { useStockStore } from '@/stores/stockStore';
@@ -40,6 +40,7 @@ export function AlertSettingModal({
   onCancel,
   onSuccess,
 }: AlertSettingModalProps) {
+  const { message } = App.useApp();
   const [form] = Form.useForm();
   const { addAlert, updateAlert } = useAlertStore();
   const { quotes } = useStockStore();

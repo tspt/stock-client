@@ -3,7 +3,7 @@
  */
 
 import { useState, useEffect, useRef, useMemo, memo } from 'react';
-import { Button, Empty, Tooltip, Menu, Modal } from 'antd';
+import { Button, Empty, Tooltip, Menu, Modal, App } from 'antd';
 import VirtualList from 'rc-virtual-list';
 import {
   UpOutlined,
@@ -24,7 +24,6 @@ import { useStockStore } from '@/stores/stockStore';
 import { StockGroupSelector } from '@/components/StockGroupSelector/StockGroupSelector';
 import { formatPrice, formatChangePercent, formatVolume } from '@/utils/format/format';
 import { AlertSettingModal } from '@/components/PriceAlert/AlertSettingModal';
-import { message } from 'antd';
 import { BUILTIN_GROUP_SELF_COLOR, BUILTIN_GROUP_SELF_ID, BUILTIN_GROUP_SELF_NAME } from '@/utils/config/constants';
 import styles from './StockList.module.css';
 
@@ -32,6 +31,7 @@ import styles from './StockList.module.css';
 const LIST_ROW_HEIGHT = 48;
 
 export const StockList = memo(function StockList() {
+  const { message } = App.useApp();
   const { watchList, quotes } = useStockList();
   const {
     watchList: allWatchList,

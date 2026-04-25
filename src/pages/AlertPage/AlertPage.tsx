@@ -3,7 +3,7 @@
  */
 
 import { useState, useEffect, useMemo } from 'react';
-import { Table, Button, Space, Tag, Popconfirm, message, Empty } from 'antd';
+import { Table, Button, Space, Tag, Popconfirm, Empty, App } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { EditOutlined, DeleteOutlined, BellOutlined, BellTwoTone } from '@ant-design/icons';
 import { useAlertStore } from '@/stores/alertStore';
@@ -15,6 +15,7 @@ import { ALERT_TIME_PERIODS } from '@/utils/config/constants';
 import styles from './AlertPage.module.css';
 
 export function AlertPage() {
+  const { message } = App.useApp();
   const { alerts, removeAlert, toggleAlert, loadAlerts, resetAlertTrigger } = useAlertStore();
   const { quotes, watchList } = useStockStore();
   const [editAlert, setEditAlert] = useState<PriceAlert | null>(null);

@@ -3,7 +3,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Modal, Switch, Button, Space, message } from 'antd';
+import { Modal, Switch, Button, Space, App } from 'antd';
 import { ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons';
 import type { OverviewColumnConfig } from '@/types/stock';
 import styles from './OverviewColumnSettings.module.css';
@@ -23,6 +23,7 @@ export function OverviewColumnSettings({
   onCancel,
   onReset,
 }: OverviewColumnSettingsProps) {
+  const { message } = App.useApp();
   const [localColumns, setLocalColumns] = useState<OverviewColumnConfig[]>(columns);
 
   useEffect(() => {

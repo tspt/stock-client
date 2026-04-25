@@ -3,7 +3,7 @@
  */
 
 import { useState } from 'react';
-import { Input, AutoComplete, message, Button, Dropdown, Modal } from 'antd';
+import { Input, AutoComplete, Button, Dropdown, Modal, App } from 'antd';
 import { SearchOutlined, MoreOutlined } from '@ant-design/icons';
 import { searchStockLocal } from '@/services/stocks';
 import { useStockStore } from '@/stores/stockStore';
@@ -14,6 +14,7 @@ import { BUILTIN_GROUP_SELF_COLOR, BUILTIN_GROUP_SELF_ID, BUILTIN_GROUP_SELF_NAM
 import styles from './SearchBar.module.css';
 
 export function SearchBar() {
+  const { message } = App.useApp();
   const [options, setOptions] = useState<{ value: string; stock: StockInfo }[]>([]);
   const [searchValue, setSearchValue] = useState('');
   const [groupSelectorVisible, setGroupSelectorVisible] = useState(false);

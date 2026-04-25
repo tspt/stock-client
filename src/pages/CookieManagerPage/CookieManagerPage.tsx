@@ -12,12 +12,12 @@ import {
   Tag,
   Modal,
   Input,
-  message,
   Statistic,
   Row,
   Col,
   Popconfirm,
   Radio,
+  App,
 } from 'antd';
 import {
   KeyOutlined,
@@ -39,6 +39,7 @@ import styles from './CookieManagerPage.module.css';
 const { TextArea } = Input;
 
 export function CookieManagerPage() {
+  const { message } = App.useApp();
   const [cookies, setCookies] = useState<CookieEntry[]>([]);
   const [stats, setStats] = useState({
     totalCount: 0,

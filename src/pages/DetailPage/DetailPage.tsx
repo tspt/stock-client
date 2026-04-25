@@ -3,7 +3,7 @@
  */
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { Layout, Space, Card, message, Table, Button, Select } from 'antd';
+import { Layout, Space, Card, Table, Button, Select, App } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { BellOutlined } from '@ant-design/icons';
 import { useStockStore } from '@/stores/stockStore';
@@ -90,6 +90,7 @@ const BUY_ORDER_COLUMNS: ColumnsType<OrderBookRow> = [
 ];
 
 export function DetailPage() {
+  const { message } = App.useApp();
   const { selectedStock, quotes, watchList } = useStockStore();
 
   // 从localStorage恢复上次选择的周期，默认为'day'

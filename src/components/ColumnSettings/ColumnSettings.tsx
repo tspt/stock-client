@@ -3,7 +3,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Modal, Switch, Button, Space, message } from 'antd';
+import { Modal, Switch, Button, Space, App } from 'antd';
 import { ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons';
 import type { ColumnSettingsProps } from '@/types/common';
 import styles from './ColumnSettings.module.css';
@@ -16,6 +16,7 @@ export function ColumnSettings({
   onReset,
   title = "列设置",
 }: ColumnSettingsProps) {
+  const { message } = App.useApp();
   const [localColumns, setLocalColumns] = useState(columns);
 
   useEffect(() => {

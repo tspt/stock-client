@@ -3,7 +3,7 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Drawer, Table, Space, message, Typography } from 'antd';
+import { Drawer, Table, Space, Typography, App } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { getIndustrySectorStocks } from '@/services/hot/industry-sectors';
 import type { IndustrySectorRankData } from '@/types/stock';
@@ -51,6 +51,7 @@ export function IndustrySectorStocksDrawer({
   sectorName,
   onClose,
 }: IndustrySectorStocksDrawerProps) {
+  const { message } = App.useApp();
   const [data, setData] = useState<IndustrySectorRankData[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);

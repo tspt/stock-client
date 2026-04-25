@@ -3,7 +3,7 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Drawer, Table, Space, message, Typography } from 'antd';
+import { Drawer, Table, Space, Typography, App } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { getConceptSectorStocks } from '@/services/hot/concept-sectors';
 import type { ConceptSectorStockData } from '@/types/stock';
@@ -51,6 +51,7 @@ export function ConceptSectorStocksDrawer({
   sectorName,
   onClose,
 }: ConceptSectorStocksDrawerProps) {
+  const { message } = App.useApp();
   const [data, setData] = useState<ConceptSectorStockData[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);

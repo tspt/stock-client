@@ -3,7 +3,7 @@
  */
 
 import { useEffect, useMemo, useState } from 'react';
-import { Layout, Card, Button, Space, Progress, Select, Collapse, message, InputNumber } from 'antd';
+import { Layout, Card, Button, Space, Progress, Select, Collapse, InputNumber, App } from 'antd';
 import {
   PlayCircleOutlined,
   StopOutlined,
@@ -32,6 +32,7 @@ const PERIOD_OPTIONS: { label: string; value: KLinePeriod }[] = [
 ];
 
 export function OverviewPage() {
+  const { message } = App.useApp();
   const {
     analysisData,
     loading,

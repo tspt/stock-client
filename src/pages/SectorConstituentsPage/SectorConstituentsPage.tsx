@@ -3,7 +3,7 @@
  */
 
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { Layout, Button, Progress, Input, Typography, Empty, message } from 'antd';
+import { Layout, Button, Progress, Input, Typography, Empty, App } from 'antd';
 import { RocketOutlined, LoadingOutlined, ExportOutlined } from '@ant-design/icons';
 import { fetchAllSectorsStocks, fetchRemainingSectorsStocks, type SectorFullData, type FetchProgress, type FailedSector } from '@/services/hot/sector-stocks-service';
 import { getIndustrySectors, getConceptSectors, type SectorWithStocks } from '@/utils/storage/sectorStocksIndexedDB';
@@ -15,6 +15,7 @@ const { Header, Content } = Layout;
 const { Text } = Typography;
 
 export function SectorConstituentsPage() {
+  const { message } = App.useApp();
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState<FetchProgress | null>(null);
   const [industryData, setIndustryData] = useState<SectorFullData[]>([]);
