@@ -10,7 +10,7 @@ import { app, BrowserWindow, Tray, Menu, nativeImage, session, ipcMain, Notifica
 import { join } from 'path';
 import { fileURLToPath } from 'url';
 import { existsSync, appendFileSync } from 'fs';
-import { startEmbeddedApiProxy, stopEmbeddedApiProxy } from './localApiProxy.js';
+import { startEmbeddedApiProxy, stopEmbeddedApiProxy, initProxySession } from './localApiProxy.js';
 import { deriveEastmoneyRefererOrigin, isEastmoneyJsonpUrl } from './eastMoneyPush2Context.js';
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 // 开发环境判断
@@ -561,6 +561,8 @@ function setupIpcHandlers() {
 // 应用准备就绪
 app.whenReady().then(async () => {
     mainLog('[主进程] 应用准备就绪');
+    // 初始化代理 session（必须在 app.ready 之后）
+    initProxySession();
     if (process.platform === 'win32') {
         app.setAppUserModelId('com.stock.client');
     }

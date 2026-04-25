@@ -56,6 +56,16 @@ try {
         ipcRenderer.removeListener('cookie-fetch-progress', listener);
       };
     },
+
+    // IPC Renderer（用于接收主进程事件）
+    ipcRenderer: {
+      on: (channel: string, listener: (event: any, ...args: any[]) => void) => {
+        ipcRenderer.on(channel, listener);
+      },
+      removeListener: (channel: string, listener: (...args: any[]) => void) => {
+        ipcRenderer.removeListener(channel, listener);
+      },
+    },
   });
 } catch (error) {
   console.error('[Preload] 暴露 electronAPI 失败:', error);

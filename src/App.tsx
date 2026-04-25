@@ -87,6 +87,23 @@ function AppContent() {
 
   // 初始化Cookie池管理器
   useEffect(() => {
+    // 尽早注册监听器（在Cookie池初始化之前）
+    let cleanupListener: (() => void) | undefined;
+    const electronAPI = window.electronAPI as any;
+    if (electronAPI?.ipcRenderer) {
+      const handler = (_event: any, cookieValue: string) => {
+        logger.warn('[App] 收到主进程通知：标记Cookie失效');
+        const cookiePool = CookiePoolManager.getInstance();
+        cookiePool.reportFailure(cookieValue).catch((err) => {
+          logger.error('[App] 标记Cookie失败:', err);
+        });
+      };
+      electronAPI.ipcRenderer.on('cookie-pool:mark-failed', handler);
+      cleanupListener = () => {
+        electronAPI.ipcRenderer.removeListener('cookie-pool:mark-failed', handler);
+      };
+    }
+
     CookiePoolManager.getInstance()
       .initialize()
       .then(() => {
@@ -95,6 +112,12 @@ function AppContent() {
       .catch((error) => {
         logger.error('[App] Cookie池管理器初始化失败:', error);
       });
+
+    return () => {
+      if (cleanupListener) {
+        cleanupListener();
+      }
+    };
   }, []);
 
   // 当切换到提醒管理/数据概况/机会分析 tab 时，清除选中的股票

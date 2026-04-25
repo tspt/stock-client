@@ -48,6 +48,12 @@ export interface ElectronAPI {
       cookie?: string;
     }) => void
   ) => () => void;
+
+  /** IPC Renderer（用于接收主进程事件） */
+  ipcRenderer?: {
+    on: (channel: string, listener: (event: any, ...args: any[]) => void) => void;
+    removeListener: (channel: string, listener: (...args: any[]) => void) => void;
+  };
 }
 
 declare global {

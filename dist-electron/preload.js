@@ -48,6 +48,15 @@ try {
                 electron_1.ipcRenderer.removeListener('cookie-fetch-progress', listener);
             };
         },
+        // IPC Renderer（用于接收主进程事件）
+        ipcRenderer: {
+            on: (channel, listener) => {
+                electron_1.ipcRenderer.on(channel, listener);
+            },
+            removeListener: (channel, listener) => {
+                electron_1.ipcRenderer.removeListener(channel, listener);
+            },
+        },
     });
 }
 catch (error) {
