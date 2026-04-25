@@ -270,8 +270,24 @@ export function startEmbeddedApiProxy(port) {
                                 console.log('[代理调试] 东方财富响应 (Chromium net):', proxyRes.statusCode, proxyRes.statusMessage);
                             }
                         }
+                        // 过滤掉可能导致解码问题的头部
+                        // Chromium net.request 已自动解压内容，但响应头仍保留 Content-Encoding
+                        // 需要移除这些头，让 Node.js HTTP 服务器重新计算
+                        const filteredHeaders = {};
+                        for (const [key, value] of Object.entries(proxyRes.headers)) {
+                            const lowerKey = key.toLowerCase();
+                            // 跳过会导致解码问题的头部
+                            if (lowerKey === 'content-encoding' ||
+                                lowerKey === 'content-length' ||
+                                lowerKey === 'transfer-encoding') {
+                                continue;
+                            }
+                            if (value !== undefined) {
+                                filteredHeaders[key] = value;
+                            }
+                        }
                         const outHeaders = {
-                            ...proxyRes.headers,
+                            ...filteredHeaders,
                             'Access-Control-Allow-Origin': '*',
                             'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
                             'Access-Control-Allow-Headers': '*',
@@ -320,8 +336,22 @@ export function startEmbeddedApiProxy(port) {
                     headers,
                 };
                 const proxyReq = httpModule.request(requestOpt, (proxyRes) => {
+                    // 过滤掉可能导致解码问题的头部
+                    const filteredHeaders = {};
+                    for (const [key, value] of Object.entries(proxyRes.headers)) {
+                        const lowerKey = key.toLowerCase();
+                        // 跳过会导致解码问题的头部
+                        if (lowerKey === 'content-encoding' ||
+                            lowerKey === 'content-length' ||
+                            lowerKey === 'transfer-encoding') {
+                            continue;
+                        }
+                        if (value !== undefined) {
+                            filteredHeaders[key] = value;
+                        }
+                    }
                     const outHeaders = {
-                        ...proxyRes.headers,
+                        ...filteredHeaders,
                         'Access-Control-Allow-Origin': '*',
                         'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
                         'Access-Control-Allow-Headers': '*',

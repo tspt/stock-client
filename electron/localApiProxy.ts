@@ -33,7 +33,9 @@ function getEastmoneyClientUaFromHeader(req: http.IncomingMessage): string {
 }
 
 /** Node `https` 头转 Chromium `ClientRequest`；Connection 等由网络栈自管。 */
-function eastmoneyHeadersForChromium(h: http.OutgoingHttpHeaders): Record<string, string | string[]> {
+function eastmoneyHeadersForChromium(
+  h: http.OutgoingHttpHeaders
+): Record<string, string | string[]> {
   const out: Record<string, string | string[]> = {};
   for (const [k, v] of Object.entries(h)) {
     if (v === undefined) continue;
@@ -199,7 +201,12 @@ export function startEmbeddedApiProxy(port: number): Promise<Server> {
         console.log('  - 目标URL(未补全):', targetUrl);
         console.log('  - 目标URL(补全wbp2u后):', forwardUrl);
         console.log('  - env 中 Referer/Origin:', proxyConfig.referer, '|', proxyConfig.origin);
-        console.log('  - 实际发送 Referer/Origin(按 fs 推导):', eastmoneyCtx.referer, '|', eastmoneyCtx.origin);
+        console.log(
+          '  - 实际发送 Referer/Origin(按 fs 推导):',
+          eastmoneyCtx.referer,
+          '|',
+          eastmoneyCtx.origin
+        );
         const poolLen = getEastmoneyPoolCookie(req).length;
         console.log(
           '  - 模拟请求类型:',
@@ -292,7 +299,14 @@ export function startEmbeddedApiProxy(port: number): Promise<Server> {
           }
           const chHead = eastmoneyHeadersForChromium(headers);
           const creq = net.request({
-            method: (req.method || 'GET') as 'GET' | 'POST' | 'HEAD' | 'PUT' | 'DELETE' | 'PATCH' | 'OPTIONS',
+            method: (req.method || 'GET') as
+              | 'GET'
+              | 'POST'
+              | 'HEAD'
+              | 'PUT'
+              | 'DELETE'
+              | 'PATCH'
+              | 'OPTIONS',
             url: uReq.toString(),
             session: session.defaultSession,
             headers: chHead,
@@ -314,8 +328,27 @@ export function startEmbeddedApiProxy(port: number): Promise<Server> {
                 );
               }
             }
+            // 过滤掉可能导致解码问题的头部
+            // Chromium net.request 已自动解压内容，但响应头仍保留 Content-Encoding
+            // 需要移除这些头，让 Node.js HTTP 服务器重新计算
+            const filteredHeaders: Record<string, string | string[]> = {};
+            for (const [key, value] of Object.entries(proxyRes.headers)) {
+              const lowerKey = key.toLowerCase();
+              // 跳过会导致解码问题的头部
+              if (
+                lowerKey === 'content-encoding' ||
+                lowerKey === 'content-length' ||
+                lowerKey === 'transfer-encoding'
+              ) {
+                continue;
+              }
+              if (value !== undefined) {
+                filteredHeaders[key] = value;
+              }
+            }
+
             const outHeaders: http.OutgoingHttpHeaders = {
-              ...proxyRes.headers,
+              ...filteredHeaders,
               'Access-Control-Allow-Origin': '*',
               'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
               'Access-Control-Allow-Headers': '*',
@@ -334,11 +367,11 @@ export function startEmbeddedApiProxy(port: number): Promise<Server> {
             if (retryable) {
               const delay = 2500 * (attempt + 1);
               const nextHost =
-                EM_PUSH2_FAILOVER_HOSTS[
-                  Math.min(attempt + 1, EM_PUSH2_FAILOVER_HOSTS.length - 1)
-                ];
+                EM_PUSH2_FAILOVER_HOSTS[Math.min(attempt + 1, EM_PUSH2_FAILOVER_HOSTS.length - 1)];
               console.warn(
-                `[embedded-proxy] 东财上游(Chromium) ${err.code || msg}，${delay}ms 后重试 (第${attempt + 1}次) → 下一主机: ${nextHost}`
+                `[embedded-proxy] 东财上游(Chromium) ${err.code || msg}，${delay}ms 后重试 (第${
+                  attempt + 1
+                }次) → 下一主机: ${nextHost}`
               );
               setTimeout(() => sendUpstream(attempt + 1), delay);
               return;
@@ -362,15 +395,32 @@ export function startEmbeddedApiProxy(port: number): Promise<Server> {
           port: uReq2.port
             ? Number.parseInt(String(uReq2.port), 10)
             : uReq2.protocol === 'https:'
-              ? 443
-              : 80,
+            ? 443
+            : 80,
           path: uReq2.pathname + (uReq2.search || ''),
           method: req.method,
           headers,
         };
         const proxyReq = httpModule.request(requestOpt, (proxyRes) => {
+          // 过滤掉可能导致解码问题的头部
+          const filteredHeaders: Record<string, string | string[]> = {};
+          for (const [key, value] of Object.entries(proxyRes.headers)) {
+            const lowerKey = key.toLowerCase();
+            // 跳过会导致解码问题的头部
+            if (
+              lowerKey === 'content-encoding' ||
+              lowerKey === 'content-length' ||
+              lowerKey === 'transfer-encoding'
+            ) {
+              continue;
+            }
+            if (value !== undefined) {
+              filteredHeaders[key] = value;
+            }
+          }
+
           const outHeaders: http.OutgoingHttpHeaders = {
-            ...proxyRes.headers,
+            ...filteredHeaders,
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
             'Access-Control-Allow-Headers': '*',
