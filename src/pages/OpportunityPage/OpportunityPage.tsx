@@ -28,6 +28,7 @@ import { exportStockNamesToExcel, exportStockNamesToPng } from '@/utils/export/s
 import { detectTradingSignal } from '@/utils/analysis/signalDetector';
 import type { ConsolidationType, KLinePeriod, StockInfo, StockOpportunityData } from '@/types/stock';
 import { useAllStocks } from '@/hooks/useAllStocks';
+import { logger } from '@/utils/business/logger';
 import { useOpportunityFilterEngine } from '@/hooks/useOpportunityFilterEngine';
 import { getPureCode } from '@/utils/format/format';
 import {
@@ -524,7 +525,8 @@ export function OpportunityPage() {
           conceptData.map((s) => ({ label: s.name, value: s.code }))
         );
       } catch (error) {
-        console.error('加载板块选项失败:', error);
+        logger.error('加载板块选项失败:', error);
+        message.warning('加载板块选项失败，筛选功能可能受限');
       }
     };
     loadSectors();
@@ -1212,7 +1214,7 @@ export function OpportunityPage() {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '导出失败';
       message.error(errorMessage);
-      console.error('导出失败:', error);
+      logger.error('导出失败:', error);
     }
   };
 
@@ -1380,7 +1382,7 @@ export function OpportunityPage() {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '导出失败';
       message.error(errorMessage);
-      console.error('导出名称失败:', error);
+      logger.error('导出名称失败:', error);
     }
   };
 

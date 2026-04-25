@@ -6,9 +6,6 @@ const dotEnvResult = dotenv.config({ path: envPath });
 if (dotEnvResult.error) {
     console.error('[主进程] 环境变量加载失败:', dotEnvResult.error);
 }
-else {
-    console.log('[主进程] 环境变量加载成功，已加载的变量:', Object.keys(dotEnvResult.parsed || {}));
-}
 import { app, BrowserWindow, Tray, Menu, nativeImage, session, ipcMain, Notification, } from 'electron';
 import { join } from 'path';
 import { fileURLToPath } from 'url';
@@ -46,22 +43,18 @@ function mainLog(msg, isError = false) {
 }
 // 配置请求拦截，解决403和CORS问题
 function setupRequestInterceptor() {
-    console.log('[主进程] 设置defaultSession请求拦截器');
     const defaultUserAgent = process.env.VITE_USER_AGENT;
     // 拦截新浪财经API请求 - 修改请求头
     // 使用更宽泛的URL匹配模式
     session.defaultSession.webRequest.onBeforeSendHeaders({
         urls: ['*://*.sinajs.cn/*', '*://hq.sinajs.cn/*'],
     }, (details, callback) => {
-        console.log('[defaultSession拦截器] 拦截新浪API请求:', details.url);
-        console.log('[defaultSession拦截器] 原始Referer:', details.requestHeaders['referer']);
         // Electron 文档：requestHeaders 的键一律为小写，用大写键不会覆盖实际发出的 referer，易导致新浪 403
         details.requestHeaders['referer'] = process.env.VITE_SINA_REFERER;
         details.requestHeaders['origin'] = process.env.VITE_SINA_ORIGIN;
         details.requestHeaders['user-agent'] = defaultUserAgent;
         details.requestHeaders['accept'] = process.env.VITE_ACCEPT;
         details.requestHeaders['accept-language'] = process.env.VITE_ACCEPT_LANGUAGE;
-        console.log('[defaultSession拦截器] 修改后的Referer:', details.requestHeaders['referer']);
         callback({
             requestHeaders: details.requestHeaders,
         });
@@ -93,7 +86,6 @@ function setupRequestInterceptor() {
             'http://*.gtimg.cn/*',
         ],
     }, (details, callback) => {
-        console.log('[拦截器] 拦截腾讯API请求:', details.url);
         details.requestHeaders['referer'] = process.env.VITE_TENCENT_REFERER;
         details.requestHeaders['origin'] = process.env.VITE_TENCENT_ORIGIN;
         details.requestHeaders['user-agent'] = defaultUserAgent;
@@ -138,14 +130,8 @@ function setupRequestInterceptor() {
                 details.requestHeaders['origin'] = ro.origin;
             }
         }
-        // 只处理目标API的请求
-        if (du.includes('sinajs.cn') || du.includes('gtimg.cn')) {
-            console.log('[defaultSession全局拦截器] 检测到API请求:', du);
-            console.log('[defaultSession全局拦截器] 当前Referer:', details.requestHeaders['referer']);
-        }
         callback({ requestHeaders: details.requestHeaders });
     });
-    console.log('[主进程] defaultSession拦截器设置完成');
 }
 function createWindow() {
     // preload 脚本路径配置
@@ -153,13 +139,6 @@ function createWindow() {
     // 编译后：dist-electron/preload.js
     // 运行时：main.js 在 dist-electron/electron/，__dirname 指向该目录，preload 在上一级
     const preloadPath = resolve(__dirname, '../preload.js');
-    console.log('[主进程] ========== Preload 脚本配置 ==========');
-    console.log('[主进程] 源代码位置: electron/preload.ts');
-    console.log('[主进程] 编译后位置: dist-electron/preload.js');
-    console.log('[主进程] 运行时 __dirname:', __dirname);
-    console.log('[主进程] 计算的 preload 路径:', preloadPath);
-    console.log('[主进程] 文件是否存在:', existsSync(preloadPath));
-    console.log('[主进程] ======================================');
     // 验证文件是否存在
     if (!existsSync(preloadPath)) {
         console.error('[主进程] ❌ 错误：Preload 文件不存在！');
@@ -177,9 +156,6 @@ function createWindow() {
             const exists = existsSync(path);
             console.error(`  ${path}: ${exists ? '✓ 存在' : '✗ 不存在'}`);
         });
-    }
-    else {
-        console.log('[主进程] ✓ Preload 文件找到，路径正确');
     }
     const appIcon = getAppIconPath();
     mainWindow = new BrowserWindow({
@@ -216,7 +192,6 @@ function createWindow() {
     });
     // 确保在窗口加载完成后拦截器已设置
     mainWindow.webContents.on('did-finish-load', () => {
-        console.log('[主进程] 窗口加载完成，拦截器已设置');
         if (mainWindow && lastProxyStartupMessage) {
             const logPath = join(app.getPath('userData'), 'main-debug.log');
             mainWindow.webContents
@@ -230,15 +205,10 @@ function createWindow() {
                 if (mainWindow) {
                     mainWindow.webContents
                         .executeJavaScript(`
-            console.log('[渲染进程检查] window.electronAPI:', typeof window.electronAPI !== 'undefined' ? '已加载' : '未找到');
-            console.log('[渲染进程检查] window keys:', Object.keys(window).filter(k => k.includes('electron') || k.includes('Electron')));
             if (typeof window.electronAPI !== 'undefined') {
               console.log('[渲染进程检查] electronAPI 方法:', Object.keys(window.electronAPI));
             }
           `)
-                        .then((result) => {
-                        console.log('[主进程] 渲染进程检查结果:', result);
-                    })
                         .catch((err) => {
                         console.error('[主进程] 执行检查脚本失败:', err);
                     });
@@ -293,19 +263,15 @@ function createWindow() {
 // 为特定窗口的session设置请求拦截
 function setupWindowRequestInterceptor(webSession) {
     const defaultUserAgent = process.env.VITE_USER_AGENT;
-    console.log('[主进程] 开始设置窗口请求拦截器');
     // 使用更宽泛的URL匹配 - 拦截所有包含sinajs.cn的请求
     webSession.webRequest.onBeforeSendHeaders({
         urls: ['*://*.sinajs.cn/*', '*://hq.sinajs.cn/*'],
     }, (details, callback) => {
-        console.log('[窗口拦截器] 拦截新浪API请求:', details.url);
-        console.log('[窗口拦截器] 原始Referer:', details.requestHeaders['referer']);
         details.requestHeaders['referer'] = process.env.VITE_SINA_REFERER;
         details.requestHeaders['origin'] = process.env.VITE_SINA_ORIGIN;
         details.requestHeaders['user-agent'] = defaultUserAgent;
         details.requestHeaders['accept'] = process.env.VITE_ACCEPT;
         details.requestHeaders['accept-language'] = process.env.VITE_ACCEPT_LANGUAGE;
-        console.log('[窗口拦截器] 修改后的Referer:', details.requestHeaders['referer']);
         callback({
             requestHeaders: details.requestHeaders,
         });
@@ -327,7 +293,6 @@ function setupWindowRequestInterceptor(webSession) {
     webSession.webRequest.onBeforeSendHeaders({
         urls: ['*://*.gtimg.cn/*', '*://qt.gtimg.cn/*'],
     }, (details, callback) => {
-        console.log('[窗口拦截器] 拦截腾讯API请求:', details.url);
         details.requestHeaders['referer'] = process.env.VITE_TENCENT_REFERER;
         details.requestHeaders['origin'] = process.env.VITE_TENCENT_ORIGIN;
         details.requestHeaders['user-agent'] = defaultUserAgent;
@@ -354,14 +319,8 @@ function setupWindowRequestInterceptor(webSession) {
     webSession.webRequest.onBeforeSendHeaders({
         urls: ['<all_urls>'],
     }, (details, callback) => {
-        if (details.url.includes('sinajs.cn') || details.url.includes('gtimg.cn')) {
-            console.log('[全局调试] URL:', details.url);
-            console.log('[全局调试] Referer:', details.requestHeaders['referer']);
-            console.log('[全局调试] Origin:', details.requestHeaders['origin']);
-        }
         callback({ requestHeaders: details.requestHeaders });
     });
-    console.log('[主进程] 窗口请求拦截器设置完成');
 }
 function createTray() {
     const iconPath = getAppIconPath();
@@ -421,21 +380,18 @@ function setupIpcHandlers() {
     // 注意：Windows 10/11 已不再支持传统的托盘气泡通知（tray.displayBalloon）
     // 因此使用系统通知，但可以通过图标或标识来区分
     ipcMain.handle('show-tray-notification', (_event, options) => {
-        console.log('[主进程] 收到系统托盘通知请求:', options);
         if (!tray) {
             console.warn('[主进程] 系统托盘不存在，无法发送托盘通知');
             return;
         }
         // Windows系统托盘通知 - 统一使用系统通知API
         if (Notification.isSupported()) {
-            console.log('[主进程] 创建系统通知');
             const notification = new Notification({
                 title: options.title,
                 body: options.body,
                 silent: false,
             });
             notification.on('click', () => {
-                console.log('[主进程] 通知被点击');
                 if (mainWindow && options.code) {
                     mainWindow.show();
                     mainWindow.focus();
@@ -444,10 +400,9 @@ function setupIpcHandlers() {
                 }
             });
             notification.on('show', () => {
-                console.log('[主进程] 系统通知已显示');
+                // 通知已显示
             });
             notification.show();
-            console.log('[主进程] 已调用 notification.show()');
         }
         else {
             console.warn('[主进程] 系统不支持通知 API');
@@ -459,7 +414,6 @@ function setupIpcHandlers() {
                         content: options.body,
                         icon: nativeImage.createEmpty(),
                     });
-                    console.log('[主进程] 已使用托盘工具提示');
                 }
                 catch (error) {
                     console.error('[主进程] 托盘工具提示失败:', error);
@@ -469,19 +423,16 @@ function setupIpcHandlers() {
     });
     // 显示桌面通知
     ipcMain.handle('show-desktop-notification', (_event, options) => {
-        console.log('[主进程] 收到桌面通知请求:', options);
         if (!Notification.isSupported()) {
             console.warn('[主进程] 系统不支持桌面通知');
             return;
         }
-        console.log('[主进程] 创建桌面通知');
         const notification = new Notification({
             title: options.title,
             body: options.body,
             silent: false,
         });
         notification.on('click', () => {
-            console.log('[主进程] 桌面通知被点击');
             if (mainWindow && options.code) {
                 mainWindow.show();
                 mainWindow.focus();
@@ -490,10 +441,9 @@ function setupIpcHandlers() {
             }
         });
         notification.on('show', () => {
-            console.log('[主进程] 桌面通知已显示');
+            // 通知已显示
         });
         notification.show();
-        console.log('[主进程] 已调用桌面通知 notification.show()');
     });
     // 自动获取东方财富Cookie
     ipcMain.handle('fetch-cookies', async (event, count) => {
@@ -561,7 +511,9 @@ function setupIpcHandlers() {
      * 将池内 Cookie 字符串写入主窗口同 session，供渲染进程 JSONP 请求 push2 时自动带 Cookie（不经 Node 主进程代发）
      */
     ipcMain.handle('sync-eastmoney-session-cookies', async (_event, raw) => {
-        const ses = mainWindow && !mainWindow.isDestroyed() ? mainWindow.webContents.session : session.defaultSession;
+        const ses = mainWindow && !mainWindow.isDestroyed()
+            ? mainWindow.webContents.session
+            : session.defaultSession;
         const base = 'https://push2.eastmoney.com/';
         try {
             const existing = await ses.cookies.get({ url: base });

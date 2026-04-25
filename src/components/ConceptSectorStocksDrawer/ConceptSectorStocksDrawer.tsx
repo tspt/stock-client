@@ -7,6 +7,7 @@ import { Drawer, Table, Space, message, Typography } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { getConceptSectorStocks } from '@/services/hot/concept-sectors';
 import type { ConceptSectorStockData } from '@/types/stock';
+import { logger } from '@/utils/business/logger';
 import styles from './ConceptSectorStocksDrawer.module.css';
 
 const { Text } = Typography;
@@ -71,7 +72,7 @@ export function ConceptSectorStocksDrawer({
       setTotal(result.total);
       setCurrentPage(page);
     } catch (error) {
-      console.error('加载概念板块股票数据失败:', error);
+      logger.error('加载概念板块股票数据失败:', error);
       message.error('加载股票数据失败');
     } finally {
       setLoading(false);

@@ -2,6 +2,8 @@
  * LocalStorage工具函数
  */
 
+import { logger } from '../business/logger';
+
 /**
  * 获取存储的数据
  */
@@ -13,7 +15,7 @@ export function getStorage<T>(key: string, defaultValue: T): T {
     }
     return JSON.parse(item) as T;
   } catch (error) {
-    console.error(`Error reading from localStorage key "${key}":`, error);
+    logger.error(`Error reading from localStorage key "${key}":`, error);
     return defaultValue;
   }
 }
@@ -25,7 +27,7 @@ export function setStorage<T>(key: string, value: T): void {
   try {
     localStorage.setItem(key, JSON.stringify(value));
   } catch (error) {
-    console.error(`Error writing to localStorage key "${key}":`, error);
+    logger.error(`Error writing to localStorage key "${key}":`, error);
   }
 }
 
@@ -36,7 +38,6 @@ export function removeStorage(key: string): void {
   try {
     localStorage.removeItem(key);
   } catch (error) {
-    console.error(`Error removing from localStorage key "${key}":`, error);
+    logger.error(`Error removing from localStorage key "${key}":`, error);
   }
 }
-

@@ -12,6 +12,7 @@ import { useStockDetail } from '@/hooks/useStockDetail';
 import { KLineChart } from '@/components/KLineChart/KLineChart';
 import { AlertSettingModal } from '@/components/PriceAlert/AlertSettingModal';
 import { FundamentalAnalysisCard } from '@/components/FundamentalAnalysisCard';
+import { logger } from '@/utils/business/logger';
 import {
   formatPrice,
   formatVolume,
@@ -99,7 +100,7 @@ export function DetailPage() {
         return saved as KLinePeriod;
       }
     } catch (e) {
-      console.warn('读取周期偏好失败:', e);
+      logger.warn('读取周期偏好失败:', e);
     }
     return 'day';
   });
@@ -153,7 +154,7 @@ export function DetailPage() {
     try {
       localStorage.setItem(DETAIL_KLINE_PERIOD_STORAGE_KEY, value);
     } catch (e) {
-      console.warn('保存周期偏好失败:', e);
+      logger.warn('保存周期偏好失败:', e);
     }
   }, []);
 

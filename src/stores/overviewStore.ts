@@ -14,6 +14,7 @@ import { analyzeAllStocks } from '@/services/overview';
 import { saveOverviewData, getOverviewData, saveOverviewHistory } from '@/utils/storage/indexedDB';
 import { OVERVIEW_DEFAULT_COLUMNS } from '@/utils/config/constants';
 import { useStockStore } from './stockStore';
+import { logger } from '@/utils/business/logger';
 
 interface OverviewState {
   // 分析结果数据
@@ -149,7 +150,7 @@ export const useOverviewStore = create<OverviewState>((set, get) => ({
         cancelFn: null,
       });
     } catch (error) {
-      console.error('分析失败:', error);
+      logger.error('分析失败:', error);
       set({
         loading: false,
         cancelFn: null,
@@ -175,7 +176,7 @@ export const useOverviewStore = create<OverviewState>((set, get) => ({
         });
       }
     } catch (error) {
-      console.error('加载缓存数据失败:', error);
+      logger.error('加载缓存数据失败:', error);
     }
   },
 
@@ -185,7 +186,7 @@ export const useOverviewStore = create<OverviewState>((set, get) => ({
     try {
       localStorage.setItem('overview_column_config', JSON.stringify(config));
     } catch (error) {
-      console.error('保存列配置失败:', error);
+      logger.error('保存列配置失败:', error);
     }
   },
 
@@ -207,7 +208,7 @@ export const useOverviewStore = create<OverviewState>((set, get) => ({
     try {
       localStorage.setItem('overview_column_config', JSON.stringify(defaultConfig));
     } catch (error) {
-      console.error('保存列配置失败:', error);
+      logger.error('保存列配置失败:', error);
     }
   },
 
@@ -224,5 +225,5 @@ try {
     useOverviewStore.setState({ columnConfig: config });
   }
 } catch (error) {
-  console.error('加载列配置失败:', error);
+  logger.error('加载列配置失败:', error);
 }

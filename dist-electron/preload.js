@@ -1,7 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const electron_1 = require("electron");
-console.log('[Preload] Preload 脚本已加载');
 // 暴露受保护的方法给渲染进程
 try {
     electron_1.contextBridge.exposeInMainWorld('electronAPI', {
@@ -50,7 +49,6 @@ try {
             };
         },
     });
-    console.log('[Preload] electronAPI 已成功暴露到 window');
 }
 catch (error) {
     console.error('[Preload] 暴露 electronAPI 失败:', error);

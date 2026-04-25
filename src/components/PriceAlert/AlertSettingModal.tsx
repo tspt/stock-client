@@ -9,6 +9,7 @@ import { useAlertStore } from '@/stores/alertStore';
 import { useStockStore } from '@/stores/stockStore';
 import { ALERT_TIME_PERIODS } from '@/utils/config/constants';
 import { formatPrice } from '@/utils/format/format';
+import { logger } from '@/utils/business/logger';
 
 interface AlertSettingModalProps {
   /** 是否显示 */
@@ -176,7 +177,8 @@ export function AlertSettingModal({
       onSuccess?.();
       onCancel();
     } catch (error) {
-      console.error('表单验证失败:', error);
+      message.error('设置提醒失败，请重试');
+      logger.error('表单验证失败:', error);
     }
   };
 

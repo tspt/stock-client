@@ -119,8 +119,6 @@ const DATA_EASTMONEY_ORIGIN = 'https://data.eastmoney.com';
 export function startEmbeddedApiProxy(port: number): Promise<Server> {
   return new Promise((resolve, reject) => {
     const server = http.createServer((req, res) => {
-      console.log('[代理服务器] 收到请求:', req.method, req.url);
-
       if (req.method === 'OPTIONS') {
         res.writeHead(200, {
           'Access-Control-Allow-Origin': '*',
@@ -141,8 +139,6 @@ export function startEmbeddedApiProxy(port: number): Promise<Server> {
           /* 保持 urlPath 不变 */
         }
       }
-      console.log('[代理服务器] 请求路径:', urlPath);
-
       let proxyConfig: (typeof PROXY_CONFIG)['/api/sina'] | null = null;
       let prefix = '';
 
@@ -150,14 +146,12 @@ export function startEmbeddedApiProxy(port: number): Promise<Server> {
         if (urlPath.startsWith(p)) {
           proxyConfig = cfg;
           prefix = p;
-          console.log('[代理服务器] 匹配到前缀:', prefix);
           break;
         }
       }
 
       if (!proxyConfig) {
-        console.error('[代理调试] 未找到匹配的代理配置，URL:', urlPath);
-        console.error('[代理服务器] 可用的前缀:', Object.keys(PROXY_CONFIG));
+        console.error('[代理服务器] 未找到匹配的代理配置，URL:', urlPath);
         res.writeHead(404, { 'Content-Type': 'text/plain' });
         res.end('Proxy path not found');
         return;
@@ -191,30 +185,6 @@ export function startEmbeddedApiProxy(port: number): Promise<Server> {
             )
           : null;
 
-      // 调试日志：记录东方财富请求详情
-      if (prefix === '/api/eastmoney' && eastmoneyCtx) {
-        console.log('[代理调试] 东方财富请求:');
-        console.log('  - 原始URL:', urlPath);
-        console.log('  - 前缀:', prefix);
-        console.log('  - 代理路径:', proxyPath);
-        console.log('  - 重写后路径:', pathWithoutQuery);
-        console.log('  - 目标URL(未补全):', targetUrl);
-        console.log('  - 目标URL(补全wbp2u后):', forwardUrl);
-        console.log('  - env 中 Referer/Origin:', proxyConfig.referer, '|', proxyConfig.origin);
-        console.log(
-          '  - 实际发送 Referer/Origin(按 fs 推导):',
-          eastmoneyCtx.referer,
-          '|',
-          eastmoneyCtx.origin
-        );
-        const poolLen = getEastmoneyPoolCookie(req).length;
-        console.log(
-          '  - 模拟请求类型:',
-          isEastmoneyJsonpUrl(forwardUrl) ? 'JSONP(cb) / script' : 'Fetch/XHR'
-        );
-        console.log('  - 池Cookie(经X头或Cookie):', poolLen > 0 ? '是' : '否', '长度:', poolLen);
-      }
-
       const u = new URL(forwardUrl);
 
       // 确定使用的 User-Agent（优先渲染进程经 X-Stock-Client-User-Agent 与 Cookie 同源身份）
@@ -224,10 +194,6 @@ export function startEmbeddedApiProxy(port: number): Promise<Server> {
         const fromRenderer = getEastmoneyClientUaFromHeader(req);
         if (fromRenderer) {
           finalUA = fromRenderer;
-          console.log(
-            '[代理调试]   - 使用渲染进程UA(X-Stock-Client-User-Agent):',
-            finalUA.substring(0, 60) + '...'
-          );
         } else {
           const requestCookie = getEastmoneyPoolCookie(req);
           if (requestCookie) {
@@ -237,15 +203,7 @@ export function startEmbeddedApiProxy(port: number): Promise<Server> {
 
             if (matchedCookie && matchedCookie.userAgent) {
               finalUA = matchedCookie.userAgent;
-              console.log('[代理调试]   - 使用Cookie池绑定的UA:', finalUA.substring(0, 60) + '...');
-            } else {
-              console.log(
-                '[代理调试]   - 无X头亦无池内UA绑定，使用默认UA:',
-                finalUA.substring(0, 60) + '...'
-              );
             }
-          } else {
-            console.log('[代理调试]   - 使用默认UA:', finalUA.substring(0, 60) + '...');
           }
         }
       }
@@ -312,22 +270,6 @@ export function startEmbeddedApiProxy(port: number): Promise<Server> {
             headers: chHead,
           });
           creq.on('response', (proxyRes) => {
-            if (prefix === '/api/eastmoney') {
-              if (attempt > 0) {
-                console.log(
-                  '[代理调试] 东方财富响应 (Chromium net):',
-                  proxyRes.statusCode,
-                  proxyRes.statusMessage,
-                  `(重试第${attempt}次成功)`
-                );
-              } else {
-                console.log(
-                  '[代理调试] 东方财富响应 (Chromium net):',
-                  proxyRes.statusCode,
-                  proxyRes.statusMessage
-                );
-              }
-            }
             // 过滤掉可能导致解码问题的头部
             // Chromium net.request 已自动解压内容，但响应头仍保留 Content-Encoding
             // 需要移除这些头，让 Node.js HTTP 服务器重新计算

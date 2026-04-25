@@ -9,6 +9,7 @@ import type { KLineData, StockOpportunityData, AIAnalysisResult } from '@/types/
 import type { OpportunityFilterSnapshot } from '@/types/opportunityFilter';
 import { performAIAnalysis } from './ai';
 import { defaultFilterRules, getAIRules } from './filterRules';
+import { logger } from '@/utils/business/logger';
 
 interface AICacheEntry {
   result: AIAnalysisResult;
@@ -33,10 +34,13 @@ function generateParamsHash(filters: OpportunityFilterSnapshot, code: string): s
 
 /** 判断是否需要计算AI（严格按aiAnalysisEnabled控制） */
 export function shouldComputeAI(filters: OpportunityFilterSnapshot): boolean {
-  return filters.aiAnalysisEnabled && getAIRules().some(rule => {
-    // 检查是否有AI相关规则被激活
-    return true; // 简化，实际根据规则dependencies判断
-  });
+  return (
+    filters.aiAnalysisEnabled &&
+    getAIRules().some((rule) => {
+      // 检查是否有AI相关规则被激活
+      return true; // 简化，实际根据规则dependencies判断
+    })
+  );
 }
 
 /** 为单只股票计算AI结果（按需） */
@@ -65,18 +69,25 @@ export function computeAIForStock(
     const result = performAIAnalysis(
       klineData,
       stock,
-      allCurrentData ? new Map(allCurrentData.map(s => [s.code, {
-        code: s.code,
-        name: s.name,
-        klineData: klineData // 使用当前批次数据
-      }])) : undefined
+      allCurrentData
+        ? new Map(
+            allCurrentData.map((s) => [
+              s.code,
+              {
+                code: s.code,
+                name: s.name,
+                klineData: klineData, // 使用当前批次数据
+              },
+            ])
+          )
+        : undefined
     );
 
     // 更新缓存
     aiCache.set(code, {
       result,
       timestamp: now,
-      paramsHash: hash
+      paramsHash: hash,
     });
 
     // 清理过期缓存
@@ -84,7 +95,7 @@ export function computeAIForStock(
 
     return result;
   } catch (error) {
-    console.warn(`[AIService] ${code} AI计算失败:`, error);
+    logger.warn(`[AIService] ${code} AI计算失败:`, error);
     return null;
   }
 }
@@ -115,15 +126,12 @@ export function computeSimilarPatternsFromCurrentBatch(
 }
 
 /** 获取AI相关诊断信息（用于可视化面板） */
-export function getAIDiagnostics(
-  skippedItems: any[],
-  filters: OpportunityFilterSnapshot
-) {
+export function getAIDiagnostics(skippedItems: any[], filters: OpportunityFilterSnapshot) {
   // 返回结构化数据支持原因+股票交叉统计
   const byReason = new Map();
   const byStock = new Map();
 
-  skippedItems.forEach(item => {
+  skippedItems.forEach((item) => {
     // 按原因和股票聚合
     // ...
   });

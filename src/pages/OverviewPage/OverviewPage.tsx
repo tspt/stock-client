@@ -18,6 +18,7 @@ import { ColumnSettings } from '@/components/ColumnSettings/ColumnSettings';
 import { exportToExcel } from '@/utils/export/exportUtils';
 import type { KLinePeriod } from '@/types/stock';
 import { BUILTIN_GROUP_SELF_ID, BUILTIN_GROUP_SELF_NAME, GROUP_ALL_ID } from '@/utils/config/constants';
+import { logger } from '@/utils/business/logger';
 import styles from './OverviewPage.module.css';
 
 const { Header, Content } = Layout;
@@ -117,7 +118,7 @@ export function OverviewPage() {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '导出失败';
       message.error(errorMessage);
-      console.error('导出失败:', error);
+      logger.error('导出失败:', error);
     }
   };
 

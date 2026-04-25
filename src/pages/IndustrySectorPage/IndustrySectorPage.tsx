@@ -12,6 +12,7 @@ import { POLLING_INTERVAL, SECTOR_PAGE_SIZE, SEARCH_DEBOUNCE_DELAY } from '@/uti
 import { usePolling } from '@/hooks/usePolling';
 import type { IndustrySectorRankData, IndustrySectorBasicInfo } from '@/types/stock';
 import { IndustrySectorStocksDrawer } from '@/components/IndustrySectorStocksDrawer/IndustrySectorStocksDrawer';
+import { logger } from '@/utils/business/logger';
 import styles from './IndustrySectorPage.module.css';
 
 const { Header, Content } = Layout;
@@ -89,7 +90,7 @@ export function IndustrySectorPage() {
       setTotal(result.total);
       setCurrentPage(page);
     } catch (error) {
-      console.error('加载行业板块数据失败:', error);
+      logger.error('加载行业板块数据失败:', error);
       message.error('加载数据失败，请重试');
     } finally {
       if (!silent) {
@@ -106,7 +107,7 @@ export function IndustrySectorPage() {
         const sectors = await getUnifiedIndustryBasic();
         setAllSectors(sectors);
       } catch (error) {
-        console.error('加载所有行业分类失败:', error);
+        logger.error('加载所有行业分类失败:', error);
         message.warning('加载行业分类失败，搜索功能可能受限');
       }
     };
@@ -138,7 +139,7 @@ export function IndustrySectorPage() {
           setData(result.data);
           setTotal(result.total);
         } catch (error) {
-          console.error('自动刷新失败:', error);
+          logger.error('自动刷新失败:', error);
           message.error('数据刷新失败');
         }
       }
@@ -197,7 +198,7 @@ export function IndustrySectorPage() {
         message.warning('未获取到行业详情数据');
       }
     } catch (error) {
-      console.error('加载行业详细数据失败:', error);
+      logger.error('加载行业详细数据失败:', error);
       message.error('加载行业详情失败');
     } finally {
       setLoading(false);

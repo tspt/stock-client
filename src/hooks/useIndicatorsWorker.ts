@@ -4,6 +4,7 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react';
 import type { KLineData } from '@/types/stock';
+import { logger } from '@/utils/business/logger';
 
 interface IndicatorsResult {
   maData: any;
@@ -54,7 +55,7 @@ export function useIndicatorsWorker({
       };
 
       worker.onerror = (err) => {
-        console.error('Worker error:', err);
+        logger.error('Worker error:', err);
         setError('Worker 执行失败');
         setLoading(false);
       };
@@ -66,7 +67,7 @@ export function useIndicatorsWorker({
         workerRef.current = null;
       };
     } catch (err) {
-      console.error('Failed to create worker:', err);
+      logger.error('Failed to create worker:', err);
       setError('无法创建 Worker');
     }
   }, [enabled]);

@@ -8,6 +8,7 @@ import { RocketOutlined, LoadingOutlined, ExportOutlined } from '@ant-design/ico
 import { fetchAllSectorsStocks, fetchRemainingSectorsStocks, type SectorFullData, type FetchProgress, type FailedSector } from '@/services/hot/sector-stocks-service';
 import { getIndustrySectors, getConceptSectors, type SectorWithStocks } from '@/utils/storage/sectorStocksIndexedDB';
 import { CACHE_TTL } from '@/utils/config/constants';
+import { logger } from '@/utils/business/logger';
 import styles from './SectorConstituentsPage.module.css';
 
 const { Header, Content } = Layout;
@@ -60,7 +61,7 @@ export function SectorConstituentsPage() {
         }
       }
     } catch (error) {
-      console.error('加载缓存数据失败:', error);
+      logger.error('加载缓存数据失败:', error);
     }
   };
 
@@ -111,7 +112,7 @@ export function SectorConstituentsPage() {
         // 注意：此时 result 未定义，需要从 IndexedDB 重新加载（不显示提示）
         await loadCachedData(false);
       } else {
-        console.error('获取板块成分股失败:', error);
+        logger.error('获取板块成分股失败:', error);
         message.error('获取数据失败，请查看控制台');
       }
       setProgress(null);
@@ -172,7 +173,7 @@ export function SectorConstituentsPage() {
         // 注意：此时 result 未定义，需要从 IndexedDB 重新加载（不显示提示）
         await loadCachedData(false);
       } else {
-        console.error('获取剩余板块成分股失败:', error);
+        logger.error('获取剩余板块成分股失败:', error);
         message.error('获取数据失败,请查看控制台');
       }
       setProgress(null);

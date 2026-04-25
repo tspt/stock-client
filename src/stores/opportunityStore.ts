@@ -18,6 +18,7 @@ import {
   getOpportunityData,
   saveOpportunityHistory,
 } from '@/utils/storage/opportunityIndexedDB';
+import { logger } from '@/utils/business/logger';
 import {
   MAX_OPPORTUNITY_KLINE_CACHE_ENTRIES,
   OPPORTUNITY_DEFAULT_COLUMNS,
@@ -187,7 +188,7 @@ export const useOpportunityStore = create<OpportunityState>((set, get) => ({
         klineDataCache: newCache,
       });
     } catch (error) {
-      console.error('机会分析失败:', error);
+      logger.error('机会分析失败:', error);
       set({ loading: false, cancelFn: null });
     }
   },
@@ -313,7 +314,7 @@ export const useOpportunityStore = create<OpportunityState>((set, get) => ({
         cancelFn: null,
       });
     } catch (error) {
-      console.error('重试失败:', error);
+      logger.error('重试失败:', error);
       set({ loading: false, cancelFn: null });
     }
   },
@@ -339,7 +340,7 @@ export const useOpportunityStore = create<OpportunityState>((set, get) => ({
         });
       }
     } catch (error) {
-      console.error('加载机会分析缓存数据失败:', error);
+      logger.error('加载机会分析缓存数据失败:', error);
     }
   },
 
@@ -348,7 +349,7 @@ export const useOpportunityStore = create<OpportunityState>((set, get) => ({
     try {
       localStorage.setItem(OPPORTUNITY_COLUMN_CONFIG_KEY, JSON.stringify(config));
     } catch (error) {
-      console.error('保存机会分析列配置失败:', error);
+      logger.error('保存机会分析列配置失败:', error);
     }
   },
 
@@ -371,7 +372,7 @@ export const useOpportunityStore = create<OpportunityState>((set, get) => ({
     try {
       localStorage.setItem(OPPORTUNITY_COLUMN_CONFIG_KEY, JSON.stringify(defaultConfig));
     } catch (error) {
-      console.error('保存机会分析列配置失败:', error);
+      logger.error('保存机会分析列配置失败:', error);
     }
   },
 }));
@@ -384,5 +385,5 @@ try {
     useOpportunityStore.setState({ columnConfig: mergeSavedColumns(config) });
   }
 } catch (error) {
-  console.error('加载机会分析列配置失败:', error);
+  logger.error('加载机会分析列配置失败:', error);
 }

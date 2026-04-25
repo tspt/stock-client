@@ -7,6 +7,7 @@ import { Drawer, Table, Space, message, Typography } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { getIndustrySectorStocks } from '@/services/hot/industry-sectors';
 import type { IndustrySectorRankData } from '@/types/stock';
+import { logger } from '@/utils/business/logger';
 import styles from './IndustrySectorStocksDrawer.module.css';
 
 const { Text } = Typography;
@@ -69,7 +70,7 @@ export function IndustrySectorStocksDrawer({
       setTotal(result.total);
       setCurrentPage(page);
     } catch (error) {
-      console.error('加载行业板块股票数据失败:', error);
+      logger.error('加载行业板块股票数据失败:', error);
       message.error('加载股票数据失败');
     } finally {
       setLoading(false);

@@ -12,6 +12,7 @@ import { POLLING_INTERVAL, SECTOR_PAGE_SIZE, SEARCH_DEBOUNCE_DELAY } from '@/uti
 import { usePolling } from '@/hooks/usePolling';
 import type { ConceptSectorRankData, ConceptSectorBasicInfo } from '@/types/stock';
 import { ConceptSectorStocksDrawer } from '@/components/ConceptSectorStocksDrawer/ConceptSectorStocksDrawer';
+import { logger } from '@/utils/business/logger';
 import styles from './ConceptSectorPage.module.css';
 
 const { Header, Content } = Layout;
@@ -90,7 +91,7 @@ export function ConceptSectorPage() {
       setTotal(result.total);
       setCurrentPage(page);
     } catch (error) {
-      console.error('加载概念板块数据失败:', error);
+      logger.error('加载概念板块数据失败:', error);
       message.error('加载数据失败，请重试');
     } finally {
       if (!silent) {
@@ -107,7 +108,7 @@ export function ConceptSectorPage() {
         const sectors = await getUnifiedConceptBasic();
         setAllSectors(sectors);
       } catch (error) {
-        console.error('加载所有概念分类失败:', error);
+        logger.error('加载所有概念分类失败:', error);
         message.warning('加载概念分类失败，搜索功能可能受限');
       }
     };
@@ -139,7 +140,7 @@ export function ConceptSectorPage() {
           setData(result.data);
           setTotal(result.total);
         } catch (error) {
-          console.error('自动刷新失败:', error);
+          logger.error('自动刷新失败:', error);
           message.error('数据刷新失败');
         }
       }
@@ -198,7 +199,7 @@ export function ConceptSectorPage() {
         message.warning('未获取到概念详情数据');
       }
     } catch (error) {
-      console.error('加载概念详细数据失败:', error);
+      logger.error('加载概念详细数据失败:', error);
       message.error('加载概念详情失败');
     } finally {
       setLoading(false);

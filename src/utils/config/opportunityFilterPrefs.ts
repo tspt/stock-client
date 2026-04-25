@@ -9,6 +9,7 @@ import {
   OPPORTUNITY_DEFAULT_SHARP_MOVE,
   OPPORTUNITY_DEFAULT_TREND_LINE,
 } from '@/utils/config/opportunityAnalysisDefaults';
+import { logger } from '../business/logger';
 
 export const OPPORTUNITY_FILTER_PREFS_KEY = 'opportunity_filter_prefs';
 
@@ -315,7 +316,7 @@ export function saveOpportunityFilterPrefs(prefs: OpportunityFilterPrefs): void 
   try {
     localStorage.setItem(OPPORTUNITY_FILTER_PREFS_KEY, JSON.stringify(prefs));
   } catch (e) {
-    console.warn('保存机会分析筛选偏好失败:', e);
+    logger.warn('保存机会分析筛选偏好失败:', e);
   }
 }
 
@@ -323,7 +324,7 @@ export function clearOpportunityFilterPrefs(): void {
   try {
     localStorage.removeItem(OPPORTUNITY_FILTER_PREFS_KEY);
   } catch (e) {
-    console.warn('清除机会分析筛选偏好失败:', e);
+    logger.warn('清除机会分析筛选偏好失败:', e);
   }
 }
 

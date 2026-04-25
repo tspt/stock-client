@@ -275,7 +275,7 @@ export async function importCookies(cookies, skipDuplicates = true) {
             successCount++;
         }
         catch (error) {
-            console.warn(`[CookiePoolDB] 跳过无效Cookie:`, error);
+            logger.warn(`[CookiePoolDB] 跳过无效Cookie:`, error);
             skippedCount++;
         }
     }

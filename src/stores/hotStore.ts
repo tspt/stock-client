@@ -12,6 +12,7 @@ import {
 } from '@/services/hot';
 import type { MarketOverview, EastMoneyIndexData } from '@/services/hot';
 import type { SectorRankData, ConceptSectorRankData, EastMoneySectorData } from '@/types/stock';
+import { logger } from '@/utils/business/logger';
 
 interface HotState {
   // 数据状态
@@ -78,7 +79,7 @@ export const useHotStore = create<HotState>((set) => ({
       const data = await getMarketOverview();
       set({ marketOverview: data });
     } catch (error) {
-      console.error('加载市场概览失败:', error);
+      logger.error('加载市场概览失败:', error);
     }
   },
 
@@ -93,7 +94,7 @@ export const useHotStore = create<HotState>((set) => ({
         sectorsLoading: false,
       });
     } catch (error) {
-      console.error('加载板块排行数据失败:', error);
+      logger.error('加载板块排行数据失败:', error);
       set({ sectorsLoading: false });
     }
   },
@@ -109,7 +110,7 @@ export const useHotStore = create<HotState>((set) => ({
         conceptSectorsLoading: false,
       });
     } catch (error) {
-      console.error('加载概念板块排行数据失败:', error);
+      logger.error('加载概念板块排行数据失败:', error);
       set({ conceptSectorsLoading: false });
     }
   },
@@ -125,7 +126,7 @@ export const useHotStore = create<HotState>((set) => ({
         eastMoneySectorsLoading: false,
       });
     } catch (error) {
-      console.error('加载东方财富板块排行数据失败:', error);
+      logger.error('加载东方财富板块排行数据失败:', error);
       set({ eastMoneySectorsLoading: false });
     }
   },
@@ -136,7 +137,7 @@ export const useHotStore = create<HotState>((set) => ({
       const indices = await getEastMoneyIndices();
       set({ indices });
     } catch (error) {
-      console.error('加载东方财富指数数据失败:', error);
+      logger.error('加载东方财富指数数据失败:', error);
     }
   },
 }));

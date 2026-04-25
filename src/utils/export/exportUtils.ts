@@ -12,6 +12,7 @@ import {
   formatRatio,
   formatTurnoverRate,
 } from '../format/format';
+import { logger } from '../business/logger';
 
 /**
  * 格式化数据值
@@ -125,7 +126,7 @@ export async function exportToExcel(
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
   } catch (error) {
-    console.error('Excel导出失败：', error);
+    logger.error('Excel导出失败：', error);
     throw new Error('Excel导出失败。');
   }
 }
