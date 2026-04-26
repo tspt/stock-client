@@ -7,6 +7,8 @@ import http, { type Server } from 'http';
 import https from 'https';
 import { URL } from 'url';
 import zlib from 'zlib';
+import iconv from 'iconv-lite';
+import { PassThrough } from 'stream';
 import { net, session, BrowserWindow } from 'electron';
 import CookiePoolManager from '../src/utils/storage/cookiePoolManager.js';
 import {
@@ -346,6 +348,73 @@ export function startEmbeddedApiProxy(port: number): Promise<Server> {
               responseStream = proxyRes.pipe(zlib.createBrotliDecompress());
             }
 
+            // 新浪API需要GBK转UTF-8编码转换
+            const isSinaApi = prefix === '/api/sina';
+            const contentType = String(proxyRes.headers['content-type'] || '');
+            const isTextResponse =
+              contentType.includes('text') || contentType.includes('javascript');
+
+            if (isSinaApi && isTextResponse) {
+              // 收集所有数据块
+              const chunks: Buffer[] = [];
+              responseStream.on('data', (chunk: Buffer) => {
+                chunks.push(chunk);
+              });
+
+              responseStream.on('end', () => {
+                try {
+                  // 将GBK编码的Buffer转换为UTF-8字符串
+                  const gbkBuffer = Buffer.concat(chunks);
+                  const utf8String = iconv.decode(gbkBuffer, 'gbk');
+                  const utf8Buffer = Buffer.from(utf8String, 'utf-8');
+
+                  // 过滤掉可能导致解码问题的头部
+                  const filteredHeaders: Record<string, string | string[]> = {};
+                  for (const [key, value] of Object.entries(proxyRes.headers)) {
+                    const lowerKey = key.toLowerCase();
+                    if (
+                      lowerKey === 'content-encoding' ||
+                      lowerKey === 'content-length' ||
+                      lowerKey === 'transfer-encoding'
+                    ) {
+                      continue;
+                    }
+                    if (value !== undefined) {
+                      filteredHeaders[key] = value;
+                    }
+                  }
+
+                  const outHeaders: http.OutgoingHttpHeaders = {
+                    ...filteredHeaders,
+                    'Content-Type':
+                      contentType.replace(/charset=[^;]*/i, 'charset=utf-8') ||
+                      'text/plain; charset=utf-8',
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+                    'Access-Control-Allow-Headers': '*',
+                  };
+                  res.writeHead(proxyRes.statusCode || 500, outHeaders);
+                  res.end(utf8Buffer);
+                } catch (error) {
+                  console.error('[embedded-proxy] 新浪API编码转换失败:', error);
+                  if (!res.headersSent) {
+                    res.writeHead(500, { 'Content-Type': 'text/plain' });
+                    res.end('Encoding conversion failed');
+                  }
+                }
+              });
+
+              responseStream.on('error', (err) => {
+                console.error('[embedded-proxy] 新浪API流读取错误:', err);
+                if (!res.headersSent) {
+                  res.writeHead(500, { 'Content-Type': 'text/plain' });
+                  res.end('Stream read error');
+                }
+              });
+
+              return; // 提前返回，不执行后续的pipe逻辑
+            }
+
             // 过滤掉可能导致解码问题的头部
             const filteredHeaders: Record<string, string | string[]> = {};
             for (const [key, value] of Object.entries(proxyRes.headers)) {
@@ -421,6 +490,87 @@ export function startEmbeddedApiProxy(port: number): Promise<Server> {
           headers,
         };
         const proxyReq = httpModule.request(requestOpt, (proxyRes) => {
+          // 检查是否需要解压缩
+          const contentEncoding = proxyRes.headers['content-encoding'];
+
+          // 创建响应流处理管道
+          let responseStream: NodeJS.ReadableStream = proxyRes;
+
+          if (contentEncoding === 'gzip') {
+            responseStream = proxyRes.pipe(zlib.createGunzip());
+          } else if (contentEncoding === 'deflate') {
+            responseStream = proxyRes.pipe(zlib.createInflate());
+          } else if (contentEncoding === 'br') {
+            responseStream = proxyRes.pipe(zlib.createBrotliDecompress());
+          }
+
+          // 新浪API需要GBK转UTF-8编码转换
+          const isSinaApi = prefix === '/api/sina';
+          const contentType = String(proxyRes.headers['content-type'] || '');
+          const isTextResponse = contentType.includes('text') || contentType.includes('javascript');
+
+          if (isSinaApi && isTextResponse) {
+            // 收集所有数据块
+            const chunks: Buffer[] = [];
+            responseStream.on('data', (chunk: Buffer) => {
+              chunks.push(chunk);
+            });
+
+            responseStream.on('end', () => {
+              try {
+                // 将GBK编码的Buffer转换为UTF-8字符串
+                const gbkBuffer = Buffer.concat(chunks);
+                const utf8String = iconv.decode(gbkBuffer, 'gbk');
+                const utf8Buffer = Buffer.from(utf8String, 'utf-8');
+
+                // 过滤掉可能导致解码问题的头部
+                const filteredHeaders: Record<string, string | string[]> = {};
+                for (const [key, value] of Object.entries(proxyRes.headers)) {
+                  const lowerKey = key.toLowerCase();
+                  if (
+                    lowerKey === 'content-encoding' ||
+                    lowerKey === 'content-length' ||
+                    lowerKey === 'transfer-encoding'
+                  ) {
+                    continue;
+                  }
+                  if (value !== undefined) {
+                    filteredHeaders[key] = value;
+                  }
+                }
+
+                const outHeaders: http.OutgoingHttpHeaders = {
+                  ...filteredHeaders,
+                  'Content-Type':
+                    contentType.replace(/charset=[^;]*/i, 'charset=utf-8') ||
+                    'text/plain; charset=utf-8',
+                  'Access-Control-Allow-Origin': '*',
+                  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+                  'Access-Control-Allow-Headers': '*',
+                };
+                res.writeHead(proxyRes.statusCode || 500, outHeaders);
+                res.end(utf8Buffer);
+              } catch (error) {
+                console.error('[embedded-proxy] 新浪API编码转换失败:', error);
+                if (!res.headersSent) {
+                  res.writeHead(500, { 'Content-Type': 'text/plain' });
+                  res.end('Encoding conversion failed');
+                }
+              }
+            });
+
+            responseStream.on('error', (err) => {
+              console.error('[embedded-proxy] 新浪API流读取错误:', err);
+              if (!res.headersSent) {
+                res.writeHead(500, { 'Content-Type': 'text/plain' });
+                res.end('Stream read error');
+              }
+            });
+
+            return; // 提前返回，不执行后续的pipe逻辑
+          }
+
+          // 非新浪API或二进制响应，直接转发
           // 过滤掉可能导致解码问题的头部
           const filteredHeaders: Record<string, string | string[]> = {};
           for (const [key, value] of Object.entries(proxyRes.headers)) {
@@ -445,7 +595,7 @@ export function startEmbeddedApiProxy(port: number): Promise<Server> {
             'Access-Control-Allow-Headers': '*',
           };
           res.writeHead(proxyRes.statusCode || 500, outHeaders);
-          proxyRes.pipe(res);
+          responseStream.pipe(res);
         });
 
         proxyReq.on('error', (err: NodeJS.ErrnoException) => {
