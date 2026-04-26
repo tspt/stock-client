@@ -67,6 +67,14 @@ export function CookieManagerPage() {
   const [isFetching, setIsFetching] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  // 测试进度状态
+  const [testProgress, setTestProgress] = useState<{
+    isTesting: boolean;
+    completed: number;
+    total: number;
+    percentage: number;
+  } | null>(null);
+
   // 分页状态
   const [pagination, setPagination] = useState({
     current: 1,
@@ -293,6 +301,48 @@ export function CookieManagerPage() {
     }
   };
 
+  // 测试全部Cookie
+  const handleTestAllCookies = async () => {
+    if (cookies.length === 0) {
+      message.warning('没有可测试的Cookie');
+      return;
+    }
+
+    setTestProgress({
+      isTesting: true,
+      completed: 0,
+      total: cookies.length,
+      percentage: 0,
+    });
+
+    try {
+      await cookiePool.testAllCookies((progress) => {
+        setTestProgress({
+          isTesting: true,
+          completed: progress.completed,
+          total: progress.total,
+          percentage: progress.percentage,
+        });
+      });
+
+      // 测试完成后刷新数据
+      await loadData();
+
+      // 显示测试结果汇总
+      const updatedCookies = cookiePool.getAllCookies();
+      const successCount = updatedCookies.filter((c) => c.isActive).length;
+      const failedCount = updatedCookies.filter((c) => !c.isActive).length;
+
+      message.success(
+        `测试完成！共 ${cookies.length} 个Cookie，成功 ${successCount} 个，失败 ${failedCount} 个`
+      );
+    } catch (error) {
+      message.error('测试过程中发生错误');
+    } finally {
+      setTestProgress(null);
+    }
+  };
+
   // 删除Cookie
   const handleDeleteCookie = async (cookieId: string) => {
     try {
@@ -496,8 +546,13 @@ export function CookieManagerPage() {
             >
               自动获取
             </Button>
-            <Button icon={<ReloadOutlined />} onClick={() => cookiePool.testAllCookies()}>
-              测试全部
+            <Button
+              icon={<ReloadOutlined />}
+              onClick={handleTestAllCookies}
+              disabled={testProgress?.isTesting || loading}
+              loading={testProgress?.isTesting}
+            >
+              {testProgress?.isTesting ? '测试中...' : '测试全部'}
             </Button>
             <Popconfirm
               title="确定清空所有Cookie？此操作不可恢复！"
@@ -540,6 +595,24 @@ export function CookieManagerPage() {
             </Button>
           </Space>
         </div>
+
+        {/* 测试进度显示 */}
+        {testProgress && testProgress.isTesting && (
+          <Card size="small" className={styles.progressCard} style={{ marginBottom: 16 }}>
+            <div className={styles.progressInfo}>
+              <p><strong>测试进度：</strong>{testProgress.completed} / {testProgress.total}</p>
+              <p><strong>完成百分比：</strong>{testProgress.percentage.toFixed(1)}%</p>
+            </div>
+            <Progress
+              percent={testProgress.percentage}
+              status="active"
+              strokeColor={{
+                '0%': '#108ee9',
+                '100%': '#87d068',
+              }}
+            />
+          </Card>
+        )}
 
         {/* Cookie列表 */}
         <Table

@@ -130,3 +130,13 @@
   font-size: 13px;
   color: #595959;
 }
+
+.progressCard {
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+}
+
+.progressInfo p {
+  margin: 4px 0;
+  font-size: 14px;
+}

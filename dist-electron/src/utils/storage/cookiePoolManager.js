@@ -450,11 +450,16 @@ class CookiePoolManager {
     /**
      * 批量测试Cookie（并行执行）
      * @param concurrency 并发数，默认5
+     * @param onProgress 进度回调函数
      */
-    async testCookiesBatch(cookieIds, concurrency = 5) {
+    async testCookiesBatch(cookieIds, concurrency = 5, onProgress) {
         const total = cookieIds.length;
         let completed = 0;
         logger.info(`[CookiePool] 开始批量测试 ${total} 个Cookie，并发数: ${concurrency}`);
+        // 通知初始进度
+        if (onProgress) {
+            onProgress({ completed: 0, total, percentage: 0 });
+        }
         // 分批处理
         for (let i = 0; i < total; i += concurrency) {
             const batch = cookieIds.slice(i, i + concurrency);
@@ -470,8 +475,12 @@ class CookiePoolManager {
                     completed++;
                     // 每完成10个输出一次进度
                     if (completed % 10 === 0 || completed === total) {
-                        logger.info(`[CookiePool] 测试进度: ${completed}/${total} (${((completed / total) *
-                            100).toFixed(1)}%)`);
+                        const percentage = ((completed / total) * 100).toFixed(1);
+                        logger.info(`[CookiePool] 测试进度: ${completed}/${total} (${percentage}%)`);
+                        // 调用进度回调
+                        if (onProgress) {
+                            onProgress({ completed, total, percentage: parseFloat(percentage) });
+                        }
                     }
                 }
             }));
@@ -484,12 +493,13 @@ class CookiePoolManager {
     }
     /**
      * 测试所有Cookie
+     * @param onProgress 进度回调函数
      */
-    async testAllCookies() {
+    async testAllCookies(onProgress) {
         const cookies = Array.from(this.cookies.values());
         const cookieIds = cookies.map((c) => c.id);
         // 使用批量并行测试
-        await this.testCookiesBatch(cookieIds, 5);
+        await this.testCookiesBatch(cookieIds, 5, onProgress);
     }
     /**
      * 导出Cookie
