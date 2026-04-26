@@ -3,12 +3,21 @@
  */
 
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { Layout, Button, Progress, Input, Typography, Empty, App } from 'antd';
-import { RocketOutlined, LoadingOutlined, ExportOutlined } from '@ant-design/icons';
-import { fetchAllSectorsStocks, fetchRemainingSectorsStocks, type SectorFullData, type FetchProgress, type FailedSector } from '@/services/hot/sector-stocks-service';
+import { Layout, Button, Progress, Input, Typography, Empty, App, Space } from 'antd';
+import { RocketOutlined, LoadingOutlined, ExportOutlined, FilterOutlined } from '@ant-design/icons';
+import { fetchAllSectorsStocks, fetchRemainingSectorsStocks, type SectorFullData, type FetchProgress, type FailedSector, type StockSimpleInfo } from '@/services/hot/sector-stocks-service';
 import { getIndustrySectors, getConceptSectors, type SectorWithStocks } from '@/utils/storage/sectorStocksIndexedDB';
 import { CACHE_TTL } from '@/utils/config/constants';
 import { logger } from '@/utils/business/logger';
+import { StockFilterDrawer } from '@/components/StockFilterDrawer/StockFilterDrawer';
+import {
+  loadSectorFilterPrefs,
+  saveSectorFilterPrefs,
+  clearSectorFilterPrefs,
+  hasActiveFilters,
+  type SectorFilterPrefs,
+  DEFAULT_FILTER_PREFS,
+} from '@/utils/config/sectorFilterPrefs';
 import styles from './SectorConstituentsPage.module.css';
 
 const { Header, Content } = Layout;
@@ -24,13 +33,19 @@ export function SectorConstituentsPage() {
   const [selectedSector, setSelectedSector] = useState<SectorFullData | null>(null);
   const [industrySearch, setIndustrySearch] = useState('');
   const [conceptSearch, setConceptSearch] = useState('');
+  const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
+  const [filterPrefs, setFilterPrefs] = useState<SectorFilterPrefs>(DEFAULT_FILTER_PREFS);
   const abortControllerRef = useRef<AbortController | null>(null);
   const hasLoadedRef = useRef(false);
 
-  // 页面加载时从 IndexedDB 读取缓存
+  // 页面加载时从 IndexedDB 读取缓存，并加载筛选配置
   useEffect(() => {
     if (!hasLoadedRef.current) {
       hasLoadedRef.current = true;
+      // 加载筛选配置
+      const savedPrefs = loadSectorFilterPrefs();
+      setFilterPrefs(savedPrefs);
+      // 加载缓存数据
       loadCachedData();
     }
   }, []);
@@ -184,10 +199,11 @@ export function SectorConstituentsPage() {
     }
   };
 
-  // 导出当前选中板块的成分股
+  // 导出当前选中板块的成分股（导出筛选后的结果）
   const handleExport = () => {
     if (!selectedSector) return;
-    const content = selectedSector.stocks
+    const stocksToExport = applyFilterToStocks(selectedSector.stocks, filterPrefs);
+    const content = stocksToExport
       .map((s) => `${s.name}\t${s.code}`)
       .join('\n');
     const blob = new Blob([`板块名称：${selectedSector.sectorName}\n\n名称\t代码\n${content}`], {
@@ -199,6 +215,88 @@ export function SectorConstituentsPage() {
     a.download = `${selectedSector.sectorName}_成分股.txt`;
     a.click();
     URL.revokeObjectURL(url);
+  };
+
+  // 应用筛选到股票列表
+  const applyFilterToStocks = (stocks: StockSimpleInfo[], prefs: SectorFilterPrefs): StockSimpleInfo[] => {
+    let filtered = [...stocks];
+
+    // 1. 关键词搜索（代码或名称）
+    if (prefs.searchKeyword) {
+      const keyword = prefs.searchKeyword.toLowerCase();
+      filtered = filtered.filter(
+        (stock) =>
+          stock.code.toLowerCase().includes(keyword) ||
+          stock.name.toLowerCase().includes(keyword)
+      );
+    }
+
+    // 2. 代码范围筛选
+    if (prefs.codeStart) {
+      filtered = filtered.filter((stock) => stock.code >= prefs.codeStart);
+    }
+    if (prefs.codeEnd) {
+      filtered = filtered.filter((stock) => stock.code <= prefs.codeEnd);
+    }
+
+    // 3. 市场类型筛选
+    if (prefs.marketTypes.length > 0) {
+      filtered = filtered.filter((stock) => {
+        const codePrefix = stock.code.substring(0, 2);
+        return prefs.marketTypes.some((type) => {
+          switch (type) {
+            case 'shanghai':
+              return codePrefix === '60';
+            case 'shenzhen-main':
+              return codePrefix === '00';
+            case 'shenzhen-chinext':
+              return codePrefix === '30';
+            case 'beijing':
+              return codePrefix === '83' || codePrefix === '87' || codePrefix === '43';
+            default:
+              return false;
+          }
+        });
+      });
+    }
+
+    // 4. 排序
+    filtered.sort((a, b) => {
+      switch (prefs.sortOrder) {
+        case 'code-asc':
+          return a.code.localeCompare(b.code);
+        case 'code-desc':
+          return b.code.localeCompare(a.code);
+        case 'name-asc':
+          return a.name.localeCompare(b.name, 'zh-CN');
+        default:
+          return 0;
+      }
+    });
+
+    return filtered;
+  };
+
+  // 处理筛选条件变化
+  const handleFilterChange = (prefs: SectorFilterPrefs) => {
+    setFilterPrefs(prefs);
+    saveSectorFilterPrefs(prefs);
+  };
+
+  // 清除筛选
+  const handleClearFilters = () => {
+    setFilterPrefs(DEFAULT_FILTER_PREFS);
+    clearSectorFilterPrefs();
+  };
+
+  // 关闭筛选抽屉
+  const handleCloseFilterDrawer = () => {
+    setFilterDrawerOpen(false);
+  };
+
+  // 切换板块
+  const handleSectorSelect = (sector: SectorFullData) => {
+    setSelectedSector(sector);
   };
 
   // 过滤后的列表
@@ -221,7 +319,7 @@ export function SectorConstituentsPage() {
     <div
       key={sector.sectorCode}
       className={`${styles.listItem} ${selectedSector?.sectorCode === sector.sectorCode ? styles.activeItem : ''}`}
-      onClick={() => setSelectedSector(sector)}
+      onClick={() => handleSectorSelect(sector)}
     >
       <Text className={styles.sectorName} ellipsis={{ tooltip: sector.sectorName }}>
         {sector.sectorName}
@@ -258,6 +356,19 @@ export function SectorConstituentsPage() {
                 </Button>
               )
             )}
+            <Button
+              icon={<FilterOutlined />}
+              onClick={() => setFilterDrawerOpen(true)}
+              style={{
+                borderColor: hasActiveFilters(filterPrefs) ? 'var(--ant-color-primary)' : undefined,
+                color: hasActiveFilters(filterPrefs) ? 'var(--ant-color-primary)' : undefined,
+              }}
+            >
+              全局筛选
+              {hasActiveFilters(filterPrefs) && (
+                <span style={{ marginLeft: 4, fontSize: 10 }}>●</span>
+              )}
+            </Button>
             <Button
               icon={<RocketOutlined />}
               onClick={handleStartRemainingFetch}
@@ -348,22 +459,42 @@ export function SectorConstituentsPage() {
                 <div>
                   <Text className={styles.detailName}>{selectedSector.sectorName}</Text>
                   <Text type="secondary" className={styles.detailCount}>
-                    共 {selectedSector.stocks.length} 只成分股
+                    {(() => {
+                      const filtered = applyFilterToStocks(selectedSector.stocks, filterPrefs);
+                      const totalCount = selectedSector.stocks.length;
+                      const filteredCount = filtered.length;
+                      if (hasActiveFilters(filterPrefs)) {
+                        return (
+                          <>
+                            共 <strong>{filteredCount}</strong>/{totalCount} 只成分股
+                            <span style={{ marginLeft: 8, color: 'var(--ant-color-primary)' }}>
+                              (已筛选)
+                            </span>
+                          </>
+                        );
+                      }
+                      return `共 ${totalCount} 只成分股`;
+                    })()}
                   </Text>
                 </div>
-                <Button size="small" icon={<ExportOutlined />} onClick={handleExport}>
-                  导出名单
-                </Button>
+                <Space>
+                  <Button size="small" icon={<ExportOutlined />} onClick={handleExport}>
+                    导出名单
+                  </Button>
+                </Space>
               </div>
               <div className={styles.stockGrid}>
-                {selectedSector.stocks.map((stock) => (
-                  <div key={stock.code} className={styles.stockItem}>
-                    <Text className={styles.stockName}>{stock.name}</Text>
-                    <Text type="secondary" className={styles.stockCode}>
-                      {stock.code}
-                    </Text>
-                  </div>
-                ))}
+                {(() => {
+                  const filtered = applyFilterToStocks(selectedSector.stocks, filterPrefs);
+                  return filtered.map((stock) => (
+                    <div key={stock.code} className={styles.stockItem}>
+                      <Text className={styles.stockName}>{stock.name}</Text>
+                      <Text type="secondary" className={styles.stockCode}>
+                        {stock.code}
+                      </Text>
+                    </div>
+                  ));
+                })()}
               </div>
             </>
           ) : (
@@ -373,6 +504,18 @@ export function SectorConstituentsPage() {
           )}
         </Content>
       </div>
+
+      {/* 全局筛选抽屉 */}
+      {selectedSector && (
+        <StockFilterDrawer
+          open={filterDrawerOpen}
+          onClose={handleCloseFilterDrawer}
+          stocks={selectedSector.stocks}
+          filterPrefs={filterPrefs}
+          onFilterChange={handleFilterChange}
+          onClearFilters={handleClearFilters}
+        />
+      )}
     </Layout>
   );
 }
