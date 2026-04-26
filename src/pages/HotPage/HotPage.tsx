@@ -3,7 +3,7 @@
  */
 
 import { Layout, Skeleton } from 'antd';
-import { POLLING_INTERVAL } from '@/utils/config/constants';
+import { SECTOR_POLLING_INTERVAL } from '@/utils/config/constants';
 import {
   useIndices,
   useIndicesLoading,
@@ -37,7 +37,7 @@ export function HotPage() {
       ]);
     },
     {
-      interval: POLLING_INTERVAL, // 10秒
+      interval: SECTOR_POLLING_INTERVAL, // 60秒
       immediate: true, // 立即执行一次
       enabled: true,
     }

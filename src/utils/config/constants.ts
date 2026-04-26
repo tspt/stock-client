@@ -13,6 +13,9 @@ export const STOCK_CLIENT_UA_HEADER = 'X-Stock-Client-User-Agent';
 /** 轮询间隔（毫秒） */
 export const POLLING_INTERVAL = 20000; // 20秒
 
+/** 板块页面轮询间隔（毫秒）- 1分钟 */
+export const SECTOR_POLLING_INTERVAL = 60000; // 60秒
+
 /** K 线增量轮询间隔：与通用轮询保持一致 */
 export const KLINE_POLLING_INTERVAL_MS = 20000;
 

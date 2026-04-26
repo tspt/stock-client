@@ -8,7 +8,7 @@ import { SearchOutlined, ReloadOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { getUnifiedConceptBasic, getUnifiedConceptRank } from '@/services/hot/unified-sectors';
 import { getSingleConceptSector } from '@/services/hot/concept-sectors';
-import { POLLING_INTERVAL, SECTOR_PAGE_SIZE, SEARCH_DEBOUNCE_DELAY } from '@/utils/config/constants';
+import { SECTOR_POLLING_INTERVAL, SECTOR_PAGE_SIZE, SEARCH_DEBOUNCE_DELAY } from '@/utils/config/constants';
 import { usePolling } from '@/hooks/usePolling';
 import type { ConceptSectorRankData, ConceptSectorBasicInfo } from '@/types/stock';
 import { ConceptSectorStocksDrawer } from '@/components/ConceptSectorStocksDrawer/ConceptSectorStocksDrawer';
@@ -148,7 +148,7 @@ export function ConceptSectorPage() {
       // 注意：在详情模式下不自动刷新，避免覆盖用户选择的数据
     },
     {
-      interval: POLLING_INTERVAL,
+      interval: SECTOR_POLLING_INTERVAL,
       immediate: false, // 不立即执行，因为已有初始加载
       enabled: viewMode === 'list', // 只在列表模式下启用
     }
