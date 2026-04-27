@@ -9,7 +9,6 @@
 .cardBox {
   border: none;
   border-radius: 0;
-  min-height: calc(100vh - 100px);
 }
 
 .statsRow {
@@ -18,7 +17,7 @@
 
 .actionButtons {
   margin-bottom: 16px;
-  padding: 12px;
+  padding: 12px 0;
   background: var(--ant-color-bg-layout);
   border-radius: 4px;
 }

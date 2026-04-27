@@ -49,9 +49,7 @@ export function CookieManagerPage() {
     successRate: 0,
   });
   const [logs, setLogs] = useState<CookieOperationLog[]>([]);
-  const [isAddModalVisible, setIsAddModalVisible] = useState(false);
   const [isAutoFetchModalVisible, setIsAutoFetchModalVisible] = useState(false);
-  const [addCookieText, setAddCookieText] = useState('');
   const [autoFetchCount, setAutoFetchCount] = useState(50);
 
   // 进度状态
@@ -110,36 +108,7 @@ export function CookieManagerPage() {
     loadData();
   }, []);
 
-  // 手动添加Cookie
-  const handleAddCookie = async () => {
-    if (!addCookieText.trim()) {
-      message.warning('请输入Cookie');
-      return;
-    }
 
-    const cookieLines = addCookieText
-      .split('\n')
-      .map((line) => line.trim())
-      .filter((line) => line.length > 0);
-
-    if (cookieLines.length === 0) {
-      message.warning('没有有效的Cookie');
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const successCount = await cookiePool.addCookiesBatch(cookieLines, 'manual');
-      message.success(`成功添加 ${successCount}/${cookieLines.length} 个Cookie`);
-      setIsAddModalVisible(false);
-      setAddCookieText('');
-      await loadData();
-    } catch (error) {
-      message.error('添加Cookie失败');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   // 自动获取Cookie
   const handleAutoFetch = async () => {
@@ -484,7 +453,7 @@ export function CookieManagerPage() {
 
   return (
     <div className={styles.container}>
-      <Card className={styles.cardBox} title="Cookie池管理" extra={<Button icon={<ReloadOutlined />} onClick={loadData}>刷新</Button>}>
+      <Card className={styles.cardBox}>
         {/* 统计信息 */}
         <Row gutter={16} className={styles.statsRow}>
           <Col span={6}>
@@ -532,14 +501,9 @@ export function CookieManagerPage() {
         {/* 操作按钮 */}
         <div className={styles.actionButtons}>
           <Space>
+
             <Button
               type="primary"
-              icon={<PlusOutlined />}
-              onClick={() => setIsAddModalVisible(true)}
-            >
-              手动添加
-            </Button>
-            <Button
               icon={<KeyOutlined />}
               onClick={() => setIsAutoFetchModalVisible(true)}
               loading={isFetching}
@@ -660,29 +624,7 @@ export function CookieManagerPage() {
         </Card>
       </Card>
 
-      {/* 手动添加对话框 */}
-      <Modal
-        title="手动添加Cookie"
-        open={isAddModalVisible}
-        onOk={handleAddCookie}
-        onCancel={() => {
-          setIsAddModalVisible(false);
-          setAddCookieText('');
-        }}
-        confirmLoading={loading}
-        width={600}
-      >
-        <p>每行一个Cookie字符串：</p>
-        <TextArea
-          rows={8}
-          value={addCookieText}
-          onChange={(e) => setAddCookieText(e.target.value)}
-          placeholder="qgqp_b_id=xxx; st_nvi=xxx; ..."
-        />
-        <div className={styles.hint}>
-          提示：可以从浏览器开发者工具中复制Cookie，每行粘贴一个
-        </div>
-      </Modal>
+
 
       {/* 自动获取对话框 */}
       <Modal
