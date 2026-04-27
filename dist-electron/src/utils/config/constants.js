@@ -31,7 +31,7 @@ export const CACHE_KEYS = {
 export const CACHE_TTL = {
     /** 股票列表缓存：30天 */
     STOCK_LIST: 30 * 24 * 60 * 60 * 1000,
-    /** 板块基础信息缓存：24小时 */
+    /** 板块基础信息缓存：过期时间不限（已废弃，实际不再检查时间） */
     SECTOR_BASIC: 24 * 60 * 60 * 1000,
     /** 板块成分股全量缓存：30天 (一个月) */
     SECTOR_STOCKS_FULL: 30 * 24 * 60 * 60 * 1000,
@@ -108,48 +108,6 @@ export const ALERT_TIME_PERIODS = [
     { label: '本周', value: 'week' },
     { label: '本月', value: 'month' },
     { label: '永久', value: 'permanent' },
-];
-/** 数据概况相关常量 */
-/** IndexedDB 数据库名 */
-export const OVERVIEW_DB_NAME = 'StockOverviewDB';
-/** IndexedDB 版本 */
-export const OVERVIEW_DB_VERSION = 1;
-/** 对象存储名称 */
-export const OVERVIEW_STORE_NAME = 'overviewData';
-/** 历史存储名称 */
-export const OVERVIEW_HISTORY_STORE_NAME = 'overviewHistory';
-/** 默认并发数 */
-export const OVERVIEW_CONCURRENT_LIMIT = 5;
-/** 批次间延迟（毫秒） */
-export const OVERVIEW_BATCH_DELAY = 100;
-/** 默认列配置 */
-export const OVERVIEW_DEFAULT_COLUMNS = [
-    { key: 'name', title: '股票名称', visible: true, width: 88 },
-    { key: 'price', title: '当前价', visible: true, width: 88 },
-    { key: 'change', title: '当日涨跌额', visible: false, width: 110 },
-    { key: 'changePercent', title: '当日涨跌幅', visible: true, width: 110 },
-    { key: 'turnoverRate', title: '换手率', visible: true, width: 88 },
-    { key: 'volume', title: '成交量(亿)', visible: false, width: 100 },
-    { key: 'amount', title: '成交额(亿)', visible: true, width: 100 },
-    { key: 'totalShares', title: '总股数', visible: false, width: 100 },
-    { key: 'marketCap', title: '总市值', visible: true, width: 100 },
-    { key: 'circulatingMarketCap', title: '流通市值', visible: true, width: 100 },
-    { key: 'peRatio', title: '市盈率(PE)', visible: true, width: 100 },
-    { key: 'kdjK', title: 'KDJ-K', visible: false, width: 88 },
-    { key: 'kdjD', title: 'KDJ-D', visible: false, width: 88 },
-    { key: 'kdjJ', title: 'KDJ-J', visible: true, width: 88 },
-    { key: 'avgPrice', title: '区间平均价', visible: false, width: 110 },
-    { key: 'highPrice', title: '区间最高价', visible: false, width: 110 },
-    { key: 'lowPrice', title: '区间最低价', visible: true, width: 110 },
-    { key: 'opportunityChangePercent', title: '区间最大值回撤比', visible: true, width: 150 },
-    { key: 'ma5', title: 'MA-5涨跌幅', visible: true },
-    { key: 'ma10', title: 'MA-10涨跌幅', visible: true },
-    { key: 'ma20', title: 'MA-20涨跌幅', visible: true },
-    { key: 'ma30', title: 'MA-30涨跌幅', visible: true },
-    { key: 'ma60', title: 'MA-60涨跌幅', visible: true },
-    { key: 'ma120', title: 'MA-120涨跌幅', visible: true, width: 130 },
-    { key: 'ma240', title: 'MA-240涨跌幅', visible: false, width: 130 },
-    { key: 'ma360', title: 'MA-360涨跌幅', visible: false, width: 130 },
 ];
 /** 机会分析相关常量 */
 /** IndexedDB 数据库名 */

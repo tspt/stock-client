@@ -4,7 +4,7 @@
 
 import { Suspense, lazy, useEffect, useState } from 'react';
 import { ConfigProvider, App as AntdApp, theme, Layout, Tabs, Spin } from 'antd';
-import { StockOutlined, BellOutlined, BarChartOutlined, FireOutlined, ClusterOutlined, AppstoreOutlined, PartitionOutlined, KeyOutlined } from '@ant-design/icons';
+import { StockOutlined, BellOutlined, BarChartOutlined, FireOutlined, ClusterOutlined, AppstoreOutlined, PartitionOutlined, KeyOutlined, DatabaseOutlined } from '@ant-design/icons';
 import zhCN from 'antd/locale/zh_CN';
 import { useTheme } from '@/hooks/useTheme';
 import { useStockStore } from '@/stores/stockStore';
@@ -27,6 +27,7 @@ const IndustrySectorPage = lazy(() => import('@/pages/IndustrySectorPage/Industr
 const ConceptSectorPage = lazy(() => import('@/pages/ConceptSectorPage/ConceptSectorPage').then((m) => ({ default: m.ConceptSectorPage })));
 const SectorConstituentsPage = lazy(() => import('@/pages/SectorConstituentsPage/SectorConstituentsPage').then((m) => ({ default: m.SectorConstituentsPage })));
 const CookieManagerPage = lazy(() => import('@/pages/CookieManagerPage/CookieManagerPage').then((m) => ({ default: m.CookieManagerPage })));
+const DataManagerPage = lazy(() => import('@/pages/DataManagerPage/DataManagerPage').then((m) => ({ default: m.DataManagerPage })));
 
 const { Header, Content } = Layout;
 
@@ -336,6 +337,28 @@ function AppContent() {
                         >
                           <div className={styles.cookieManagerLayout}>
                             <CookieManagerPage />
+                          </div>
+                        </Suspense>
+                      ),
+                    },
+                    {
+                      key: 'data-manager',
+                      label: (
+                        <span>
+                          <DatabaseOutlined className={styles.mgr6} />
+                          数据管理
+                        </span>
+                      ),
+                      children: (
+                        <Suspense
+                          fallback={
+                            <div className={styles.suspenseFallback}>
+                              <Spin size="large" />
+                            </div>
+                          }
+                        >
+                          <div className={styles.cookieManagerLayout}>
+                            <DataManagerPage />
                           </div>
                         </Suspense>
                       ),

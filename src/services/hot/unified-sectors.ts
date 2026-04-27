@@ -360,3 +360,31 @@ export async function getUnifiedSectorBasics(): Promise<{
   ]);
   return { industry, concept };
 }
+
+// ==================== 强制刷新功能 ====================
+
+/**
+ * 强制刷新行业板块基础信息（清除缓存后重新获取）
+ */
+export async function refreshIndustrySectorsBasic(): Promise<IndustrySectorBasicInfo[]> {
+  logger.info('[UnifiedSectors] 强制刷新行业板块基础信息');
+  // 清除缓存
+  setStorage(CACHE_KEYS.INDUSTRY_BASIC, null);
+  // 重置并发控制Promise
+  industryBasicFetchPromise = null;
+  // 重新获取
+  return await getUnifiedIndustryBasic();
+}
+
+/**
+ * 强制刷新概念板块基础信息（清除缓存后重新获取）
+ */
+export async function refreshConceptSectorsBasic(): Promise<ConceptSectorBasicInfo[]> {
+  logger.info('[UnifiedSectors] 强制刷新概念板块基础信息');
+  // 清除缓存
+  setStorage(CACHE_KEYS.CONCEPT_BASIC, null);
+  // 重置并发控制Promise
+  conceptBasicFetchPromise = null;
+  // 重新获取
+  return await getUnifiedConceptBasic();
+}

@@ -166,13 +166,8 @@ export async function fetchAllSectorsStocks(
         getConceptSectors(),
       ]);
 
-      if (
-        cachedIndustry.length > 0 &&
-        cachedConcept.length > 0 &&
-        cachedIndustry.every(
-          (s) => s.savedAt && Date.now() - s.savedAt < CACHE_TTL.SECTOR_STOCKS_FULL
-        )
-      ) {
+      // 板块成分股数据默认不过期，只要有缓存就直接使用
+      if (cachedIndustry.length > 0 && cachedConcept.length > 0) {
         logger.info('[SectorStocks] 使用 IndexedDB 缓存数据');
         return {
           industry: formatCachedData(cachedIndustry),

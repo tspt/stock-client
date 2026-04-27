@@ -99,6 +99,19 @@ function readBiyingHsltListCache(): StockInfo[] | null {
 }
 
 /**
+ * 强制刷新股票列表（清除缓存后重新获取）
+ */
+export async function refreshStockList(): Promise<StockInfo[]> {
+  logger.info('[getAllStocks] 强制刷新股票列表');
+  // 清除缓存
+  setStorage(CACHE_KEYS.BIYING_STOCK_LIST, null);
+  // 重置并发控制Promise
+  biyingHsltListFetchPromise = null;
+  // 重新获取
+  return await getAllStocks();
+}
+
+/**
  * 本地搜索股票
  * @param keyword 搜索关键词
  * @param allStocks 所有股票列表

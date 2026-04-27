@@ -8,6 +8,7 @@ export {
   getStockDetail,
   getKLineData,
   searchStockLocal,
+  refreshStockList,
 } from './api';
 
 export type { StockInfo, StockQuote, StockDetail, KLineData } from '@/types/stock';
