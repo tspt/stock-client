@@ -165,13 +165,8 @@ interface SectorCache<T> {
  */
 function readCache<T>(key: string): T[] | null {
   const raw = getStorage<SectorCache<T> | null>(key, null);
-  if (
-    raw &&
-    typeof raw.savedAt === 'number' &&
-    Array.isArray(raw.data) &&
-    raw.data.length > 0 &&
-    Date.now() - raw.savedAt < CACHE_TTL.SECTOR_BASIC
-  ) {
+  if (raw && typeof raw.savedAt === 'number' && Array.isArray(raw.data) && raw.data.length > 0) {
+    // 板块基础信息缓存过期时间设置为不限，直接返回缓存数据
     return raw.data;
   }
   return null;

@@ -331,7 +331,8 @@ export function startEmbeddedApiProxy(port) {
                                     }
                                     const outHeaders = {
                                         ...filteredHeaders,
-                                        'Content-Type': contentType.replace(/charset=[^;]*/i, 'charset=utf-8') || 'text/plain; charset=utf-8',
+                                        'Content-Type': contentType.replace(/charset=[^;]*/i, 'charset=utf-8') ||
+                                            'text/plain; charset=utf-8',
                                         'Access-Control-Allow-Origin': '*',
                                         'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
                                         'Access-Control-Allow-Headers': '*',
@@ -467,7 +468,8 @@ export function startEmbeddedApiProxy(port) {
                                 }
                                 const outHeaders = {
                                     ...filteredHeaders,
-                                    'Content-Type': contentType.replace(/charset=[^;]*/i, 'charset=utf-8') || 'text/plain; charset=utf-8',
+                                    'Content-Type': contentType.replace(/charset=[^;]*/i, 'charset=utf-8') ||
+                                        'text/plain; charset=utf-8',
                                     'Access-Control-Allow-Origin': '*',
                                     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
                                     'Access-Control-Allow-Headers': '*',

@@ -58,22 +58,11 @@ export function SectorConstituentsPage() {
       ]);
 
       if (cachedIndustry.length > 0 || cachedConcept.length > 0) {
-        // 检查是否过期
-        const allSectors = [...cachedIndustry, ...cachedConcept];
-        const hasExpired = allSectors.some(
-          (s) => !s.savedAt || Date.now() - s.savedAt > CACHE_TTL.SECTOR_STOCKS_FULL
-        );
-
-        if (!hasExpired) {
-          setIndustryData(formatToDisplayData(cachedIndustry));
-          setConceptData(formatToDisplayData(cachedConcept));
-          if (showMessage) {
-            message.success('已加载本地缓存数据');
-          }
-        } else {
-          if (showMessage) {
-            message.warning('缓存数据已过期（超过一个月），请点击“开始全量获取”刷新');
-          }
+        // 板块成分股数据过期时间设置为不限，直接加载缓存数据
+        setIndustryData(formatToDisplayData(cachedIndustry));
+        setConceptData(formatToDisplayData(cachedConcept));
+        if (showMessage) {
+          message.success('已加载本地缓存数据');
         }
       }
     } catch (error) {
