@@ -270,88 +270,6 @@ export interface PriceAlert {
 }
 
 /**
- * 股票数据概况 - 单只股票的分析数据
- */
-export interface StockOverviewData {
-  /** 股票代码 */
-  code: string;
-  /** 股票名称 */
-  name: string;
-  /** 当前价 */
-  price: number;
-  /** 涨跌额 */
-  change: number;
-  /** 涨跌幅（百分比） */
-  changePercent: number;
-  /** 成交量（手） */
-  volume: number;
-  /** 成交额（元） */
-  amount: number;
-  /** 总市值（元） */
-  marketCap?: number;
-  /** 流通市值（元） */
-  circulatingMarketCap?: number;
-  /** 总股数（股） */
-  totalShares?: number;
-  /** 市盈率(PE) */
-  peRatio?: number;
-  /** 换手率（百分比） */
-  turnoverRate?: number;
-  /** KDJ K值 */
-  kdjK?: number;
-  /** KDJ D值 */
-  kdjD?: number;
-  /** KDJ J值 */
-  kdjJ?: number;
-  /** 区间平均价 */
-  avgPrice?: number;
-  /** 区间最高价 */
-  highPrice?: number;
-  /** 区间最低价 */
-  lowPrice?: number;
-  /** 区间最大值回撤比（百分比） */
-  opportunityChangePercent?: number;
-  /** MA-5涨跌幅（百分比） */
-  ma5?: number;
-  /** MA-10涨跌幅（百分比） */
-  ma10?: number;
-  /** MA-20涨跌幅（百分比） */
-  ma20?: number;
-  /** MA-30涨跌幅（百分比） */
-  ma30?: number;
-  /** MA-60涨跌幅（百分比） */
-  ma60?: number;
-  /** MA-120涨跌幅（百分比） */
-  ma120?: number;
-  /** MA-240涨跌幅（百分比） */
-  ma240?: number;
-  /** MA-360涨跌幅（百分比） */
-  ma360?: number;
-  /** 分析时间戳 */
-  analyzedAt: number;
-  /** 错误信息（如果获取失败） */
-  error?: string;
-}
-
-/**
- * 数据概况分析结果
- */
-export interface OverviewAnalysisResult {
-  /** 数据列表 */
-  data: StockOverviewData[];
-  /** 分析时间戳 */
-  timestamp: number;
-  /** K线周期 */
-  period: KLinePeriod;
-  /** 总数量 */
-  total: number;
-  /** 成功数量 */
-  success: number;
-  /** 失败数量 */
-  failed: number;
-}
-
-/**
  * 沿趋势线筛选分析结果（检索窗内连续 N 根：收盘≥昨收且收盘≥当日 MA5）
  */
 export interface TrendLineAnalysis {
@@ -407,9 +325,9 @@ export interface StockOpportunityData {
   highPrice?: number;
   /** 最低价（区间K线 + 当日行情） */
   lowPrice?: number;
-  /** 成交量（亿，保持与数据概况页一致的转换逻辑） */
+  /** 成交量（亿） */
   volume: number;
-  /** 成交额（亿，保持与数据概况页一致的转换逻辑） */
+  /** 成交额（亿） */
   amount: number;
   /** 总市值（元） */
   marketCap?: number;
@@ -659,24 +577,7 @@ export interface OpportunityAnalysisResult {
 }
 
 /**
- * 列配置项
- * @deprecated 请使用 @/types/common 中的 ColumnConfig 替代
- */
-export interface OverviewColumnConfig {
-  /** 列key */
-  key: string;
-  /** 显示名称 */
-  title: string;
-  /** 是否可见 */
-  visible: boolean;
-  /** 顺序 */
-  order: number;
-  /** 宽度（可选） */
-  width?: number;
-}
-
-/**
- * 排序配置
+ * 排序配置（机会分析使用）
  */
 export interface OverviewSortConfig {
   /** 排序列key */

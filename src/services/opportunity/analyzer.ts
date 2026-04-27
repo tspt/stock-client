@@ -136,7 +136,7 @@ async function analyzeOneStock(
     logger.warn(`[${code}] AI分析失败:`, error);
   }
 
-  // 与数据概况页保持一致：volume/amount 先转为"亿单位"再显示
+  // volume/amount 转为"亿单位"显示
   const volume = Number((quote.volume / VOLUME_AMOUNT_UNIT_CONVERSION).toFixed(2));
   const amount = Number((quote.amount / VOLUME_AMOUNT_UNIT_CONVERSION).toFixed(2));
 

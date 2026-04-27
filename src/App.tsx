@@ -19,7 +19,6 @@ import { POLLING_INTERVAL } from '@/utils/config/constants';
 const ListPage = lazy(() => import('@/pages/ListPage/ListPage').then((m) => ({ default: m.ListPage })));
 const DetailPage = lazy(() => import('@/pages/DetailPage/DetailPage').then((m) => ({ default: m.DetailPage })));
 const AlertPage = lazy(() => import('@/pages/AlertPage/AlertPage').then((m) => ({ default: m.AlertPage })));
-const OverviewPage = lazy(() => import('@/pages/OverviewPage/OverviewPage').then((m) => ({ default: m.OverviewPage })));
 const OpportunityPage = lazy(() =>
   import('@/pages/OpportunityPage/OpportunityPage').then((m) => ({ default: m.OpportunityPage }))
 );
@@ -120,9 +119,9 @@ function AppContent() {
     };
   }, []);
 
-  // 当切换到提醒管理/数据概况/机会分析 tab 时，清除选中的股票
+  // 当切换到提醒管理/机会分析 tab 时，清除选中的股票
   useEffect(() => {
-    if (activeTab === 'alerts' || activeTab === 'overview' || activeTab === 'opportunity') {
+    if (activeTab === 'alerts' || activeTab === 'opportunity') {
       setSelectedStock(null);
     }
   }, [activeTab, setSelectedStock]);
@@ -315,28 +314,6 @@ function AppContent() {
                         >
                           <div className={styles.alertsLayout}>
                             <AlertPage />
-                          </div>
-                        </Suspense>
-                      ),
-                    },
-                    {
-                      key: 'overview',
-                      label: (
-                        <span>
-                          <BarChartOutlined className={styles.mgr6} />
-                          列表数据概况
-                        </span>
-                      ),
-                      children: (
-                        <Suspense
-                          fallback={
-                            <div className={styles.suspenseFallback}>
-                              <Spin size="large" />
-                            </div>
-                          }
-                        >
-                          <div className={styles.overviewLayout}>
-                            <OverviewPage />
                           </div>
                         </Suspense>
                       ),

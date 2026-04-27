@@ -1,6 +1,5 @@
 /**
  * IndexedDB 存储工具（机会分析）
- * 用于存储机会分析结果，避免与数据概况（overview）互相覆盖
  */
 
 import type { OpportunityAnalysisResult } from '@/types/stock';

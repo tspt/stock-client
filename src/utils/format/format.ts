@@ -33,7 +33,6 @@ export function formatVolume(volume: number): string {
 
 /**
  * 格式化成交量（亿单位，保留2位小数）
- * 用于数据概况页面，数据已经是亿单位（在overviewService中已转换）
  */
 export function formatVolumeInBillion(volume: number): string {
   if (volume === null || volume === undefined || volume === 0) {
@@ -58,7 +57,6 @@ export function formatAmount(amount: number): string {
 
 /**
  * 格式化成交额（亿单位，保留2位小数）
- * 用于数据概况页面，数据已经是亿单位（在overviewService中已转换）
  */
 export function formatAmountInBillion(amount: number): string {
   if (amount === null || amount === undefined || amount === 0) {
