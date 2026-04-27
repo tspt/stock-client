@@ -598,7 +598,7 @@ export function CookieManagerPage() {
               setPagination({ current, pageSize });
             },
           }}
-          scroll={{ x: 1000, y: 400 }}
+          scroll={{ x: 1000, y: 500 }}
           size="small"
         />
 
