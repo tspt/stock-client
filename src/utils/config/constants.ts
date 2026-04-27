@@ -41,7 +41,7 @@ export const CACHE_KEYS = {
 export const CACHE_TTL = {
   /** 股票列表缓存：30天 */
   STOCK_LIST: 30 * 24 * 60 * 60 * 1000,
-  /** 板块基础信息缓存：24小时 */
+  /** 板块基础信息缓存：过期时间不限（已废弃，实际不再检查时间） */
   SECTOR_BASIC: 24 * 60 * 60 * 1000,
   /** 板块成分股全量缓存：30天 (一个月) */
   SECTOR_STOCKS_FULL: 30 * 24 * 60 * 60 * 1000,

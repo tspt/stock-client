@@ -146,7 +146,7 @@ export async function fetchAllSectorsStocks(
 // };
 
 /**
- * 缓存过期时间：24小时（每天更新一次）
+ * 缓存过期时间：不限（已废弃，实际不再检查时间）
  * 已迁移至 src/utils/constants.ts 统一管理 (CACHE_TTL.SECTOR_BASIC)
  */
 // const CACHE_TTL_MS = 24 * 60 * 60 * 1000;

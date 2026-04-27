@@ -231,7 +231,11 @@ export async function getConceptSectorStocks(
       fields: 'f12,f14,f2,f3,f62,f184,f66,f69,f72,f75,f78,f81,f84,f87,f204,f205,f124,f1,f13',
     });
 
-    const data = (await getEastMoneyClistJsonpData(params, 3, signal)) as RawConceptSectorStocksResponse;
+    const data = (await getEastMoneyClistJsonpData(
+      params,
+      3,
+      signal
+    )) as RawConceptSectorStocksResponse;
 
     if (data.rc !== 0) {
       throw new Error('获取概念板块股票数据失败');
@@ -353,11 +357,11 @@ export async function getSingleConceptSector(
 }
 
 /**
- * 所有概念分类缓存键（每日过期）
+ * 所有概念分类缓存键（过期时间不限）
  * @deprecated 已迁移到 unified-sectors.ts 和 constants.ts，保留此注释仅为向后兼容
  */
 // const ALL_CONCEPT_SECTORS_CACHE_KEY = 'unified_concept_basic_v1'; // 使用统一缓存键
-// const ALL_CONCEPT_SECTORS_CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24小时
+// const ALL_CONCEPT_SECTORS_CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 过期时间不限（已废弃）
 
 interface AllConceptSectorsCache {
   savedAt: number;
