@@ -53,21 +53,23 @@
 .progressOverlay {
   position: absolute;
   top: 89px; /* Header 高度 + padding */
-  left: 0;
-  right: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(600px, calc(100% - 40px)); /* 限制最大宽度，两侧留白 */
   z-index: 100;
-  padding: 12px 24px;
-  background: rgba(255, 255, 255, 0.85); /* 浅色模式半透明背景 */
-  backdrop-filter: blur(8px); /* 毛玻璃效果 */
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  padding: 12px 20px;
+  background: rgba(255, 255, 255, 0.9); /* 浅色模式半透明背景 */
+  backdrop-filter: blur(10px); /* 毛玻璃效果 */
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
   transition: all 0.3s ease;
 }
 
 [data-theme='dark'] .progressOverlay {
-  background: rgba(31, 31, 31, 0.85); /* 深色模式半透明背景 */
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  background: rgba(31, 31, 31, 0.9); /* 深色模式半透明背景 */
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
 }
 
 .progressInfo {
@@ -140,6 +142,9 @@
   flex: 1;
   overflow-y: auto;
   padding: 0 8px;
+  /* 性能优化：告诉浏览器列表内容是独立的 */
+  contain: layout style paint;
+  will-change: scroll-position;
 }
 
 /* 自定义滚动条 */
@@ -157,14 +162,17 @@
 }
 
 .listItem {
-  padding: 7px 12px;
+  height: 34px; /* 固定高度，包含 padding（box-sizing: border-box） */
+  padding: 0 12px;
   margin-bottom: 2px;
   cursor: pointer;
   display: flex;
   justify-content: space-between;
   align-items: center;
   border-radius: 6px;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease; /* 优化 transition 属性 */
+  /* 性能优化：提升渲染性能 */
+  contain: layout style;
 }
 
 .listItem:hover {
@@ -185,6 +193,9 @@
   color: var(--ant-color-text);
   max-width: 140px;
   font-weight: 400;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .activeItem .sectorName {

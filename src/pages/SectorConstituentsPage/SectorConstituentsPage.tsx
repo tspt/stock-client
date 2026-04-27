@@ -2,9 +2,10 @@
  * 成分股大全页面 - 仪表盘式布局
  */
 
-import { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { Layout, Button, Progress, Input, Typography, Empty, App, Space } from 'antd';
 import { RocketOutlined, LoadingOutlined, ExportOutlined, FilterOutlined } from '@ant-design/icons';
+import VirtualList from 'rc-virtual-list';
 import { fetchAllSectorsStocks, fetchRemainingSectorsStocks, type SectorFullData, type FetchProgress, type FailedSector, type StockSimpleInfo } from '@/services/hot/sector-stocks-service';
 import { getIndustrySectors, getConceptSectors, type SectorWithStocks } from '@/utils/storage/sectorStocksIndexedDB';
 import { CACHE_TTL } from '@/utils/config/constants';
@@ -23,6 +24,40 @@ import styles from './SectorConstituentsPage.module.css';
 const { Header, Content } = Layout;
 const { Text } = Typography;
 
+// 列表项高度（box-sizing: border-box，height 已包含 padding）
+const LIST_ITEM_HEIGHT = 36; // 34px height + 2px margin-bottom
+
+// Memoized 列表项组件，使用 forwardRef 支持 VirtualList 的 ref 传递
+const SectorListItem = React.memo(React.forwardRef<HTMLDivElement, {
+  sector: SectorFullData;
+  colorClass: string;
+  isSelected: boolean;
+  onSelect: (sector: SectorFullData) => void;
+  style?: React.CSSProperties;
+}>(({ sector, colorClass, isSelected, onSelect, style }, ref) => {
+  const handleClick = useCallback(() => {
+    onSelect(sector);
+  }, [sector, onSelect]);
+
+  return (
+    <div
+      ref={ref}
+      className={`${styles.listItem} ${isSelected ? styles.activeItem : ''}`}
+      onClick={handleClick}
+      style={style}
+    >
+      <Text className={styles.sectorName} ellipsis>
+        {sector.sectorName}
+      </Text>
+      <span className={`${styles.stockCount} ${colorClass}`}>
+        {sector.stocks.length}
+      </span>
+    </div>
+  );
+}));
+
+SectorListItem.displayName = 'SectorListItem';
+
 export function SectorConstituentsPage() {
   const { message } = App.useApp();
   const [loading, setLoading] = useState(false);
@@ -33,10 +68,22 @@ export function SectorConstituentsPage() {
   const [selectedSector, setSelectedSector] = useState<SectorFullData | null>(null);
   const [industrySearch, setIndustrySearch] = useState('');
   const [conceptSearch, setConceptSearch] = useState('');
+  const [debouncedIndustrySearch, setDebouncedIndustrySearch] = useState('');
+  const [debouncedConceptSearch, setDebouncedConceptSearch] = useState('');
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
   const [filterPrefs, setFilterPrefs] = useState<SectorFilterPrefs>(DEFAULT_FILTER_PREFS);
   const abortControllerRef = useRef<AbortController | null>(null);
   const hasLoadedRef = useRef(false);
+
+  // 搜索防抖定时器
+  const industrySearchTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const conceptSearchTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // 列表容器引用和高度状态
+  const industryListRef = useRef<HTMLDivElement>(null);
+  const conceptListRef = useRef<HTMLDivElement>(null);
+  const [industryListHeight, setIndustryListHeight] = useState(200);
+  const [conceptListHeight, setConceptListHeight] = useState(200);
 
   // 页面加载时从 IndexedDB 读取缓存，并加载筛选配置
   useEffect(() => {
@@ -48,6 +95,92 @@ export function SectorConstituentsPage() {
       // 加载缓存数据
       loadCachedData();
     }
+  }, []);
+
+  // 组件卸载时清理定时器
+  useEffect(() => {
+    return () => {
+      if (industrySearchTimerRef.current) {
+        clearTimeout(industrySearchTimerRef.current);
+      }
+      if (conceptSearchTimerRef.current) {
+        clearTimeout(conceptSearchTimerRef.current);
+      }
+    };
+  }, []);
+
+  // 使用 ResizeObserver 监听容器高度变化
+  useEffect(() => {
+    const updateHeights = () => {
+      if (industryListRef.current) {
+        setIndustryListHeight(industryListRef.current.clientHeight);
+      }
+      if (conceptListRef.current) {
+        setConceptListHeight(conceptListRef.current.clientHeight);
+      }
+    };
+
+    // 初始化时获取高度
+    updateHeights();
+
+    // 监听容器大小变化
+    const resizeObserver = new ResizeObserver(updateHeights);
+    if (industryListRef.current) {
+      resizeObserver.observe(industryListRef.current);
+    }
+    if (conceptListRef.current) {
+      resizeObserver.observe(conceptListRef.current);
+    }
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, []);
+
+  // 行业板块搜索防抖
+  const handleIndustrySearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setIndustrySearch(value);
+
+    if (industrySearchTimerRef.current) {
+      clearTimeout(industrySearchTimerRef.current);
+    }
+
+    industrySearchTimerRef.current = setTimeout(() => {
+      setDebouncedIndustrySearch(value);
+    }, 300); // 300ms 防抖
+  }, []);
+
+  // 概念板块搜索防抖
+  const handleConceptSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setConceptSearch(value);
+
+    if (conceptSearchTimerRef.current) {
+      clearTimeout(conceptSearchTimerRef.current);
+    }
+
+    conceptSearchTimerRef.current = setTimeout(() => {
+      setDebouncedConceptSearch(value);
+    }, 300); // 300ms 防抖
+  }, []);
+
+  // 处理清空行业搜索
+  const handleIndustryClear = useCallback(() => {
+    setIndustrySearch('');
+    if (industrySearchTimerRef.current) {
+      clearTimeout(industrySearchTimerRef.current);
+    }
+    setDebouncedIndustrySearch('');
+  }, []);
+
+  // 处理清空概念搜索
+  const handleConceptClear = useCallback(() => {
+    setConceptSearch('');
+    if (conceptSearchTimerRef.current) {
+      clearTimeout(conceptSearchTimerRef.current);
+    }
+    setDebouncedConceptSearch('');
   }, []);
 
   const loadCachedData = async (showMessage: boolean = true) => {
@@ -288,36 +421,22 @@ export function SectorConstituentsPage() {
     setSelectedSector(sector);
   };
 
-  // 过滤后的列表
+  // 过滤后的列表（使用防抖后的搜索词）
   const filteredIndustry = useMemo(() => {
-    if (!industrySearch) return industryData;
+    if (!debouncedIndustrySearch) return industryData;
+    const searchLower = debouncedIndustrySearch.toLowerCase();
     return industryData.filter((item) =>
-      item.sectorName.toLowerCase().includes(industrySearch.toLowerCase())
+      item.sectorName.toLowerCase().includes(searchLower)
     );
-  }, [industryData, industrySearch]);
+  }, [industryData, debouncedIndustrySearch]);
 
   const filteredConcept = useMemo(() => {
-    if (!conceptSearch) return conceptData;
+    if (!debouncedConceptSearch) return conceptData;
+    const searchLower = debouncedConceptSearch.toLowerCase();
     return conceptData.filter((item) =>
-      item.sectorName.toLowerCase().includes(conceptSearch.toLowerCase())
+      item.sectorName.toLowerCase().includes(searchLower)
     );
-  }, [conceptData, conceptSearch]);
-
-  // 渲染侧边栏列表项
-  const renderListItem = (sector: SectorFullData, colorClass: string) => (
-    <div
-      key={sector.sectorCode}
-      className={`${styles.listItem} ${selectedSector?.sectorCode === sector.sectorCode ? styles.activeItem : ''}`}
-      onClick={() => handleSectorSelect(sector)}
-    >
-      <Text className={styles.sectorName} ellipsis={{ tooltip: sector.sectorName }}>
-        {sector.sectorName}
-      </Text>
-      <span className={`${styles.stockCount} ${colorClass}`}>
-        {sector.stocks.length}
-      </span>
-    </div>
-  );
+  }, [conceptData, debouncedConceptSearch]);
 
   return (
     <Layout className={styles.pageContainer}>
@@ -393,8 +512,13 @@ export function SectorConstituentsPage() {
             percent={progress.percent}
             status="active"
             showInfo={false}
-            strokeColor="#1890ff"
+            strokeColor={{
+              '0%': '#1890ff',
+              '100%': '#52c41a',
+            }}
+            trailColor="rgba(0, 0, 0, 0.06)"
             size="small"
+            style={{ borderRadius: 4 }}
           />
         </div>
       )}
@@ -406,36 +530,80 @@ export function SectorConstituentsPage() {
           {/* 行业板块 */}
           <div className={styles.sidebarSection}>
             <div className={styles.sectionHeader}>
-              <Text className={styles.sectionTitle}>行业板块</Text>
+              <Space size={4}>
+                <Text className={styles.sectionTitle}>行业板块</Text>
+                <span className={`${styles.stockCount} ${styles.industryColor}`} style={{ fontSize: 11 }}>
+                  {industryData.length}
+                </span>
+              </Space>
               <Input
                 placeholder="搜索"
                 value={industrySearch}
-                onChange={(e) => setIndustrySearch(e.target.value)}
+                onChange={handleIndustrySearchChange}
+                onClear={handleIndustryClear}
                 allowClear
                 size="small"
                 className={styles.searchInput}
               />
             </div>
-            <div className={styles.listContainer}>
-              {filteredIndustry.map((s) => renderListItem(s, styles.industryColor))}
+            <div ref={industryListRef} className={styles.listContainer}>
+              <VirtualList
+                data={filteredIndustry}
+                height={industryListHeight}
+                itemHeight={LIST_ITEM_HEIGHT}
+                itemKey="sectorCode"
+              >
+                {(item, index, { style }) => (
+                  <SectorListItem
+                    key={item.sectorCode}
+                    sector={item}
+                    colorClass={styles.industryColor}
+                    isSelected={selectedSector?.sectorCode === item.sectorCode}
+                    onSelect={handleSectorSelect}
+                    style={style}
+                  />
+                )}
+              </VirtualList>
             </div>
           </div>
 
           {/* 概念板块 */}
           <div className={styles.sidebarSection}>
             <div className={styles.sectionHeader}>
-              <Text className={styles.sectionTitle}>概念板块</Text>
+              <Space size={4}>
+                <Text className={styles.sectionTitle}>概念板块</Text>
+                <span className={`${styles.stockCount} ${styles.conceptColor}`} style={{ fontSize: 11 }}>
+                  {conceptData.length}
+                </span>
+              </Space>
               <Input
                 placeholder="搜索"
                 value={conceptSearch}
-                onChange={(e) => setConceptSearch(e.target.value)}
+                onChange={handleConceptSearchChange}
+                onClear={handleConceptClear}
                 allowClear
                 size="small"
                 className={styles.searchInput}
               />
             </div>
-            <div className={styles.listContainer}>
-              {filteredConcept.map((s) => renderListItem(s, styles.conceptColor))}
+            <div ref={conceptListRef} className={styles.listContainer}>
+              <VirtualList
+                data={filteredConcept}
+                height={conceptListHeight}
+                itemHeight={LIST_ITEM_HEIGHT}
+                itemKey="sectorCode"
+              >
+                {(item, index, { style }) => (
+                  <SectorListItem
+                    key={item.sectorCode}
+                    sector={item}
+                    colorClass={styles.conceptColor}
+                    isSelected={selectedSector?.sectorCode === item.sectorCode}
+                    onSelect={handleSectorSelect}
+                    style={style}
+                  />
+                )}
+              </VirtualList>
             </div>
           </div>
         </div>
