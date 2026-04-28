@@ -13,11 +13,7 @@ import type {
 } from '@/types/stock';
 import type { ColumnConfig } from '@/types/common';
 import { analyzeAllStocksOpportunity } from '@/services/opportunity';
-import {
-  saveOpportunityData,
-  getOpportunityData,
-  saveOpportunityHistory,
-} from '@/utils/storage/opportunityIndexedDB';
+import { saveOpportunityData, getOpportunityData } from '@/utils/storage/opportunityIndexedDB';
 import { logger } from '@/utils/business/logger';
 import {
   MAX_OPPORTUNITY_KLINE_CACHE_ENTRIES,
@@ -173,7 +169,6 @@ export const useOpportunityStore = create<OpportunityState>((set, get) => ({
       };
 
       await saveOpportunityData(result);
-      await saveOpportunityHistory(result);
 
       const formattedErrors = errors.map((err) => ({
         stock: { code: err.stock.code, name: err.stock.name },
@@ -304,7 +299,6 @@ export const useOpportunityStore = create<OpportunityState>((set, get) => ({
       };
 
       await saveOpportunityData(result);
-      await saveOpportunityHistory(result);
 
       set({
         analysisData: mergedData,
