@@ -4,7 +4,7 @@
 
 import { Suspense, lazy, useEffect, useState } from 'react';
 import { ConfigProvider, App as AntdApp, theme, Layout, Tabs, Spin } from 'antd';
-import { StockOutlined, BellOutlined, BarChartOutlined, FireOutlined, ClusterOutlined, AppstoreOutlined, PartitionOutlined, KeyOutlined, DatabaseOutlined, SafetyCertificateOutlined, TrophyOutlined, HistoryOutlined } from '@ant-design/icons';
+import { StockOutlined, BellOutlined, BarChartOutlined, FireOutlined, ClusterOutlined, AppstoreOutlined, PartitionOutlined, KeyOutlined, DatabaseOutlined, SafetyCertificateOutlined, TrophyOutlined, HistoryOutlined, ExperimentOutlined } from '@ant-design/icons';
 import zhCN from 'antd/locale/zh_CN';
 import { useTheme } from '@/hooks/useTheme';
 import { useStockStore } from '@/stores/stockStore';
@@ -32,6 +32,7 @@ const SectorConstituentsPage = lazy(() => import('@/pages/SectorConstituentsPage
 const BillboardPage = lazy(() => import('@/pages/BillboardPage/BillboardPage').then((m) => ({ default: m.BillboardPage })));
 const CookieManagerPage = lazy(() => import('@/pages/CookieManagerPage/CookieManagerPage').then((m) => ({ default: m.CookieManagerPage })));
 const DataManagerPage = lazy(() => import('@/pages/DataManagerPage/DataManagerPage').then((m) => ({ default: m.DataManagerPage })));
+const BacktestPage = lazy(() => import('@/pages/BacktestPage/BacktestPage').then((m) => ({ default: m.BacktestPage })));
 
 const { Header, Content } = Layout;
 
@@ -314,6 +315,28 @@ function AppContent() {
                         >
                           <div className={styles.opportunityLayout}>
                             <AnalysisRecordPage />
+                          </div>
+                        </Suspense>
+                      ),
+                    },
+                    {
+                      key: 'backtest',
+                      label: (
+                        <span>
+                          <ExperimentOutlined className={styles.mgr6} />
+                          历史回测
+                        </span>
+                      ),
+                      children: (
+                        <Suspense
+                          fallback={
+                            <div className={styles.suspenseFallback}>
+                              <Spin size="large" />
+                            </div>
+                          }
+                        >
+                          <div className={styles.opportunityLayout}>
+                            <BacktestPage />
                           </div>
                         </Suspense>
                       ),

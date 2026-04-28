@@ -141,11 +141,15 @@ export const ALERT_TIME_PERIODS = [
 /** IndexedDB 数据库名 */
 export const OPPORTUNITY_DB_NAME = 'StockOpportunityDB';
 /** IndexedDB 版本 */
-export const OPPORTUNITY_DB_VERSION = 2;
+export const OPPORTUNITY_DB_VERSION = 3;
 /** 对象存储名称 */
 export const OPPORTUNITY_STORE_NAME = 'opportunityData';
 /** 股票记录存储名称 */
 export const STOCK_RECORDS_STORE_NAME = 'stockRecords';
+/** 股票历史数据存储名称 */
+export const STOCK_HISTORY_STORE_NAME = 'stockHistory';
+/** 信号回测结果存储名称 */
+export const SIGNAL_BACKTEST_STORE_NAME = 'signalBacktestResults';
 /** 默认并发数（每批股票数，与 OPPORTUNITY_BATCH_DELAY 配合控频） */
 export const OPPORTUNITY_CONCURRENT_LIMIT = 8;
 /** 批次间延迟（毫秒） */
