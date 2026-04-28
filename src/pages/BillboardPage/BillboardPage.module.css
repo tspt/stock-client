@@ -1,0 +1,165 @@
+/**
+ * 龙虎榜页面样式 - 轻量级卡片设计
+ */
+
+.pageContainer {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+}
+
+/* 深色主题 */
+[data-theme='dark'] .pageContainer {
+  background: #141414;
+}
+
+.header {
+  background: #fff;
+  border-bottom: 1px solid var(--ant-color-border-secondary);
+  padding: 16px 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+/* 深色主题 */
+[data-theme='dark'] .header {
+  background: #1f1f1f;
+  border-bottom-color: #303030;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.headerContent {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.headerLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pageTitle {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+  color: var(--ant-color-text);
+}
+
+.pageSubtitle {
+  font-size: 12px;
+  color: #8c8c8c;
+}
+
+/* 深色主题 */
+[data-theme='dark'] .pageSubtitle {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.controls {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.contentArea {
+  flex: 1;
+  padding: 20px 24px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.card {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  border: 1px solid var(--ant-color-border-secondary);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* 深色主题 */
+[data-theme='dark'] .card {
+  background: #1f1f1f;
+  border-color: #303030;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.tableWrapper {
+  flex: 1;
+  overflow: auto;
+  padding: 16px;
+}
+
+/* 表格样式优化 */
+.tableWrapper :global(.ant-table) {
+  background: transparent;
+}
+
+.tableWrapper :global(.ant-table-thead > tr > th) {
+  background: #fafafa;
+  font-weight: 600;
+  color: #262626;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+/* 深色主题 */
+[data-theme='dark'] .tableWrapper :global(.ant-table-thead > tr > th) {
+  background: #141414;
+  color: rgba(255, 255, 255, 0.85);
+  border-bottom-color: #303030;
+}
+
+.tableWrapper :global(.ant-table-tbody > tr:hover > td) {
+  background: rgba(102, 126, 234, 0.05);
+}
+
+/* 正负数颜色 */
+.positive {
+  color: #ff4d4f;
+  font-weight: 500;
+}
+
+.negative {
+  color: #52c41a;
+  font-weight: 500;
+}
+
+/* 加载状态 */
+.loadingState {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 400px;
+}
+
+/* 空状态 */
+.emptyState {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 400px;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .header {
+    padding: 12px 16px;
+  }
+
+  .contentArea {
+    padding: 12px 16px;
+  }
+
+  .pageTitle {
+    font-size: 18px;
+  }
+}

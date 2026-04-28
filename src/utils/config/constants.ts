@@ -225,3 +225,8 @@ export const COOKIE_POOL_DB_VERSION = 1;
 export const COOKIE_POOL_STORE_NAME = 'cookies';
 export const MAX_COOKIE_COUNT = 200; // 最大Cookie数量
 export const COOKIE_HEALTH_CHECK_INTERVAL = 60 * 60 * 1000; // 1小时检查一次
+
+/** 龙虎榜缓存相关常量 */
+export const BILLBOARD_CACHE_DB_NAME = 'BillboardCacheDB';
+export const BILLBOARD_CACHE_DB_VERSION = 1;
+export const BILLBOARD_CACHE_STORE_NAME = 'billboard_cache';

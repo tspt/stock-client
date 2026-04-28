@@ -4,7 +4,7 @@
 
 import { Suspense, lazy, useEffect, useState } from 'react';
 import { ConfigProvider, App as AntdApp, theme, Layout, Tabs, Spin } from 'antd';
-import { StockOutlined, BellOutlined, BarChartOutlined, FireOutlined, ClusterOutlined, AppstoreOutlined, PartitionOutlined, KeyOutlined, DatabaseOutlined, SafetyCertificateOutlined } from '@ant-design/icons';
+import { StockOutlined, BellOutlined, BarChartOutlined, FireOutlined, ClusterOutlined, AppstoreOutlined, PartitionOutlined, KeyOutlined, DatabaseOutlined, SafetyCertificateOutlined, TrophyOutlined } from '@ant-design/icons';
 import zhCN from 'antd/locale/zh_CN';
 import { useTheme } from '@/hooks/useTheme';
 import { useStockStore } from '@/stores/stockStore';
@@ -26,6 +26,7 @@ const HotPage = lazy(() => import('@/pages/HotPage/HotPage').then((m) => ({ defa
 const IndustrySectorPage = lazy(() => import('@/pages/IndustrySectorPage/IndustrySectorPage').then((m) => ({ default: m.IndustrySectorPage })));
 const ConceptSectorPage = lazy(() => import('@/pages/ConceptSectorPage/ConceptSectorPage').then((m) => ({ default: m.ConceptSectorPage })));
 const SectorConstituentsPage = lazy(() => import('@/pages/SectorConstituentsPage/SectorConstituentsPage').then((m) => ({ default: m.SectorConstituentsPage })));
+const BillboardPage = lazy(() => import('@/pages/BillboardPage/BillboardPage').then((m) => ({ default: m.BillboardPage })));
 const CookieManagerPage = lazy(() => import('@/pages/CookieManagerPage/CookieManagerPage').then((m) => ({ default: m.CookieManagerPage })));
 const DataManagerPage = lazy(() => import('@/pages/DataManagerPage/DataManagerPage').then((m) => ({ default: m.DataManagerPage })));
 
@@ -244,6 +245,28 @@ function AppContent() {
                         >
                           <div className={styles.sectorLayout}>
                             <SectorConstituentsPage />
+                          </div>
+                        </Suspense>
+                      ),
+                    },
+                    {
+                      key: 'billboard',
+                      label: (
+                        <span>
+                          <TrophyOutlined className={styles.mgr6} />
+                          龙虎榜
+                        </span>
+                      ),
+                      children: (
+                        <Suspense
+                          fallback={
+                            <div className={styles.suspenseFallback}>
+                              <Spin size="large" />
+                            </div>
+                          }
+                        >
+                          <div className={styles.sectorLayout}>
+                            <BillboardPage />
                           </div>
                         </Suspense>
                       ),
