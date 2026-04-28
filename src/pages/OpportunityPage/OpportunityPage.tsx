@@ -15,6 +15,7 @@ import {
   OrderedListOutlined,
   FilterOutlined,
   ReloadOutlined,
+  DatabaseOutlined,
 } from '@ant-design/icons';
 import { useOpportunityStore } from '@/stores/opportunityStore';
 import {
@@ -26,6 +27,7 @@ import { AIAnalysisModal } from '@/components/AIAnalysisModal';
 import { exportOpportunityToExcel } from '@/utils/export/opportunityExportUtils';
 import { exportStockNamesToExcel, exportStockNamesToPng } from '@/utils/export/stockNamesExportUtils';
 import { detectTradingSignal } from '@/utils/analysis/signalDetector';
+import { addStocksToTodayRecord } from '@/services/opportunity/recordService';
 import type { ConsolidationType, KLinePeriod, StockInfo, StockOpportunityData } from '@/types/stock';
 import { useAllStocks } from '@/hooks/useAllStocks';
 import { logger } from '@/utils/business/logger';
@@ -304,6 +306,7 @@ export function OpportunityPage() {
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false); // 筛选抽屉状态
   const [filterDiagnosticsDrawerOpen, setFilterDiagnosticsDrawerOpen] = useState(false); // 筛选诊断抽屉状态
   const [errorExpanded, setErrorExpanded] = useState(false); // 失败详情展开状态
+  const [analysisTimestamp, setAnalysisTimestamp] = useState<number | null>(null); // 分析时间戳
 
   const [sharpMoveFilterEnabled, setSharpMoveFilterEnabled] = useState<boolean>(
     INITIAL_FILTER_STATE.sharpMoveFilterEnabled
@@ -1184,6 +1187,9 @@ export function OpportunityPage() {
     // 清空 AI 缓存，防止跨周期数据污染
     clearAICache();
 
+    // 记录分析时间
+    setAnalysisTimestamp(Date.now());
+
     // 直接开始分析，不需要保存筛选条件（已通过useEffect自动保存）
     await startAnalysis(currentPeriod, filteredStocks, currentCount);
   };
@@ -1198,6 +1204,25 @@ export function OpportunityPage() {
       return;
     }
     await retryFailedStocks();
+  };
+
+  // 添加到记录
+  const handleAddToRecord = async () => {
+    if (filteredAnalysisData.length === 0) {
+      message.warning('没有数据可添加');
+      return;
+    }
+
+    try {
+      await addStocksToTodayRecord(filteredAnalysisData, analysisTimestamp || undefined);
+      const dateStr = analysisTimestamp
+        ? new Date(analysisTimestamp).toLocaleDateString('zh-CN')
+        : '今天';
+      message.success(`已将 ${filteredAnalysisData.length} 只股票添加到 ${dateStr} 的记录`);
+    } catch (error) {
+      message.error('添加到记录失败');
+      logger.error('添加到记录失败:', error);
+    }
   };
 
   const handleExport = async (format: 'excel') => {
@@ -1555,6 +1580,13 @@ export function OpportunityPage() {
             </Button>
           </Dropdown>
           <Button
+            icon={<DatabaseOutlined />}
+            onClick={handleAddToRecord}
+            disabled={loading || filteredAnalysisData.length === 0}
+          >
+            添加到记录
+          </Button>
+          <Button
             icon={<FilterOutlined />}
             onClick={() => setFilterDrawerOpen(true)}
           >
@@ -1902,6 +1934,11 @@ export function OpportunityPage() {
                     跳过详情
                   </Button>
                 </Badge>
+              )}
+              {analysisTimestamp && (
+                <span style={{ fontSize: 12, color: 'var(--ant-color-text-secondary)', marginLeft: 8 }}>
+                  🕐 分析时间：{new Date(analysisTimestamp).toLocaleString('zh-CN')}
+                </span>
               )}
             </div>
           </div>

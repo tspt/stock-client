@@ -1,0 +1,96 @@
+/**
+ * 分析记录页面样式
+ */
+
+.analysisRecordPage {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--ant-color-bg-layout);
+}
+
+.header {
+  background: var(--ant-color-bg-container);
+  border-bottom: 1px solid var(--ant-color-border-secondary);
+  padding: 0 24px;
+  height: auto;
+  line-height: normal;
+  display: flex;
+  align-items: center;
+  padding: 16px 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  z-index: 10;
+}
+
+.headerContent {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--ant-color-text);
+}
+
+.content {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.mainCard {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  border: 1px solid var(--ant-color-border-secondary);
+  background: var(--ant-color-bg-container);
+}
+
+.mainCard :global(.ant-card-body) {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 16px;
+}
+
+.mainCard :global(.ant-tabs) {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.mainCard :global(.ant-tabs-content) {
+  flex: 1;
+  overflow: hidden;
+}
+
+.mainCard :global(.ant-tabs-tabpane) {
+  height: 100%;
+}
+
+.countCell {
+  font-weight: 500;
+}
+
+.conceptTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+/* 深色主题适配 */
+[data-theme='dark'] .analysisRecordPage {
+  background: #141414;
+}
+
+[data-theme='dark'] .mainCard {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}

@@ -6,7 +6,7 @@ export interface BillboardStockData {
   SECUCODE: string; // 证券代码（含市场后缀）
   SECURITY_CODE: string; // 股票代码
   LATEST_TDATE: string; // 最新上榜日期
-  SECURITY_NAME_ABBR: string; // 股票简称
+  SECURITY_NAME_ABBR: string; // 股票名称
   IPCT1M: number; // 近一月涨跌幅
   IPCT3M: number; // 近三月涨跌幅
   IPCT6M: number; // 近六月涨跌幅

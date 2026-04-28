@@ -914,3 +914,53 @@ export interface FundamentalAnalysis {
   /** 数据更新时间 */
   updatedAt: number;
 }
+
+/**
+ * 股票记录项（单次上榜记录）
+ */
+export interface StockRecordItem {
+  /** 股票代码 */
+  code: string;
+  /** 股票名称 */
+  name: string;
+  /** 所属概念板块列表 */
+  concepts?: string[];
+  /** 所属行业板块 */
+  industry?: string;
+  /** 记录时间戳 */
+  timestamp: number;
+}
+
+/**
+ * 股票记录（按日期分组）
+ */
+export interface StockRecord {
+  /** 日期 (YYYY-MM-DD) */
+  date: string;
+  /** 当天的股票记录列表 */
+  stocks: StockRecordItem[];
+  /** 记录创建时间戳 */
+  createdAt: number;
+  /** 记录更新时间戳 */
+  updatedAt: number;
+}
+
+/**
+ * 股票统计信息（聚合结果）
+ */
+export interface StockStatistics {
+  /** 股票代码 */
+  code: string;
+  /** 股票名称 */
+  name: string;
+  /** 出现次数 */
+  count: number;
+  /** 最新上榜日期 */
+  latestDate: string;
+  /** 所属概念板块列表（去重） */
+  concepts: string[];
+  /** 所属行业板块（取最新） */
+  industry?: string;
+  /** 所有上榜日期列表 */
+  dates: string[];
+}

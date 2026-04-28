@@ -104,7 +104,7 @@ export function BillboardPage() {
       render: (text: string) => <Text strong>{text}</Text>,
     },
     {
-      title: '股票简称',
+      title: '股票名称',
       dataIndex: 'SECURITY_NAME_ABBR',
       key: 'name',
       width: 120,
@@ -297,7 +297,7 @@ export function BillboardPage() {
                   pageSizeOptions: [PAGE_SIZE],
                 }}
                 onChange={handleTableChange}
-                scroll={{ x: 1600, y: 'calc(100vh - 280px)' }}
+                scroll={{ x: 1600, y: 'calc(100vh - 240px)' }}
                 size="small"
                 bordered={false}
               />

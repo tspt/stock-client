@@ -1,0 +1,17 @@
+/**
+ * 股票记录查看器样式
+ */
+
+.viewerContainer {
+  min-height: 300px;
+}
+
+.countCell {
+  font-weight: 500;
+}
+
+.conceptTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}

@@ -6,6 +6,11 @@
   background: #ffffff;
 }
 
+/* 深色主题 */
+[data-theme='dark'] .container {
+  background: #141414;
+}
+
 .cardBox {
   border: none;
   border-radius: 0;

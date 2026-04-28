@@ -4,7 +4,7 @@
 
 import { Suspense, lazy, useEffect, useState } from 'react';
 import { ConfigProvider, App as AntdApp, theme, Layout, Tabs, Spin } from 'antd';
-import { StockOutlined, BellOutlined, BarChartOutlined, FireOutlined, ClusterOutlined, AppstoreOutlined, PartitionOutlined, KeyOutlined, DatabaseOutlined, SafetyCertificateOutlined, TrophyOutlined } from '@ant-design/icons';
+import { StockOutlined, BellOutlined, BarChartOutlined, FireOutlined, ClusterOutlined, AppstoreOutlined, PartitionOutlined, KeyOutlined, DatabaseOutlined, SafetyCertificateOutlined, TrophyOutlined, HistoryOutlined } from '@ant-design/icons';
 import zhCN from 'antd/locale/zh_CN';
 import { useTheme } from '@/hooks/useTheme';
 import { useStockStore } from '@/stores/stockStore';
@@ -21,6 +21,9 @@ const DetailPage = lazy(() => import('@/pages/DetailPage/DetailPage').then((m) =
 const AlertPage = lazy(() => import('@/pages/AlertPage/AlertPage').then((m) => ({ default: m.AlertPage })));
 const OpportunityPage = lazy(() =>
   import('@/pages/OpportunityPage/OpportunityPage').then((m) => ({ default: m.OpportunityPage }))
+);
+const AnalysisRecordPage = lazy(() =>
+  import('@/pages/AnalysisRecordPage/AnalysisRecordPage').then((m) => ({ default: m.AnalysisRecordPage }))
 );
 const HotPage = lazy(() => import('@/pages/HotPage/HotPage').then((m) => ({ default: m.HotPage })));
 const IndustrySectorPage = lazy(() => import('@/pages/IndustrySectorPage/IndustrySectorPage').then((m) => ({ default: m.IndustrySectorPage })));
@@ -289,6 +292,28 @@ function AppContent() {
                         >
                           <div className={styles.opportunityLayout}>
                             <OpportunityPage />
+                          </div>
+                        </Suspense>
+                      ),
+                    },
+                    {
+                      key: 'analysis-records',
+                      label: (
+                        <span>
+                          <HistoryOutlined className={styles.mgr6} />
+                          分析记录
+                        </span>
+                      ),
+                      children: (
+                        <Suspense
+                          fallback={
+                            <div className={styles.suspenseFallback}>
+                              <Spin size="large" />
+                            </div>
+                          }
+                        >
+                          <div className={styles.opportunityLayout}>
+                            <AnalysisRecordPage />
                           </div>
                         </Suspense>
                       ),

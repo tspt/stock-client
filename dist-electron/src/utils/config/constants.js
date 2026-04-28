@@ -113,11 +113,13 @@ export const ALERT_TIME_PERIODS = [
 /** IndexedDB 数据库名 */
 export const OPPORTUNITY_DB_NAME = 'StockOpportunityDB';
 /** IndexedDB 版本 */
-export const OPPORTUNITY_DB_VERSION = 1;
+export const OPPORTUNITY_DB_VERSION = 2;
 /** 对象存储名称 */
 export const OPPORTUNITY_STORE_NAME = 'opportunityData';
 /** 历史存储名称 */
 export const OPPORTUNITY_HISTORY_STORE_NAME = 'opportunityHistory';
+/** 股票记录存储名称 */
+export const STOCK_RECORDS_STORE_NAME = 'stockRecords';
 /** 默认并发数（每批股票数，与 OPPORTUNITY_BATCH_DELAY 配合控频） */
 export const OPPORTUNITY_CONCURRENT_LIMIT = 8;
 /** 批次间延迟（毫秒） */
@@ -187,3 +189,7 @@ export const COOKIE_POOL_DB_VERSION = 1;
 export const COOKIE_POOL_STORE_NAME = 'cookies';
 export const MAX_COOKIE_COUNT = 200; // 最大Cookie数量
 export const COOKIE_HEALTH_CHECK_INTERVAL = 60 * 60 * 1000; // 1小时检查一次
+/** 龙虎榜缓存相关常量 */
+export const BILLBOARD_CACHE_DB_NAME = 'BillboardCacheDB';
+export const BILLBOARD_CACHE_DB_VERSION = 1;
+export const BILLBOARD_CACHE_STORE_NAME = 'billboard_cache';

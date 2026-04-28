@@ -20,6 +20,7 @@
   border-bottom: 1px solid var(--ant-color-border-secondary);
   padding: 16px 24px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  z-index: 10;
 }
 
 /* 深色主题 */
@@ -67,7 +68,6 @@
 
 .contentArea {
   flex: 1;
-  padding: 20px 24px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
