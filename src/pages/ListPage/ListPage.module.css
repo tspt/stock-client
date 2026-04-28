@@ -3,7 +3,12 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  background: #f5f7fa;
+  background: #ffffff;
+}
+
+/* 深色主题 */
+[data-theme='dark'] .listPage {
+  background: #141414;
 }
 
 .content {

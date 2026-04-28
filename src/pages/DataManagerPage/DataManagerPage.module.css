@@ -2,9 +2,14 @@
 
 .pageContainer {
   height: 100%;
-  background: #f5f7fa;
+  background: #ffffff;
   padding: 20px;
   overflow-y: auto;
+}
+
+/* 深色主题 */
+[data-theme='dark'] .pageContainer {
+  background: #141414;
 }
 
 .content {
@@ -21,6 +26,12 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
+/* 深色主题 */
+[data-theme='dark'] .card {
+  background: #1f1f1f;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
 .card:last-child {
   margin-bottom: 0;
 }
@@ -32,10 +43,21 @@
   padding: 0 20px;
 }
 
+/* 深色主题 */
+[data-theme='dark'] .card :global(.ant-card-head) {
+  border-bottom-color: #303030;
+  background: #1f1f1f;
+}
+
 .card :global(.ant-card-head-title) {
   font-weight: 500;
   font-size: 15px;
   color: #262626;
+}
+
+/* 深色主题 */
+[data-theme='dark'] .card :global(.ant-card-head-title) {
+  color: rgba(255, 255, 255, 0.85);
 }
 
 .card :global(.ant-card-body) {
@@ -43,9 +65,15 @@
 }
 
 .subCard {
-  background: #f9fafb;
+  background: #ffffff;
   border: 1px solid #f0f0f0;
   border-radius: 6px;
+}
+
+/* 深色主题 */
+[data-theme='dark'] .subCard {
+  background: #1f1f1f;
+  border-color: #303030;
 }
 
 .subCard :global(.ant-statistic) {
@@ -58,10 +86,20 @@
   margin-bottom: 4px;
 }
 
+/* 深色主题 */
+[data-theme='dark'] .subCard :global(.ant-statistic-title) {
+  color: rgba(255, 255, 255, 0.45);
+}
+
 .subCard :global(.ant-statistic-content) {
   font-size: 20px;
   font-weight: 600;
   color: #262626;
+}
+
+/* 深色主题 */
+[data-theme='dark'] .subCard :global(.ant-statistic-content) {
+  color: rgba(255, 255, 255, 0.85);
 }
 
 .subCard :global(.ant-statistic-content-suffix) {
@@ -70,11 +108,21 @@
   color: #8c8c8c;
 }
 
+/* 深色主题 */
+[data-theme='dark'] .subCard :global(.ant-statistic-content-suffix) {
+  color: rgba(255, 255, 255, 0.45);
+}
+
 .updateTime {
   display: block;
   font-size: 12px;
   color: #8c8c8c;
   margin-top: 6px;
+}
+
+/* 深色主题 */
+[data-theme='dark'] .updateTime {
+  color: rgba(255, 255, 255, 0.45);
 }
 
 .expiryInfo {
@@ -91,6 +139,11 @@
   display: flex;
   gap: 12px;
   flex-wrap: wrap;
+}
+
+/* 深色主题 */
+[data-theme='dark'] .actionButtons {
+  border-top-color: #303030;
 }
 
 .subCardActions {

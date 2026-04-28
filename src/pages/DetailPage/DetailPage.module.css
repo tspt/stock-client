@@ -13,6 +13,11 @@
   font-size: 16px;
 }
 
+/* 深色主题 - 确保文字颜色正确 */
+[data-theme='dark'] .emptyDetail {
+  color: rgba(255, 255, 255, 0.45);
+}
+
 .header {
   background: var(--ant-color-bg-container);
   border-bottom: 1px solid var(--ant-color-border);

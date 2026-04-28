@@ -13,6 +13,12 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  background: #ffffff;
+}
+
+/* 深色主题 */
+[data-theme='dark'] .alertPage {
+  background: #141414;
 }
 
 .alertPage :global(.ant-table-wrapper) {
@@ -61,5 +67,10 @@
   justify-content: center;
   height: 100%;
   flex: 1;
+}
+
+/* 深色主题 - Empty 组件文字颜色 */
+[data-theme='dark'] .emptyContainer :global(.ant-empty-description) {
+  color: rgba(255, 255, 255, 0.45);
 }
 
