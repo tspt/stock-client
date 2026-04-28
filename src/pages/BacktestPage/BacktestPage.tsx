@@ -4,20 +4,26 @@
  */
 
 import { useEffect, useState, useRef } from 'react';
-import { Layout, Card, Button, Space, Table, message, Progress, Select, DatePicker, Tag } from 'antd';
+import { Layout, Card, Button, Space, Table, Progress, Select, DatePicker, Tag, Row, Col, List, Input, Typography, App } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { ExperimentOutlined, ReloadOutlined } from '@ant-design/icons';
+import { ExperimentOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons';
 import { getStocksHistory, getSignalBacktestsByCode } from '@/utils/storage/opportunityIndexedDB';
 import styles from './BacktestPage.module.css';
 
 const { Header, Content } = Layout;
+const { Text } = Typography;
 const { RangePicker } = DatePicker;
 
 export function BacktestPage() {
+  const { message } = App.useApp();
   const [loading, setLoading] = useState(false);
   const [backtesting, setBacktesting] = useState(false);
   const [progress, setProgress] = useState(0);
   const [results, setResults] = useState<any[]>([]);
+  const [groupedResults, setGroupedResults] = useState<any[]>([]);
+  const [selectedStockCode, setSelectedStockCode] = useState<string | null>(null);
+  const [searchText, setSearchText] = useState('');
+  const [marketType, setMarketType] = useState<string>('all');
   const workerRef = useRef<Worker | null>(null);
   const taskIdCounter = useRef(0);
 
@@ -82,6 +88,13 @@ export function BacktestPage() {
 
           if (processedCount === totalTasks) {
             setResults(allSignals);
+            // 按股票分组
+            const grouped = groupSignalsByStock(allSignals);
+            setGroupedResults(grouped);
+            // 默认选中第一个有信号的股票
+            if (grouped.length > 0) {
+              setSelectedStockCode(grouped[0].code);
+            }
             setBacktesting(false);
             workerRef.current?.removeEventListener('message', onMessage);
             message.success(`回测完成！共发现 ${allSignals.length} 个信号`);
@@ -106,6 +119,63 @@ export function BacktestPage() {
       console.error(error);
       setBacktesting(false);
     }
+  };
+
+  // 按股票代码分组信号
+  const groupSignalsByStock = (signals: any[]) => {
+    interface StockGroup {
+      code: string;
+      name: string;
+      signals: any[];
+    }
+
+    const grouped = signals.reduce((acc, signal) => {
+      if (!acc[signal.code]) {
+        acc[signal.code] = {
+          code: signal.code,
+          name: signal.name,
+          signals: []
+        };
+      }
+      acc[signal.code].signals.push(signal);
+      return acc;
+    }, {} as Record<string, StockGroup>);
+
+    const values: StockGroup[] = Object.values(grouped);
+    return values.sort((a, b) => a.name.localeCompare(b.name, 'zh-CN'));
+  };
+
+  // 获取当前选中股票的信号
+  const getCurrentStockSignals = () => {
+    if (!selectedStockCode) return [];
+    const stockGroup = groupedResults.find(g => g.code === selectedStockCode);
+    return stockGroup ? stockGroup.signals : [];
+  };
+
+  // 过滤股票列表
+  const getFilteredStockList = () => {
+    let filtered = groupedResults;
+
+    // 按市场类型过滤
+    if (marketType !== 'all') {
+      filtered = filtered.filter(item => {
+        if (marketType === 'sh') return item.code.startsWith('6');
+        if (marketType === 'sz') return item.code.startsWith('0') || item.code.startsWith('3');
+        if (marketType === 'bj') return item.code.startsWith('8') || item.code.startsWith('4');
+        return true;
+      });
+    }
+
+    // 按搜索文本过滤
+    if (searchText) {
+      const searchLower = searchText.toLowerCase();
+      filtered = filtered.filter(item =>
+        item.name.toLowerCase().includes(searchLower) ||
+        item.code.toLowerCase().includes(searchLower)
+      );
+    }
+
+    return filtered;
   };
 
   // 表格列定义
@@ -143,7 +213,12 @@ export function BacktestPage() {
     <Layout className={styles.backtestPage}>
       <Header className={styles.header}>
         <div className={styles.headerContent}>
-          <h2 className={styles.title}>历史回测</h2>
+          <div className={styles.headerLeft}>
+            <Text className={styles.pageTitle}>历史回测</Text>
+            <Text type="secondary" className={styles.pageSubtitle}>
+              基于本地历史数据的策略回测分析
+            </Text>
+          </div>
           <Space>
             <Button
               type="primary"
@@ -158,22 +233,87 @@ export function BacktestPage() {
       </Header>
 
       <Content className={styles.content}>
-        {backtesting && (
-          <Card className={styles.progressCard}>
-            <Progress percent={progress} status="active" />
-          </Card>
+        {backtesting && progress > 0 && (
+          <div className={styles.progressOverlay}>
+            <div className={styles.progressInfo}>
+              <Text strong>回测进行中...</Text>
+              <Text type="secondary">已完成 {progress}%</Text>
+            </div>
+            <Progress
+              percent={progress}
+              status="active"
+              showInfo={false}
+              strokeColor={{
+                '0%': '#1890ff',
+                '100%': '#52c41a',
+              }}
+              trailColor="rgba(0, 0, 0, 0.06)"
+              size="small"
+              style={{ borderRadius: 4 }}
+            />
+          </div>
         )}
 
-        <Card className={styles.mainCard}>
-          <Table
-            columns={columns}
-            dataSource={results}
-            rowKey={(record) => `${record.code}-${record.signalDate}`}
-            pagination={{ pageSize: 20, showTotal: (total) => `共 ${total} 条信号` }}
-            scroll={{ x: 800, y: 500 }}
-            size="small"
-          />
-        </Card>
+        <Row gutter={0} className={styles.mainRow}>
+          <Col span={6}>
+            <Card title="股票列表" className={styles.stockListCard}>
+              <div className={styles.filterSection}>
+                <Select
+                  value={marketType}
+                  onChange={setMarketType}
+                  className={styles.marketSelect}
+                  options={[
+                    { label: '全部市场', value: 'all' },
+                    { label: '沪市', value: 'sh' },
+                    { label: '深市', value: 'sz' },
+                    { label: '北交所', value: 'bj' },
+                  ]}
+                />
+                <Input
+                  placeholder="搜索股票名称或代码"
+                  prefix={<SearchOutlined />}
+                  value={searchText}
+                  onChange={(e) => setSearchText(e.target.value)}
+                  className={styles.searchInput}
+                  allowClear
+                />
+              </div>
+              <div className={styles.stockListContainer}>
+                <List
+                  dataSource={getFilteredStockList()}
+                  renderItem={(item) => (
+                    <List.Item
+                      className={`${styles.stockListItem} ${selectedStockCode === item.code ? styles.selected : ''}`}
+                      onClick={() => setSelectedStockCode(item.code)}
+                    >
+                      <div className={styles.stockItemContent}>
+                        <div className={styles.stockInfo}>
+                          <div className={styles.stockName}>{item.name}</div>
+                          <div className={styles.stockCode}>{item.code}</div>
+                        </div>
+                        <Tag color="blue" className={styles.signalCount}>{item.signals.length}个信号</Tag>
+                      </div>
+                    </List.Item>
+                  )}
+                  locale={{ emptyText: '暂无回测数据' }}
+                />
+              </div>
+            </Card>
+          </Col>
+          <Col span={18}>
+            <Card title="信号详情" className={styles.signalDetailCard}>
+              <Table
+                columns={columns}
+                dataSource={getCurrentStockSignals()}
+                rowKey={(record) => `${record.code}-${record.signalDate}`}
+                pagination={{ pageSize: 100, showTotal: (total) => `共 ${total} 条信号` }}
+                scroll={{ x: 800, y: 'calc(100vh - 280px)' }}
+                size="small"
+                locale={{ emptyText: selectedStockCode ? '该股票暂无信号' : '请选择左侧股票查看信号' }}
+              />
+            </Card>
+          </Col>
+        </Row>
       </Content>
     </Layout>
   );

@@ -44,9 +44,9 @@ function extractRecordItems(stocks: StockOpportunityData[]): StockRecordItem[] {
 
 /**
  * 添加股票记录到指定日期
- * 如果该日期已有记录，则合并去重（覆盖相同股票）
+ * 直接覆盖同一天的旧数据
  * @param stocks 股票数据列表
- * @param timestamp 可选的时间戳，如果不提供则使用当前时间
+ * @param timestamp 可选的时间戳,如果不提供则使用当前时间
  */
 export async function addStocksToTodayRecord(
   stocks: StockOpportunityData[],
@@ -56,36 +56,18 @@ export async function addStocksToTodayRecord(
     const date = getDateDateString(timestamp);
     const newItems = extractRecordItems(stocks);
 
-    // 获取该日期的现有记录
-    const existingRecord = await getStockRecordByDate(date);
-
-    let mergedItems: StockRecordItem[];
-
-    if (existingRecord) {
-      // 合并记录：以新记录为准覆盖相同股票
-      const existingMap = new Map(existingRecord.stocks.map((item) => [item.code, item]));
-
-      newItems.forEach((newItem) => {
-        existingMap.set(newItem.code, newItem);
-      });
-
-      mergedItems = Array.from(existingMap.values());
-    } else {
-      mergedItems = newItems;
-    }
-
-    // 保存合并后的记录
+    // 直接创建新记录，覆盖同一天的旧数据
     const record: StockRecord = {
       date: date,
-      stocks: mergedItems,
-      createdAt: existingRecord?.createdAt || Date.now(),
+      stocks: newItems,
+      createdAt: Date.now(),
       updatedAt: Date.now(),
     };
 
     await saveStockRecord(record);
-    logger.info(`成功添加 ${stocks.length} 只股票到 ${date} 的记录`);
+    logger.info(`成功更新 ${date} 的股票记录，共 ${stocks.length} 只股票`);
   } catch (error) {
-    logger.error('添加股票记录失败:', error);
+    logger.error('更新股票记录失败:', error);
     throw error;
   }
 }

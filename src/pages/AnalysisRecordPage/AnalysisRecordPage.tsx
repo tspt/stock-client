@@ -4,7 +4,7 @@
  */
 
 import { useEffect, useState } from 'react';
-import { Layout, Card, Button, Space, Table, Tabs, Spin, Empty, message, Tag, Modal } from 'antd';
+import { Layout, Card, Button, Space, Table, Tabs, Spin, Empty, Tag, Modal, Typography, App } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { DeleteOutlined, ReloadOutlined, BarChartOutlined, TableOutlined } from '@ant-design/icons';
 import type { StockStatistics } from '@/types/stock';
@@ -13,8 +13,10 @@ import { StockTrendChart } from '@/components/StockTrendChart/StockTrendChart';
 import styles from './AnalysisRecordPage.module.css';
 
 const { Header, Content } = Layout;
+const { Text } = Typography;
 
 export function AnalysisRecordPage() {
+  const { message, modal } = App.useApp();
   const [statistics, setStatistics] = useState<StockStatistics[]>([]);
   const [loading, setLoading] = useState(false);
   const [dateRange, setDateRange] = useState<[string, string] | null>(null);
@@ -51,7 +53,7 @@ export function AnalysisRecordPage() {
       return;
     }
 
-    Modal.confirm({
+    modal.confirm({
       title: '确认清空',
       content: '确定要清空所有分析记录吗？此操作不可恢复。',
       okText: '确定',
@@ -156,7 +158,12 @@ export function AnalysisRecordPage() {
     <Layout className={styles.analysisRecordPage}>
       <Header className={styles.header}>
         <div className={styles.headerContent}>
-          <h2 className={styles.title}>分析记录</h2>
+          <div className={styles.headerLeft}>
+            <Text className={styles.pageTitle}>分析记录</Text>
+            <Text type="secondary" className={styles.pageSubtitle}>
+              股票上榜统计信息和趋势分析
+            </Text>
+          </div>
           <Space>
             <Button danger icon={<DeleteOutlined />} onClick={handleClearAll}>
               清空所有记录
@@ -189,12 +196,12 @@ export function AnalysisRecordPage() {
                         dataSource={statistics}
                         rowKey="code"
                         pagination={{
-                          pageSize: 20,
+                          defaultPageSize: 50,
                           showSizeChanger: true,
                           showTotal: (total) => `共 ${total} 条记录`,
-                          pageSizeOptions: ['10', '20', '50', '100'],
+                          pageSizeOptions: ['50', '100', '200'],
                         }}
-                        scroll={{ x: 800, y: 500 }}
+                        scroll={{ x: 800, y: 'calc(100vh - 280px)' }}
                         size="small"
                       />
                     ) : (

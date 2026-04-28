@@ -18,14 +18,14 @@
 .header {
   background: #fff;
   border-bottom: 1px solid var(--ant-color-border-secondary);
-  padding: 16px 24px;
+  padding: 10px 20px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   z-index: 10;
 }
 
 /* 深色主题 */
 [data-theme='dark'] .header {
-  background: #1f1f1f;
+  background: #141414;
   border-bottom-color: #303030;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
@@ -86,7 +86,7 @@
 
 /* 深色主题 */
 [data-theme='dark'] .card {
-  background: #1f1f1f;
+  background: #141414;
   border-color: #303030;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }

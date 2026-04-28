@@ -14,7 +14,7 @@
 
 .header {
   flex-shrink: 0;
-  padding: 16px 20px;
+  padding: 10px 20px;
   background: #fff;
   border-bottom: 1px solid var(--ant-color-border-secondary);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
@@ -22,7 +22,7 @@
 }
 
 [data-theme='dark'] .header {
-  background: #1f1f1f;
+  background: #141414;
   border-bottom-color: #303030;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
@@ -98,7 +98,7 @@
 }
 
 [data-theme='dark'] .sidebar {
-  background: #1f1f1f;
+  background: #141414;
   border-right-color: #303030;
 }
 
@@ -310,7 +310,7 @@
 }
 
 [data-theme='dark'] .stockItem {
-  background: #1f1f1f;
+  background: #141414;
 }
 
 .stockItem:hover {

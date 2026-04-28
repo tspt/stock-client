@@ -7,7 +7,7 @@ import { ConfigProvider, App as AntdApp, theme, Layout, Tabs, Spin } from 'antd'
 import { StockOutlined, BellOutlined, BarChartOutlined, FireOutlined, ClusterOutlined, AppstoreOutlined, PartitionOutlined, KeyOutlined, DatabaseOutlined, SafetyCertificateOutlined, TrophyOutlined, HistoryOutlined, ExperimentOutlined } from '@ant-design/icons';
 import zhCN from 'antd/locale/zh_CN';
 import { useTheme } from '@/hooks/useTheme';
-import { useStockStore } from '@/stores/stockStore';
+import { useStockStore, setAppInstance } from '@/stores/stockStore';
 import { initNotificationNavigation } from '@/services/alerts';
 import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { ErrorBoundary } from '@/components/ErrorBoundary/ErrorBoundary';
@@ -148,6 +148,12 @@ function AppContent() {
       }}
     >
       <AntdApp>
+        {(() => {
+          // 初始化 App 实例供 stockStore 使用
+          const app = AntdApp.useApp();
+          setAppInstance(app);
+          return null;
+        })()}
         <ErrorBoundary>
           <div className={styles.app} data-theme={currentTheme}>
             <Layout className={styles.mainLayout}>

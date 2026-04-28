@@ -4,7 +4,7 @@
  */
 
 import { useEffect, useState } from 'react';
-import { Modal, Table, Button, Space, Tag, Spin, Empty, message, Tabs } from 'antd';
+import { Modal, Table, Button, Space, Tag, Spin, Empty, Tabs, App } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { DeleteOutlined, ReloadOutlined, BarChartOutlined, TableOutlined } from '@ant-design/icons';
 import type { StockStatistics } from '@/types/stock';
@@ -18,6 +18,7 @@ interface StockRecordViewerProps {
 }
 
 export function StockRecordViewer({ visible, onClose }: StockRecordViewerProps) {
+  const { message, modal } = App.useApp();
   const [statistics, setStatistics] = useState<StockStatistics[]>([]);
   const [loading, setLoading] = useState(false);
   const [dateRange, setDateRange] = useState<[string, string] | null>(null);
@@ -49,7 +50,7 @@ export function StockRecordViewer({ visible, onClose }: StockRecordViewerProps) 
 
   // 清空所有记录
   const handleClearAll = async () => {
-    Modal.confirm({
+    modal.confirm({
       title: '确认清空',
       content: '确定要清空所有股票记录吗？此操作不可恢复。',
       okText: '确定',

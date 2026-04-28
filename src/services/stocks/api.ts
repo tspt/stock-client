@@ -420,6 +420,8 @@ export async function getKLineData(
 
     // 解析JSON数据
     // 数据格式：{ code: 0, msg: "", data: { "sz000001": { "day": [[...], ...] } } }
+    let stockName = '';
+
     if (data && typeof data === 'object') {
       // 检查返回码
       if (data.code !== 0) {
@@ -445,6 +447,9 @@ export async function getKLineData(
       if (!stockData || typeof stockData !== 'object') {
         return [];
       }
+
+      // 从 qt 字段中提取股票名称
+      stockName = stockData.qt?.[stockCodeKey]?.[1] || '';
 
       // 获取对应周期的K线数据
       const klines = stockData[apiType];
@@ -534,7 +539,7 @@ export async function getKLineData(
 
       saveStockHistory({
         code,
-        name: '',
+        name: stockName,
         dailyLines: klineData,
         latestQuote,
         updatedAt: Date.now(),

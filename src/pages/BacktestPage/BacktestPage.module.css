@@ -2,14 +2,28 @@
   height: 100%;
   display: flex;
   flex-direction: column;
+  background: var(--ant-color-bg-layout);
+}
+
+/* 深色主题 */
+[data-theme='dark'] .backtestPage {
+  background: #141414;
 }
 
 .header {
-  background-color: #fff;
-  padding: 0 24px;
+  background: var(--ant-color-bg-container);
+  border-bottom: 1px solid var(--ant-color-border-secondary);
+  padding: 10px 20px;
   display: flex;
-  align-items: center;
-  border-bottom: 1px solid #f0f0f0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  z-index: 10;
+}
+
+/* 深色主题 */
+[data-theme='dark'] .header {
+  background: #141414;
+  border-bottom-color: #303030;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .headerContent {
@@ -19,23 +33,191 @@
   align-items: center;
 }
 
-.title {
-  margin: 0;
-  font-size: 18px;
+.headerLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pageTitle {
+  font-size: 16px;
   font-weight: 600;
+  margin: 0;
+  color: var(--ant-color-text);
+}
+
+.pageSubtitle {
+  font-size: 12px;
+  color: #8c8c8c;
 }
 
 .content {
-  padding: 24px;
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative; /* 为悬浮进度条提供定位上下文 */
+}
+
+/* 进度条悬浮层 */
+.progressOverlay {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(600px, calc(100% - 40px));
+  z-index: 100;
+  padding: 12px 20px;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+  transition: all 0.3s ease;
+}
+
+[data-theme='dark'] .progressOverlay {
+  background: rgba(31, 31, 31, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+}
+
+.progressInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: var(--ant-color-text);
+}
+
+.mainRow {
+  flex: 1;
+  overflow: hidden;
+}
+
+.stockListCard,
+.signalDetailCard {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  border-radius: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  border: 1px solid var(--ant-color-border-secondary);
+  background: var(--ant-color-bg-container);
+}
+
+.stockListCard {
+  border-right: none;
+}
+
+/* 深色主题 */
+[data-theme='dark'] .stockListCard,
+[data-theme='dark'] .signalDetailCard {
+  background: #141414;
+  border-color: #303030;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.stockListCard :global(.ant-card-body),
+.signalDetailCard :global(.ant-card-body) {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 0;
+}
+
+/* 表格自适应高度 */
+.signalDetailCard :global(.ant-table-wrapper) {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.signalDetailCard :global(.ant-table) {
+  flex: 1;
+  overflow: hidden;
+}
+
+.signalDetailCard :global(.ant-table-container) {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.signalDetailCard :global(.ant-table-body) {
+  flex: 1;
+  overflow: auto !important;
+}
+
+.filterSection {
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.searchInput {
+  width: 100%;
+}
+
+.marketSelect {
+  width: 100%;
+}
+
+.stockListContainer {
   flex: 1;
   overflow-y: auto;
-  background-color: #f5f7fa;
+  overflow-x: hidden;
+  padding-bottom: 8px;
 }
 
-.progressCard {
-  margin-bottom: 24px;
+.stockListItem {
+  cursor: pointer;
+  padding: 12px 16px;
+  transition: all 0.3s;
+  border-radius: 4px;
+  margin-bottom: 8px;
 }
 
-.mainCard {
-  min-height: 400px;
+.stockListItem:hover {
+  background-color: #f5f5f5;
+}
+
+.stockListItem.selected {
+  background-color: #e6f7ff;
+  border-left: 3px solid #1890ff;
+}
+
+.stockItemContent {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.stockInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.stockName {
+  font-size: 14px;
+  font-weight: 500;
+  color: #262626;
+}
+
+.stockCode {
+  font-size: 12px;
+  color: #8c8c8c;
+}
+
+.signalCount {
+  margin-left: 8px;
+  flex-shrink: 0;
 }

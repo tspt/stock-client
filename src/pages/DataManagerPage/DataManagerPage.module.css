@@ -28,7 +28,7 @@
 
 /* 深色主题 */
 [data-theme='dark'] .card {
-  background: #1f1f1f;
+  background: #141414;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
@@ -46,7 +46,7 @@
 /* 深色主题 */
 [data-theme='dark'] .card :global(.ant-card-head) {
   border-bottom-color: #303030;
-  background: #1f1f1f;
+  background: #141414;
 }
 
 .card :global(.ant-card-head-title) {
@@ -72,7 +72,7 @@
 
 /* 深色主题 */
 [data-theme='dark'] .subCard {
-  background: #1f1f1f;
+  background: #141414;
   border-color: #303030;
 }
 
