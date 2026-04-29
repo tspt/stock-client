@@ -119,14 +119,23 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
-.stockListCard :global(.ant-card-body),
+.stockListCard :global(.ant-card-body) {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 0 !important;
+}
+
 .signalDetailCard :global(.ant-card-body) {
   flex: 1;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  padding: 0;
+  padding: 16px;
 }
+
+
 
 /* 表格自适应高度 */
 .signalDetailCard :global(.ant-table-wrapper) {
@@ -158,6 +167,8 @@
   flex-direction: column;
   gap: 8px;
   flex-shrink: 0;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .searchInput {
@@ -168,11 +179,24 @@
   width: 100%;
 }
 
+
+
 .stockListContainer {
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  padding-bottom: 8px;
+  padding: 8px 16px;
+  min-height: 0;
+  height: 100%;
+}
+
+.emptyText {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #8c8c8c;
+  font-size: 14px;
 }
 
 .stockListItem {
@@ -180,7 +204,6 @@
   padding: 12px 16px;
   transition: all 0.3s;
   border-radius: 4px;
-  margin-bottom: 8px;
 }
 
 .stockListItem:hover {
@@ -220,4 +243,73 @@
 .signalCount {
   margin-left: 8px;
   flex-shrink: 0;
+}
+
+/* 筛选抽屉样式 */
+.filterDrawerBody {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding-right: 4px;
+}
+
+.filterContent {
+  padding: 8px 0;
+}
+
+.filterRow {
+  margin-bottom: 12px;
+}
+
+.filterItem {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.filterLabel {
+  font-size: 14px;
+  white-space: nowrap;
+  color: var(--ant-color-text);
+}
+
+/* 胜率统计汇总样式 */
+.statisticsSummary {
+  display: flex;
+  gap: 16px;
+  padding: 12px 16px;
+  margin-bottom: 12px;
+  background: var(--ant-color-fill-quaternary);
+  border-radius: 8px;
+  border: 1px solid var(--ant-color-border-secondary);
+}
+
+.statItem {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px;
+  background: var(--ant-color-bg-container);
+  border-radius: 6px;
+  border: 1px solid var(--ant-color-border);
+}
+
+.statLabel {
+  font-size: 12px;
+  color: var(--ant-color-text-secondary);
+  font-weight: 500;
+}
+
+.statValue {
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.statDetail {
+  font-size: 11px;
+  color: var(--ant-color-text-tertiary);
 }

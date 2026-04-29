@@ -113,7 +113,7 @@ export const ALERT_TIME_PERIODS = [
 /** IndexedDB 数据库名 */
 export const OPPORTUNITY_DB_NAME = 'StockOpportunityDB';
 /** IndexedDB 版本 */
-export const OPPORTUNITY_DB_VERSION = 3;
+export const OPPORTUNITY_DB_VERSION = 4;
 /** 对象存储名称 */
 export const OPPORTUNITY_STORE_NAME = 'opportunityData';
 /** 股票记录存储名称 */
