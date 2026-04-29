@@ -118,6 +118,14 @@ async function fetchAllStocksForSector(
           ? await getIndustrySectorStocks(sectorCode, 'f12', 1, pageSize, pageNum, signal)
           : await getConceptSectorStocks(sectorCode, 'f12', 1, pageSize, pageNum, signal);
 
+      // 在第一次请求后检查total值，如果超过500则跳过该板块
+      if (pageNum === 1 && result.total > 500) {
+        logger.info(
+          `[SectorStocks] 跳过板块 ${sectorCode} (${sectorType})，成分股数量 ${result.total} 超过限制 500`
+        );
+        throw new Error(`SKIP_SECTOR_TOTAL_EXCEEDED: ${result.total}`);
+      }
+
       const stocks = result.data.map((item) => ({
         name: item.name,
         code: item.code,
@@ -132,6 +140,10 @@ async function fetchAllStocksForSector(
       }
     } catch (error: any) {
       if (error.name === 'AbortError') {
+        throw error;
+      }
+      // 如果是跳过板块的错误，直接抛出
+      if (error.message?.startsWith('SKIP_SECTOR_TOTAL_EXCEEDED')) {
         throw error;
       }
       logger.error(`获取板块 ${sectorCode} 第 ${pageNum} 页失败:`, error);
@@ -236,13 +248,25 @@ export async function fetchAllSectorsStocks(
         logger.info('[SectorStocks] 获取已被用户取消');
         break; // 跳出循环，执行后续的保存逻辑
       }
-      logger.warn(`[SectorStocks] 行业板块 ${sector.name} 获取失败，已记录`);
-      newFailed.push({
-        sectorCode: sector.code,
-        sectorName: sector.name,
-        sectorType: 'industry',
-        error,
-      });
+      // 如果是因为total过大而跳过板块，记录为特殊失败类型
+      if (error.message?.startsWith('SKIP_SECTOR_TOTAL_EXCEEDED')) {
+        const total = error.message.split(':')[1];
+        logger.warn(`[SectorStocks] 行业板块 ${sector.name} 因成分股数量(${total})超过500而被跳过`);
+        newFailed.push({
+          sectorCode: sector.code,
+          sectorName: sector.name,
+          sectorType: 'industry',
+          error: { type: 'SKIPPED', reason: `成分股数量(${total})超过500` },
+        });
+      } else {
+        logger.warn(`[SectorStocks] 行业板块 ${sector.name} 获取失败，已记录`);
+        newFailed.push({
+          sectorCode: sector.code,
+          sectorName: sector.name,
+          sectorType: 'industry',
+          error,
+        });
+      }
     }
   }
 
@@ -296,13 +320,25 @@ export async function fetchAllSectorsStocks(
         logger.info('[SectorStocks] 获取已被用户取消');
         break; // 跳出循环，执行后续的保存逻辑
       }
-      logger.warn(`[SectorStocks] 概念板块 ${sector.name} 获取失败，已记录`);
-      newFailed.push({
-        sectorCode: sector.code,
-        sectorName: sector.name,
-        sectorType: 'concept',
-        error,
-      });
+      // 如果是因为total过大而跳过板块，记录为特殊失败类型
+      if (error.message?.startsWith('SKIP_SECTOR_TOTAL_EXCEEDED')) {
+        const total = error.message.split(':')[1];
+        logger.warn(`[SectorStocks] 概念板块 ${sector.name} 因成分股数量(${total})超过500而被跳过`);
+        newFailed.push({
+          sectorCode: sector.code,
+          sectorName: sector.name,
+          sectorType: 'concept',
+          error: { type: 'SKIPPED', reason: `成分股数量(${total})超过500` },
+        });
+      } else {
+        logger.warn(`[SectorStocks] 概念板块 ${sector.name} 获取失败，已记录`);
+        newFailed.push({
+          sectorCode: sector.code,
+          sectorName: sector.name,
+          sectorType: 'concept',
+          error,
+        });
+      }
     }
   }
 
@@ -481,13 +517,25 @@ export async function fetchRemainingSectorsStocks(
         logger.info('[SectorStocks] 获取已被用户取消');
         break; // 跳出循环，执行后续的保存逻辑
       }
-      logger.warn(`[SectorStocks] 行业板块 ${sector.name} 获取失败`);
-      newFailed.push({
-        sectorCode: sector.code,
-        sectorName: sector.name,
-        sectorType: 'industry',
-        error,
-      });
+      // 如果是因为total过大而跳过板块，记录为特殊失败类型
+      if (error.message?.startsWith('SKIP_SECTOR_TOTAL_EXCEEDED')) {
+        const total = error.message.split(':')[1];
+        logger.warn(`[SectorStocks] 行业板块 ${sector.name} 因成分股数量(${total})超过500而被跳过`);
+        newFailed.push({
+          sectorCode: sector.code,
+          sectorName: sector.name,
+          sectorType: 'industry',
+          error: { type: 'SKIPPED', reason: `成分股数量(${total})超过500` },
+        });
+      } else {
+        logger.warn(`[SectorStocks] 行业板块 ${sector.name} 获取失败`);
+        newFailed.push({
+          sectorCode: sector.code,
+          sectorName: sector.name,
+          sectorType: 'industry',
+          error,
+        });
+      }
     }
   }
 
@@ -542,13 +590,25 @@ export async function fetchRemainingSectorsStocks(
         logger.info('[SectorStocks] 获取已被用户取消');
         break; // 跳出循环，执行后续的保存逻辑
       }
-      logger.warn(`[SectorStocks] 概念板块 ${sector.name} 获取失败`);
-      newFailed.push({
-        sectorCode: sector.code,
-        sectorName: sector.name,
-        sectorType: 'concept',
-        error,
-      });
+      // 如果是因为total过大而跳过板块，记录为特殊失败类型
+      if (error.message?.startsWith('SKIP_SECTOR_TOTAL_EXCEEDED')) {
+        const total = error.message.split(':')[1];
+        logger.warn(`[SectorStocks] 概念板块 ${sector.name} 因成分股数量(${total})超过500而被跳过`);
+        newFailed.push({
+          sectorCode: sector.code,
+          sectorName: sector.name,
+          sectorType: 'concept',
+          error: { type: 'SKIPPED', reason: `成分股数量(${total})超过500` },
+        });
+      } else {
+        logger.warn(`[SectorStocks] 概念板块 ${sector.name} 获取失败`);
+        newFailed.push({
+          sectorCode: sector.code,
+          sectorName: sector.name,
+          sectorType: 'concept',
+          error,
+        });
+      }
     }
   }
 

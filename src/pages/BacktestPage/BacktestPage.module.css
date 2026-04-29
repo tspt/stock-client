@@ -96,6 +96,11 @@
   overflow: hidden;
 }
 
+.stockListCol {
+  flex: 1;
+  overflow: hidden;
+}
+
 .stockListCard,
 .signalDetailCard {
   height: 100%;
@@ -312,4 +317,17 @@
 .statDetail {
   font-size: 11px;
   color: var(--ant-color-text-tertiary);
+}
+
+/* 不完整周期标注样式 */
+.incompleteTag {
+  font-size: 11px;
+  color: var(--ant-color-text-secondary);
+  margin-left: 4px;
+}
+
+.actualDaysTag {
+  font-size: 11px;
+  color: var(--ant-color-text-tertiary);
+  margin-left: 2px;
 }

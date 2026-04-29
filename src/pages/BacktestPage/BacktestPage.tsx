@@ -26,7 +26,8 @@ export function BacktestPage() {
   const [searchText, setSearchText] = useState('');
   const [marketType, setMarketType] = useState<string>('hs_main');
   const [nameType, setNameType] = useState<string>('non_st');
-  const [timeRange, setTimeRange] = useState<number>(60);
+  const [timeRange, setTimeRange] = useState<number>(7);
+  const [minWinRate, setMinWinRate] = useState<number>(75); // 近3日胜率最低值
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
   const workerRef = useRef<Worker | null>(null);
   const taskIdCounter = useRef(0);
@@ -256,7 +257,8 @@ export function BacktestPage() {
   const handleResetFilter = () => {
     setMarketType('hs_main');
     setNameType('non_st');
-    setTimeRange(60);
+    setTimeRange(7);
+    setMinWinRate(75);
     setSearchText('');
     message.success('已重置筛选条件');
   };
@@ -272,13 +274,6 @@ export function BacktestPage() {
     // 名称类型
     const nameLabel = nameType === 'st' ? 'ST' : nameType === 'non_st' ? '非ST' : '不限';
     parts.push(`名称:${nameLabel}`);
-
-    // 时间范围
-    if (timeRange > 0) {
-      parts.push(`近${timeRange}天`);
-    } else {
-      parts.push('时间:不限');
-    }
 
     return parts.join(' · ');
   };
@@ -297,40 +292,52 @@ export function BacktestPage() {
     const signals = getCurrentStockSignals();
     if (signals.length === 0) {
       return {
-        day3: { total: 0, success: 0, rate: 0 },
-        day5: { total: 0, success: 0, rate: 0 },
-        day10: { total: 0, success: 0, rate: 0 },
-        day20: { total: 0, success: 0, rate: 0 },
+        day3: { total: 0, success: 0, rate: 0, incompleteCount: 0 },
+        day5: { total: 0, success: 0, rate: 0, incompleteCount: 0 },
+        day10: { total: 0, success: 0, rate: 0, incompleteCount: 0 },
+        day20: { total: 0, success: 0, rate: 0, incompleteCount: 0 },
       };
     }
 
     const stats = {
-      day3: { total: 0, success: 0, rate: 0 },
-      day5: { total: 0, success: 0, rate: 0 },
-      day10: { total: 0, success: 0, rate: 0 },
-      day20: { total: 0, success: 0, rate: 0 },
+      day3: { total: 0, success: 0, rate: 0, incompleteCount: 0 },
+      day5: { total: 0, success: 0, rate: 0, incompleteCount: 0 },
+      day10: { total: 0, success: 0, rate: 0, incompleteCount: 0 },
+      day20: { total: 0, success: 0, rate: 0, incompleteCount: 0 },
     };
 
     signals.forEach((signal: any) => {
       // 3日收益
-      if (signal.returns.day3 !== null) {
+      if (signal.returns.day3) {
         stats.day3.total++;
-        if (signal.returns.day3 > 0) stats.day3.success++;
+        if (signal.returns.day3.actualDays < 3) {
+          stats.day3.incompleteCount++;
+        }
+        if (signal.returns.day3.value > 0) stats.day3.success++;
       }
       // 5日收益
-      if (signal.returns.day5 !== null) {
+      if (signal.returns.day5) {
         stats.day5.total++;
-        if (signal.returns.day5 > 0) stats.day5.success++;
+        if (signal.returns.day5.actualDays < 5) {
+          stats.day5.incompleteCount++;
+        }
+        if (signal.returns.day5.value > 0) stats.day5.success++;
       }
       // 两周（约10天）收益
-      if (signal.returns.day10 !== null) {
+      if (signal.returns.day10) {
         stats.day10.total++;
-        if (signal.returns.day10 > 0) stats.day10.success++;
+        if (signal.returns.day10.actualDays < 10) {
+          stats.day10.incompleteCount++;
+        }
+        if (signal.returns.day10.value > 0) stats.day10.success++;
       }
       // 一个月（约20天）收益
-      if (signal.returns.day20 !== null) {
+      if (signal.returns.day20) {
         stats.day20.total++;
-        if (signal.returns.day20 > 0) stats.day20.success++;
+        if (signal.returns.day20.actualDays < 20) {
+          stats.day20.incompleteCount++;
+        }
+        if (signal.returns.day20.value > 0) stats.day20.success++;
       }
     });
 
@@ -368,15 +375,43 @@ export function BacktestPage() {
       });
     }
 
-    // 3. 按时间范围过滤
+    // 3. 按近3日胜率过滤
+    if (minWinRate > 0) {
+      filtered = filtered.filter(item => {
+        // 计算该股票的近3日胜率
+        const totalSignals = item.signals.length;
+        if (totalSignals === 0) return false;
+
+        let successCount = 0;
+        let validCount = 0;
+
+        item.signals.forEach((signal: any) => {
+          // 只统计完整周期（actualDays >= 3）
+          if (signal.returns.day3 && signal.returns.day3.actualDays >= 3) {
+            validCount++;
+            if (signal.returns.day3.value > 0) {
+              successCount++;
+            }
+          }
+        });
+
+        if (validCount === 0) return false;
+        const winRate = (successCount / validCount) * 100;
+        return winRate >= minWinRate;
+      });
+    }
+
+    // 4. 按时间范围过滤（筛选近期出现的信号）
     if (timeRange > 0) {
-      const cutoffDate = new Date();
-      cutoffDate.setDate(cutoffDate.getDate() - timeRange);
-      const cutoffStr = cutoffDate.toISOString().split('T')[0]; // YYYY-MM-DD
+      const now = new Date();
+      const cutoffDate = new Date(now.getTime() - timeRange * 24 * 60 * 60 * 1000);
 
       filtered = filtered.filter(item => {
         // 检查该股票是否有在时间范围内的信号
-        return item.signals.some(signal => signal.signalDate >= cutoffStr);
+        return item.signals.some((signal: any) => {
+          const signalDate = new Date(signal.signalDate);
+          return signalDate >= cutoffDate;
+        });
       });
     }
 
@@ -392,6 +427,21 @@ export function BacktestPage() {
     return filtered;
   };
 
+  // 当筛选结果变化时，如果当前选中的股票不在结果中，自动选中第一个
+  useEffect(() => {
+    const filteredList = getFilteredStockList();
+    if (filteredList.length > 0) {
+      // 如果当前选中的股票不在筛选结果中，选中第一个
+      const isCurrentSelected = filteredList.some(item => item.code === selectedStockCode);
+      if (!isCurrentSelected) {
+        setSelectedStockCode(filteredList[0].code);
+      }
+    } else {
+      // 如果没有筛选结果，清空选中
+      setSelectedStockCode(null);
+    }
+  }, [marketType, nameType, searchText, minWinRate, timeRange, groupedResults]);
+
   // 表格列定义
   const columns: ColumnsType<any> = [
     { title: '股票代码', dataIndex: 'code', key: 'code', width: 100 },
@@ -401,25 +451,77 @@ export function BacktestPage() {
       title: '3日收益',
       dataIndex: ['returns', 'day3'],
       key: 'day3',
-      render: (val: number) => val !== null ? <span style={{ color: val > 0 ? '#cf1322' : '#3f8600' }}>{val}%</span> : '-'
+      render: (val: any) => {
+        if (!val) return '-';
+        const isComplete = val.actualDays >= 3;
+        return (
+          <span>
+            <span style={{ color: val.value > 0 ? '#ff4d4f' : '#52c41a' }}>
+              {val.value > 0 ? '+' : ''}{val.value}%
+            </span>
+            {!isComplete && (
+              <span className={styles.actualDaysTag}>({val.actualDays}天)</span>
+            )}
+          </span>
+        );
+      }
     },
     {
       title: '5日收益',
       dataIndex: ['returns', 'day5'],
       key: 'day5',
-      render: (val: number) => val !== null ? <span style={{ color: val > 0 ? '#cf1322' : '#3f8600' }}>{val}%</span> : '-'
+      render: (val: any) => {
+        if (!val) return '-';
+        const isComplete = val.actualDays >= 5;
+        return (
+          <span>
+            <span style={{ color: val.value > 0 ? '#ff4d4f' : '#52c41a' }}>
+              {val.value > 0 ? '+' : ''}{val.value}%
+            </span>
+            {!isComplete && (
+              <span className={styles.actualDaysTag}>({val.actualDays}天)</span>
+            )}
+          </span>
+        );
+      }
     },
     {
       title: '两周收益',
       dataIndex: ['returns', 'day10'],
       key: 'day10',
-      render: (val: number) => val !== null ? <span style={{ color: val > 0 ? '#cf1322' : '#3f8600' }}>{val}%</span> : '-'
+      render: (val: any) => {
+        if (!val) return '-';
+        const isComplete = val.actualDays >= 10;
+        return (
+          <span>
+            <span style={{ color: val.value > 0 ? '#ff4d4f' : '#52c41a' }}>
+              {val.value > 0 ? '+' : ''}{val.value}%
+            </span>
+            {!isComplete && (
+              <span className={styles.actualDaysTag}>({val.actualDays}天)</span>
+            )}
+          </span>
+        );
+      }
     },
     {
       title: '一月收益',
       dataIndex: ['returns', 'day20'],
       key: 'day20',
-      render: (val: number) => val !== null ? <span style={{ color: val > 0 ? '#cf1322' : '#3f8600' }}>{val}%</span> : '-'
+      render: (val: any) => {
+        if (!val) return '-';
+        const isComplete = val.actualDays >= 20;
+        return (
+          <span>
+            <span style={{ color: val.value > 0 ? '#ff4d4f' : '#52c41a' }}>
+              {val.value > 0 ? '+' : ''}{val.value}%
+            </span>
+            {!isComplete && (
+              <span className={styles.actualDaysTag}>({val.actualDays}天)</span>
+            )}
+          </span>
+        );
+      }
     },
   ];
 
@@ -472,7 +574,7 @@ export function BacktestPage() {
         )}
 
         <Row gutter={0} className={styles.mainRow}>
-          <Col span={6}>
+          <Col span={6} className={styles.stockListCol}>
             <Card title="股票列表" className={styles.stockListCard}>
               <div className={styles.filterSection}>
                 <Input
@@ -533,6 +635,11 @@ export function BacktestPage() {
                     </div>
                     <div className={styles.statDetail}>
                       {signalStatistics.day3.success}/{signalStatistics.day3.total}
+                      {signalStatistics.day3.incompleteCount > 0 && (
+                        <span className={styles.incompleteTag}>
+                          ({signalStatistics.day3.incompleteCount}个不完整)
+                        </span>
+                      )}
                     </div>
                   </div>
                   <div className={styles.statItem}>
@@ -548,6 +655,11 @@ export function BacktestPage() {
                     </div>
                     <div className={styles.statDetail}>
                       {signalStatistics.day5.success}/{signalStatistics.day5.total}
+                      {signalStatistics.day5.incompleteCount > 0 && (
+                        <span className={styles.incompleteTag}>
+                          ({signalStatistics.day5.incompleteCount}个不完整)
+                        </span>
+                      )}
                     </div>
                   </div>
                   <div className={styles.statItem}>
@@ -563,6 +675,11 @@ export function BacktestPage() {
                     </div>
                     <div className={styles.statDetail}>
                       {signalStatistics.day10.success}/{signalStatistics.day10.total}
+                      {signalStatistics.day10.incompleteCount > 0 && (
+                        <span className={styles.incompleteTag}>
+                          ({signalStatistics.day10.incompleteCount}个不完整)
+                        </span>
+                      )}
                     </div>
                   </div>
                   <div className={styles.statItem}>
@@ -578,6 +695,11 @@ export function BacktestPage() {
                     </div>
                     <div className={styles.statDetail}>
                       {signalStatistics.day20.success}/{signalStatistics.day20.total}
+                      {signalStatistics.day20.incompleteCount > 0 && (
+                        <span className={styles.incompleteTag}>
+                          ({signalStatistics.day20.incompleteCount}个不完整)
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -587,7 +709,7 @@ export function BacktestPage() {
                 dataSource={getCurrentStockSignals()}
                 rowKey={(record) => `${record.code}-${record.signalDate}`}
                 pagination={{ pageSize: 100, showTotal: (total) => `共 ${total} 条信号` }}
-                scroll={{ x: 800, y: 'calc(100vh - 280px)' }}
+                scroll={{ x: 800, y: 'calc(100vh - 400px)' }}
                 size="small"
                 locale={{ emptyText: selectedStockCode ? '该股票暂无信号' : '请选择左侧股票查看信号' }}
               />
@@ -654,6 +776,26 @@ export function BacktestPage() {
                   { label: '近90天', value: 90 },
                   { label: '不限', value: 0 },
                 ]}
+              />
+            </div>
+          </div>
+
+          {/* 近3日胜率 */}
+          <div className={styles.filterRow}>
+            <div className={styles.filterItem}>
+              <span className={styles.filterLabel}>近3日胜率 ≥ (%)</span>
+              <Input
+                type="number"
+                value={minWinRate}
+                onChange={(e) => {
+                  const value = Number(e.target.value);
+                  if (value >= 0 && value <= 100) {
+                    setMinWinRate(value);
+                  }
+                }}
+                min={0}
+                max={100}
+                placeholder="输入 0-100 的数值，0表示不限"
               />
             </div>
           </div>

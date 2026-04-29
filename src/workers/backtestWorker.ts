@@ -14,10 +14,10 @@ interface BacktestSignal {
   signalDate: string; // YYYY-MM-DD
   entryPrice: number;
   returns: {
-    day3: number | null;
-    day5: number | null;
-    day10: number | null; // 两周
-    day20: number | null; // 一个月
+    day3?: { value: number; actualDays: number }; // 可选，数据不足时为空
+    day5?: { value: number; actualDays: number };
+    day10?: { value: number; actualDays: number }; // 两周
+    day20?: { value: number; actualDays: number }; // 一个月
   };
 }
 
@@ -43,8 +43,11 @@ self.onmessage = (e: MessageEvent<BacktestRequest>) => {
     return;
   }
 
+  // 回测所有可能的信号日期
+  // startIndex: 至少需要30天历史数据才能进行形态识别
+  // endIndex: 回测到最后一天，确保最近信号被统计
   const startIndex = 30;
-  const endIndex = len - 30;
+  const endIndex = len - 1; // 回测到最后一天
 
   for (let i = startIndex; i <= endIndex; i++) {
     const historicalData = klineData.slice(0, i + 1);
@@ -56,12 +59,17 @@ self.onmessage = (e: MessageEvent<BacktestRequest>) => {
     if (isMatched) {
       const entryPrice = lastK.close;
       const calculateReturn = (offset: number) => {
-        const futureIndex = i + offset;
-        if (futureIndex < len) {
+        const futureIndex = Math.min(i + offset, len - 1);
+        if (futureIndex > i) {
+          // 至少有1天未来数据
           const futurePrice = klineData[futureIndex].close;
-          return Number((((futurePrice - entryPrice) / entryPrice) * 100).toFixed(2));
+          const actualDays = futureIndex - i;
+          return {
+            value: Number((((futurePrice - entryPrice) / entryPrice) * 100).toFixed(2)),
+            actualDays: actualDays,
+          };
         }
-        return null;
+        return undefined; // 返回 undefined 表示没有未来数据
       };
 
       const dateObj = new Date(lastK.time);
