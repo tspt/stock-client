@@ -1,137 +1,25 @@
 {
-  "tree": {
-    "feature": "distanceFromHigh",
-    "threshold": -20.613785435219473,
-    "gain": 0.004222987988026561,
-    "left": {
-      "feature": "priceChange_10d",
-      "threshold": -3.2896582854493768,
-      "gain": 0.025721082142385165,
-      "left": {
-        "feature": "distanceFromHigh",
-        "threshold": -20.949513281636698,
-        "gain": 0.07098234495246739,
-        "left": {
-          "feature": "bollingerWidth",
-          "threshold": 0.36426385043771636,
-          "gain": 0.014534534534534488,
-          "left": {
-            "isLeaf": true,
-            "prediction": 0,
-            "probability": 0.02702702702702703,
-            "sampleCount": 37
-          },
-          "right": {
-            "isLeaf": true,
-            "prediction": 0,
-            "probability": 0.25,
-            "sampleCount": 8
-          }
-        },
-        "right": {
-          "isLeaf": true,
-          "prediction": 1,
-          "probability": 1,
-          "sampleCount": 2
-        }
-      },
-      "right": {
-        "feature": "priceChange_5d",
-        "threshold": -2.474126646764436,
-        "gain": 0.23629489603024578,
-        "left": {
-          "isLeaf": true,
-          "prediction": 1,
-          "probability": 1,
-          "sampleCount": 5
-        },
-        "right": {
-          "feature": "priceVsMA5",
-          "threshold": 1.5522640296845602,
-          "gain": 0.11111111111111102,
-          "left": {
-            "isLeaf": true,
-            "prediction": 0,
-            "probability": 0,
-            "sampleCount": 12
-          },
-          "right": {
-            "isLeaf": true,
-            "prediction": 0,
-            "probability": 0.5,
-            "sampleCount": 6
-          }
-        }
-      }
-    },
-    "right": {
-      "feature": "priceVsMA5",
-      "threshold": 1.2605352794362215,
-      "gain": 0.0036277239224483115,
-      "left": {
-        "feature": "distanceFromHigh",
-        "threshold": -6.714953661183927,
-        "gain": 0.009154818595014796,
-        "left": {
-          "feature": "volumeRatio_5d",
-          "threshold": 1.7740566464996488,
-          "gain": 0.004311060006456022,
-          "left": {
-            "isLeaf": true,
-            "prediction": 0,
-            "probability": 0.055865921787709494,
-            "sampleCount": 179
-          },
-          "right": {
-            "isLeaf": true,
-            "prediction": 0,
-            "probability": 0.5,
-            "sampleCount": 2
-          }
-        },
-        "right": {
-          "feature": "atrPercent",
-          "threshold": 3.904040487338431,
-          "gain": 0.11705864869737256,
-          "left": {
-            "isLeaf": true,
-            "prediction": 0,
-            "probability": 0.13513513513513514,
-            "sampleCount": 37
-          },
-          "right": {
-            "isLeaf": true,
-            "prediction": 1,
-            "probability": 0.8333333333333334,
-            "sampleCount": 6
-          }
-        }
-      },
-      "right": {
-        "isLeaf": true,
-        "prediction": 0,
-        "probability": 0,
-        "sampleCount": 92
-      }
-    }
-  },
-  "trainingSamples": 386,
+  "tree": null,
+  "trainingSamples": 250,
   "positiveSamples": 46,
-  "negativeSamples": 340,
+  "negativeSamples": 204,
   "metrics": {
-    "accuracy": 94.04145077720207,
-    "precision": 92.3076923076923,
-    "recall": 35.294117647058826,
-    "f1Score": 51.06382978723405
+    "truePositives": 29,
+    "falsePositives": 0,
+    "trueNegatives": 216,
+    "falseNegatives": 5,
+    "accuracy": 98,
+    "precision": 100,
+    "recall": 85.29411764705883,
+    "f1Score": 92.06349206349206,
+    "specificity": 100
   },
-  "featureImportance": {
-    "distanceFromHigh": 3,
-    "priceChange_10d": 1,
-    "bollingerWidth": 1,
-    "priceChange_5d": 1,
-    "priceVsMA5": 2,
-    "volumeRatio_5d": 1,
-    "atrPercent": 1
-  },
-  "trainedAt": "2026-04-30T09:57:31.458Z"
+  "featureImportance": {},
+  "trainedAt": "2026-04-30T10:09:53.790Z",
+  "config": {
+    "maxDepth": 8,
+    "minSamplesSplit": 2,
+    "negativeSamplesPerStock": 12,
+    "id": "Config_8"
+  }
 }
