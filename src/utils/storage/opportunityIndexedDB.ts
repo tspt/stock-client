@@ -2,7 +2,13 @@
  * IndexedDB 存储工具（机会分析）
  */
 
-import type { OpportunityAnalysisResult, StockRecord, KLineData, StockQuote } from '@/types/stock';
+import type {
+  OpportunityAnalysisResult,
+  StockRecord,
+  KLineData,
+  StockQuote,
+  StockDetail,
+} from '@/types/stock';
 import {
   OPPORTUNITY_DB_NAME,
   OPPORTUNITY_DB_VERSION,
@@ -208,6 +214,7 @@ export interface StockHistoryRecord {
   name: string;
   dailyLines: KLineData[];
   latestQuote: StockQuote | null;
+  latestDetail?: StockDetail | null; // 新增：最新详情数据
   updatedAt: number;
 }
 

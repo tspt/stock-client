@@ -10,7 +10,7 @@ import { getStorage, setStorage } from '@/utils/storage/storage';
 import { apiCache } from '@/utils/storage/apiCache';
 import { API_BASE, useLocalProxy } from '@/config/environment';
 import { safeApiCall, handleApiError } from '../core/errors';
-import { saveStockHistory } from '@/utils/storage/opportunityIndexedDB';
+import { saveStockHistory, getStockHistory } from '@/utils/storage/opportunityIndexedDB';
 import {
   MAX_SEARCH_RESULTS,
   VOLUME_AMOUNT_UNIT_CONVERSION,
@@ -253,6 +253,27 @@ export async function getStockDetail(code: string): Promise<StockDetail | null> 
     return null;
   }
 
+  // 1. 尝试从内存缓存获取
+  const cacheKey = `detail:${code}`;
+  const cached = apiCache.get<StockDetail>(cacheKey);
+  if (cached) {
+    return cached;
+  }
+
+  // 2. 尝试从IndexedDB获取（持久化缓存，无过期时间）
+  try {
+    const historyRecord = await getStockHistory(code);
+    if (historyRecord && historyRecord.latestDetail) {
+      // 使用IndexedDB中的数据，并写入内存缓存
+      apiCache.set(cacheKey, historyRecord.latestDetail, 5 * 60 * 1000); // 5分钟TTL
+      logger.debug(`[getStockDetail:${code}] 使用IndexedDB缓存数据`);
+      return historyRecord.latestDetail;
+    }
+  } catch (error) {
+    logger.warn(`[getStockDetail:${code}] 读取IndexedDB失败:`, error);
+    // 继续执行API请求
+  }
+
   try {
     const pureCode = getPureCode(code);
     const market = getMarketFromCode(code);
@@ -330,6 +351,16 @@ export async function getStockDetail(code: string): Promise<StockDetail | null> 
     } else {
     }
 
+    // 保存到IndexedDB（异步，不阻塞返回）
+    saveStockHistory({
+      code,
+      name: '', // 详情接口不返回名称，留空
+      dailyLines: [], // 详情接口不返回K线，留空
+      latestQuote: null,
+      latestDetail: detail,
+      updatedAt: Date.now(),
+    }).catch((err) => logger.warn(`[IndexDB] 同步股票 ${code} 详情数据失败:`, err));
+
     return detail;
   } catch (error: any) {
     const apiError = handleApiError(error, `getStockDetail:${code}`);
@@ -352,10 +383,27 @@ export async function getKLineData(
   // 生成缓存 key
   const cacheKey = `kline:${code}:${period}:${count}`;
 
-  // 尝试从缓存获取（根据周期设置不同的 TTL）
+  // 1. 尝试从内存缓存获取（根据周期设置不同的 TTL）
   const cached = apiCache.get<KLineData[]>(cacheKey);
   if (cached) {
     return cached;
+  }
+
+  // 2. 如果是日K线，尝试从IndexedDB获取（持久化缓存，无过期时间）
+  if (period === 'day') {
+    try {
+      const historyRecord = await getStockHistory(code);
+      if (historyRecord && historyRecord.dailyLines && historyRecord.dailyLines.length >= count) {
+        // 使用IndexedDB中的数据，并写入内存缓存
+        const klineData = historyRecord.dailyLines.slice(-count);
+        apiCache.set(cacheKey, klineData, 5 * 60 * 1000); // 5分钟TTL
+        logger.debug(`[getKLineData:${code}] 使用IndexedDB缓存数据`);
+        return klineData;
+      }
+    } catch (error) {
+      logger.warn(`[getKLineData:${code}] 读取IndexedDB失败:`, error);
+      // 继续执行API请求
+    }
   }
 
   try {

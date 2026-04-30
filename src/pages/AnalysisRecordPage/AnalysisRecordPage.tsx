@@ -180,6 +180,7 @@ export function AnalysisRecordPage() {
           <Tabs
             activeKey={activeTab}
             onChange={setActiveTab}
+            destroyOnHidden
             items={[
               {
                 key: 'table',

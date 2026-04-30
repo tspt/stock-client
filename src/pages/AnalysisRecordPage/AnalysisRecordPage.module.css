@@ -78,7 +78,7 @@
 
 .mainCard :global(.ant-tabs-content) {
   flex: 1;
-  overflow: hidden;
+  overflow: auto;
 }
 
 .mainCard :global(.ant-tabs-tabpane) {
