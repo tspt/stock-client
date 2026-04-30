@@ -6,9 +6,9 @@
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { Layout, Card, Button, Space, Table, Progress, Select, DatePicker, Tag, Row, Col, Input, Typography, App, Drawer } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { ExperimentOutlined, ReloadOutlined, SearchOutlined, FilterOutlined, ClearOutlined } from '@ant-design/icons';
+import { ExperimentOutlined, ReloadOutlined, SearchOutlined, FilterOutlined, ClearOutlined, CopyOutlined } from '@ant-design/icons';
 import VirtualList from 'rc-virtual-list';
-import { getStocksHistory, getSignalBacktestsByCode, clearAllSignalBacktests, batchSaveSignalBacktests, getAllSignalBacktests } from '@/utils/storage/opportunityIndexedDB';
+import { getStocksHistory, getSignalBacktestsByCode, clearAllSignalBacktests, batchSaveSignalBacktests, getAllSignalBacktests, getStockHistory } from '@/utils/storage/opportunityIndexedDB';
 import styles from './BacktestPage.module.css';
 
 const { Header, Content } = Layout;
@@ -26,9 +26,13 @@ export function BacktestPage() {
   const [searchText, setSearchText] = useState('');
   const [marketType, setMarketType] = useState<string>('hs_main');
   const [nameType, setNameType] = useState<string>('non_st');
-  const [timeRange, setTimeRange] = useState<number>(7);
-  const [minWinRate, setMinWinRate] = useState<number>(75); // 近3日胜率最低值
+  const [timeRange, setTimeRange] = useState<number>(0);
+  const [minWinRate, setMinWinRate] = useState<number>(0); // 近3日胜率最低值
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
+  const [exportDrawerOpen, setExportDrawerOpen] = useState(false);
+  const [exportingStock, setExportingStock] = useState<{ code: string; name: string } | null>(null);
+  const [dateInput, setDateInput] = useState(''); // 多行文本输入
+  const [saving, setSaving] = useState(false);
   const workerRef = useRef<Worker | null>(null);
   const taskIdCounter = useRef(0);
   const listContainerRef = useRef<HTMLDivElement>(null);
@@ -251,6 +255,92 @@ export function BacktestPage() {
 
     const values: StockGroup[] = Object.values(grouped);
     return values.sort((a, b) => a.name.localeCompare(b.name, 'zh-CN'));
+  };
+
+  // 打开导出抽屉
+  const handleOpenExportDrawer = (code: string, name: string) => {
+    setExportingStock({ code, name });
+    setDateInput(''); // 清空之前的输入
+    setExportDrawerOpen(true);
+  };
+
+  // 日期格式化函数：将 "20251222" 格式化为 "2025/12/22"
+  const formatDateString = (input: string): string | null => {
+    const trimmed = input.trim();
+    if (!/^\d{8}$/.test(trimmed)) return null;
+
+    const year = trimmed.substring(0, 4);
+    const month = trimmed.substring(4, 6);
+    const day = trimmed.substring(6, 8);
+
+    // 验证日期有效性
+    const date = new Date(`${year}-${month}-${day}`);
+    if (isNaN(date.getTime())) return null;
+
+    return `${year}/${month}/${day}`;
+  };
+
+  // 保存股票数据到本地文件
+  const handleSaveStockData = async () => {
+    if (!exportingStock || !window.electronAPI?.saveStockData) {
+      message.error('保存功能不可用');
+      return;
+    }
+
+    // 解析日期输入（按换行分割）
+    const dateLines = dateInput.split('\n').filter((line) => line.trim());
+
+    if (dateLines.length === 0) {
+      message.warning('请至少输入一个日期');
+      return;
+    }
+
+    // 验证并格式化日期
+    const formattedDates: string[] = [];
+    for (const line of dateLines) {
+      const formatted = formatDateString(line);
+      if (!formatted) {
+        message.error(`日期格式错误: "${line}"，请输入8位数字（如20251222）`);
+        return;
+      }
+      formattedDates.push(formatted);
+    }
+
+    try {
+      setSaving(true);
+
+      // 从 IndexedDB 获取股票历史数据
+      const historyRecord = await getStockHistory(exportingStock.code);
+
+      if (!historyRecord) {
+        message.error('未找到该股票的历史数据');
+        setSaving(false);
+        return;
+      }
+
+      // 调用 Electron API 保存文件
+      const result = await window.electronAPI.saveStockData({
+        code: historyRecord.code,
+        name: historyRecord.name,
+        klineData: historyRecord.dailyLines,
+        latestQuote: historyRecord.latestQuote,
+        updatedAt: historyRecord.updatedAt,
+        dates: dateLines, // 传递原始输入，由主进程格式化
+      });
+
+      if (result.success) {
+        message.success(`保存成功！\n文件路径: ${result.filePath}`);
+        setExportDrawerOpen(false);
+        setDateInput('');
+      } else {
+        message.error('保存失败: ' + (result.error || '未知错误'));
+      }
+    } catch (error) {
+      console.error('保存股票数据失败:', error);
+      message.error('保存失败: ' + (error as Error).message);
+    } finally {
+      setSaving(false);
+    }
   };
 
   // 重置筛选条件
@@ -610,6 +700,16 @@ export function BacktestPage() {
                           </div>
                           <Tag color="blue" className={styles.signalCount}>{item.signals.length}个信号</Tag>
                         </div>
+                        <Button
+                          size="small"
+                          icon={<CopyOutlined />}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleOpenExportDrawer(item.code, item.name);
+                          }}
+                        >
+                          复制
+                        </Button>
                       </div>
                     )}
                   </VirtualList>
@@ -806,6 +906,56 @@ export function BacktestPage() {
               重置筛选
             </Button>
           </div>
+        </div>
+      </Drawer>
+
+      {/* 导出股票数据抽屉 */}
+      <Drawer
+        title="导出股票K线数据"
+        placement="right"
+        width={500}
+        open={exportDrawerOpen}
+        onClose={() => setExportDrawerOpen(false)}
+        destroyOnHidden
+      >
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ marginBottom: 8 }}>
+            <Text strong>股票名称：</Text>
+            <Text>{exportingStock?.name}</Text>
+          </div>
+          <div style={{ marginBottom: 8 }}>
+            <Text strong>股票代码：</Text>
+            <Text>{exportingStock?.code}</Text>
+          </div>
+        </div>
+
+        <div style={{ marginBottom: 16 }}>
+          <Text strong>日期买点（每行一个日期，仅输入8位数字）：</Text>
+          <Text type="secondary" style={{ display: 'block', marginTop: 4 }}>
+            示例：20251222
+          </Text>
+          <Input.TextArea
+            rows={6}
+            value={dateInput}
+            onChange={(e) => setDateInput(e.target.value)}
+            placeholder={"20251222\n20260401\n20260515"}
+            style={{ marginTop: 8 }}
+          />
+        </div>
+
+        <div style={{ textAlign: 'right' }}>
+          <Space>
+            <Button onClick={() => setExportDrawerOpen(false)}>
+              取消
+            </Button>
+            <Button
+              type="primary"
+              onClick={handleSaveStockData}
+              loading={saving}
+            >
+              保存
+            </Button>
+          </Space>
         </div>
       </Drawer>
     </Layout>

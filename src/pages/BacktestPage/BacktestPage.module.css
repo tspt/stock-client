@@ -209,6 +209,9 @@
   padding: 12px 16px;
   transition: all 0.3s;
   border-radius: 4px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .stockListItem:hover {

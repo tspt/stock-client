@@ -40,6 +40,10 @@ try {
         syncEastMoneySessionCookies: (raw) => {
             return electron_1.ipcRenderer.invoke('sync-eastmoney-session-cookies', raw);
         },
+        // 保存股票K线数据到本地文件
+        saveStockData: (data) => {
+            return electron_1.ipcRenderer.invoke('save-stock-data', data);
+        },
         // 监听Cookie获取进度
         onCookieFetchProgress: (callback) => {
             const listener = (_event, progress) => callback(progress);

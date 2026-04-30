@@ -20,7 +20,7 @@ import {
 import { join } from 'path';
 import { fileURLToPath } from 'url';
 import type { Server as HttpServer } from 'http';
-import { existsSync, appendFileSync } from 'fs';
+import { existsSync, appendFileSync, writeFileSync, mkdirSync } from 'fs';
 import { startEmbeddedApiProxy, stopEmbeddedApiProxy, initProxySession } from './localApiProxy.js';
 import { deriveEastmoneyRefererOrigin, isEastmoneyJsonpUrl } from './eastMoneyPush2Context.js';
 
@@ -661,6 +661,98 @@ function setupIpcHandlers() {
     }
     return { ok: true as const };
   });
+
+  /**
+   * 保存股票K线数据到本地文件
+   */
+  ipcMain.handle(
+    'save-stock-data',
+    async (
+      _event,
+      data: {
+        code: string;
+        name: string;
+        klineData: any[];
+        latestQuote?: any;
+        updatedAt?: number;
+        dates: string[];
+      }
+    ) => {
+      try {
+        const { code, name, klineData, latestQuote, updatedAt, dates } = data;
+
+        // 构建文件路径 - 使用项目根目录下的 docs 文件夹
+        // 在开发环境：app.getAppPath() 返回项目根目录
+        // 在生产环境：需要特殊处理
+        let stockDataDir: string;
+
+        if (isDev) {
+          // 开发环境：直接使用项目根目录
+          stockDataDir = join(app.getAppPath(), 'docs', '回测优化', 'stock_data');
+        } else {
+          // 生产环境：使用 exe 所在目录的上级目录
+          const exeDir = join(app.getPath('exe'), '..');
+          stockDataDir = join(exeDir, 'docs', '回测优化', 'stock_data');
+        }
+
+        mainLog(`[主进程] 保存路径: ${stockDataDir}`);
+
+        // 确保目录存在
+        if (!existsSync(stockDataDir)) {
+          mkdirSync(stockDataDir, { recursive: true });
+          mainLog(`[主进程] 创建目录: ${stockDataDir}`);
+        }
+
+        const filePath = join(stockDataDir, `${name}.txt`);
+
+        // 格式化日期买点字符串
+        const formattedDates = dates.map((dateStr) => {
+          const trimmed = dateStr.trim();
+          if (/^\d{8}$/.test(trimmed)) {
+            const year = trimmed.substring(0, 4);
+            const month = trimmed.substring(4, 6);
+            const day = trimmed.substring(6, 8);
+            return `${year}/${month}/${day}`;
+          }
+          return trimmed;
+        });
+        const dateStr = formattedDates.join('，');
+
+        // 构建JSON内容
+        const jsonData = {
+          code,
+          name,
+          dailyLines: klineData,
+          latestQuote: latestQuote || null,
+          updatedAt: updatedAt || Date.now(),
+        };
+
+        const jsonContent = JSON.stringify(jsonData, null, 4);
+        const finalContent = jsonContent + '\n\n日期买点：' + dateStr;
+
+        mainLog(`[主进程] 准备写入文件: ${filePath}`);
+        mainLog(`[主进程] 文件大小: ${finalContent.length} 字节`);
+
+        // 写入文件（覆盖模式）
+        writeFileSync(filePath, finalContent, 'utf-8');
+
+        mainLog(`[主进程] 文件写入成功: ${filePath}`);
+
+        // 验证文件是否真的存在
+        if (existsSync(filePath)) {
+          mainLog(`[主进程] 文件验证通过: ${filePath}`);
+        } else {
+          mainLog(`[主进程] ⚠️ 警告：文件写入后不存在！`, true);
+        }
+
+        return { success: true, filePath };
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        mainLog(`[主进程] 保存股票数据失败: ${errorMessage}`, true);
+        return { success: false, error: errorMessage };
+      }
+    }
+  );
 }
 
 // 应用准备就绪

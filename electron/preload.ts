@@ -48,6 +48,18 @@ try {
       return ipcRenderer.invoke('sync-eastmoney-session-cookies', raw);
     },
 
+    // 保存股票K线数据到本地文件
+    saveStockData: (data: {
+      code: string;
+      name: string;
+      klineData: any[];
+      latestQuote?: any;
+      updatedAt?: number;
+      dates: string[];
+    }) => {
+      return ipcRenderer.invoke('save-stock-data', data);
+    },
+
     // 监听Cookie获取进度
     onCookieFetchProgress: (callback: (progress: any) => void) => {
       const listener = (_event: any, progress: any) => callback(progress);

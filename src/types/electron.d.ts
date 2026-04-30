@@ -37,6 +37,16 @@ export interface ElectronAPI {
   /** 将东财池 Cookie 写入与页面同 session，供 JSONP 直连 push2 */
   syncEastMoneySessionCookies: (raw: string) => Promise<{ ok: boolean }>;
 
+  /** 保存股票K线数据到本地文件 */
+  saveStockData: (data: {
+    code: string;
+    name: string;
+    klineData: any[];
+    latestQuote?: any;
+    updatedAt?: number;
+    dates: string[];
+  }) => Promise<{ success: boolean; filePath?: string; error?: string }>;
+
   /** 监听Cookie获取进度 */
   onCookieFetchProgress: (
     callback: (progress: {
