@@ -378,7 +378,7 @@ export async function getStockDetail(code: string): Promise<StockDetail | null> 
 export async function getKLineData(
   code: string,
   period: string,
-  count: number = 300
+  count: number = 500
 ): Promise<KLineData[]> {
   // 生成缓存 key
   const cacheKey = `kline:${code}:${period}:${count}`;

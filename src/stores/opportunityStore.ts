@@ -102,7 +102,7 @@ export const useOpportunityStore = create<OpportunityState>((set, get) => ({
   loading: false,
   progress: { total: 0, completed: 0, failed: 0, percent: 0 },
   currentPeriod: 'day',
-  currentCount: 300,
+  currentCount: 500,
   columnConfig: initColumnConfig(),
   sortConfig: { key: null, direction: null },
   errors: [],

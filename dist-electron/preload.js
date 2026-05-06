@@ -48,6 +48,14 @@ try {
         scanStockDataDirectory: () => {
             return electron_1.ipcRenderer.invoke('scan-stock-data-directory');
         },
+        // 获取股票数据文件路径
+        getStockDataPath: (filename) => {
+            return electron_1.ipcRenderer.sendSync('get-stock-data-path', filename);
+        },
+        // 读取股票TXT文件中的日期买点
+        readStockBuyPoints: (filePath) => {
+            return electron_1.ipcRenderer.invoke('read-stock-buy-points', filePath);
+        },
         // 监听Cookie获取进度
         onCookieFetchProgress: (callback) => {
             const listener = (_event, progress) => callback(progress);

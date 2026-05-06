@@ -701,6 +701,55 @@ function setupIpcHandlers() {
             return { success: false, stocks: [], error: errorMessage };
         }
     });
+    // 获取股票数据文件路径
+    ipcMain.on('get-stock-data-path', (event, filename) => {
+        try {
+            let stockDataDir;
+            if (isDev) {
+                stockDataDir = join(app.getAppPath(), 'docs', '回测优化', '股票数据');
+            }
+            else {
+                const exeDir = join(app.getPath('exe'), '..');
+                stockDataDir = join(exeDir, 'docs', '回测优化', '股票数据');
+            }
+            const filePath = join(stockDataDir, filename);
+            event.returnValue = existsSync(filePath) ? filePath : undefined;
+        }
+        catch (error) {
+            mainLog(`[主进程] 获取文件路径失败: ${error instanceof Error ? error.message : String(error)}`, true);
+            event.returnValue = undefined;
+        }
+    });
+    // 读取股票TXT文件中的日期买点
+    ipcMain.handle('read-stock-buy-points', async (_event, filePath) => {
+        try {
+            if (!existsSync(filePath)) {
+                mainLog(`[主进程] 文件不存在: ${filePath}`);
+                return [];
+            }
+            const content = readFileSync(filePath, 'utf-8');
+            // 查找最后一行的日期买点
+            const lines = content.split('\n');
+            const lastLine = lines[lines.length - 1];
+            const match = lastLine.match(/日期买点：(.*)/);
+            if (!match) {
+                return [];
+            }
+            const datesStr = match[1];
+            // 分割日期（支持中文逗号和英文逗号）
+            const dates = datesStr
+                .split(/[，,]/)
+                .map((d) => d.trim())
+                .filter((d) => d.length > 0);
+            mainLog(`[主进程] 读取到 ${dates.length} 个日期买点`);
+            return dates;
+        }
+        catch (error) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            mainLog(`[主进程] 读取日期买点失败: ${errorMessage}`, true);
+            return [];
+        }
+    });
 }
 // 应用准备就绪
 app.whenReady().then(async () => {

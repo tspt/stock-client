@@ -413,7 +413,7 @@ export const DEFAULT_QUERY_PREFS_FIELDS = {
   selectedMarket: 'hs_main',
   nameType: 'non_st',
   currentPeriod: 'day' as KLinePeriod,
-  currentCount: 300,
+  currentCount: 500,
 };
 
 /** 若已有保存的偏好，仅将顶部查询条恢复为默认并写回 */

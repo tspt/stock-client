@@ -196,7 +196,7 @@ const INITIAL_FILTER_STATE = {
 /** 与 opportunityStore 初始值一致，用于「重置」恢复周期与 K 线数量 */
 const INITIAL_OPPORTUNITY_QUERY = {
   currentPeriod: 'day' as KLinePeriod,
-  currentCount: 300,
+  currentCount: 500,
 };
 
 export function OpportunityPage() {
@@ -501,7 +501,7 @@ export function OpportunityPage() {
       if (st.analysisData.length === 0) {
         useOpportunityStore.setState({
           currentPeriod: prefs?.currentPeriod || 'day',
-          currentCount: prefs?.currentCount || 300,
+          currentCount: prefs?.currentCount || 500,
         });
       }
       // 标记恢复完成
