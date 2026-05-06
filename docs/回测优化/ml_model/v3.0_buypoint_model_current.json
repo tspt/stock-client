@@ -1,0 +1,383 @@
+{
+  "config": {
+    "configId": "Config_14",
+    "maxDepth": 12,
+    "negativeSamples": 270,
+    "accuracy": 0.9971014492753624,
+    "precision": 0.9868421052631579,
+    "recall": 1,
+    "f1": 0.9933774834437086,
+    "specificity": 0.9962962962962963,
+    "tp": 75,
+    "fp": 1,
+    "tn": 269,
+    "fn": 0
+  },
+  "trainingSamples": {
+    "total": 345,
+    "positive": 75,
+    "negative": 270
+  },
+  "performance": {
+    "accuracy": 0.9971014492753624,
+    "precision": 0.9868421052631579,
+    "recall": 1,
+    "f1": 0.9933774834437086
+  },
+  "tree": {
+    "featureIndex": 4,
+    "threshold": 2.3415138539454867,
+    "featureName": "ma5Deviation",
+    "left": {
+      "featureIndex": 2,
+      "threshold": -7.147964503841157,
+      "featureName": "change10d",
+      "left": {
+        "featureIndex": 3,
+        "threshold": 1.1685243141087056,
+        "featureName": "volumeRatio",
+        "left": {
+          "featureIndex": 1,
+          "threshold": 3.682153709602334,
+          "featureName": "change5d",
+          "left": {
+            "prediction": 0,
+            "probability": 0,
+            "samples": 42
+          },
+          "right": {
+            "featureIndex": 0,
+            "threshold": -21.437183506149022,
+            "featureName": "distFromHigh",
+            "left": {
+              "prediction": 0,
+              "probability": 0,
+              "samples": 1
+            },
+            "right": {
+              "prediction": 1,
+              "probability": 1,
+              "samples": 1
+            }
+          }
+        },
+        "right": {
+          "featureIndex": 6,
+          "threshold": 0.3223346321265784,
+          "featureName": "bbWidth",
+          "left": {
+            "prediction": 1,
+            "probability": 1,
+            "samples": 2
+          },
+          "right": {
+            "prediction": 0,
+            "probability": 0,
+            "samples": 2
+          }
+        }
+      },
+      "right": {
+        "featureIndex": 4,
+        "threshold": -1.5700100315813283,
+        "featureName": "ma5Deviation",
+        "left": {
+          "featureIndex": 4,
+          "threshold": -2.19681628877757,
+          "featureName": "ma5Deviation",
+          "left": {
+            "featureIndex": 3,
+            "threshold": 0.7299339557389075,
+            "featureName": "volumeRatio",
+            "left": {
+              "prediction": 0,
+              "probability": 0,
+              "samples": 10
+            },
+            "right": {
+              "featureIndex": 2,
+              "threshold": -3.5751879699248104,
+              "featureName": "change10d",
+              "left": {
+                "prediction": 0,
+                "probability": 0,
+                "samples": 5
+              },
+              "right": {
+                "featureIndex": 5,
+                "threshold": -3.2364583597049377,
+                "featureName": "ma20Deviation",
+                "left": {
+                  "prediction": 1,
+                  "probability": 1,
+                  "samples": 3
+                },
+                "right": {
+                  "featureIndex": 7,
+                  "threshold": 4.051582667461352,
+                  "featureName": "atrPercent",
+                  "left": {
+                    "prediction": 1,
+                    "probability": 1,
+                    "samples": 2
+                  },
+                  "right": {
+                    "featureIndex": 1,
+                    "threshold": -9.844102076112957,
+                    "featureName": "change5d",
+                    "left": {
+                      "prediction": 1,
+                      "probability": 1,
+                      "samples": 1
+                    },
+                    "right": {
+                      "prediction": 0,
+                      "probability": 0,
+                      "samples": 3
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "right": {
+            "prediction": 0,
+            "probability": 0,
+            "samples": 25
+          }
+        },
+        "right": {
+          "featureIndex": 7,
+          "threshold": 6.001438777247856,
+          "featureName": "atrPercent",
+          "left": {
+            "featureIndex": 0,
+            "threshold": -23.366020984665045,
+            "featureName": "distFromHigh",
+            "left": {
+              "featureIndex": 1,
+              "threshold": -1.4220414487700999,
+              "featureName": "change5d",
+              "left": {
+                "prediction": 0,
+                "probability": 0,
+                "samples": 4
+              },
+              "right": {
+                "featureIndex": 0,
+                "threshold": -28.0837961809789,
+                "featureName": "distFromHigh",
+                "left": {
+                  "featureIndex": 2,
+                  "threshold": -1.6769785322520978,
+                  "featureName": "change10d",
+                  "left": {
+                    "prediction": 1,
+                    "probability": 1,
+                    "samples": 1
+                  },
+                  "right": {
+                    "prediction": 0,
+                    "probability": 0,
+                    "samples": 2
+                  }
+                },
+                "right": {
+                  "prediction": 1,
+                  "probability": 1,
+                  "samples": 9
+                }
+              }
+            },
+            "right": {
+              "featureIndex": 1,
+              "threshold": 2.9356006204400575,
+              "featureName": "change5d",
+              "left": {
+                "featureIndex": 5,
+                "threshold": 5.595669699235897,
+                "featureName": "ma20Deviation",
+                "left": {
+                  "featureIndex": 2,
+                  "threshold": -6.6964547533869,
+                  "featureName": "change10d",
+                  "left": {
+                    "prediction": 1,
+                    "probability": 1,
+                    "samples": 2
+                  },
+                  "right": {
+                    "featureIndex": 4,
+                    "threshold": -1.509317453335635,
+                    "featureName": "ma5Deviation",
+                    "left": {
+                      "prediction": 1,
+                      "probability": 1,
+                      "samples": 2
+                    },
+                    "right": {
+                      "featureIndex": 2,
+                      "threshold": 3.4792240773761196,
+                      "featureName": "change10d",
+                      "left": {
+                        "featureIndex": 2,
+                        "threshold": 0.8009840177279948,
+                        "featureName": "change10d",
+                        "left": {
+                          "featureIndex": 4,
+                          "threshold": -0.01615557113708148,
+                          "featureName": "ma5Deviation",
+                          "left": {
+                            "prediction": 0,
+                            "probability": 0.08571428571428572,
+                            "samples": 35
+                          },
+                          "right": {
+                            "prediction": 0,
+                            "probability": 0.34285714285714286,
+                            "samples": 35
+                          }
+                        },
+                        "right": {
+                          "featureIndex": 0,
+                          "threshold": -2.1994410705648404,
+                          "featureName": "distFromHigh",
+                          "left": {
+                            "prediction": 1,
+                            "probability": 0.5675675675675675,
+                            "samples": 37
+                          },
+                          "right": {
+                            "prediction": 0,
+                            "probability": 0,
+                            "samples": 7
+                          }
+                        }
+                      },
+                      "right": {
+                        "featureIndex": 2,
+                        "threshold": 7.224789852800308,
+                        "featureName": "change10d",
+                        "left": {
+                          "prediction": 0,
+                          "probability": 0,
+                          "samples": 16
+                        },
+                        "right": {
+                          "featureIndex": 3,
+                          "threshold": 0.8325611731818741,
+                          "featureName": "volumeRatio",
+                          "left": {
+                            "prediction": 0,
+                            "probability": 0,
+                            "samples": 3
+                          },
+                          "right": {
+                            "prediction": 1,
+                            "probability": 0.6666666666666666,
+                            "samples": 3
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "right": {
+                  "featureIndex": 3,
+                  "threshold": 0.6901144407855867,
+                  "featureName": "volumeRatio",
+                  "left": {
+                    "prediction": 0,
+                    "probability": 0,
+                    "samples": 2
+                  },
+                  "right": {
+                    "prediction": 1,
+                    "probability": 1,
+                    "samples": 5
+                  }
+                }
+              },
+              "right": {
+                "featureIndex": 1,
+                "threshold": 5.160652105096552,
+                "featureName": "change5d",
+                "left": {
+                  "prediction": 0,
+                  "probability": 0,
+                  "samples": 24
+                },
+                "right": {
+                  "featureIndex": 2,
+                  "threshold": 1.2408543538322903,
+                  "featureName": "change10d",
+                  "left": {
+                    "prediction": 1,
+                    "probability": 1,
+                    "samples": 2
+                  },
+                  "right": {
+                    "prediction": 0,
+                    "probability": 0,
+                    "samples": 4
+                  }
+                }
+              }
+            }
+          },
+          "right": {
+            "prediction": 1,
+            "probability": 1,
+            "samples": 5
+          }
+        }
+      }
+    },
+    "right": {
+      "featureIndex": 1,
+      "threshold": 29.691123403581408,
+      "featureName": "change5d",
+      "left": {
+        "featureIndex": 0,
+        "threshold": -25.90314685314685,
+        "featureName": "distFromHigh",
+        "left": {
+          "featureIndex": 0,
+          "threshold": -27.49060351413293,
+          "featureName": "distFromHigh",
+          "left": {
+            "prediction": 0,
+            "probability": 0,
+            "samples": 3
+          },
+          "right": {
+            "prediction": 1,
+            "probability": 1,
+            "samples": 1
+          }
+        },
+        "right": {
+          "prediction": 0,
+          "probability": 0,
+          "samples": 45
+        }
+      },
+      "right": {
+        "prediction": 1,
+        "probability": 1,
+        "samples": 1
+      }
+    }
+  },
+  "featureNames": [
+    "distFromHigh",
+    "change5d",
+    "change10d",
+    "volumeRatio",
+    "ma5Deviation",
+    "ma20Deviation",
+    "bbWidth",
+    "atrPercent"
+  ],
+  "timestamp": "2026-05-01T15:23:02.077Z"
+}

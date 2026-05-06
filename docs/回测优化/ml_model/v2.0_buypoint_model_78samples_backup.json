@@ -1,0 +1,25 @@
+{
+  "tree": null,
+  "trainingSamples": 414,
+  "positiveSamples": 78,
+  "negativeSamples": 336,
+  "metrics": {
+    "truePositives": 42,
+    "falsePositives": 3,
+    "trueNegatives": 354,
+    "falseNegatives": 15,
+    "accuracy": 95.65217391304348,
+    "precision": 93.33333333333333,
+    "recall": 73.68421052631578,
+    "f1Score": 82.3529411764706,
+    "specificity": 99.15966386554622
+  },
+  "featureImportance": {},
+  "trainedAt": "2026-05-01T15:06:20.776Z",
+  "config": {
+    "maxDepth": 8,
+    "minSamplesSplit": 2,
+    "negativeSamplesPerStock": 12,
+    "id": "Config_8"
+  }
+}
