@@ -4,11 +4,13 @@
  */
 
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
-import { Layout, Card, Button, Space, Table, Progress, Select, DatePicker, Tag, Row, Col, Input, Typography, App, Drawer } from 'antd';
+import { Layout, Card, Button, Space, Table, Progress, Select, DatePicker, Tag, Row, Col, Input, Typography, App, Drawer, Modal } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { ExperimentOutlined, ReloadOutlined, SearchOutlined, FilterOutlined, ClearOutlined, CopyOutlined } from '@ant-design/icons';
 import VirtualList from 'rc-virtual-list';
 import { getStocksHistory, getSignalBacktestsByCode, clearAllSignalBacktests, batchSaveSignalBacktests, getAllSignalBacktests, getStockHistory } from '@/utils/storage/opportunityIndexedDB';
+import { getModelMetadata } from '@/utils/analysis/mlBuypointModel';
+import { DEFAULT_EXPORT_STOCKS, getEnabledExportStocks, updateStocksFromScan, type ExportStockConfig } from '@/config/exportStocksConfig';
 import styles from './BacktestPage.module.css';
 
 const { Header, Content } = Layout;
@@ -31,12 +33,19 @@ export function BacktestPage() {
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
   const [exportDrawerOpen, setExportDrawerOpen] = useState(false);
   const [exportingStock, setExportingStock] = useState<{ code: string; name: string } | null>(null);
+  const [exportAllModalOpen, setExportAllModalOpen] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const [selectedExportStocks, setSelectedExportStocks] = useState<string[]>([]);
+  const [scanning, setScanning] = useState(false); // 扫描状态
   const [dateInput, setDateInput] = useState(''); // 多行文本输入
   const [saving, setSaving] = useState(false);
   const workerRef = useRef<Worker | null>(null);
   const taskIdCounter = useRef(0);
   const listContainerRef = useRef<HTMLDivElement>(null);
   const [listHeight, setListHeight] = useState(600);
+
+  // 获取模型元数据
+  const modelMetadata = useMemo(() => getModelMetadata(), []);
 
   // 动态计算列表高度
   useEffect(() => {
@@ -258,9 +267,37 @@ export function BacktestPage() {
   };
 
   // 打开导出抽屉
-  const handleOpenExportDrawer = (code: string, name: string) => {
+  const handleOpenExportDrawer = async (code: string, name: string) => {
     setExportingStock({ code, name });
-    setDateInput(''); // 清空之前的输入
+
+    // 自动填充日期买点
+    try {
+      // 构建TXT文件路径（根据股票代码查找对应的TXT文件）
+      const stockCode = code.replace(/^(SH|SZ)/, '');
+      const txtFileName = `${name}.txt`;
+      const txtFilePath = window.electronAPI?.getStockDataPath?.(txtFileName);
+
+      if (txtFilePath && window.electronAPI?.readStockBuyPoints) {
+        // 读取TXT文件中的日期买点
+        const buyPoints = await window.electronAPI.readStockBuyPoints(txtFilePath);
+
+        if (buyPoints && buyPoints.length > 0) {
+          // 将日期格式从 YYYY/MM/DD 转换为 YYYYMMDD，每行一个
+          const formattedDates = buyPoints
+            .map((date: string) => date.replace(/\//g, ''))
+            .join('\n');
+          setDateInput(formattedDates);
+        } else {
+          setDateInput('');
+        }
+      } else {
+        setDateInput('');
+      }
+    } catch (error) {
+      console.error('读取日期买点失败:', error);
+      setDateInput('');
+    }
+
     setExportDrawerOpen(true);
   };
 
@@ -343,7 +380,131 @@ export function BacktestPage() {
     }
   };
 
-  // 重置筛选条件
+  // 打开导出所有数据模态框（自动扫描目录）
+  const handleOpenExportAllModal = async () => {
+    setExportAllModalOpen(true);
+
+    // 自动执行扫描
+    await handleScanStockDirectory();
+  };
+
+  // 扫描股票数据目录获取最新股票列表
+  const handleScanStockDirectory = async () => {
+    if (!window.electronAPI?.scanStockDataDirectory) {
+      message.error('扫描功能不可用');
+      return;
+    }
+
+    try {
+      setScanning(true);
+
+      const result = await window.electronAPI.scanStockDataDirectory();
+
+      if (result.success && result.stocks) {
+        // 更新配置（临时，仅用于本次导出）
+        updateStocksFromScan(result.stocks);
+
+        // 选中所有股票
+        setSelectedExportStocks(result.stocks.map((s: { code: string }) => s.code));
+      } else {
+        message.error('扫描失败: ' + (result.error || '未知错误'));
+      }
+    } catch (error) {
+      console.error('扫描目录失败:', error);
+      message.error('扫描失败: ' + (error as Error).message);
+    } finally {
+      setScanning(false);
+    }
+  };
+
+  // 切换股票选择状态
+  const toggleStockSelection = (code: string) => {
+    setSelectedExportStocks(prev =>
+      prev.includes(code)
+        ? prev.filter(c => c !== code)
+        : [...prev, code]
+    );
+  };
+
+  // 全选/取消全选
+  const toggleSelectAll = () => {
+    if (selectedExportStocks.length === DEFAULT_EXPORT_STOCKS.stocks.length) {
+      setSelectedExportStocks([]);
+    } else {
+      setSelectedExportStocks(DEFAULT_EXPORT_STOCKS.stocks.map(s => s.code));
+    }
+  };
+
+  // 导出数据为JSON格式
+  const convertToJSON = (data: any[]) => {
+    return JSON.stringify({
+      exportTime: new Date().toISOString(),
+      format: 'json',
+      totalStocks: data.length,
+      totalSignals: data.reduce((sum, item) => sum + (item.signals?.length || 0), 0),
+      data: data
+    }, null, 2);
+  };
+
+  // 执行批量导出
+  const handleExportAllData = async () => {
+    if (selectedExportStocks.length === 0) {
+      message.warning('请至少选择一只股票');
+      return;
+    }
+
+    try {
+      setExporting(true);
+      message.info('正在准备导出数据...');
+
+      // 获取所有选中的股票回测数据
+      const allResults = await getAllSignalBacktests();
+      const filteredResults = allResults.filter(result =>
+        selectedExportStocks.includes(result.code)
+      );
+
+      if (filteredResults.length === 0) {
+        message.warning('选中的股票没有回测数据');
+        setExporting(false);
+        return;
+      }
+
+      // 转换为JSON格式
+      const content = convertToJSON(filteredResults);
+      // 使用固定文件名，每次覆盖更新
+      const filename = `backtest_export_latest.json`;
+
+      // 使用Electron API保存文件
+      if (window.electronAPI?.saveStockData) {
+        const result = await window.electronAPI.saveStockData({
+          code: 'EXPORT_ALL',
+          name: '批量导出',
+          klineData: [],
+          dates: [],
+          // @ts-ignore - 添加额外字段用于导出
+          exportContent: content,
+          exportFilename: filename
+        });
+
+        if (result.success) {
+          message.success(`导出成功！\n文件路径: ${result.filePath}`);
+          setExportAllModalOpen(false);
+        } else {
+          message.error('导出失败: ' + (result.error || '未知错误'));
+        }
+      } else {
+        // 降级方案：复制到剪贴板
+        navigator.clipboard.writeText(content);
+        message.success('数据已复制到剪贴板，请手动保存');
+        setExportAllModalOpen(false);
+      }
+    } catch (error) {
+      console.error('导出失败:', error);
+      message.error('导出失败: ' + (error as Error).message);
+    } finally {
+      setExporting(false);
+    }
+  };
   const handleResetFilter = () => {
     setMarketType('hs_main');
     setNameType('non_st');
@@ -536,7 +697,20 @@ export function BacktestPage() {
   const columns: ColumnsType<any> = [
     { title: '股票代码', dataIndex: 'code', key: 'code', width: 100 },
     { title: '股票名称', dataIndex: 'name', key: 'name', width: 100 },
-    { title: '信号日期', dataIndex: 'signalDate', key: 'signalDate', width: 120 },
+    {
+      title: '信号日期',
+      dataIndex: 'signalDate',
+      key: 'signalDate',
+      width: 180,
+      render: (val: string) => (
+        <Space size={4}>
+          <span>{val}</span>
+          <Tag color="cyan" style={{ fontSize: 11, margin: 0 }}>
+            ML {modelMetadata.version}
+          </Tag>
+        </Space>
+      )
+    },
     {
       title: '3日收益',
       dataIndex: ['returns', 'day3'],
@@ -630,6 +804,13 @@ export function BacktestPage() {
               筛选条件
             </Button>
             <Button
+              icon={<CopyOutlined />}
+              onClick={handleOpenExportAllModal}
+              disabled={groupedResults.length === 0}
+            >
+              导出指定股票
+            </Button>
+            <Button
               type="primary"
               icon={<ExperimentOutlined />}
               onClick={handleStartBacktest}
@@ -642,6 +823,31 @@ export function BacktestPage() {
       </Header>
 
       <Content className={styles.content}>
+        {/* 模型信息卡片 */}
+        <Card className={styles.modelInfoCard} style={{ marginBottom: 16 }}>
+          <Space size="large" wrap>
+            <Tag color="blue" style={{ fontSize: 14, padding: '4px 12px' }}>
+              ML模型 {modelMetadata.version}
+            </Tag>
+            <Text type="secondary">
+              训练时间: {modelMetadata.trainingDate}
+            </Text>
+            <Text type="secondary">
+              准确率: <Text strong style={{ color: '#52c41a' }}>{modelMetadata.performance.accuracy}%</Text>
+            </Text>
+            <Text type="secondary">
+              召回率: <Text strong style={{ color: '#52c41a' }}>{modelMetadata.performance.recall}%</Text>
+            </Text>
+            <Text type="secondary">
+              F1分数: <Text strong style={{ color: '#52c41a' }}>{modelMetadata.performance.f1}</Text>
+            </Text>
+            <Text type="secondary">
+              训练样本: {modelMetadata.trainingSamples.total}个
+              （{modelMetadata.trainingSamples.positive}正 + {modelMetadata.trainingSamples.negative}负）
+            </Text>
+          </Space>
+        </Card>
+
         {backtesting && progress > 0 && (
           <div className={styles.progressOverlay}>
             <div className={styles.progressInfo}>
@@ -809,7 +1015,7 @@ export function BacktestPage() {
                 dataSource={getCurrentStockSignals()}
                 rowKey={(record) => `${record.code}-${record.signalDate}`}
                 pagination={{ pageSize: 100, showTotal: (total) => `共 ${total} 条信号` }}
-                scroll={{ x: 800, y: 'calc(100vh - 400px)' }}
+                scroll={{ x: 800, y: 'calc(100vh - 500px)' }}
                 size="small"
                 locale={{ emptyText: selectedStockCode ? '该股票暂无信号' : '请选择左侧股票查看信号' }}
               />
@@ -958,6 +1164,65 @@ export function BacktestPage() {
           </Space>
         </div>
       </Drawer>
+
+      {/* 导出指定股票模态框 */}
+      <Modal
+        title="导出指定股票回测数据"
+        open={exportAllModalOpen}
+        onCancel={() => setExportAllModalOpen(false)}
+        onOk={handleExportAllData}
+        confirmLoading={exporting}
+        width={800}
+        okText="导出"
+        cancelText="取消"
+      >
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ marginBottom: 12 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+              <Text strong>选择股票 ({selectedExportStocks.length}/{DEFAULT_EXPORT_STOCKS.stocks.length})：</Text>
+              <Button
+                size="small"
+                onClick={toggleSelectAll}
+              >
+                {selectedExportStocks.length === DEFAULT_EXPORT_STOCKS.stocks.length ? '取消全选' : '全选'}
+              </Button>
+            </div>
+            <div style={{
+              maxHeight: 300,
+              overflow: 'auto',
+              border: '1px solid #d9d9d9',
+              borderRadius: 4,
+              padding: 8
+            }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 8 }}>
+                {DEFAULT_EXPORT_STOCKS.stocks.map(stock => (
+                  <div
+                    key={stock.code}
+                    style={{
+                      padding: '6px 8px',
+                      border: selectedExportStocks.includes(stock.code) ? '1px solid #1890ff' : '1px solid #d9d9d9',
+                      borderRadius: 4,
+                      cursor: 'pointer',
+                      backgroundColor: selectedExportStocks.includes(stock.code) ? '#e6f7ff' : 'transparent',
+                      fontSize: 12
+                    }}
+                    onClick={() => toggleStockSelection(stock.code)}
+                  >
+                    <div style={{ fontWeight: 500 }}>{stock.name}</div>
+                    <div style={{ color: '#8c8c8c', fontSize: 11 }}>{stock.code}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div style={{ marginTop: 12 }}>
+            <Text type="secondary" style={{ fontSize: 12 }}>
+              提示：默认导出股票数据目录中的股票，可手动调整选择。数据将保存到 docs/回测优化/历史回测数据 目录，格式为JSON。
+            </Text>
+          </div>
+        </div>
+      </Modal>
     </Layout>
   );
 }

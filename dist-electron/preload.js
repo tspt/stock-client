@@ -44,6 +44,10 @@ try {
         saveStockData: (data) => {
             return electron_1.ipcRenderer.invoke('save-stock-data', data);
         },
+        // 扫描股票数据目录获取股票列表
+        scanStockDataDirectory: () => {
+            return electron_1.ipcRenderer.invoke('scan-stock-data-directory');
+        },
         // 监听Cookie获取进度
         onCookieFetchProgress: (callback) => {
             const listener = (_event, progress) => callback(progress);

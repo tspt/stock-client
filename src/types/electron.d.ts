@@ -45,7 +45,22 @@ export interface ElectronAPI {
     latestQuote?: any;
     updatedAt?: number;
     dates: string[];
+    exportContent?: string; // 新增：用于批量导出的内容
+    exportFilename?: string; // 新增：用于批量导出的文件名
   }) => Promise<{ success: boolean; filePath?: string; error?: string }>;
+
+  /** 扫描股票数据目录获取股票列表 */
+  scanStockDataDirectory: () => Promise<{
+    success: boolean;
+    stocks?: Array<{ code: string; name: string }>;
+    error?: string;
+  }>;
+
+  /** 获取股票数据文件路径 */
+  getStockDataPath: (filename: string) => string | undefined;
+
+  /** 读取股票TXT文件中的日期买点 */
+  readStockBuyPoints: (filePath: string) => Promise<string[]>;
 
   /** 监听Cookie获取进度 */
   onCookieFetchProgress: (

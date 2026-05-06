@@ -56,8 +56,25 @@ try {
       latestQuote?: any;
       updatedAt?: number;
       dates: string[];
+      exportContent?: string;
+      exportFilename?: string;
     }) => {
       return ipcRenderer.invoke('save-stock-data', data);
+    },
+
+    // 扫描股票数据目录获取股票列表
+    scanStockDataDirectory: () => {
+      return ipcRenderer.invoke('scan-stock-data-directory');
+    },
+
+    // 获取股票数据文件路径
+    getStockDataPath: (filename: string) => {
+      return ipcRenderer.sendSync('get-stock-data-path', filename);
+    },
+
+    // 读取股票TXT文件中的日期买点
+    readStockBuyPoints: (filePath: string) => {
+      return ipcRenderer.invoke('read-stock-buy-points', filePath);
     },
 
     // 监听Cookie获取进度

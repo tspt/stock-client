@@ -20,7 +20,14 @@ import {
 import { join } from 'path';
 import { fileURLToPath } from 'url';
 import type { Server as HttpServer } from 'http';
-import { existsSync, appendFileSync, writeFileSync, mkdirSync } from 'fs';
+import {
+  existsSync,
+  appendFileSync,
+  writeFileSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+} from 'fs';
 import { startEmbeddedApiProxy, stopEmbeddedApiProxy, initProxySession } from './localApiProxy.js';
 import { deriveEastmoneyRefererOrigin, isEastmoneyJsonpUrl } from './eastMoneyPush2Context.js';
 
@@ -676,10 +683,54 @@ function setupIpcHandlers() {
         latestQuote?: any;
         updatedAt?: number;
         dates: string[];
+        exportContent?: string; // 新增：用于批量导出的内容
+        exportFilename?: string; // 新增：用于批量导出的文件名
       }
     ) => {
       try {
-        const { code, name, klineData, latestQuote, updatedAt, dates } = data;
+        const {
+          code,
+          name,
+          klineData,
+          latestQuote,
+          updatedAt,
+          dates,
+          exportContent,
+          exportFilename,
+        } = data;
+
+        // 如果是批量导出
+        if (exportContent && exportFilename) {
+          mainLog(`[主进程] 处理批量导出请求`);
+
+          // 固定使用历史回测数据目录
+          let exportDir: string;
+          if (isDev) {
+            exportDir = join(app.getAppPath(), 'docs', '回测优化', '历史回测数据');
+          } else {
+            const exeDir = join(app.getPath('exe'), '..');
+            exportDir = join(exeDir, 'docs', '回测优化', '历史回测数据');
+          }
+
+          // 确保目录存在
+          if (!existsSync(exportDir)) {
+            mkdirSync(exportDir, { recursive: true });
+            mainLog(`[主进程] 创建导出目录: ${exportDir}`);
+          }
+
+          const filePath = join(exportDir, exportFilename);
+          mainLog(`[主进程] 准备写入批量导出文件: ${filePath}`);
+          mainLog(`[主进程] 文件大小: ${exportContent.length} 字节`);
+
+          // 写入文件
+          writeFileSync(filePath, exportContent, 'utf-8');
+          mainLog(`[主进程] 批量导出文件写入成功: ${filePath}`);
+
+          return { success: true, filePath };
+        }
+
+        // 原有的单股票导出逻辑
+        mainLog(`[主进程] 处理单股票导出请求`);
 
         // 构建文件路径 - 使用项目根目录下的 docs 文件夹
         // 在开发环境：app.getAppPath() 返回项目根目录
@@ -688,11 +739,11 @@ function setupIpcHandlers() {
 
         if (isDev) {
           // 开发环境：直接使用项目根目录
-          stockDataDir = join(app.getAppPath(), 'docs', '回测优化', 'stock_data');
+          stockDataDir = join(app.getAppPath(), 'docs', '回测优化', '股票数据');
         } else {
           // 生产环境：使用 exe 所在目录的上级目录
           const exeDir = join(app.getPath('exe'), '..');
-          stockDataDir = join(exeDir, 'docs', '回测优化', 'stock_data');
+          stockDataDir = join(exeDir, 'docs', '回测优化', '股票数据');
         }
 
         mainLog(`[主进程] 保存路径: ${stockDataDir}`);
@@ -753,6 +804,118 @@ function setupIpcHandlers() {
       }
     }
   );
+
+  // 扫描股票数据目录获取股票列表
+  ipcMain.handle('scan-stock-data-directory', async () => {
+    try {
+      let stockDataDir: string;
+      if (isDev) {
+        stockDataDir = join(app.getAppPath(), 'docs', '回测优化', '股票数据');
+      } else {
+        const exeDir = join(app.getPath('exe'), '..');
+        stockDataDir = join(exeDir, 'docs', '回测优化', '股票数据');
+      }
+
+      mainLog(`[主进程] 扫描目录: ${stockDataDir}`);
+
+      if (!existsSync(stockDataDir)) {
+        mainLog(`[主进程] 目录不存在: ${stockDataDir}`);
+        return { success: false, stocks: [], error: '目录不存在' };
+      }
+
+      const files = readdirSync(stockDataDir);
+      const stocks: Array<{ code: string; name: string }> = [];
+
+      for (const file of files) {
+        if (file.endsWith('.txt')) {
+          try {
+            const filePath = join(stockDataDir, file);
+            const content = readFileSync(filePath, 'utf-8');
+
+            // 解析JSON获取code和name
+            const codeMatch = content.match(/"code":\s*"([^"]+)"/);
+            const nameMatch = content.match(/"name":\s*"([^"]+)"/);
+
+            if (codeMatch && nameMatch) {
+              stocks.push({
+                code: codeMatch[1],
+                name: nameMatch[1],
+              });
+            }
+          } catch (error) {
+            mainLog(`[主进程] 读取文件失败: ${file}`, true);
+          }
+        }
+      }
+
+      // 按名称排序
+      stocks.sort((a, b) => a.name.localeCompare(b.name, 'zh-CN'));
+
+      mainLog(`[主进程] 扫描完成，找到 ${stocks.length} 只股票`);
+      return { success: true, stocks };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      mainLog(`[主进程] 扫描目录失败: ${errorMessage}`, true);
+      return { success: false, stocks: [], error: errorMessage };
+    }
+  });
+
+  // 获取股票数据文件路径
+  ipcMain.on('get-stock-data-path', (event, filename: string) => {
+    try {
+      let stockDataDir: string;
+      if (isDev) {
+        stockDataDir = join(app.getAppPath(), 'docs', '回测优化', '股票数据');
+      } else {
+        const exeDir = join(app.getPath('exe'), '..');
+        stockDataDir = join(exeDir, 'docs', '回测优化', '股票数据');
+      }
+
+      const filePath = join(stockDataDir, filename);
+      event.returnValue = existsSync(filePath) ? filePath : undefined;
+    } catch (error) {
+      mainLog(
+        `[主进程] 获取文件路径失败: ${error instanceof Error ? error.message : String(error)}`,
+        true
+      );
+      event.returnValue = undefined;
+    }
+  });
+
+  // 读取股票TXT文件中的日期买点
+  ipcMain.handle('read-stock-buy-points', async (_event, filePath: string) => {
+    try {
+      if (!existsSync(filePath)) {
+        mainLog(`[主进程] 文件不存在: ${filePath}`);
+        return [];
+      }
+
+      const content = readFileSync(filePath, 'utf-8');
+
+      // 查找最后一行的日期买点
+      const lines = content.split('\n');
+      const lastLine = lines[lines.length - 1];
+
+      const match = lastLine.match(/日期买点：(.*)/);
+      if (!match) {
+        return [];
+      }
+
+      const datesStr = match[1];
+      // 分割日期（支持中文逗号和英文逗号）
+      const dates = datesStr
+        .split(/[，,]/)
+        .map((d) => d.trim())
+        .filter((d) => d.length > 0);
+
+      mainLog(`[主进程] 读取到 ${dates.length} 个日期买点`);
+      return dates;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      mainLog(`[主进程] 读取日期买点失败: ${errorMessage}`, true);
+      return [];
+    }
+  });
 }
 
 // 应用准备就绪
