@@ -48,6 +48,8 @@ interface OpportunityState {
   cancelFn: (() => void) | null;
   // K线数据缓存：Map<股票代码, K线数据数组>
   klineDataCache: Map<string, KLineData[]>;
+  // 分析时间戳
+  analysisTimestamp: number | null;
 
   startAnalysis: (period: KLinePeriod, stocks: StockInfo[], count: number) => Promise<void>;
   cancelAnalysis: () => void;
@@ -108,6 +110,7 @@ export const useOpportunityStore = create<OpportunityState>((set, get) => ({
   errors: [],
   cancelFn: null,
   klineDataCache: new Map(),
+  analysisTimestamp: null,
 
   startAnalysis: async (period, stocks, count) => {
     if (stocks.length === 0) {
@@ -181,6 +184,7 @@ export const useOpportunityStore = create<OpportunityState>((set, get) => ({
         errors: formattedErrors,
         cancelFn: null,
         klineDataCache: newCache,
+        analysisTimestamp: Date.now(),
       });
     } catch (error) {
       logger.error('机会分析失败:', error);
@@ -306,6 +310,7 @@ export const useOpportunityStore = create<OpportunityState>((set, get) => ({
         klineDataCache: newCache,
         loading: false,
         cancelFn: null,
+        analysisTimestamp: Date.now(),
       });
     } catch (error) {
       logger.error('重试失败:', error);
@@ -331,6 +336,7 @@ export const useOpportunityStore = create<OpportunityState>((set, get) => ({
           currentPeriod: cached.period,
           currentCount: cached.count,
           klineDataCache,
+          analysisTimestamp: cached.timestamp || null,
         });
       }
     } catch (error) {
@@ -357,6 +363,7 @@ export const useOpportunityStore = create<OpportunityState>((set, get) => ({
       progress: { total: 0, completed: 0, failed: 0, percent: 0 },
       errors: [],
       klineDataCache: new Map(),
+      analysisTimestamp: null,
     });
   },
 

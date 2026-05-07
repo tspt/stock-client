@@ -211,6 +211,7 @@ export function OpportunityPage() {
     sortConfig,
     errors,
     klineDataCache,
+    analysisTimestamp,
     startAnalysis,
     cancelAnalysis,
     retryFailedStocks,
@@ -306,7 +307,6 @@ export function OpportunityPage() {
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false); // 筛选抽屉状态
   const [filterDiagnosticsDrawerOpen, setFilterDiagnosticsDrawerOpen] = useState(false); // 筛选诊断抽屉状态
   const [errorExpanded, setErrorExpanded] = useState(false); // 失败详情展开状态
-  const [analysisTimestamp, setAnalysisTimestamp] = useState<number | null>(null); // 分析时间戳
 
   const [sharpMoveFilterEnabled, setSharpMoveFilterEnabled] = useState<boolean>(
     INITIAL_FILTER_STATE.sharpMoveFilterEnabled
@@ -1187,9 +1187,6 @@ export function OpportunityPage() {
     // 清空 AI 缓存，防止跨周期数据污染
     clearAICache();
 
-    // 记录分析时间
-    setAnalysisTimestamp(Date.now());
-
     // 直接开始分析，不需要保存筛选条件（已通过useEffect自动保存）
     await startAnalysis(currentPeriod, filteredStocks, currentCount);
   };
@@ -1260,7 +1257,7 @@ export function OpportunityPage() {
         message.success('名称列表已导出为 Excel');
       } else {
         // 生成筛选条件摘要
-        const filterSummary = buildOpportunityFilterSummary({
+        const filterSummaryBase = buildOpportunityFilterSummary({
           priceRange,
           marketCapRange,
           totalSharesRange,
@@ -1328,79 +1325,16 @@ export function OpportunityPage() {
           aiRiskScoreRange,
         });
 
+        // 构建包含两行时间的完整文案
+        const analysisTime = analysisTimestamp
+          ? new Date(analysisTimestamp).toLocaleString('zh-CN')
+          : '未知';
+        const exportTime = new Date().toLocaleString('zh-CN');
+        const filterSummary = `分析时间: ${analysisTime}\n导出时间: ${exportTime}${filterSummaryBase ? '\n筛选条件: ' + filterSummaryBase : ''}`;
+
         await exportStockNamesToPng(names, {
           fileNamePrefix: '机会分析_股票名称',
-          filterSummary: buildOpportunityFilterSummary({
-            priceRange,
-            marketCapRange,
-            totalSharesRange,
-            turnoverRateRange,
-            peRatioRange,
-            kdjJRange,
-            recentLimitUpCount,
-            recentLimitDownCount,
-            limitUpPeriod,
-            limitDownPeriod,
-            consolidationFilterEnabled,
-            consolidationTypes,
-            consolidationLookback,
-            consolidationConsecutive,
-            consolidationThreshold,
-            consolidationRequireAboveMa10,
-            consolidationTypeOptions: CONSOLIDATION_TYPE_OPTIONS,
-            trendLineFilterEnabled,
-            trendLineLookback,
-            trendLineConsecutive,
-            sharpMoveFilterEnabled,
-            sharpMoveWindowBars,
-            sharpMoveMagnitude,
-            sharpMoveFlatThreshold,
-            sharpMoveOnlyDrop,
-            sharpMoveOnlyRise,
-            sharpMoveDropThenRiseLoose,
-            sharpMoveRiseThenDropLoose,
-            sharpMoveDropFlatRise,
-            sharpMoveRiseFlatDrop,
-            rsiRange,
-            candlestickHammer,
-            candlestickShootingStar,
-            candlestickDoji,
-            candlestickEngulfingBullish,
-            candlestickEngulfingBearish,
-            candlestickHaramiBullish,
-            candlestickHaramiBearish,
-            candlestickMorningStar,
-            candlestickEveningStar,
-            candlestickDarkCloudCover,
-            candlestickPiercing,
-            candlestickThreeBlackCrows,
-            candlestickThreeWhiteSoldiers,
-            candlestickLookback,
-            patternUseVolumeConfirmation,
-            patternRequireVolumeForReversal,
-            patternTrendBackgroundLookback,
-            patternVolumeMultiplier,
-            trendUptrend,
-            trendDowntrend,
-            trendSideways,
-            trendBreakout,
-            trendBreakdown,
-            trendLookback,
-            aiAnalysisEnabled,
-            aiTrendUp,
-            aiTrendDown,
-            aiTrendSideways,
-            aiConfidenceRange,
-            aiRecommendScoreRange,
-            aiTechnicalScoreRange,
-            aiPatternScoreRange,
-            aiTrendScoreRange,
-            aiRiskScoreRange,
-            industrySectors,
-            conceptSectors,
-            industrySectorOptions,
-            conceptSectorOptions,
-          }) || undefined
+          filterSummary: filterSummary || undefined
         });
         message.success('名称列表已导出为图片');
       }

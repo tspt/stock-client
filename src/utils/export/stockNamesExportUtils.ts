@@ -106,12 +106,27 @@ export function exportStockNamesToPng(
   let filterWidth = 0;
   if (filterSummary) {
     ctx.font = `${filterFontSize}px ${fontFamily}`;
-    // 测量筛选条件文案的实际宽度
-    const metrics = ctx.measureText(filterSummary);
-    filterWidth = metrics.width;
-    // 根据最大宽度计算换行数
-    const lines = Math.ceil(filterWidth / filterTextMaxWidth) || 1;
-    filterHeight = lines * filterLineHeight + filterPadY * 2;
+
+    // 先按换行符分割成多行
+    const paragraphs = filterSummary.split('\n');
+    let totalLines = 0;
+
+    // 逐段计算每段需要的行数
+    for (const paragraph of paragraphs) {
+      if (!paragraph) {
+        // 空行也算一行
+        totalLines += 1;
+        continue;
+      }
+
+      const metrics = ctx.measureText(paragraph);
+      filterWidth = Math.max(filterWidth, metrics.width);
+      // 根据段落宽度计算需要的行数
+      const lines = Math.ceil(metrics.width / filterTextMaxWidth) || 1;
+      totalLines += lines;
+    }
+
+    filterHeight = totalLines * filterLineHeight + filterPadY * 2;
     ctx.font = `${fontSize}px ${fontFamily}`; // 恢复字体
   }
 
@@ -137,29 +152,40 @@ export function exportStockNamesToPng(
     ctx.font = `${filterFontSize}px ${fontFamily}`;
     ctx.textBaseline = 'top';
 
-    // 文本换行处理
-    const words = filterSummary.split('');
-    let line = '';
+    // 先按换行符分割成多行
+    const paragraphs = filterSummary.split('\n');
     let y = currentY + filterPadY;
 
-    for (let n = 0; n < words.length; n++) {
-      const testLine = line + words[n];
-      const metrics = ctx.measureText(testLine);
-      const testWidth = metrics.width;
-
-      if (testWidth > filterTextMaxWidth && n > 0) {
-        ctx.fillText(line, padX, y);
-        line = words[n];
+    // 逐段绘制，每段内部再按宽度换行
+    for (const paragraph of paragraphs) {
+      if (!paragraph) {
+        // 空行，只增加行高
         y += filterLineHeight;
-      } else {
-        line = testLine;
+        continue;
       }
+
+      const words = paragraph.split('');
+      let line = '';
+
+      for (let n = 0; n < words.length; n++) {
+        const testLine = line + words[n];
+        const metrics = ctx.measureText(testLine);
+        const testWidth = metrics.width;
+
+        if (testWidth > filterTextMaxWidth && n > 0) {
+          ctx.fillText(line, padX, y);
+          line = words[n];
+          y += filterLineHeight;
+        } else {
+          line = testLine;
+        }
+      }
+      ctx.fillText(line, padX, y);
+      y += filterLineHeight;
     }
-    ctx.fillText(line, padX, y);
 
     // 更新当前 Y 坐标，为股票名称留出空间
-    const lines = Math.ceil(ctx.measureText(filterSummary).width / filterTextMaxWidth) || 1;
-    currentY = y + lines * filterLineHeight + filterPadY;
+    currentY = y + filterPadY;
   }
 
   // 绘制股票名称
