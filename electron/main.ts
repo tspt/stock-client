@@ -754,7 +754,7 @@ function setupIpcHandlers() {
           mainLog(`[主进程] 创建目录: ${stockDataDir}`);
         }
 
-        const filePath = join(stockDataDir, `${name}.txt`);
+        const filePath = join(stockDataDir, `${name}.json`);
 
         // 格式化日期买点字符串
         const formattedDates = dates.map((dateStr) => {
@@ -767,25 +767,26 @@ function setupIpcHandlers() {
           }
           return trimmed;
         });
-        const dateStr = formattedDates.join('，');
 
-        // 构建JSON内容
+        // 构建JSON内容（新格式）
         const jsonData = {
-          code,
-          name,
-          dailyLines: klineData,
-          latestQuote: latestQuote || null,
-          updatedAt: updatedAt || Date.now(),
+          data: {
+            code,
+            name,
+            dailyLines: klineData,
+            latestQuote: latestQuote || null,
+            updatedAt: updatedAt || Date.now(),
+          },
+          buypointDate: formattedDates,
         };
 
         const jsonContent = JSON.stringify(jsonData, null, 4);
-        const finalContent = jsonContent + '\n\n日期买点：' + dateStr;
 
         mainLog(`[主进程] 准备写入文件: ${filePath}`);
-        mainLog(`[主进程] 文件大小: ${finalContent.length} 字节`);
+        mainLog(`[主进程] 文件大小: ${jsonContent.length} 字节`);
 
         // 写入文件（覆盖模式）
-        writeFileSync(filePath, finalContent, 'utf-8');
+        writeFileSync(filePath, jsonContent, 'utf-8');
 
         mainLog(`[主进程] 文件写入成功: ${filePath}`);
 
@@ -827,19 +828,20 @@ function setupIpcHandlers() {
       const stocks: Array<{ code: string; name: string }> = [];
 
       for (const file of files) {
-        if (file.endsWith('.txt')) {
+        if (file.endsWith('.json')) {
           try {
             const filePath = join(stockDataDir, file);
             const content = readFileSync(filePath, 'utf-8');
+            const stockData = JSON.parse(content);
 
-            // 解析JSON获取code和name
-            const codeMatch = content.match(/"code":\s*"([^"]+)"/);
-            const nameMatch = content.match(/"name":\s*"([^"]+)"/);
+            // 从新格式中获取 code 和 name
+            const code = stockData.data?.code;
+            const name = stockData.data?.name;
 
-            if (codeMatch && nameMatch) {
+            if (code && name) {
               stocks.push({
-                code: codeMatch[1],
-                name: nameMatch[1],
+                code,
+                name,
               });
             }
           } catch (error) {
@@ -882,7 +884,7 @@ function setupIpcHandlers() {
     }
   });
 
-  // 读取股票TXT文件中的日期买点
+  // 读取股票JSON文件中的日期买点
   ipcMain.handle('read-stock-buy-points', async (_event, filePath: string) => {
     try {
       if (!existsSync(filePath)) {
@@ -891,22 +893,10 @@ function setupIpcHandlers() {
       }
 
       const content = readFileSync(filePath, 'utf-8');
+      const stockData = JSON.parse(content);
 
-      // 查找最后一行的日期买点
-      const lines = content.split('\n');
-      const lastLine = lines[lines.length - 1];
-
-      const match = lastLine.match(/日期买点：(.*)/);
-      if (!match) {
-        return [];
-      }
-
-      const datesStr = match[1];
-      // 分割日期（支持中文逗号和英文逗号）
-      const dates = datesStr
-        .split(/[，,]/)
-        .map((d) => d.trim())
-        .filter((d) => d.length > 0);
+      // 从新格式中获取买点日期数组
+      const dates = stockData.buypointDate || [];
 
       mainLog(`[主进程] 读取到 ${dates.length} 个日期买点`);
       return dates;

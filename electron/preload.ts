@@ -72,7 +72,7 @@ try {
       return ipcRenderer.sendSync('get-stock-data-path', filename);
     },
 
-    // 读取股票TXT文件中的日期买点
+    // 读取股票JSON文件中的日期买点
     readStockBuyPoints: (filePath: string) => {
       return ipcRenderer.invoke('read-stock-buy-points', filePath);
     },

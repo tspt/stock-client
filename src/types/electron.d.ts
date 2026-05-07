@@ -59,7 +59,7 @@ export interface ElectronAPI {
   /** 获取股票数据文件路径 */
   getStockDataPath: (filename: string) => string | undefined;
 
-  /** 读取股票TXT文件中的日期买点 */
+  /** 读取股票JSON文件中的日期买点 */
   readStockBuyPoints: (filePath: string) => Promise<string[]>;
 
   /** 监听Cookie获取进度 */

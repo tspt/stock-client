@@ -272,14 +272,14 @@ export function BacktestPage() {
 
     // 自动填充日期买点
     try {
-      // 构建TXT文件路径（根据股票代码查找对应的TXT文件）
+      // 构建JSON文件路径（根据股票代码查找对应的JSON文件）
       const stockCode = code.replace(/^(SH|SZ)/, '');
-      const txtFileName = `${name}.txt`;
-      const txtFilePath = window.electronAPI?.getStockDataPath?.(txtFileName);
+      const jsonFileName = `${name}.json`;
+      const jsonFilePath = window.electronAPI?.getStockDataPath?.(jsonFileName);
 
-      if (txtFilePath && window.electronAPI?.readStockBuyPoints) {
-        // 读取TXT文件中的日期买点
-        const buyPoints = await window.electronAPI.readStockBuyPoints(txtFilePath);
+      if (jsonFilePath && window.electronAPI?.readStockBuyPoints) {
+        // 读取JSON文件中的日期买点
+        const buyPoints = await window.electronAPI.readStockBuyPoints(jsonFilePath);
 
         if (buyPoints && buyPoints.length > 0) {
           // 将日期格式从 YYYY/MM/DD 转换为 YYYYMMDD，每行一个
@@ -1144,8 +1144,7 @@ export function BacktestPage() {
             rows={6}
             value={dateInput}
             onChange={(e) => setDateInput(e.target.value)}
-            placeholder={"20251222\n20260401\n20260515"}
-            style={{ marginTop: 8 }}
+            style={{ marginTop: 8, resize: 'none' }}
           />
         </div>
 
