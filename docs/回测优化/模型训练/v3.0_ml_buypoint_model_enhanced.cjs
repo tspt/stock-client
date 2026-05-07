@@ -6,41 +6,41 @@ const path = require('path');
 // 所有股票数据文件列表
 const stockFiles = [
   // 原有股票（中衡设计文件已修复）
-  { file: '中衡设计.txt', dates: ['2026-04-17', '2026-01-07', '2025-11-24'] },
-  { file: '起帆电缆.txt', dates: ['2026-04-14', '2026-01-16', '2025-12-11'] },
-  { file: '永杉锂业.txt', dates: ['2026-04-07', '2025-10-28'] },
-  { file: '山东玻纤.txt', dates: ['2026-04-09', '2026-02-03'] },
-  { file: '宏昌电子.txt', dates: ['2026-04-03', '2026-01-14'] },
-  { file: '三孚股份.txt', dates: ['2025-12-22', '2026-04-01'] },
+  { file: '中衡设计.json', dates: ['2026-04-17', '2026-01-07', '2025-11-24'] },
+  { file: '起帆电缆.json', dates: ['2026-04-14', '2026-01-16', '2025-12-11'] },
+  { file: '永杉锂业.json', dates: ['2026-04-07', '2025-10-28'] },
+  { file: '山东玻纤.json', dates: ['2026-04-09', '2026-02-03'] },
+  { file: '宏昌电子.json', dates: ['2026-04-03', '2026-01-14'] },
+  { file: '三孚股份.json', dates: ['2025-12-22', '2026-04-01'] },
 
   // 新增股票
-  { file: '兆新股份.txt', dates: ['2025-10-31', '2026-04-10', '2025-08-15'] },
-  { file: '吉林化纤.txt', dates: ['2025-12-24', '2025-05-19', '2026-03-10'] },
-  { file: '太极实业.txt', dates: ['2025-09-23', '2025-12-22'] },
-  { file: '安彩高科.txt', dates: ['2026-03-20', '2026-02-06', '2025-10-29'] },
-  { file: '晶科科技.txt', dates: ['2026-04-10', '2026-03-05', '2025-08-13'] },
-  { file: '江苏有线.txt', dates: ['2025-12-26', '2026-01-22', '2025-05-28'] },
-  { file: '浙富控股.txt', dates: ['2026-04-10', '2026-01-06', '2025-09-29'] },
-  { file: '浙文互联.txt', dates: ['2026-04-07', '2025-12-30', '2025-10-21'] },
-  { file: '风范股份.txt', dates: ['2025-10-30', '2025-12-10', '2026-02-11'] },
-  { file: '盛洋科技.txt', dates: ['2025-09-23', '2025-12-04', '2025-12-24'] },
-  { file: '三维通信.txt', dates: ['2026-01-07', '2025-08-22', '2026-04-24'] },
+  { file: '兆新股份.json', dates: ['2025-10-31', '2026-04-10', '2025-08-15'] },
+  { file: '吉林化纤.json', dates: ['2025-12-24', '2025-05-19', '2026-03-10'] },
+  { file: '太极实业.json', dates: ['2025-09-23', '2025-12-22'] },
+  { file: '安彩高科.json', dates: ['2026-03-20', '2026-02-06', '2025-10-29'] },
+  { file: '晶科科技.json', dates: ['2026-04-10', '2026-03-05', '2025-08-13'] },
+  { file: '江苏有线.json', dates: ['2025-12-26', '2026-01-22', '2025-05-28'] },
+  { file: '浙富控股.json', dates: ['2026-04-10', '2026-01-06', '2025-09-29'] },
+  { file: '浙文互联.json', dates: ['2026-04-07', '2025-12-30', '2025-10-21'] },
+  { file: '风范股份.json', dates: ['2025-10-30', '2025-12-10', '2026-02-11'] },
+  { file: '盛洋科技.json', dates: ['2025-09-23', '2025-12-04', '2025-12-24'] },
+  { file: '三维通信.json', dates: ['2026-01-07', '2025-08-22', '2026-04-24'] },
 
   // 全面测试股票（新增11只）
-  { file: '中天科技.txt', dates: ['2026-01-16', '2025-11-28', '2025-09-17'] },
-  { file: '先导基电.txt', dates: ['2026-04-03', '2025-12-31', '2025-09-16'] },
-  { file: '利通电子.txt', dates: ['2025-12-31', '2025-10-29', '2025-07-02'] },
-  { file: '快克智能.txt', dates: ['2026-04-02', '2025-07-24', '2025-06-20'] },
-  { file: '环旭电子.txt', dates: ['2025-11-25', '2025-07-24'] },
-  { file: '赛腾股份.txt', dates: ['2026-04-07', '2026-01-14'] },
-  { file: '通富微电.txt', dates: ['2026-04-07', '2026-01-14', '2025-09-10'] },
-  { file: '金安国纪.txt', dates: ['2026-04-03', '2026-01-14'] },
-  { file: '风华高科.txt', dates: ['2026-04-10', '2026-01-15', '2025-08-12'] },
+  { file: '中天科技.json', dates: ['2026-01-16', '2025-11-28', '2025-09-17'] },
+  { file: '先导基电.json', dates: ['2026-04-03', '2025-12-31', '2025-09-16'] },
+  { file: '利通电子.json', dates: ['2025-12-31', '2025-10-29', '2025-07-02'] },
+  { file: '快克智能.json', dates: ['2026-04-02', '2025-07-24', '2025-06-20'] },
+  { file: '环旭电子.json', dates: ['2025-11-25', '2025-07-24'] },
+  { file: '赛腾股份.json', dates: ['2026-04-07', '2026-01-14'] },
+  { file: '通富微电.json', dates: ['2026-04-07', '2026-01-14', '2025-09-10'] },
+  { file: '金安国纪.json', dates: ['2026-04-03', '2026-01-14'] },
+  { file: '风华高科.json', dates: ['2026-04-10', '2026-01-15', '2025-08-12'] },
   {
-    file: '鼎胜新材.txt',
+    file: '鼎胜新材.json',
     dates: ['2025-12-19', '2026-03-06', '2026-03-23', '2026-04-08', '2025-10-28'],
   },
-  { file: '艾华集团.txt', dates: ['2025-04-07', '2025-06-23', '2025-12-19'] },
+  { file: '艾华集团.json', dates: ['2025-04-07', '2025-06-23', '2025-12-19'] },
 ];
 
 // 增强版参数搜索配置（优化召回率）
@@ -84,19 +84,31 @@ function loadStockData(filename) {
   const filePath = path.join(__dirname, '..', '股票数据', filename);
   let content = fs.readFileSync(filePath, 'utf-8');
 
-  // 移除末尾的"日期买点"行（非JSON部分）
-  // 查找"日期买点"标记，截取之前的内容
-  const buyPointIndex = content.indexOf('日期买点');
-  if (buyPointIndex !== -1) {
-    content = content.substring(0, buyPointIndex).trim();
-  }
-
   try {
+    // 尝试解析为JSON格式
     const data = JSON.parse(content);
-    return data.dailyLines || [];
+
+    // 如果是新的JSON格式（包含data和buypointDate字段）
+    if (data.data && data.data.dailyLines) {
+      return {
+        klineData: data.data.dailyLines,
+        buyPoints: data.buypointDate || [],
+      };
+    }
+    // 如果是旧的JSON格式（直接包含dailyLines）
+    else if (data.dailyLines) {
+      // 从文件名中提取买点日期（旧格式可能需要其他方式获取买点）
+      return {
+        klineData: data.dailyLines,
+        buyPoints: [], // 旧格式可能没有买点信息
+      };
+    } else {
+      console.error(`❌ 未知的JSON格式: ${filename}`);
+      return { klineData: [], buyPoints: [] };
+    }
   } catch (e) {
     console.error(`❌ 解析文件失败: ${filename}`, e.message);
-    return [];
+    return { klineData: [], buyPoints: [] };
   }
 }
 
@@ -507,7 +519,10 @@ function buildDataset(negativeSamplesPerStock) {
 
   // 收集所有买点
   for (const stock of stockFiles) {
-    const klineData = loadStockData(stock.file);
+    const result = loadStockData(stock.file);
+    const klineData = result.klineData;
+    const fileBuyPoints = result.buyPoints;
+
     if (klineData.length === 0) continue;
 
     // 创建日期到索引的映射
@@ -522,7 +537,9 @@ function buildDataset(negativeSamplesPerStock) {
     });
 
     // 添加正样本（买点）
-    for (const buyDate of stock.dates) {
+    // 优先使用文件中的买点日期，如果没有则使用配置中的日期
+    const buyDates = fileBuyPoints.length > 0 ? fileBuyPoints : stock.dates;
+    for (const buyDate of buyDates) {
       const normalizedDate = buyDate.replace(/\//g, '-');
       const index = dateToIndex[normalizedDate];
 

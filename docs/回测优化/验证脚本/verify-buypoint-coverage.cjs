@@ -105,7 +105,7 @@ async function main() {
   }
 
   // 扫描股票数据目录
-  const files = fs.readdirSync(STOCK_DATA_DIR).filter((f) => f.endsWith('.txt'));
+  const files = fs.readdirSync(STOCK_DATA_DIR).filter((f) => f.endsWith('.json'));
   console.log(`📂 找到 ${files.length} 个股票文件\n`);
 
   // 统计结果
@@ -119,24 +119,37 @@ async function main() {
   // 遍历每个股票文件
   files.forEach((filename, index) => {
     const filePath = path.join(STOCK_DATA_DIR, filename);
-    const stockName = filename.replace('.txt', '');
+    const stockName = filename.replace('.json', '');
 
-    // 提取手动买点
-    const manualDates = extractManualBuyPoints(filePath);
+    // 读取JSON文件并提取手动买点
+    let manualDates = [];
+    let stockCode = '';
+    try {
+      const content = fs.readFileSync(filePath, 'utf-8');
+      const jsonData = JSON.parse(content);
+
+      // 从JSON中提取股票代码
+      stockCode = jsonData.data?.code || '';
+      if (!stockCode) {
+        console.warn(`⚠️  ${stockName}: 无法提取股票代码`);
+        return;
+      }
+
+      // 从JSON中提取买点日期
+      const buyPointDates = jsonData.buypointDate || [];
+      manualDates = buyPointDates
+        .map((date) => parseDate(date))
+        .filter((date) => date !== null)
+        .sort();
+    } catch (error) {
+      console.warn(`⚠️  ${stockName}: 解析文件失败 - ${error.message}`);
+      return;
+    }
 
     if (manualDates.length === 0) {
       console.log(`[${index + 1}/${files.length}] ${stockName}: 无手动买点标记`);
       return;
     }
-
-    // 从文件中提取股票代码
-    const content = fs.readFileSync(filePath, 'utf-8');
-    const codeMatch = content.match(/"code":\s*"([^"]+)"/);
-    if (!codeMatch) {
-      console.warn(`⚠️  ${stockName}: 无法提取股票代码`);
-      return;
-    }
-    const stockCode = codeMatch[1];
 
     // 获取信号日期
     const signalDates = getSignalDates(exportData, stockCode);
