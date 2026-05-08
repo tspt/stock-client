@@ -1,8 +1,8 @@
 {
-  "exportTime": "2026-05-07T23:45:24.033Z",
+  "exportTime": "2026-05-08T09:27:58.731Z",
   "format": "json",
   "totalStocks": 69,
-  "totalSignals": 2564,
+  "totalSignals": 2574,
   "data": [
     {
       "code": "SH600110",
@@ -663,8 +663,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 13.93,
-              "actualDays": 11
+              "value": 12.74,
+              "actualDays": 12
             }
           }
         },
@@ -681,12 +681,12 @@
               "actualDays": 5
             },
             "day10": {
-              "value": 11.17,
-              "actualDays": 7
+              "value": 10,
+              "actualDays": 8
             },
             "day20": {
-              "value": 11.17,
-              "actualDays": 7
+              "value": 10,
+              "actualDays": 8
             }
           }
         },
@@ -699,16 +699,16 @@
               "actualDays": 3
             },
             "day5": {
-              "value": 8.43,
-              "actualDays": 3
+              "value": 7.29,
+              "actualDays": 4
             },
             "day10": {
-              "value": 8.43,
-              "actualDays": 3
+              "value": 7.29,
+              "actualDays": 4
             },
             "day20": {
-              "value": 8.43,
-              "actualDays": 3
+              "value": 7.29,
+              "actualDays": 4
             }
           }
         },
@@ -717,25 +717,30 @@
           "entryPrice": 10.75,
           "returns": {
             "day3": {
-              "value": 6.51,
-              "actualDays": 1
+              "value": 5.4,
+              "actualDays": 2
             },
             "day5": {
-              "value": 6.51,
-              "actualDays": 1
+              "value": 5.4,
+              "actualDays": 2
             },
             "day10": {
-              "value": 6.51,
-              "actualDays": 1
+              "value": 5.4,
+              "actualDays": 2
             },
             "day20": {
-              "value": 6.51,
-              "actualDays": 1
+              "value": 5.4,
+              "actualDays": 2
             }
           }
+        },
+        {
+          "signalDate": "2026-05-07",
+          "entryPrice": 11.33,
+          "returns": {}
         }
       ],
-      "calculatedAt": 1778197504408
+      "calculatedAt": 1778232473017
     },
     {
       "code": "SH600135",
@@ -1682,13 +1687,13 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 13.47,
-              "actualDays": 14
+              "value": 14.55,
+              "actualDays": 15
             }
           }
         }
       ],
-      "calculatedAt": 1778197504408
+      "calculatedAt": 1778232473017
     },
     {
       "code": "SH600184",
@@ -2393,13 +2398,13 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 15.33,
-              "actualDays": 12
+              "value": 18.24,
+              "actualDays": 13
             }
           }
         }
       ],
-      "calculatedAt": 1778197504408
+      "calculatedAt": 1778232473017
     },
     {
       "code": "SH600186",
@@ -3126,8 +3131,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 64.27,
-              "actualDays": 18
+              "value": 64.12,
+              "actualDays": 19
             }
           }
         },
@@ -3148,8 +3153,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 52.61,
-              "actualDays": 16
+              "value": 52.48,
+              "actualDays": 17
             }
           }
         },
@@ -3170,8 +3175,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 53.43,
-              "actualDays": 15
+              "value": 53.3,
+              "actualDays": 16
             }
           }
         },
@@ -3192,8 +3197,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 55.74,
-              "actualDays": 13
+              "value": 55.6,
+              "actualDays": 14
             }
           }
         },
@@ -3214,8 +3219,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 48.24,
-              "actualDays": 12
+              "value": 48.11,
+              "actualDays": 13
             }
           }
         },
@@ -3236,8 +3241,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 44.49,
-              "actualDays": 10
+              "value": 44.36,
+              "actualDays": 11
             }
           }
         },
@@ -3254,12 +3259,12 @@
               "actualDays": 5
             },
             "day10": {
-              "value": 44.85,
-              "actualDays": 9
+              "value": 44.73,
+              "actualDays": 10
             },
             "day20": {
-              "value": 44.85,
-              "actualDays": 9
+              "value": 44.73,
+              "actualDays": 10
             }
           }
         },
@@ -3276,17 +3281,17 @@
               "actualDays": 5
             },
             "day10": {
-              "value": 40.91,
-              "actualDays": 8
+              "value": 40.79,
+              "actualDays": 9
             },
             "day20": {
-              "value": 40.91,
-              "actualDays": 8
+              "value": 40.79,
+              "actualDays": 9
             }
           }
         }
       ],
-      "calculatedAt": 1778197504408
+      "calculatedAt": 1778232473017
     },
     {
       "code": "SH600203",
@@ -4229,12 +4234,12 @@
               "actualDays": 5
             },
             "day10": {
-              "value": 9.34,
-              "actualDays": 9
+              "value": 10.7,
+              "actualDays": 10
             },
             "day20": {
-              "value": 9.34,
-              "actualDays": 9
+              "value": 10.7,
+              "actualDays": 10
             }
           }
         },
@@ -4251,12 +4256,12 @@
               "actualDays": 5
             },
             "day10": {
-              "value": 9.15,
-              "actualDays": 6
+              "value": 10.51,
+              "actualDays": 7
             },
             "day20": {
-              "value": 9.15,
-              "actualDays": 6
+              "value": 10.51,
+              "actualDays": 7
             }
           }
         },
@@ -4273,17 +4278,17 @@
               "actualDays": 5
             },
             "day10": {
-              "value": 7.15,
-              "actualDays": 5
+              "value": 8.49,
+              "actualDays": 6
             },
             "day20": {
-              "value": 7.15,
-              "actualDays": 5
+              "value": 8.49,
+              "actualDays": 6
             }
           }
         }
       ],
-      "calculatedAt": 1778197504408
+      "calculatedAt": 1778232473017
     },
     {
       "code": "SH600207",
@@ -5116,12 +5121,12 @@
               "actualDays": 5
             },
             "day10": {
-              "value": -1.91,
-              "actualDays": 9
+              "value": 7.97,
+              "actualDays": 10
             },
             "day20": {
-              "value": -1.91,
-              "actualDays": 9
+              "value": 7.97,
+              "actualDays": 10
             }
           }
         },
@@ -5138,12 +5143,12 @@
               "actualDays": 5
             },
             "day10": {
-              "value": -2.25,
-              "actualDays": 6
+              "value": 7.6,
+              "actualDays": 7
             },
             "day20": {
-              "value": -2.25,
-              "actualDays": 6
+              "value": 7.6,
+              "actualDays": 7
             }
           }
         },
@@ -5160,12 +5165,12 @@
               "actualDays": 5
             },
             "day10": {
-              "value": -3.08,
-              "actualDays": 5
+              "value": 6.68,
+              "actualDays": 6
             },
             "day20": {
-              "value": -3.08,
-              "actualDays": 5
+              "value": 6.68,
+              "actualDays": 6
             }
           }
         },
@@ -5178,16 +5183,16 @@
               "actualDays": 3
             },
             "day5": {
-              "value": -4.07,
-              "actualDays": 4
+              "value": 5.59,
+              "actualDays": 5
             },
             "day10": {
-              "value": -4.07,
-              "actualDays": 4
+              "value": 5.59,
+              "actualDays": 5
             },
             "day20": {
-              "value": -4.07,
-              "actualDays": 4
+              "value": 5.59,
+              "actualDays": 5
             }
           }
         },
@@ -5196,25 +5201,25 @@
           "entryPrice": 5.71,
           "returns": {
             "day3": {
-              "value": -0.88,
-              "actualDays": 2
+              "value": 9.11,
+              "actualDays": 3
             },
             "day5": {
-              "value": -0.88,
-              "actualDays": 2
+              "value": 9.11,
+              "actualDays": 3
             },
             "day10": {
-              "value": -0.88,
-              "actualDays": 2
+              "value": 9.11,
+              "actualDays": 3
             },
             "day20": {
-              "value": -0.88,
-              "actualDays": 2
+              "value": 9.11,
+              "actualDays": 3
             }
           }
         }
       ],
-      "calculatedAt": 1778197504408
+      "calculatedAt": 1778232473017
     },
     {
       "code": "SH600487",
@@ -5837,7 +5842,7 @@
           }
         }
       ],
-      "calculatedAt": 1778197504408
+      "calculatedAt": 1778232473017
     },
     {
       "code": "SH600522",
@@ -6476,8 +6481,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 13.76,
-              "actualDays": 19
+              "value": 19.24,
+              "actualDays": 20
             }
           }
         },
@@ -6498,8 +6503,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 13.65,
-              "actualDays": 17
+              "value": 19.12,
+              "actualDays": 18
             }
           }
         },
@@ -6520,13 +6525,13 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 23.99,
-              "actualDays": 10
+              "value": 29.96,
+              "actualDays": 11
             }
           }
         }
       ],
-      "calculatedAt": 1778197504408
+      "calculatedAt": 1778232473017
     },
     {
       "code": "SH600633",
@@ -7099,8 +7104,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 5.47,
-              "actualDays": 10
+              "value": 6.78,
+              "actualDays": 11
             }
           }
         },
@@ -7117,17 +7122,17 @@
               "actualDays": 5
             },
             "day10": {
-              "value": 4.35,
-              "actualDays": 9
+              "value": 5.64,
+              "actualDays": 10
             },
             "day20": {
-              "value": 4.35,
-              "actualDays": 9
+              "value": 5.64,
+              "actualDays": 10
             }
           }
         }
       ],
-      "calculatedAt": 1778197504408
+      "calculatedAt": 1778232473017
     },
     {
       "code": "SH600641",
@@ -8074,8 +8079,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 51.71,
-              "actualDays": 19
+              "value": 55.23,
+              "actualDays": 20
             }
           }
         },
@@ -8096,8 +8101,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 23.46,
-              "actualDays": 13
+              "value": 26.32,
+              "actualDays": 14
             }
           }
         },
@@ -8118,13 +8123,13 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 26.4,
-              "actualDays": 12
+              "value": 29.33,
+              "actualDays": 13
             }
           }
         }
       ],
-      "calculatedAt": 1778197504408
+      "calculatedAt": 1778232473017
     },
     {
       "code": "SH600667",
@@ -8847,17 +8852,17 @@
               "actualDays": 5
             },
             "day10": {
-              "value": -0.78,
-              "actualDays": 7
+              "value": 3.81,
+              "actualDays": 8
             },
             "day20": {
-              "value": -0.78,
-              "actualDays": 7
+              "value": 3.81,
+              "actualDays": 8
             }
           }
         }
       ],
-      "calculatedAt": 1778197504408
+      "calculatedAt": 1778232473017
     },
     {
       "code": "SH600869",
@@ -9760,8 +9765,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 19.84,
-              "actualDays": 14
+              "value": 26.41,
+              "actualDays": 15
             }
           }
         },
@@ -9778,12 +9783,12 @@
               "actualDays": 5
             },
             "day10": {
-              "value": 17.6,
-              "actualDays": 9
+              "value": 24.05,
+              "actualDays": 10
             },
             "day20": {
-              "value": 17.6,
-              "actualDays": 9
+              "value": 24.05,
+              "actualDays": 10
             }
           }
         },
@@ -9800,12 +9805,12 @@
               "actualDays": 5
             },
             "day10": {
-              "value": 16.77,
-              "actualDays": 8
+              "value": 23.18,
+              "actualDays": 9
             },
             "day20": {
-              "value": 16.77,
-              "actualDays": 8
+              "value": 23.18,
+              "actualDays": 9
             }
           }
         },
@@ -9822,12 +9827,12 @@
               "actualDays": 5
             },
             "day10": {
-              "value": 10.41,
-              "actualDays": 6
+              "value": 16.46,
+              "actualDays": 7
             },
             "day20": {
-              "value": 10.41,
-              "actualDays": 6
+              "value": 16.46,
+              "actualDays": 7
             }
           }
         },
@@ -9844,12 +9849,12 @@
               "actualDays": 5
             },
             "day10": {
-              "value": 12.45,
-              "actualDays": 5
+              "value": 18.62,
+              "actualDays": 6
             },
             "day20": {
-              "value": 12.45,
-              "actualDays": 5
+              "value": 18.62,
+              "actualDays": 6
             }
           }
         },
@@ -9862,16 +9867,16 @@
               "actualDays": 3
             },
             "day5": {
-              "value": 5.8,
-              "actualDays": 4
+              "value": 11.6,
+              "actualDays": 5
             },
             "day10": {
-              "value": 5.8,
-              "actualDays": 4
+              "value": 11.6,
+              "actualDays": 5
             },
             "day20": {
-              "value": 5.8,
-              "actualDays": 4
+              "value": 11.6,
+              "actualDays": 5
             }
           }
         },
@@ -9880,20 +9885,20 @@
           "entryPrice": 17.4,
           "returns": {
             "day3": {
-              "value": 4.83,
-              "actualDays": 2
+              "value": 10.57,
+              "actualDays": 3
             },
             "day5": {
-              "value": 4.83,
-              "actualDays": 2
+              "value": 10.57,
+              "actualDays": 3
             },
             "day10": {
-              "value": 4.83,
-              "actualDays": 2
+              "value": 10.57,
+              "actualDays": 3
             },
             "day20": {
-              "value": 4.83,
-              "actualDays": 2
+              "value": 10.57,
+              "actualDays": 3
             }
           }
         },
@@ -9902,30 +9907,47 @@
           "entryPrice": 16.99,
           "returns": {
             "day3": {
-              "value": 7.36,
-              "actualDays": 1
+              "value": 13.24,
+              "actualDays": 2
             },
             "day5": {
-              "value": 7.36,
-              "actualDays": 1
+              "value": 13.24,
+              "actualDays": 2
             },
             "day10": {
-              "value": 7.36,
-              "actualDays": 1
+              "value": 13.24,
+              "actualDays": 2
             },
             "day20": {
-              "value": 7.36,
-              "actualDays": 1
+              "value": 13.24,
+              "actualDays": 2
             }
           }
         },
         {
           "signalDate": "2026-05-06",
           "entryPrice": 18.24,
-          "returns": {}
+          "returns": {
+            "day3": {
+              "value": 5.48,
+              "actualDays": 1
+            },
+            "day5": {
+              "value": 5.48,
+              "actualDays": 1
+            },
+            "day10": {
+              "value": 5.48,
+              "actualDays": 1
+            },
+            "day20": {
+              "value": 5.48,
+              "actualDays": 1
+            }
+          }
         }
       ],
-      "calculatedAt": 1778197504408
+      "calculatedAt": 1778232473017
     },
     {
       "code": "SH600959",
@@ -10724,7 +10746,7 @@
           }
         }
       ],
-      "calculatedAt": 1778197504408
+      "calculatedAt": 1778232473017
     },
     {
       "code": "SH600986",
@@ -11451,13 +11473,18 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 15.14,
-              "actualDays": 18
+              "value": 19.72,
+              "actualDays": 19
             }
           }
+        },
+        {
+          "signalDate": "2026-05-07",
+          "entryPrice": 10.99,
+          "returns": {}
         }
       ],
-      "calculatedAt": 1778197504408
+      "calculatedAt": 1778232473017
     },
     {
       "code": "SH601231",
@@ -12316,8 +12343,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 13.94,
-              "actualDays": 19
+              "value": 22.92,
+              "actualDays": 20
             }
           }
         },
@@ -12338,13 +12365,13 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 6.44,
-              "actualDays": 12
+              "value": 14.83,
+              "actualDays": 13
             }
           }
         }
       ],
-      "calculatedAt": 1778197504408
+      "calculatedAt": 1778232473017
     },
     {
       "code": "SH601615",
@@ -13159,8 +13186,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": -6.44,
-              "actualDays": 10
+              "value": -5.55,
+              "actualDays": 11
             }
           }
         },
@@ -13177,17 +13204,17 @@
               "actualDays": 5
             },
             "day10": {
-              "value": -8.44,
-              "actualDays": 9
+              "value": -7.57,
+              "actualDays": 10
             },
             "day20": {
-              "value": -8.44,
-              "actualDays": 9
+              "value": -7.57,
+              "actualDays": 10
             }
           }
         }
       ],
-      "calculatedAt": 1778197504408
+      "calculatedAt": 1778232473017
     },
     {
       "code": "SH601678",
@@ -13936,8 +13963,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 2.89,
-              "actualDays": 14
+              "value": -1.16,
+              "actualDays": 15
             }
           }
         },
@@ -13954,17 +13981,17 @@
               "actualDays": 5
             },
             "day10": {
-              "value": 3.89,
-              "actualDays": 5
+              "value": -0.19,
+              "actualDays": 6
             },
             "day20": {
-              "value": 3.89,
-              "actualDays": 5
+              "value": -0.19,
+              "actualDays": 6
             }
           }
         }
       ],
-      "calculatedAt": 1778197504408
+      "calculatedAt": 1778232473017
     },
     {
       "code": "SH601700",
@@ -14647,8 +14674,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 6.3,
-              "actualDays": 12
+              "value": 5.92,
+              "actualDays": 13
             }
           }
         },
@@ -14669,8 +14696,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 5.49,
-              "actualDays": 11
+              "value": 5.11,
+              "actualDays": 12
             }
           }
         },
@@ -14691,8 +14718,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 5.49,
-              "actualDays": 10
+              "value": 5.11,
+              "actualDays": 11
             }
           }
         },
@@ -14705,21 +14732,26 @@
               "actualDays": 3
             },
             "day5": {
-              "value": 8.79,
-              "actualDays": 4
+              "value": 8.4,
+              "actualDays": 5
             },
             "day10": {
-              "value": 8.79,
-              "actualDays": 4
+              "value": 8.4,
+              "actualDays": 5
             },
             "day20": {
-              "value": 8.79,
-              "actualDays": 4
+              "value": 8.4,
+              "actualDays": 5
             }
           }
+        },
+        {
+          "signalDate": "2026-05-07",
+          "entryPrice": 5.55,
+          "returns": {}
         }
       ],
-      "calculatedAt": 1778197504408
+      "calculatedAt": 1778232473017
     },
     {
       "code": "SH601778",
@@ -15380,13 +15412,13 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 41.58,
-              "actualDays": 15
+              "value": 46.53,
+              "actualDays": 16
             }
           }
         }
       ],
-      "calculatedAt": 1778197504408
+      "calculatedAt": 1778232473017
     },
     {
       "code": "SH603002",
@@ -16135,8 +16167,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 43.61,
-              "actualDays": 19
+              "value": 54.74,
+              "actualDays": 20
             }
           }
         },
@@ -16157,13 +16189,13 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 27.33,
-              "actualDays": 15
+              "value": 37.2,
+              "actualDays": 16
             }
           }
         }
       ],
-      "calculatedAt": 1778197504408
+      "calculatedAt": 1778232473017
     },
     {
       "code": "SH603017",
@@ -16868,8 +16900,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 12.83,
-              "actualDays": 17
+              "value": 13.48,
+              "actualDays": 18
             }
           }
         },
@@ -16890,8 +16922,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 16.94,
-              "actualDays": 14
+              "value": 17.61,
+              "actualDays": 15
             }
           }
         },
@@ -16912,8 +16944,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 21.83,
-              "actualDays": 10
+              "value": 22.52,
+              "actualDays": 11
             }
           }
         },
@@ -16926,21 +16958,21 @@
               "actualDays": 3
             },
             "day5": {
-              "value": 13.24,
-              "actualDays": 3
+              "value": 13.88,
+              "actualDays": 4
             },
             "day10": {
-              "value": 13.24,
-              "actualDays": 3
+              "value": 13.88,
+              "actualDays": 4
             },
             "day20": {
-              "value": 13.24,
-              "actualDays": 3
+              "value": 13.88,
+              "actualDays": 4
             }
           }
         }
       ],
-      "calculatedAt": 1778197504408
+      "calculatedAt": 1778232473017
     },
     {
       "code": "SH603078",
@@ -17579,8 +17611,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 14.03,
-              "actualDays": 13
+              "value": 16.2,
+              "actualDays": 14
             }
           }
         },
@@ -17601,8 +17633,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 13.34,
-              "actualDays": 11
+              "value": 15.5,
+              "actualDays": 12
             }
           }
         },
@@ -17619,12 +17651,12 @@
               "actualDays": 5
             },
             "day10": {
-              "value": 10.99,
-              "actualDays": 6
+              "value": 13.11,
+              "actualDays": 7
             },
             "day20": {
-              "value": 10.99,
-              "actualDays": 6
+              "value": 13.11,
+              "actualDays": 7
             }
           }
         },
@@ -17641,17 +17673,17 @@
               "actualDays": 5
             },
             "day10": {
-              "value": 10.2,
-              "actualDays": 5
+              "value": 12.3,
+              "actualDays": 6
             },
             "day20": {
-              "value": 10.2,
-              "actualDays": 5
+              "value": 12.3,
+              "actualDays": 6
             }
           }
         }
       ],
-      "calculatedAt": 1778197504408
+      "calculatedAt": 1778232473017
     },
     {
       "code": "SH603112",
@@ -18598,8 +18630,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 34.64,
-              "actualDays": 19
+              "value": 35.49,
+              "actualDays": 20
             }
           }
         },
@@ -18620,8 +18652,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 18.73,
-              "actualDays": 14
+              "value": 19.48,
+              "actualDays": 15
             }
           }
         },
@@ -18642,8 +18674,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 10.17,
-              "actualDays": 10
+              "value": 10.86,
+              "actualDays": 11
             }
           }
         },
@@ -18660,17 +18692,17 @@
               "actualDays": 5
             },
             "day10": {
-              "value": 8.09,
-              "actualDays": 8
+              "value": 8.77,
+              "actualDays": 9
             },
             "day20": {
-              "value": 8.09,
-              "actualDays": 8
+              "value": 8.77,
+              "actualDays": 9
             }
           }
         }
       ],
-      "calculatedAt": 1778197504408
+      "calculatedAt": 1778232473017
     },
     {
       "code": "SH603125",
@@ -19261,12 +19293,12 @@
               "actualDays": 5
             },
             "day10": {
-              "value": 25.63,
-              "actualDays": 9
+              "value": 27.61,
+              "actualDays": 10
             },
             "day20": {
-              "value": 25.63,
-              "actualDays": 9
+              "value": 27.61,
+              "actualDays": 10
             }
           }
         },
@@ -19283,17 +19315,22 @@
               "actualDays": 5
             },
             "day10": {
-              "value": 22.8,
-              "actualDays": 6
+              "value": 24.73,
+              "actualDays": 7
             },
             "day20": {
-              "value": 22.8,
-              "actualDays": 6
+              "value": 24.73,
+              "actualDays": 7
             }
           }
+        },
+        {
+          "signalDate": "2026-05-07",
+          "entryPrice": 23.2,
+          "returns": {}
         }
       ],
-      "calculatedAt": 1778197504408
+      "calculatedAt": 1778232473017
     },
     {
       "code": "SH603155",
@@ -19888,8 +19925,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 15.95,
-              "actualDays": 18
+              "value": 20.49,
+              "actualDays": 19
             }
           }
         },
@@ -19910,8 +19947,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 14.15,
-              "actualDays": 10
+              "value": 18.62,
+              "actualDays": 11
             }
           }
         },
@@ -19928,12 +19965,12 @@
               "actualDays": 5
             },
             "day10": {
-              "value": 13.24,
-              "actualDays": 9
+              "value": 17.67,
+              "actualDays": 10
             },
             "day20": {
-              "value": 13.24,
-              "actualDays": 9
+              "value": 17.67,
+              "actualDays": 10
             }
           }
         },
@@ -19950,12 +19987,12 @@
               "actualDays": 5
             },
             "day10": {
-              "value": 11.32,
-              "actualDays": 5
+              "value": 15.68,
+              "actualDays": 6
             },
             "day20": {
-              "value": 11.32,
-              "actualDays": 5
+              "value": 15.68,
+              "actualDays": 6
             }
           }
         },
@@ -19968,21 +20005,21 @@
               "actualDays": 3
             },
             "day5": {
-              "value": 10.52,
-              "actualDays": 3
+              "value": 14.84,
+              "actualDays": 4
             },
             "day10": {
-              "value": 10.52,
-              "actualDays": 3
+              "value": 14.84,
+              "actualDays": 4
             },
             "day20": {
-              "value": 10.52,
-              "actualDays": 3
+              "value": 14.84,
+              "actualDays": 4
             }
           }
         }
       ],
-      "calculatedAt": 1778197504408
+      "calculatedAt": 1778232473017
     },
     {
       "code": "SH603158",
@@ -20489,8 +20526,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 23.81,
-              "actualDays": 18
+              "value": 36.16,
+              "actualDays": 19
             }
           }
         },
@@ -20511,8 +20548,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 9.09,
-              "actualDays": 15
+              "value": 19.97,
+              "actualDays": 16
             }
           }
         },
@@ -20533,13 +20570,13 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 10.2,
-              "actualDays": 14
+              "value": 21.19,
+              "actualDays": 15
             }
           }
         }
       ],
-      "calculatedAt": 1778197504408
+      "calculatedAt": 1778232473017
     },
     {
       "code": "SH603203",
@@ -21552,8 +21589,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 8.41,
-              "actualDays": 13
+              "value": 11.21,
+              "actualDays": 14
             }
           }
         },
@@ -21562,25 +21599,25 @@
           "entryPrice": 46.88,
           "returns": {
             "day3": {
-              "value": 1.69,
-              "actualDays": 1
+              "value": 4.31,
+              "actualDays": 2
             },
             "day5": {
-              "value": 1.69,
-              "actualDays": 1
+              "value": 4.31,
+              "actualDays": 2
             },
             "day10": {
-              "value": 1.69,
-              "actualDays": 1
+              "value": 4.31,
+              "actualDays": 2
             },
             "day20": {
-              "value": 1.69,
-              "actualDays": 1
+              "value": 4.31,
+              "actualDays": 2
             }
           }
         }
       ],
-      "calculatedAt": 1778197504408
+      "calculatedAt": 1778232473017
     },
     {
       "code": "SH603283",
@@ -22461,8 +22498,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 29.36,
-              "actualDays": 18
+              "value": 31.06,
+              "actualDays": 19
             }
           }
         },
@@ -22483,8 +22520,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 11.28,
-              "actualDays": 11
+              "value": 12.74,
+              "actualDays": 12
             }
           }
         },
@@ -22501,12 +22538,12 @@
               "actualDays": 5
             },
             "day10": {
-              "value": 8.61,
-              "actualDays": 8
+              "value": 10.04,
+              "actualDays": 9
             },
             "day20": {
-              "value": 8.61,
-              "actualDays": 8
+              "value": 10.04,
+              "actualDays": 9
             }
           }
         },
@@ -22515,25 +22552,30 @@
           "entryPrice": 53.83,
           "returns": {
             "day3": {
-              "value": 1.89,
-              "actualDays": 1
+              "value": 3.23,
+              "actualDays": 2
             },
             "day5": {
-              "value": 1.89,
-              "actualDays": 1
+              "value": 3.23,
+              "actualDays": 2
             },
             "day10": {
-              "value": 1.89,
-              "actualDays": 1
+              "value": 3.23,
+              "actualDays": 2
             },
             "day20": {
-              "value": 1.89,
-              "actualDays": 1
+              "value": 3.23,
+              "actualDays": 2
             }
           }
+        },
+        {
+          "signalDate": "2026-05-07",
+          "entryPrice": 55.57,
+          "returns": {}
         }
       ],
-      "calculatedAt": 1778197504408
+      "calculatedAt": 1778232473017
     },
     {
       "code": "SH603327",
@@ -23256,12 +23298,12 @@
               "actualDays": 5
             },
             "day10": {
-              "value": 3.7,
-              "actualDays": 8
+              "value": 5.12,
+              "actualDays": 9
             },
             "day20": {
-              "value": 3.7,
-              "actualDays": 8
+              "value": 5.12,
+              "actualDays": 9
             }
           }
         },
@@ -23278,22 +23320,44 @@
               "actualDays": 5
             },
             "day10": {
-              "value": 3.89,
-              "actualDays": 7
+              "value": 5.32,
+              "actualDays": 8
             },
             "day20": {
-              "value": 3.89,
-              "actualDays": 7
+              "value": 5.32,
+              "actualDays": 8
             }
           }
         },
         {
           "signalDate": "2026-05-06",
           "entryPrice": 10.94,
+          "returns": {
+            "day3": {
+              "value": 1.37,
+              "actualDays": 1
+            },
+            "day5": {
+              "value": 1.37,
+              "actualDays": 1
+            },
+            "day10": {
+              "value": 1.37,
+              "actualDays": 1
+            },
+            "day20": {
+              "value": 1.37,
+              "actualDays": 1
+            }
+          }
+        },
+        {
+          "signalDate": "2026-05-07",
+          "entryPrice": 11.09,
           "returns": {}
         }
       ],
-      "calculatedAt": 1778197504408
+      "calculatedAt": 1778232473017
     },
     {
       "code": "SH603399",
@@ -24196,8 +24260,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 84.04,
-              "actualDays": 17
+              "value": 91.63,
+              "actualDays": 18
             }
           }
         },
@@ -24218,8 +24282,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 80.76,
-              "actualDays": 15
+              "value": 88.22,
+              "actualDays": 16
             }
           }
         },
@@ -24236,17 +24300,17 @@
               "actualDays": 5
             },
             "day10": {
-              "value": 67.95,
-              "actualDays": 9
+              "value": 74.88,
+              "actualDays": 10
             },
             "day20": {
-              "value": 67.95,
-              "actualDays": 9
+              "value": 74.88,
+              "actualDays": 10
             }
           }
         }
       ],
-      "calculatedAt": 1778197504408
+      "calculatedAt": 1778232473017
     },
     {
       "code": "SH603496",
@@ -25031,21 +25095,21 @@
               "actualDays": 3
             },
             "day5": {
-              "value": 0.71,
-              "actualDays": 4
+              "value": 1.83,
+              "actualDays": 5
             },
             "day10": {
-              "value": 0.71,
-              "actualDays": 4
+              "value": 1.83,
+              "actualDays": 5
             },
             "day20": {
-              "value": 0.71,
-              "actualDays": 4
+              "value": 1.83,
+              "actualDays": 5
             }
           }
         }
       ],
-      "calculatedAt": 1778197504408
+      "calculatedAt": 1778232473017
     },
     {
       "code": "SH603527",
@@ -25574,8 +25638,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 33.86,
-              "actualDays": 19
+              "value": 31.19,
+              "actualDays": 20
             }
           }
         },
@@ -25596,8 +25660,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 32.29,
-              "actualDays": 18
+              "value": 29.66,
+              "actualDays": 19
             }
           }
         },
@@ -25618,8 +25682,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 27.2,
-              "actualDays": 15
+              "value": 24.67,
+              "actualDays": 16
             }
           }
         },
@@ -25640,8 +25704,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 25.32,
-              "actualDays": 14
+              "value": 22.83,
+              "actualDays": 15
             }
           }
         },
@@ -25658,17 +25722,22 @@
               "actualDays": 5
             },
             "day10": {
-              "value": 10.6,
-              "actualDays": 8
+              "value": 8.4,
+              "actualDays": 9
             },
             "day20": {
-              "value": 10.6,
-              "actualDays": 8
+              "value": 8.4,
+              "actualDays": 9
             }
           }
+        },
+        {
+          "signalDate": "2026-05-07",
+          "entryPrice": 13.29,
+          "returns": {}
         }
       ],
-      "calculatedAt": 1778197504408
+      "calculatedAt": 1778232473017
     },
     {
       "code": "SH603626",
@@ -26329,8 +26398,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 11.38,
-              "actualDays": 19
+              "value": 17.38,
+              "actualDays": 20
             }
           }
         },
@@ -26351,13 +26420,13 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 12.32,
-              "actualDays": 18
+              "value": 18.37,
+              "actualDays": 19
             }
           }
         }
       ],
-      "calculatedAt": 1778197504408
+      "calculatedAt": 1778232473017
     },
     {
       "code": "SH603629",
@@ -26952,13 +27021,13 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 167.33,
-              "actualDays": 19
+              "value": 174.87,
+              "actualDays": 20
             }
           }
         }
       ],
-      "calculatedAt": 1778197504408
+      "calculatedAt": 1778232473017
     },
     {
       "code": "SH603703",
@@ -28043,7 +28112,7 @@
           }
         }
       ],
-      "calculatedAt": 1778197504408
+      "calculatedAt": 1778232473017
     },
     {
       "code": "SH603876",
@@ -29012,8 +29081,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 47.89,
-              "actualDays": 19
+              "value": 43.12,
+              "actualDays": 20
             }
           }
         },
@@ -29034,8 +29103,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 44.15,
-              "actualDays": 17
+              "value": 39.5,
+              "actualDays": 18
             }
           }
         },
@@ -29056,8 +29125,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 33.4,
-              "actualDays": 14
+              "value": 29.1,
+              "actualDays": 15
             }
           }
         },
@@ -29074,12 +29143,12 @@
               "actualDays": 5
             },
             "day10": {
-              "value": 29.94,
-              "actualDays": 7
+              "value": 25.75,
+              "actualDays": 8
             },
             "day20": {
-              "value": 29.94,
-              "actualDays": 7
+              "value": 25.75,
+              "actualDays": 8
             }
           }
         },
@@ -29096,17 +29165,17 @@
               "actualDays": 5
             },
             "day10": {
-              "value": 20.78,
-              "actualDays": 5
+              "value": 16.88,
+              "actualDays": 6
             },
             "day20": {
-              "value": 20.78,
-              "actualDays": 5
+              "value": 16.88,
+              "actualDays": 6
             }
           }
         }
       ],
-      "calculatedAt": 1778197504408
+      "calculatedAt": 1778232473017
     },
     {
       "code": "SH603890",
@@ -30273,8 +30342,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 33.54,
-              "actualDays": 18
+              "value": 40.59,
+              "actualDays": 19
             }
           }
         },
@@ -30295,18 +30364,35 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 21.01,
-              "actualDays": 14
+              "value": 27.39,
+              "actualDays": 15
             }
           }
         },
         {
           "signalDate": "2026-05-06",
           "entryPrice": 18.95,
-          "returns": {}
+          "returns": {
+            "day3": {
+              "value": 5.28,
+              "actualDays": 1
+            },
+            "day5": {
+              "value": 5.28,
+              "actualDays": 1
+            },
+            "day10": {
+              "value": 5.28,
+              "actualDays": 1
+            },
+            "day20": {
+              "value": 5.28,
+              "actualDays": 1
+            }
+          }
         }
       ],
-      "calculatedAt": 1778197504408
+      "calculatedAt": 1778232473017
     },
     {
       "code": "SH603901",
@@ -31517,8 +31603,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": -1.49,
-              "actualDays": 14
+              "value": 1.02,
+              "actualDays": 15
             }
           }
         },
@@ -31539,8 +31625,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 0.4,
-              "actualDays": 11
+              "value": 2.95,
+              "actualDays": 12
             }
           }
         },
@@ -31561,8 +31647,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 1.04,
-              "actualDays": 10
+              "value": 3.61,
+              "actualDays": 11
             }
           }
         },
@@ -31579,12 +31665,12 @@
               "actualDays": 5
             },
             "day10": {
-              "value": 1.62,
-              "actualDays": 8
+              "value": 4.2,
+              "actualDays": 9
             },
             "day20": {
-              "value": 1.62,
-              "actualDays": 8
+              "value": 4.2,
+              "actualDays": 9
             }
           }
         },
@@ -31601,12 +31687,12 @@
               "actualDays": 5
             },
             "day10": {
-              "value": 0,
-              "actualDays": 5
+              "value": 2.54,
+              "actualDays": 6
             },
             "day20": {
-              "value": 0,
-              "actualDays": 5
+              "value": 2.54,
+              "actualDays": 6
             }
           }
         },
@@ -31619,26 +31705,43 @@
               "actualDays": 3
             },
             "day5": {
-              "value": -0.32,
-              "actualDays": 4
+              "value": 2.22,
+              "actualDays": 5
             },
             "day10": {
-              "value": -0.32,
-              "actualDays": 4
+              "value": 2.22,
+              "actualDays": 5
             },
             "day20": {
-              "value": -0.32,
-              "actualDays": 4
+              "value": 2.22,
+              "actualDays": 5
             }
           }
         },
         {
           "signalDate": "2026-05-06",
           "entryPrice": 12.58,
-          "returns": {}
+          "returns": {
+            "day3": {
+              "value": 2.54,
+              "actualDays": 1
+            },
+            "day5": {
+              "value": 2.54,
+              "actualDays": 1
+            },
+            "day10": {
+              "value": 2.54,
+              "actualDays": 1
+            },
+            "day20": {
+              "value": 2.54,
+              "actualDays": 1
+            }
+          }
         }
       ],
-      "calculatedAt": 1778197504408
+      "calculatedAt": 1778232473017
     },
     {
       "code": "SH603912",
@@ -32519,8 +32622,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 6.3,
-              "actualDays": 11
+              "value": 7.07,
+              "actualDays": 12
             }
           }
         },
@@ -32533,21 +32636,21 @@
               "actualDays": 3
             },
             "day5": {
-              "value": 9.87,
-              "actualDays": 3
+              "value": 10.66,
+              "actualDays": 4
             },
             "day10": {
-              "value": 9.87,
-              "actualDays": 3
+              "value": 10.66,
+              "actualDays": 4
             },
             "day20": {
-              "value": 9.87,
-              "actualDays": 3
+              "value": 10.66,
+              "actualDays": 4
             }
           }
         }
       ],
-      "calculatedAt": 1778197504408
+      "calculatedAt": 1778232473017
     },
     {
       "code": "SH603926",
@@ -33280,7 +33383,7 @@
           }
         }
       ],
-      "calculatedAt": 1778197504408
+      "calculatedAt": 1778232473017
     },
     {
       "code": "SH603933",
@@ -33853,8 +33956,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 27.08,
-              "actualDays": 17
+              "value": 27.04,
+              "actualDays": 18
             }
           }
         },
@@ -33867,21 +33970,21 @@
               "actualDays": 3
             },
             "day5": {
-              "value": 21.8,
-              "actualDays": 3
+              "value": 21.75,
+              "actualDays": 4
             },
             "day10": {
-              "value": 21.8,
-              "actualDays": 3
+              "value": 21.75,
+              "actualDays": 4
             },
             "day20": {
-              "value": 21.8,
-              "actualDays": 3
+              "value": 21.75,
+              "actualDays": 4
             }
           }
         }
       ],
-      "calculatedAt": 1778197504408
+      "calculatedAt": 1778232473017
     },
     {
       "code": "SH603938",
@@ -34520,8 +34623,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 7.93,
-              "actualDays": 14
+              "value": 18.74,
+              "actualDays": 15
             }
           }
         },
@@ -34534,21 +34637,21 @@
               "actualDays": 3
             },
             "day5": {
-              "value": 0.68,
-              "actualDays": 3
+              "value": 10.76,
+              "actualDays": 4
             },
             "day10": {
-              "value": 0.68,
-              "actualDays": 3
+              "value": 10.76,
+              "actualDays": 4
             },
             "day20": {
-              "value": 0.68,
-              "actualDays": 3
+              "value": 10.76,
+              "actualDays": 4
             }
           }
         }
       ],
-      "calculatedAt": 1778197504408
+      "calculatedAt": 1778232473017
     },
     {
       "code": "SH603980",
@@ -35715,8 +35818,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": -2,
-              "actualDays": 17
+              "value": -1.23,
+              "actualDays": 18
             }
           }
         },
@@ -35733,12 +35836,12 @@
               "actualDays": 5
             },
             "day10": {
-              "value": 1.43,
-              "actualDays": 6
+              "value": 2.23,
+              "actualDays": 7
             },
             "day20": {
-              "value": 1.43,
-              "actualDays": 6
+              "value": 2.23,
+              "actualDays": 7
             }
           }
         },
@@ -35747,25 +35850,25 @@
           "entryPrice": 6.19,
           "returns": {
             "day3": {
-              "value": 3.07,
-              "actualDays": 2
+              "value": 3.88,
+              "actualDays": 3
             },
             "day5": {
-              "value": 3.07,
-              "actualDays": 2
+              "value": 3.88,
+              "actualDays": 3
             },
             "day10": {
-              "value": 3.07,
-              "actualDays": 2
+              "value": 3.88,
+              "actualDays": 3
             },
             "day20": {
-              "value": 3.07,
-              "actualDays": 2
+              "value": 3.88,
+              "actualDays": 3
             }
           }
         }
       ],
-      "calculatedAt": 1778197504408
+      "calculatedAt": 1778232473017
     },
     {
       "code": "SH603985",
@@ -36602,13 +36705,13 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 28.78,
-              "actualDays": 12
+              "value": 30.75,
+              "actualDays": 13
             }
           }
         }
       ],
-      "calculatedAt": 1778197504408
+      "calculatedAt": 1778232473017
     },
     {
       "code": "SH603989",
@@ -37297,7 +37400,7 @@
           }
         }
       ],
-      "calculatedAt": 1778197504408
+      "calculatedAt": 1778232473017
     },
     {
       "code": "SH605006",
@@ -38024,8 +38127,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 33.59,
-              "actualDays": 16
+              "value": 46.96,
+              "actualDays": 17
             }
           }
         },
@@ -38042,17 +38145,17 @@
               "actualDays": 5
             },
             "day10": {
-              "value": 15.51,
-              "actualDays": 6
+              "value": 27.07,
+              "actualDays": 7
             },
             "day20": {
-              "value": 15.51,
-              "actualDays": 6
+              "value": 27.07,
+              "actualDays": 7
             }
           }
         }
       ],
-      "calculatedAt": 1778197504408
+      "calculatedAt": 1778232473017
     },
     {
       "code": "SH605222",
@@ -38603,8 +38706,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 55.48,
-              "actualDays": 19
+              "value": 60.93,
+              "actualDays": 20
             }
           }
         },
@@ -38625,13 +38728,13 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 48.32,
-              "actualDays": 13
+              "value": 53.52,
+              "actualDays": 14
             }
           }
         }
       ],
-      "calculatedAt": 1778197504408
+      "calculatedAt": 1778232473017
     },
     {
       "code": "SH605358",
@@ -39336,8 +39439,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 22.17,
-              "actualDays": 12
+              "value": 23.66,
+              "actualDays": 13
             }
           }
         },
@@ -39358,13 +39461,13 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 20.84,
-              "actualDays": 11
+              "value": 22.32,
+              "actualDays": 12
             }
           }
         }
       ],
-      "calculatedAt": 1778197504408
+      "calculatedAt": 1778232473017
     },
     {
       "code": "SH605365",
@@ -39937,8 +40040,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 33.97,
-              "actualDays": 16
+              "value": 34.73,
+              "actualDays": 17
             }
           }
         },
@@ -39959,8 +40062,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 36.67,
-              "actualDays": 15
+              "value": 37.43,
+              "actualDays": 16
             }
           }
         },
@@ -39981,13 +40084,13 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 32.67,
-              "actualDays": 13
+              "value": 33.41,
+              "actualDays": 14
             }
           }
         }
       ],
-      "calculatedAt": 1778197504408
+      "calculatedAt": 1778232473017
     },
     {
       "code": "SZ000420",
@@ -40736,8 +40839,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 20,
-              "actualDays": 19
+              "value": 25.39,
+              "actualDays": 20
             }
           }
         },
@@ -40754,17 +40857,17 @@
               "actualDays": 5
             },
             "day10": {
-              "value": 1.52,
-              "actualDays": 6
+              "value": 6.08,
+              "actualDays": 7
             },
             "day20": {
-              "value": 1.52,
-              "actualDays": 6
+              "value": 6.08,
+              "actualDays": 7
             }
           }
         }
       ],
-      "calculatedAt": 1778197504408
+      "calculatedAt": 1778232473017
     },
     {
       "code": "SZ000636",
@@ -41469,8 +41572,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 24.3,
-              "actualDays": 15
+              "value": 26.15,
+              "actualDays": 16
             }
           }
         },
@@ -41491,13 +41594,18 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 12.82,
-              "actualDays": 10
+              "value": 14.51,
+              "actualDays": 11
             }
           }
+        },
+        {
+          "signalDate": "2026-05-07",
+          "entryPrice": 25.18,
+          "returns": {}
         }
       ],
-      "calculatedAt": 1778197504408
+      "calculatedAt": 1778232473017
     },
     {
       "code": "SZ000823",
@@ -42158,8 +42266,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 23.35,
-              "actualDays": 18
+              "value": 35.66,
+              "actualDays": 19
             }
           }
         },
@@ -42180,13 +42288,13 @@
               "actualDays": 10
             },
             "day20": {
-              "value": -0.76,
-              "actualDays": 11
+              "value": 9.14,
+              "actualDays": 12
             }
           }
         }
       ],
-      "calculatedAt": 1778197504408
+      "calculatedAt": 1778232473017
     },
     {
       "code": "SZ002009",
@@ -43073,7 +43181,7 @@
           }
         }
       ],
-      "calculatedAt": 1778197504408
+      "calculatedAt": 1778232473017
     },
     {
       "code": "SZ002049",
@@ -43646,8 +43754,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 15.44,
-              "actualDays": 16
+              "value": 14.52,
+              "actualDays": 17
             }
           }
         },
@@ -43664,12 +43772,12 @@
               "actualDays": 5
             },
             "day10": {
-              "value": 12.49,
-              "actualDays": 8
+              "value": 11.6,
+              "actualDays": 9
             },
             "day20": {
-              "value": 12.49,
-              "actualDays": 8
+              "value": 11.6,
+              "actualDays": 9
             }
           }
         },
@@ -43686,12 +43794,12 @@
               "actualDays": 5
             },
             "day10": {
-              "value": 9.14,
-              "actualDays": 7
+              "value": 8.27,
+              "actualDays": 8
             },
             "day20": {
-              "value": 9.14,
-              "actualDays": 7
+              "value": 8.27,
+              "actualDays": 8
             }
           }
         },
@@ -43708,17 +43816,22 @@
               "actualDays": 5
             },
             "day10": {
-              "value": 10.78,
-              "actualDays": 6
+              "value": 9.89,
+              "actualDays": 7
             },
             "day20": {
-              "value": 10.78,
-              "actualDays": 6
+              "value": 9.89,
+              "actualDays": 7
             }
           }
+        },
+        {
+          "signalDate": "2026-05-07",
+          "entryPrice": 78.42,
+          "returns": {}
         }
       ],
-      "calculatedAt": 1778197504408
+      "calculatedAt": 1778232473017
     },
     {
       "code": "SZ002115",
@@ -44419,12 +44532,12 @@
               "actualDays": 5
             },
             "day10": {
-              "value": 15.65,
-              "actualDays": 7
+              "value": 18.75,
+              "actualDays": 8
             },
             "day20": {
-              "value": 15.65,
-              "actualDays": 7
+              "value": 18.75,
+              "actualDays": 8
             }
           }
         },
@@ -44441,12 +44554,12 @@
               "actualDays": 5
             },
             "day10": {
-              "value": 23.18,
-              "actualDays": 5
+              "value": 26.49,
+              "actualDays": 6
             },
             "day20": {
-              "value": 23.18,
-              "actualDays": 5
+              "value": 26.49,
+              "actualDays": 6
             }
           }
         },
@@ -44455,25 +44568,25 @@
           "entryPrice": 14.41,
           "returns": {
             "day3": {
-              "value": 3.61,
-              "actualDays": 1
+              "value": 6.38,
+              "actualDays": 2
             },
             "day5": {
-              "value": 3.61,
-              "actualDays": 1
+              "value": 6.38,
+              "actualDays": 2
             },
             "day10": {
-              "value": 3.61,
-              "actualDays": 1
+              "value": 6.38,
+              "actualDays": 2
             },
             "day20": {
-              "value": 3.61,
-              "actualDays": 1
+              "value": 6.38,
+              "actualDays": 2
             }
           }
         }
       ],
-      "calculatedAt": 1778197504408
+      "calculatedAt": 1778232473017
     },
     {
       "code": "SZ002119",
@@ -45288,8 +45401,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 4.22,
-              "actualDays": 18
+              "value": 5.59,
+              "actualDays": 19
             }
           }
         },
@@ -45298,25 +45411,25 @@
           "entryPrice": 20.8,
           "returns": {
             "day3": {
-              "value": 5.77,
-              "actualDays": 2
+              "value": 7.16,
+              "actualDays": 3
             },
             "day5": {
-              "value": 5.77,
-              "actualDays": 2
+              "value": 7.16,
+              "actualDays": 3
             },
             "day10": {
-              "value": 5.77,
-              "actualDays": 2
+              "value": 7.16,
+              "actualDays": 3
             },
             "day20": {
-              "value": 5.77,
-              "actualDays": 2
+              "value": 7.16,
+              "actualDays": 3
             }
           }
         }
       ],
-      "calculatedAt": 1778197504408
+      "calculatedAt": 1778232473017
     },
     {
       "code": "SZ002156",
@@ -45841,17 +45954,17 @@
               "actualDays": 5
             },
             "day10": {
-              "value": 20.58,
-              "actualDays": 8
+              "value": 24.03,
+              "actualDays": 9
             },
             "day20": {
-              "value": 20.58,
-              "actualDays": 8
+              "value": 24.03,
+              "actualDays": 9
             }
           }
         }
       ],
-      "calculatedAt": 1778197504408
+      "calculatedAt": 1778232473017
     },
     {
       "code": "SZ002174",
@@ -46552,17 +46665,17 @@
               "actualDays": 5
             },
             "day10": {
-              "value": 14.54,
-              "actualDays": 5
+              "value": 15.96,
+              "actualDays": 6
             },
             "day20": {
-              "value": 14.54,
-              "actualDays": 5
+              "value": 15.96,
+              "actualDays": 6
             }
           }
         }
       ],
-      "calculatedAt": 1778197504408
+      "calculatedAt": 1778232473017
     },
     {
       "code": "SZ002185",
@@ -47267,8 +47380,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 11.27,
-              "actualDays": 15
+              "value": 12.99,
+              "actualDays": 16
             }
           }
         },
@@ -47285,12 +47398,12 @@
               "actualDays": 5
             },
             "day10": {
-              "value": 6.74,
-              "actualDays": 9
+              "value": 8.39,
+              "actualDays": 10
             },
             "day20": {
-              "value": 6.74,
-              "actualDays": 9
+              "value": 8.39,
+              "actualDays": 10
             }
           }
         },
@@ -47307,12 +47420,12 @@
               "actualDays": 5
             },
             "day10": {
-              "value": 8.53,
-              "actualDays": 8
+              "value": 10.2,
+              "actualDays": 9
             },
             "day20": {
-              "value": 8.53,
-              "actualDays": 8
+              "value": 10.2,
+              "actualDays": 9
             }
           }
         },
@@ -47329,12 +47442,12 @@
               "actualDays": 5
             },
             "day10": {
-              "value": 6.32,
-              "actualDays": 7
+              "value": 7.96,
+              "actualDays": 8
             },
             "day20": {
-              "value": 6.32,
-              "actualDays": 7
+              "value": 7.96,
+              "actualDays": 8
             }
           }
         },
@@ -47351,12 +47464,12 @@
               "actualDays": 5
             },
             "day10": {
-              "value": 9.22,
-              "actualDays": 6
+              "value": 10.91,
+              "actualDays": 7
             },
             "day20": {
-              "value": 9.22,
-              "actualDays": 6
+              "value": 10.91,
+              "actualDays": 7
             }
           }
         },
@@ -47373,12 +47486,12 @@
               "actualDays": 5
             },
             "day10": {
-              "value": 9.4,
-              "actualDays": 5
+              "value": 11.08,
+              "actualDays": 6
             },
             "day20": {
-              "value": 9.4,
-              "actualDays": 5
+              "value": 11.08,
+              "actualDays": 6
             }
           }
         },
@@ -47387,25 +47500,25 @@
           "entryPrice": 12.77,
           "returns": {
             "day3": {
-              "value": 6.66,
-              "actualDays": 2
+              "value": 8.3,
+              "actualDays": 3
             },
             "day5": {
-              "value": 6.66,
-              "actualDays": 2
+              "value": 8.3,
+              "actualDays": 3
             },
             "day10": {
-              "value": 6.66,
-              "actualDays": 2
+              "value": 8.3,
+              "actualDays": 3
             },
             "day20": {
-              "value": 6.66,
-              "actualDays": 2
+              "value": 8.3,
+              "actualDays": 3
             }
           }
         }
       ],
-      "calculatedAt": 1778197504408
+      "calculatedAt": 1778232473017
     },
     {
       "code": "SZ002201",
@@ -48088,8 +48201,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 17.3,
-              "actualDays": 12
+              "value": 22.9,
+              "actualDays": 13
             }
           }
         },
@@ -48110,13 +48223,13 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 13.18,
-              "actualDays": 10
+              "value": 18.58,
+              "actualDays": 11
             }
           }
         }
       ],
-      "calculatedAt": 1778197504408
+      "calculatedAt": 1778232473017
     },
     {
       "code": "SZ002248",
@@ -49063,8 +49176,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 6.9,
-              "actualDays": 16
+              "value": 11.36,
+              "actualDays": 17
             }
           }
         },
@@ -49081,17 +49194,17 @@
               "actualDays": 5
             },
             "day10": {
-              "value": 4.19,
-              "actualDays": 9
+              "value": 8.54,
+              "actualDays": 10
             },
             "day20": {
-              "value": 4.19,
-              "actualDays": 9
+              "value": 8.54,
+              "actualDays": 10
             }
           }
         }
       ],
-      "calculatedAt": 1778197504408
+      "calculatedAt": 1778232473017
     },
     {
       "code": "SZ002256",
@@ -49950,8 +50063,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 23.22,
-              "actualDays": 16
+              "value": 22.69,
+              "actualDays": 17
             }
           }
         },
@@ -49972,8 +50085,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 20.67,
-              "actualDays": 15
+              "value": 20.16,
+              "actualDays": 16
             }
           }
         },
@@ -49994,8 +50107,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 17.93,
-              "actualDays": 14
+              "value": 17.42,
+              "actualDays": 15
             }
           }
         },
@@ -50016,8 +50129,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 13.63,
-              "actualDays": 10
+              "value": 13.14,
+              "actualDays": 11
             }
           }
         },
@@ -50030,21 +50143,21 @@
               "actualDays": 3
             },
             "day5": {
-              "value": 3.09,
-              "actualDays": 4
+              "value": 2.65,
+              "actualDays": 5
             },
             "day10": {
-              "value": 3.09,
-              "actualDays": 4
+              "value": 2.65,
+              "actualDays": 5
             },
             "day20": {
-              "value": 3.09,
-              "actualDays": 4
+              "value": 2.65,
+              "actualDays": 5
             }
           }
         }
       ],
-      "calculatedAt": 1778197504408
+      "calculatedAt": 1778232473017
     },
     {
       "code": "SZ002266",
@@ -50837,8 +50950,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 29.65,
-              "actualDays": 15
+              "value": 32.71,
+              "actualDays": 16
             }
           }
         },
@@ -50855,12 +50968,12 @@
               "actualDays": 5
             },
             "day10": {
-              "value": 22.44,
-              "actualDays": 9
+              "value": 25.33,
+              "actualDays": 10
             },
             "day20": {
-              "value": 22.44,
-              "actualDays": 9
+              "value": 25.33,
+              "actualDays": 10
             }
           }
         },
@@ -50877,12 +50990,12 @@
               "actualDays": 5
             },
             "day10": {
-              "value": 22.72,
-              "actualDays": 8
+              "value": 25.61,
+              "actualDays": 9
             },
             "day20": {
-              "value": 22.72,
-              "actualDays": 8
+              "value": 25.61,
+              "actualDays": 9
             }
           }
         },
@@ -50899,12 +51012,12 @@
               "actualDays": 5
             },
             "day10": {
-              "value": 21.37,
-              "actualDays": 6
+              "value": 24.23,
+              "actualDays": 7
             },
             "day20": {
-              "value": 21.37,
-              "actualDays": 6
+              "value": 24.23,
+              "actualDays": 7
             }
           }
         },
@@ -50921,17 +51034,17 @@
               "actualDays": 5
             },
             "day10": {
-              "value": 22.44,
-              "actualDays": 5
+              "value": 25.33,
+              "actualDays": 6
             },
             "day20": {
-              "value": 22.44,
-              "actualDays": 5
+              "value": 25.33,
+              "actualDays": 6
             }
           }
         }
       ],
-      "calculatedAt": 1778197504408
+      "calculatedAt": 1778232473017
     },
     {
       "code": "SZ002283",
@@ -51702,8 +51815,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 30.69,
-              "actualDays": 19
+              "value": 30.37,
+              "actualDays": 20
             }
           }
         },
@@ -51724,8 +51837,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 34.39,
-              "actualDays": 18
+              "value": 34.06,
+              "actualDays": 19
             }
           }
         },
@@ -51742,12 +51855,12 @@
               "actualDays": 5
             },
             "day10": {
-              "value": 13.41,
-              "actualDays": 9
+              "value": 13.13,
+              "actualDays": 10
             },
             "day20": {
-              "value": 13.41,
-              "actualDays": 9
+              "value": 13.13,
+              "actualDays": 10
             }
           }
         },
@@ -51764,17 +51877,17 @@
               "actualDays": 5
             },
             "day10": {
-              "value": 14.46,
-              "actualDays": 8
+              "value": 14.18,
+              "actualDays": 9
             },
             "day20": {
-              "value": 14.46,
-              "actualDays": 8
+              "value": 14.18,
+              "actualDays": 9
             }
           }
         }
       ],
-      "calculatedAt": 1778197504408
+      "calculatedAt": 1778232473017
     },
     {
       "code": "SZ002414",
@@ -52607,12 +52720,12 @@
               "actualDays": 5
             },
             "day10": {
-              "value": 7.83,
-              "actualDays": 6
+              "value": 7.33,
+              "actualDays": 7
             },
             "day20": {
-              "value": 7.83,
-              "actualDays": 6
+              "value": 7.33,
+              "actualDays": 7
             }
           }
         },
@@ -52629,12 +52742,12 @@
               "actualDays": 5
             },
             "day10": {
-              "value": 10.34,
-              "actualDays": 5
+              "value": 9.83,
+              "actualDays": 6
             },
             "day20": {
-              "value": 10.34,
-              "actualDays": 5
+              "value": 9.83,
+              "actualDays": 6
             }
           }
         },
@@ -52647,21 +52760,26 @@
               "actualDays": 3
             },
             "day5": {
-              "value": 6.77,
-              "actualDays": 4
+              "value": 6.27,
+              "actualDays": 5
             },
             "day10": {
-              "value": 6.77,
-              "actualDays": 4
+              "value": 6.27,
+              "actualDays": 5
             },
             "day20": {
-              "value": 6.77,
-              "actualDays": 4
+              "value": 6.27,
+              "actualDays": 5
             }
           }
+        },
+        {
+          "signalDate": "2026-05-07",
+          "entryPrice": 15.08,
+          "returns": {}
         }
       ],
-      "calculatedAt": 1778197504408
+      "calculatedAt": 1778232473017
     },
     {
       "code": "SZ002463",
@@ -53806,13 +53924,13 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 37.11,
-              "actualDays": 18
+              "value": 41.2,
+              "actualDays": 19
             }
           }
         }
       ],
-      "calculatedAt": 1778197504408
+      "calculatedAt": 1778232473017
     },
     {
       "code": "SZ002617",
@@ -54451,8 +54569,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 6.95,
-              "actualDays": 17
+              "value": 7.09,
+              "actualDays": 18
             }
           }
         },
@@ -54469,12 +54587,12 @@
               "actualDays": 5
             },
             "day10": {
-              "value": 0.5,
-              "actualDays": 7
+              "value": 0.63,
+              "actualDays": 8
             },
             "day20": {
-              "value": 0.5,
-              "actualDays": 7
+              "value": 0.63,
+              "actualDays": 8
             }
           }
         },
@@ -54491,12 +54609,12 @@
               "actualDays": 5
             },
             "day10": {
-              "value": 1.14,
-              "actualDays": 5
+              "value": 1.26,
+              "actualDays": 6
             },
             "day20": {
-              "value": 1.14,
-              "actualDays": 5
+              "value": 1.26,
+              "actualDays": 6
             }
           }
         },
@@ -54509,21 +54627,21 @@
               "actualDays": 3
             },
             "day5": {
-              "value": 2.96,
-              "actualDays": 4
+              "value": 3.09,
+              "actualDays": 5
             },
             "day10": {
-              "value": 2.96,
-              "actualDays": 4
+              "value": 3.09,
+              "actualDays": 5
             },
             "day20": {
-              "value": 2.96,
-              "actualDays": 4
+              "value": 3.09,
+              "actualDays": 5
             }
           }
         }
       ],
-      "calculatedAt": 1778197504408
+      "calculatedAt": 1778232473017
     },
     {
       "code": "SZ002636",
@@ -55690,13 +55808,13 @@
               "actualDays": 10
             },
             "day20": {
-              "value": 59.18,
-              "actualDays": 19
+              "value": 69.85,
+              "actualDays": 20
             }
           }
         }
       ],
-      "calculatedAt": 1778197504408
+      "calculatedAt": 1778232473017
     },
     {
       "code": "SZ002639",
@@ -56709,8 +56827,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": -12.39,
-              "actualDays": 16
+              "value": -11.9,
+              "actualDays": 17
             }
           }
         },
@@ -56731,8 +56849,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": -7.37,
-              "actualDays": 15
+              "value": -6.85,
+              "actualDays": 16
             }
           }
         },
@@ -56753,8 +56871,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": -7.74,
-              "actualDays": 14
+              "value": -7.23,
+              "actualDays": 15
             }
           }
         },
@@ -56775,8 +56893,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": -6.07,
-              "actualDays": 13
+              "value": -5.55,
+              "actualDays": 14
             }
           }
         },
@@ -56797,8 +56915,8 @@
               "actualDays": 10
             },
             "day20": {
-              "value": -7.74,
-              "actualDays": 12
+              "value": -7.23,
+              "actualDays": 13
             }
           }
         },
@@ -56819,13 +56937,13 @@
               "actualDays": 10
             },
             "day20": {
-              "value": -7.79,
-              "actualDays": 11
+              "value": -7.28,
+              "actualDays": 12
             }
           }
         }
       ],
-      "calculatedAt": 1778197504408
+      "calculatedAt": 1778232473017
     }
   ]
 }

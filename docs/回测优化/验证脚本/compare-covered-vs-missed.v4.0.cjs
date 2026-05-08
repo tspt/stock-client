@@ -9,7 +9,10 @@ const REPORT_PATH = path.join(__dirname, '..', '买点验证报告', 'BUYPOINT_C
 
 /**
  * 计算技术指标
- */
+  * 
+ * 版本: v4.0
+ * 创建时间: 2026-05-08
+*/
 function calculateMA(data, period) {
   if (data.length < period) return null;
   const sum = data.slice(-period).reduce((s, k) => s + k.close, 0);

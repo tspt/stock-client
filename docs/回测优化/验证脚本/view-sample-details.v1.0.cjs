@@ -1,3 +1,10 @@
+/**
+ * 查看训练样本详细信息
+ *
+ * 版本: v1.0
+ * 创建时间: 2026-05-08
+ */
+
 const fs = require('fs');
 const path = require('path');
 

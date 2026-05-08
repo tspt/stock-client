@@ -163,7 +163,9 @@ export function BacktestPage() {
         } else if (type === 'result') {
           allSignals.push(...signals);
           processedCount++;
-          setProgress(Math.round((processedCount / totalTasks) * 100));
+          const currentProgress = Math.round((processedCount / totalTasks) * 100);
+          // 在最后一个任务完成前，进度最多显示99%，避免数字和进度条不匹配
+          setProgress(processedCount === totalTasks ? 99 : Math.min(currentProgress, 99));
 
           if (processedCount === totalTasks) {
             setResults(allSignals);
@@ -858,10 +860,7 @@ export function BacktestPage() {
               percent={progress}
               status="active"
               showInfo={false}
-              strokeColor={{
-                '0%': '#1890ff',
-                '100%': '#52c41a',
-              }}
+              strokeColor="#1890ff"
               trailColor="rgba(0, 0, 0, 0.06)"
               size="small"
               style={{ borderRadius: 4 }}

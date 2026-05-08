@@ -6,6 +6,9 @@
  * 2. 计算技术指标（MA、MACD、RSI、成交量等）
  * 3. 对比已覆盖日期的特征
  * 4. 找出共同模式和差异
+ *
+ * 版本: v3.0
+ * 创建时间: 2026-05-08
  */
 
 const fs = require('fs');
@@ -391,7 +394,7 @@ async function main() {
   }
 
   // 保存分析结果
-  const outputPath = path.join(__dirname, '..', '买点验证', 'MISSED_BUYPOINTS_ANALYSIS.json');
+  const outputPath = path.join(__dirname, '..', '买点验证报告', 'MISSED_BUYPOINTS_ANALYSIS.json');
   fs.writeFileSync(outputPath, JSON.stringify(analysisResults, null, 2), 'utf-8');
 
   console.log('\n' + '='.repeat(80));

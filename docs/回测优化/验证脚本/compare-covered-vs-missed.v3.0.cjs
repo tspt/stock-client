@@ -6,6 +6,9 @@
  * 2. 与未覆盖日期进行对比
  * 3. 找出关键差异
  * 4. 生成优化建议
+ *
+ * 版本: v3.0
+ * 创建时间: 2026-05-08
  */
 
 const fs = require('fs');
@@ -428,7 +431,12 @@ async function main() {
   console.log('='.repeat(80));
 
   // 保存对比结果
-  const outputPath = path.join(__dirname, '..', '买点验证', 'COVERED_VS_MISSED_COMPARISON.json');
+  const outputPath = path.join(
+    __dirname,
+    '..',
+    '买点验证报告',
+    'COVERED_VS_MISSED_COMPARISON.json'
+  );
   fs.writeFileSync(
     outputPath,
     JSON.stringify(

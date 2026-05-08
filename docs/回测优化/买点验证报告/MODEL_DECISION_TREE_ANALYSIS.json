@@ -1,0 +1,445 @@
+{
+  "modelInfo": {
+    "configId": "Config_22_Recall_Opt",
+    "trainingSamples": {
+      "total": 1913,
+      "positive": 188,
+      "negative": 1725
+    },
+    "performance": {
+      "accuracy": 0.9811813904861474,
+      "precision": 1,
+      "recall": 0.8085106382978723,
+      "f1": 0.8941176470588235
+    }
+  },
+  "decisionPaths": {
+    "total": 153,
+    "buyPaths": 64,
+    "nonBuyPaths": 89
+  },
+  "featureImportance": [
+    {
+      "feature": "distFromHigh",
+      "usageCount": 33
+    },
+    {
+      "feature": "change5d",
+      "usageCount": 21
+    },
+    {
+      "feature": "ma5Deviation",
+      "usageCount": 20
+    },
+    {
+      "feature": "change10d",
+      "usageCount": 18
+    },
+    {
+      "feature": "volumeRatio",
+      "usageCount": 18
+    },
+    {
+      "feature": "ma20Deviation",
+      "usageCount": 16
+    },
+    {
+      "feature": "bbWidth",
+      "usageCount": 16
+    },
+    {
+      "feature": "atrPercent",
+      "usageCount": 10
+    }
+  ],
+  "rejectionAnalysis": {
+    "topPaths": [
+      {
+        "prediction": 0,
+        "probability": 0,
+        "samples": 233,
+        "conditions": [
+          "ma5Deviation <= 5.1476",
+          "change10d <= -1.3995",
+          "ma5Deviation <= -0.0672",
+          "atrPercent <= 4.1126",
+          "volumeRatio <= 1.2588",
+          "ma20Deviation <= 0.4757"
+        ]
+      },
+      {
+        "prediction": 0,
+        "probability": 0.11904761904761904,
+        "samples": 126,
+        "conditions": [
+          "ma5Deviation <= 5.1476",
+          "change10d > -1.3995",
+          "bbWidth <= 0.4351",
+          "atrPercent <= 5.7322",
+          "volumeRatio > 0.5121",
+          "ma5Deviation <= 3.3684",
+          "ma20Deviation > -3.3244",
+          "distFromHigh > -23.3514",
+          "ma20Deviation <= 5.9614",
+          "change5d <= 4.0827",
+          "volumeRatio > 0.6789",
+          "change5d <= 4.0517",
+          "change10d > -1.3970",
+          "change10d > 0.2927",
+          "bbWidth <= 0.1456",
+          "bbWidth <= 0.1256",
+          "ma5Deviation <= 2.0541",
+          "ma20Deviation <= 4.9727",
+          "change5d > -0.2768",
+          "bbWidth <= 0.1020"
+        ]
+      },
+      {
+        "prediction": 0,
+        "probability": 0,
+        "samples": 98,
+        "conditions": [
+          "ma5Deviation > 5.1476"
+        ]
+      },
+      {
+        "prediction": 0,
+        "probability": 0,
+        "samples": 95,
+        "conditions": [
+          "ma5Deviation <= 5.1476",
+          "change10d <= -1.3995",
+          "ma5Deviation <= -0.0672",
+          "atrPercent > 4.1126",
+          "change5d <= 0.5705",
+          "distFromHigh <= -15.7677",
+          "atrPercent > 4.1163",
+          "atrPercent <= 6.0540"
+        ]
+      },
+      {
+        "prediction": 0,
+        "probability": 0,
+        "samples": 66,
+        "conditions": [
+          "ma5Deviation <= 5.1476",
+          "change10d > -1.3995",
+          "bbWidth <= 0.4351",
+          "atrPercent <= 5.7322",
+          "volumeRatio > 0.5121",
+          "ma5Deviation > 3.3684",
+          "ma5Deviation <= 5.0934",
+          "volumeRatio <= 2.4430"
+        ]
+      },
+      {
+        "prediction": 0,
+        "probability": 0,
+        "samples": 59,
+        "conditions": [
+          "ma5Deviation <= 5.1476",
+          "change10d > -1.3995",
+          "bbWidth <= 0.4351",
+          "atrPercent <= 5.7322",
+          "volumeRatio > 0.5121",
+          "ma5Deviation <= 3.3684",
+          "ma20Deviation > -3.3244",
+          "distFromHigh > -23.3514",
+          "ma20Deviation <= 5.9614",
+          "change5d <= 4.0827",
+          "volumeRatio <= 0.6789",
+          "change10d <= 7.5393"
+        ]
+      },
+      {
+        "prediction": 0,
+        "probability": 0,
+        "samples": 57,
+        "conditions": [
+          "ma5Deviation <= 5.1476",
+          "change10d > -1.3995",
+          "bbWidth <= 0.4351",
+          "atrPercent <= 5.7322",
+          "volumeRatio > 0.5121",
+          "ma5Deviation <= 3.3684",
+          "ma20Deviation > -3.3244",
+          "distFromHigh > -23.3514",
+          "ma20Deviation <= 5.9614",
+          "change5d > 4.0827",
+          "change10d > 0.0493"
+        ]
+      },
+      {
+        "prediction": 0,
+        "probability": 0.2545454545454545,
+        "samples": 55,
+        "conditions": [
+          "ma5Deviation <= 5.1476",
+          "change10d > -1.3995",
+          "bbWidth <= 0.4351",
+          "atrPercent <= 5.7322",
+          "volumeRatio > 0.5121",
+          "ma5Deviation <= 3.3684",
+          "ma20Deviation > -3.3244",
+          "distFromHigh > -23.3514",
+          "ma20Deviation <= 5.9614",
+          "change5d <= 4.0827",
+          "volumeRatio > 0.6789",
+          "change5d <= 4.0517",
+          "change10d > -1.3970",
+          "change10d > 0.2927",
+          "bbWidth <= 0.1456",
+          "bbWidth <= 0.1256",
+          "ma5Deviation <= 2.0541",
+          "ma20Deviation <= 4.9727",
+          "change5d <= -0.2768",
+          "atrPercent <= 3.8798"
+        ]
+      },
+      {
+        "prediction": 0,
+        "probability": 0,
+        "samples": 52,
+        "conditions": [
+          "ma5Deviation <= 5.1476",
+          "change10d > -1.3995",
+          "bbWidth <= 0.4351",
+          "atrPercent <= 5.7322",
+          "volumeRatio > 0.5121",
+          "ma5Deviation <= 3.3684",
+          "ma20Deviation > -3.3244",
+          "distFromHigh > -23.3514",
+          "ma20Deviation > 5.9614",
+          "ma20Deviation > 6.9118",
+          "volumeRatio > 0.6760",
+          "ma5Deviation <= 2.5860",
+          "distFromHigh <= -1.4992"
+        ]
+      },
+      {
+        "prediction": 0,
+        "probability": 0.04081632653061224,
+        "samples": 49,
+        "conditions": [
+          "ma5Deviation <= 5.1476",
+          "change10d > -1.3995",
+          "bbWidth <= 0.4351",
+          "atrPercent <= 5.7322",
+          "volumeRatio > 0.5121",
+          "ma5Deviation <= 3.3684",
+          "ma20Deviation > -3.3244",
+          "distFromHigh > -23.3514",
+          "ma20Deviation <= 5.9614",
+          "change5d <= 4.0827",
+          "volumeRatio > 0.6789",
+          "change5d <= 4.0517",
+          "change10d > -1.3970",
+          "change10d > 0.2927",
+          "bbWidth > 0.1456",
+          "volumeRatio > 0.6811",
+          "bbWidth > 0.1641",
+          "bbWidth > 0.1647",
+          "ma20Deviation <= 5.0469",
+          "ma20Deviation <= 3.3069"
+        ]
+      }
+    ],
+    "commonConditions": [
+      {
+        "condition": "ma5Deviation <= 5.1476",
+        "count": 53,
+        "totalSamples": 1579
+      },
+      {
+        "condition": "change10d > -1.3995",
+        "count": 35,
+        "totalSamples": 966
+      },
+      {
+        "condition": "bbWidth <= 0.4351",
+        "count": 34,
+        "totalSamples": 920
+      },
+      {
+        "condition": "atrPercent <= 5.7322",
+        "count": 30,
+        "totalSamples": 860
+      },
+      {
+        "condition": "volumeRatio > 0.5121",
+        "count": 29,
+        "totalSamples": 852
+      },
+      {
+        "condition": "ma5Deviation <= 3.3684",
+        "count": 28,
+        "totalSamples": 786
+      },
+      {
+        "condition": "ma20Deviation > -3.3244",
+        "count": 27,
+        "totalSamples": 760
+      },
+      {
+        "condition": "distFromHigh > -23.3514",
+        "count": 23,
+        "totalSamples": 718
+      },
+      {
+        "condition": "ma20Deviation <= 5.9614",
+        "count": 19,
+        "totalSamples": 633
+      },
+      {
+        "condition": "change10d <= -1.3995",
+        "count": 18,
+        "totalSamples": 613
+      },
+      {
+        "condition": "change5d <= 4.0827",
+        "count": 17,
+        "totalSamples": 569
+      },
+      {
+        "condition": "volumeRatio > 0.6789",
+        "count": 16,
+        "totalSamples": 510
+      },
+      {
+        "condition": "change5d <= 4.0517",
+        "count": 16,
+        "totalSamples": 510
+      },
+      {
+        "condition": "change10d > -1.3970",
+        "count": 16,
+        "totalSamples": 510
+      },
+      {
+        "condition": "change10d > 0.2927",
+        "count": 12,
+        "totalSamples": 390
+      }
+    ]
+  },
+  "keyThresholds": {
+    "volumeConditions": [
+      "volumeRatio <= 1.2588",
+      "volumeRatio > 1.2588",
+      "volumeRatio <= 1.2954",
+      "volumeRatio > 1.2954",
+      "volumeRatio <= 0.6118",
+      "volumeRatio > 0.6118",
+      "volumeRatio <= 0.8256",
+      "volumeRatio > 0.8256",
+      "volumeRatio <= 0.7463",
+      "volumeRatio > 0.7463",
+      "volumeRatio <= 0.5121",
+      "volumeRatio > 0.5121",
+      "volumeRatio <= 0.6789",
+      "volumeRatio <= 0.5877",
+      "volumeRatio > 0.5877",
+      "volumeRatio > 0.6789",
+      "volumeRatio <= 1.1008",
+      "volumeRatio > 1.1008",
+      "volumeRatio <= 1.1218",
+      "volumeRatio > 1.1218",
+      "volumeRatio <= 0.8356",
+      "volumeRatio > 0.8356",
+      "volumeRatio <= 1.0902",
+      "volumeRatio > 1.0902",
+      "volumeRatio <= 0.6811",
+      "volumeRatio > 0.6811",
+      "volumeRatio <= 1.1642",
+      "volumeRatio > 1.1642",
+      "volumeRatio <= 0.6760",
+      "volumeRatio > 0.6760",
+      "volumeRatio <= 0.8530",
+      "volumeRatio > 0.8530",
+      "volumeRatio <= 2.4430",
+      "volumeRatio > 2.4430",
+      "volumeRatio <= 0.7296",
+      "volumeRatio > 0.7296"
+    ],
+    "changeConditions": [
+      "change10d <= -1.3995",
+      "change5d <= 0.5705",
+      "change5d <= -5.1293",
+      "change5d <= -6.9278",
+      "change5d > -6.9278",
+      "change5d > -5.1293",
+      "change5d > 0.5705",
+      "change5d <= 1.1603",
+      "change5d > 1.1603",
+      "change5d <= -1.8880",
+      "change5d > -1.8880",
+      "change10d <= -4.7623",
+      "change10d > -4.7623",
+      "change5d <= 0.9300",
+      "change5d > 0.9300",
+      "change10d <= -7.6089",
+      "change10d > -7.6089",
+      "change10d <= -4.3552",
+      "change10d > -4.3552",
+      "change10d <= -2.3212",
+      "change10d > -2.3212",
+      "change5d <= 2.3254",
+      "change5d <= -1.1957",
+      "change5d > -1.1957",
+      "change10d <= -7.0711",
+      "change5d <= 0.6411",
+      "change5d > 0.6411",
+      "change10d > -7.0711",
+      "change5d > 2.3254",
+      "change10d > -1.3995",
+      "change5d <= 0.6755",
+      "change5d <= -1.2888",
+      "change5d > -1.2888",
+      "change5d > 0.6755",
+      "change5d <= 4.0827",
+      "change10d <= 7.5393",
+      "change10d > 7.5393",
+      "change5d <= 4.0517",
+      "change10d <= -1.3970",
+      "change10d > -1.3970",
+      "change10d <= 0.2927",
+      "change10d <= -0.5795",
+      "change10d > -0.5795",
+      "change10d > 0.2927",
+      "change5d <= -0.2768",
+      "change5d > -0.2768",
+      "change5d <= 2.4119",
+      "change5d > 2.4119",
+      "change5d > 4.0517",
+      "change5d > 4.0827",
+      "change10d <= 0.0493",
+      "change10d <= -0.1501",
+      "change10d > -0.1501",
+      "change10d > 0.0493",
+      "change5d <= 7.5201",
+      "change5d <= 4.2405",
+      "change5d <= 0.5431",
+      "change10d <= 10.7634",
+      "change10d > 10.7634",
+      "change5d > 0.5431",
+      "change5d > 4.2405",
+      "change5d > 7.5201",
+      "change10d <= 12.4354",
+      "change10d <= 7.2087",
+      "change10d > 7.2087",
+      "change10d > 12.4354",
+      "change10d <= -0.9202",
+      "change10d > -0.9202",
+      "change5d <= 2.4641",
+      "change5d > 2.4641",
+      "change10d <= 8.2867",
+      "change10d <= 8.0172",
+      "change5d <= -13.2352",
+      "change5d > -13.2352",
+      "change10d > 8.0172",
+      "change5d <= -0.3541",
+      "change5d > -0.3541",
+      "change10d > 8.2867"
+    ]
+  }
+}

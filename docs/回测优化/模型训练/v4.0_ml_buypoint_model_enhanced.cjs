@@ -77,35 +77,250 @@ function loadStockFiles() {
 const stockFiles = loadStockFiles();
 
 // 增强版参数搜索配置（优化召回率）
+// 根据决策树分析结果调整：
+// - 增加 minSamplesLeaf 防止过拟合
+// - 扩大深度范围以捕捉小幅波动和缩量整理模式
 const parameterGrid = [
   // 原8个配置（保留作为基准）
-  { maxDepth: 5, minSamplesSplit: 2, negativeSamplesPerStock: 10, id: 'Config_1' },
-  { maxDepth: 5, minSamplesSplit: 2, negativeSamplesPerStock: 15, id: 'Config_2' },
-  { maxDepth: 6, minSamplesSplit: 2, negativeSamplesPerStock: 10, id: 'Config_3' },
-  { maxDepth: 6, minSamplesSplit: 2, negativeSamplesPerStock: 15, id: 'Config_4' },
-  { maxDepth: 6, minSamplesSplit: 2, negativeSamplesPerStock: 20, id: 'Config_5' },
-  { maxDepth: 7, minSamplesSplit: 2, negativeSamplesPerStock: 10, id: 'Config_6' },
-  { maxDepth: 7, minSamplesSplit: 2, negativeSamplesPerStock: 15, id: 'Config_7' },
-  { maxDepth: 8, minSamplesSplit: 2, negativeSamplesPerStock: 12, id: 'Config_8' },
+  {
+    maxDepth: 5,
+    minSamplesSplit: 2,
+    minSamplesLeaf: 1,
+    negativeSamplesPerStock: 10,
+    id: 'Config_1',
+  },
+  {
+    maxDepth: 5,
+    minSamplesSplit: 2,
+    minSamplesLeaf: 1,
+    negativeSamplesPerStock: 15,
+    id: 'Config_2',
+  },
+  {
+    maxDepth: 6,
+    minSamplesSplit: 2,
+    minSamplesLeaf: 1,
+    negativeSamplesPerStock: 10,
+    id: 'Config_3',
+  },
+  {
+    maxDepth: 6,
+    minSamplesSplit: 2,
+    minSamplesLeaf: 1,
+    negativeSamplesPerStock: 15,
+    id: 'Config_4',
+  },
+  {
+    maxDepth: 6,
+    minSamplesSplit: 2,
+    minSamplesLeaf: 1,
+    negativeSamplesPerStock: 20,
+    id: 'Config_5',
+  },
+  {
+    maxDepth: 7,
+    minSamplesSplit: 2,
+    minSamplesLeaf: 1,
+    negativeSamplesPerStock: 10,
+    id: 'Config_6',
+  },
+  {
+    maxDepth: 7,
+    minSamplesSplit: 2,
+    minSamplesLeaf: 1,
+    negativeSamplesPerStock: 15,
+    id: 'Config_7',
+  },
+  {
+    maxDepth: 8,
+    minSamplesSplit: 2,
+    minSamplesLeaf: 1,
+    negativeSamplesPerStock: 12,
+    id: 'Config_8',
+  },
 
   // 新增配置：更大深度和更多负样本（提升召回率）
-  { maxDepth: 9, minSamplesSplit: 2, negativeSamplesPerStock: 10, id: 'Config_9' },
-  { maxDepth: 9, minSamplesSplit: 2, negativeSamplesPerStock: 15, id: 'Config_10' },
-  { maxDepth: 10, minSamplesSplit: 2, negativeSamplesPerStock: 10, id: 'Config_11' },
-  { maxDepth: 10, minSamplesSplit: 2, negativeSamplesPerStock: 12, id: 'Config_12' },
-  { maxDepth: 10, minSamplesSplit: 2, negativeSamplesPerStock: 15, id: 'Config_13' },
-  { maxDepth: 12, minSamplesSplit: 2, negativeSamplesPerStock: 10, id: 'Config_14' },
-  { maxDepth: 12, minSamplesSplit: 2, negativeSamplesPerStock: 12, id: 'Config_15' },
+  {
+    maxDepth: 9,
+    minSamplesSplit: 2,
+    minSamplesLeaf: 1,
+    negativeSamplesPerStock: 10,
+    id: 'Config_9',
+  },
+  {
+    maxDepth: 9,
+    minSamplesSplit: 2,
+    minSamplesLeaf: 1,
+    negativeSamplesPerStock: 15,
+    id: 'Config_10',
+  },
+  {
+    maxDepth: 10,
+    minSamplesSplit: 2,
+    minSamplesLeaf: 1,
+    negativeSamplesPerStock: 10,
+    id: 'Config_11',
+  },
+  {
+    maxDepth: 10,
+    minSamplesSplit: 2,
+    minSamplesLeaf: 1,
+    negativeSamplesPerStock: 12,
+    id: 'Config_12',
+  },
+  {
+    maxDepth: 10,
+    minSamplesSplit: 2,
+    minSamplesLeaf: 1,
+    negativeSamplesPerStock: 15,
+    id: 'Config_13',
+  },
+  {
+    maxDepth: 12,
+    minSamplesSplit: 2,
+    minSamplesLeaf: 1,
+    negativeSamplesPerStock: 10,
+    id: 'Config_14',
+  },
+  {
+    maxDepth: 12,
+    minSamplesSplit: 2,
+    minSamplesLeaf: 1,
+    negativeSamplesPerStock: 12,
+    id: 'Config_15',
+  },
 
   // 新增配置：更大深度 + 更多负样本（重点优化召回率）
-  { maxDepth: 15, minSamplesSplit: 2, negativeSamplesPerStock: 20, id: 'Config_16_Recall_Opt' },
-  { maxDepth: 15, minSamplesSplit: 2, negativeSamplesPerStock: 25, id: 'Config_17_Recall_Opt' },
-  { maxDepth: 15, minSamplesSplit: 2, negativeSamplesPerStock: 30, id: 'Config_18_Recall_Opt' },
-  { maxDepth: 18, minSamplesSplit: 2, negativeSamplesPerStock: 20, id: 'Config_19_Recall_Opt' },
-  { maxDepth: 18, minSamplesSplit: 2, negativeSamplesPerStock: 25, id: 'Config_20_Recall_Opt' },
-  { maxDepth: 20, minSamplesSplit: 2, negativeSamplesPerStock: 20, id: 'Config_21_Recall_Opt' },
-  { maxDepth: 20, minSamplesSplit: 2, negativeSamplesPerStock: 25, id: 'Config_22_Recall_Opt' },
-  { maxDepth: 20, minSamplesSplit: 2, negativeSamplesPerStock: 30, id: 'Config_23_Recall_Opt' },
+  {
+    maxDepth: 15,
+    minSamplesSplit: 2,
+    minSamplesLeaf: 1,
+    negativeSamplesPerStock: 20,
+    id: 'Config_16_Recall_Opt',
+  },
+  {
+    maxDepth: 15,
+    minSamplesSplit: 2,
+    minSamplesLeaf: 1,
+    negativeSamplesPerStock: 25,
+    id: 'Config_17_Recall_Opt',
+  },
+  {
+    maxDepth: 15,
+    minSamplesSplit: 2,
+    minSamplesLeaf: 1,
+    negativeSamplesPerStock: 30,
+    id: 'Config_18_Recall_Opt',
+  },
+  {
+    maxDepth: 18,
+    minSamplesSplit: 2,
+    minSamplesLeaf: 1,
+    negativeSamplesPerStock: 20,
+    id: 'Config_19_Recall_Opt',
+  },
+  {
+    maxDepth: 18,
+    minSamplesSplit: 2,
+    minSamplesLeaf: 1,
+    negativeSamplesPerStock: 25,
+    id: 'Config_20_Recall_Opt',
+  },
+  {
+    maxDepth: 20,
+    minSamplesSplit: 2,
+    minSamplesLeaf: 1,
+    negativeSamplesPerStock: 20,
+    id: 'Config_21_Recall_Opt',
+  },
+  {
+    maxDepth: 20,
+    minSamplesSplit: 2,
+    minSamplesLeaf: 1,
+    negativeSamplesPerStock: 25,
+    id: 'Config_22_Recall_Opt',
+  },
+  {
+    maxDepth: 20,
+    minSamplesSplit: 2,
+    minSamplesLeaf: 1,
+    negativeSamplesPerStock: 30,
+    id: 'Config_23_Recall_Opt',
+  },
+
+  // ⭐ 新增：minSamplesLeaf=2 的配置（防止过拟合，提高泛化能力）
+  {
+    maxDepth: 15,
+    minSamplesSplit: 2,
+    minSamplesLeaf: 2,
+    negativeSamplesPerStock: 20,
+    id: 'Config_24_Generalization',
+  },
+  {
+    maxDepth: 15,
+    minSamplesSplit: 2,
+    minSamplesLeaf: 2,
+    negativeSamplesPerStock: 25,
+    id: 'Config_25_Generalization',
+  },
+  {
+    maxDepth: 18,
+    minSamplesSplit: 2,
+    minSamplesLeaf: 2,
+    negativeSamplesPerStock: 20,
+    id: 'Config_26_Generalization',
+  },
+  {
+    maxDepth: 18,
+    minSamplesSplit: 2,
+    minSamplesLeaf: 2,
+    negativeSamplesPerStock: 25,
+    id: 'Config_27_Generalization',
+  },
+  {
+    maxDepth: 20,
+    minSamplesSplit: 2,
+    minSamplesLeaf: 2,
+    negativeSamplesPerStock: 20,
+    id: 'Config_28_Generalization',
+  },
+  {
+    maxDepth: 20,
+    minSamplesSplit: 2,
+    minSamplesLeaf: 2,
+    negativeSamplesPerStock: 25,
+    id: 'Config_29_Generalization',
+  },
+  {
+    maxDepth: 20,
+    minSamplesSplit: 2,
+    minSamplesLeaf: 2,
+    negativeSamplesPerStock: 30,
+    id: 'Config_30_Generalization',
+  },
+
+  // ⭐ 新增：minSamplesLeaf=3 的配置（更强泛化）
+  {
+    maxDepth: 18,
+    minSamplesSplit: 2,
+    minSamplesLeaf: 3,
+    negativeSamplesPerStock: 25,
+    id: 'Config_31_Strong_Gen',
+  },
+  {
+    maxDepth: 20,
+    minSamplesSplit: 2,
+    minSamplesLeaf: 3,
+    negativeSamplesPerStock: 25,
+    id: 'Config_32_Strong_Gen',
+  },
+  {
+    maxDepth: 20,
+    minSamplesSplit: 2,
+    minSamplesLeaf: 3,
+    negativeSamplesPerStock: 30,
+    id: 'Config_33_Strong_Gen',
+  },
 ];
 
 console.log('================================================================================');
@@ -524,6 +739,8 @@ async function runOptimization() {
     results.push({
       configId: config.id,
       maxDepth: config.maxDepth,
+      minSamplesLeaf: config.minSamplesLeaf || 1, // 保存minSamplesLeaf参数
+      negativeSamplesPerStock: config.negativeSamplesPerStock, // 保存原始配置值
       negativeSamples: y.filter((v) => v === 0).length,
       ...metrics,
     });
@@ -732,11 +949,19 @@ function printComparisonTable(results) {
 
 async function saveBestModel(bestConfig) {
   // 使用最优配置重新训练并保存
-  const { X, y } = buildDataset(
-    parameterGrid.find((p) => p.id === bestConfig.configId).negativeSamplesPerStock
+  const negativeSamplesPerStock =
+    bestConfig.negativeSamplesPerStock ||
+    parameterGrid.find((p) => p.id === bestConfig.configId)?.negativeSamplesPerStock ||
+    25;
+  const minSamplesLeaf = bestConfig.minSamplesLeaf || 1; // 从bestConfig中读取
+
+  console.log(
+    `   使用配置: minSamplesLeaf=${minSamplesLeaf}, negativeSamplesPerStock=${negativeSamplesPerStock}`
   );
 
-  const tree = new DecisionTree(bestConfig.maxDepth, 2, 1);
+  const { X, y } = buildDataset(negativeSamplesPerStock);
+
+  const tree = new DecisionTree(bestConfig.maxDepth, 2, minSamplesLeaf);
   tree.train(X, y);
 
   const modelData = {
