@@ -1,0 +1,1313 @@
+{
+  "version": "4.0",
+  "timestamp": "2026-05-07T23:45:32.923Z",
+  "totalManualPoints": 188,
+  "coveredPoints": 147,
+  "missedPoints": 41,
+  "stocks": [
+    {
+      "name": "三孚股份",
+      "code": "SH603938",
+      "manualCount": 2,
+      "coveredCount": 2,
+      "missedCount": 0,
+      "coverage": "100.0",
+      "manualDates": [
+        "2025-12-22",
+        "2026-04-01"
+      ],
+      "coveredDates": [
+        "2025-12-22",
+        "2026-04-01"
+      ],
+      "missedDates": []
+    },
+    {
+      "name": "三维通信",
+      "code": "SZ002115",
+      "manualCount": 3,
+      "coveredCount": 2,
+      "missedCount": 1,
+      "coverage": "66.7",
+      "manualDates": [
+        "2025-08-22",
+        "2026-01-07",
+        "2026-04-24"
+      ],
+      "coveredDates": [
+        "2026-01-07",
+        "2026-04-24"
+      ],
+      "missedDates": [
+        "2025-08-22"
+      ]
+    },
+    {
+      "name": "中天科技",
+      "code": "SH600522",
+      "manualCount": 5,
+      "coveredCount": 3,
+      "missedCount": 2,
+      "coverage": "60.0",
+      "manualDates": [
+        "2025-09-17",
+        "2025-11-28",
+        "2026-01-16",
+        "2026-02-06",
+        "2026-04-17"
+      ],
+      "coveredDates": [
+        "2025-11-28",
+        "2026-02-06",
+        "2026-04-17"
+      ],
+      "missedDates": [
+        "2025-09-17",
+        "2026-01-16"
+      ]
+    },
+    {
+      "name": "中衡设计",
+      "code": "SH603017",
+      "manualCount": 3,
+      "coveredCount": 2,
+      "missedCount": 1,
+      "coverage": "66.7",
+      "manualDates": [
+        "2025-11-24",
+        "2026-01-07",
+        "2026-04-17"
+      ],
+      "coveredDates": [
+        "2026-01-07",
+        "2026-04-17"
+      ],
+      "missedDates": [
+        "2025-11-24"
+      ]
+    },
+    {
+      "name": "乐凯胶片",
+      "code": "SH600135",
+      "manualCount": 2,
+      "coveredCount": 2,
+      "missedCount": 0,
+      "coverage": "100.0",
+      "manualDates": [
+        "2025-12-30",
+        "2026-03-06"
+      ],
+      "coveredDates": [
+        "2025-12-30",
+        "2026-03-06"
+      ],
+      "missedDates": []
+    },
+    {
+      "name": "九鼎新材",
+      "code": "SZ002201",
+      "manualCount": 2,
+      "coveredCount": 2,
+      "missedCount": 0,
+      "coverage": "100.0",
+      "manualDates": [
+        "2025-07-03",
+        "2026-04-15"
+      ],
+      "coveredDates": [
+        "2025-07-03",
+        "2026-04-15"
+      ],
+      "missedDates": []
+    },
+    {
+      "name": "亨通光电",
+      "code": "SH600487",
+      "manualCount": 3,
+      "coveredCount": 2,
+      "missedCount": 1,
+      "coverage": "66.7",
+      "manualDates": [
+        "2025-08-07",
+        "2025-08-22",
+        "2026-01-16"
+      ],
+      "coveredDates": [
+        "2025-08-22",
+        "2026-01-16"
+      ],
+      "missedDates": [
+        "2025-08-07"
+      ]
+    },
+    {
+      "name": "众源新材",
+      "code": "SH603527",
+      "manualCount": 3,
+      "coveredCount": 2,
+      "missedCount": 1,
+      "coverage": "66.7",
+      "manualDates": [
+        "2025-06-23",
+        "2026-03-10",
+        "2026-04-13"
+      ],
+      "coveredDates": [
+        "2026-03-10",
+        "2026-04-13"
+      ],
+      "missedDates": [
+        "2025-06-23"
+      ]
+    },
+    {
+      "name": "佳力图",
+      "code": "SH603912",
+      "manualCount": 3,
+      "coveredCount": 2,
+      "missedCount": 1,
+      "coverage": "66.7",
+      "manualDates": [
+        "2025-07-28",
+        "2026-02-06",
+        "2026-04-16"
+      ],
+      "coveredDates": [
+        "2026-02-06",
+        "2026-04-16"
+      ],
+      "missedDates": [
+        "2025-07-28"
+      ]
+    },
+    {
+      "name": "兆新股份",
+      "code": "SZ002256",
+      "manualCount": 6,
+      "coveredCount": 5,
+      "missedCount": 1,
+      "coverage": "83.3",
+      "manualDates": [
+        "2025-08-15",
+        "2025-08-26",
+        "2025-10-31",
+        "2025-11-06",
+        "2026-03-16",
+        "2026-04-10"
+      ],
+      "coveredDates": [
+        "2025-08-26",
+        "2025-10-31",
+        "2025-11-06",
+        "2026-03-16",
+        "2026-04-10"
+      ],
+      "missedDates": [
+        "2025-08-15"
+      ]
+    },
+    {
+      "name": "先导基电",
+      "code": "SH600641",
+      "manualCount": 3,
+      "coveredCount": 2,
+      "missedCount": 1,
+      "coverage": "66.7",
+      "manualDates": [
+        "2025-09-16",
+        "2025-12-31",
+        "2026-04-03"
+      ],
+      "coveredDates": [
+        "2025-12-31",
+        "2026-04-03"
+      ],
+      "missedDates": [
+        "2025-09-16"
+      ]
+    },
+    {
+      "name": "光电股份",
+      "code": "SH600184",
+      "manualCount": 4,
+      "coveredCount": 4,
+      "missedCount": 0,
+      "coverage": "100.0",
+      "manualDates": [
+        "2025-03-07",
+        "2025-06-24",
+        "2025-07-16",
+        "2026-04-15"
+      ],
+      "coveredDates": [
+        "2025-03-07",
+        "2025-06-24",
+        "2025-07-16",
+        "2026-04-15"
+      ],
+      "missedDates": []
+    },
+    {
+      "name": "利通电子",
+      "code": "SH603629",
+      "manualCount": 3,
+      "coveredCount": 3,
+      "missedCount": 0,
+      "coverage": "100.0",
+      "manualDates": [
+        "2025-03-11",
+        "2026-01-20",
+        "2026-04-03"
+      ],
+      "coveredDates": [
+        "2025-03-11",
+        "2026-01-20",
+        "2026-04-03"
+      ],
+      "missedDates": []
+    },
+    {
+      "name": "华东数控",
+      "code": "SZ002248",
+      "manualCount": 2,
+      "coveredCount": 1,
+      "missedCount": 1,
+      "coverage": "50.0",
+      "manualDates": [
+        "2025-08-01",
+        "2025-10-28"
+      ],
+      "coveredDates": [
+        "2025-08-01"
+      ],
+      "missedDates": [
+        "2025-10-28"
+      ]
+    },
+    {
+      "name": "华天科技",
+      "code": "SZ002185",
+      "manualCount": 2,
+      "coveredCount": 1,
+      "missedCount": 1,
+      "coverage": "50.0",
+      "manualDates": [
+        "2025-08-15",
+        "2026-01-14"
+      ],
+      "coveredDates": [
+        "2026-01-14"
+      ],
+      "missedDates": [
+        "2025-08-15"
+      ]
+    },
+    {
+      "name": "华翔股份",
+      "code": "SH603112",
+      "manualCount": 1,
+      "coveredCount": 1,
+      "missedCount": 0,
+      "coverage": "100.0",
+      "manualDates": [
+        "2026-04-13"
+      ],
+      "coveredDates": [
+        "2026-04-13"
+      ],
+      "missedDates": []
+    },
+    {
+      "name": "吉华集团",
+      "code": "SH603980",
+      "manualCount": 3,
+      "coveredCount": 3,
+      "missedCount": 0,
+      "coverage": "100.0",
+      "manualDates": [
+        "2025-06-06",
+        "2025-06-23",
+        "2026-01-27"
+      ],
+      "coveredDates": [
+        "2025-06-06",
+        "2025-06-23",
+        "2026-01-27"
+      ],
+      "missedDates": []
+    },
+    {
+      "name": "吉林化纤",
+      "code": "SZ000420",
+      "manualCount": 4,
+      "coveredCount": 1,
+      "missedCount": 3,
+      "coverage": "25.0",
+      "manualDates": [
+        "2025-05-13",
+        "2025-08-19",
+        "2025-12-25",
+        "2026-03-10"
+      ],
+      "coveredDates": [
+        "2026-03-10"
+      ],
+      "missedDates": [
+        "2025-05-13",
+        "2025-08-19",
+        "2025-12-25"
+      ]
+    },
+    {
+      "name": "天奇股份",
+      "code": "SZ002009",
+      "manualCount": 1,
+      "coveredCount": 1,
+      "missedCount": 0,
+      "coverage": "100.0",
+      "manualDates": [
+        "2026-01-22"
+      ],
+      "coveredDates": [
+        "2026-01-22"
+      ],
+      "missedDates": []
+    },
+    {
+      "name": "天润工业",
+      "code": "SZ002283",
+      "manualCount": 3,
+      "coveredCount": 2,
+      "missedCount": 1,
+      "coverage": "66.7",
+      "manualDates": [
+        "2025-06-23",
+        "2026-01-20",
+        "2026-04-07"
+      ],
+      "coveredDates": [
+        "2025-06-23",
+        "2026-04-07"
+      ],
+      "missedDates": [
+        "2026-01-20"
+      ]
+    },
+    {
+      "name": "太极实业",
+      "code": "SH600667",
+      "manualCount": 2,
+      "coveredCount": 1,
+      "missedCount": 1,
+      "coverage": "50.0",
+      "manualDates": [
+        "2025-09-23",
+        "2025-12-22"
+      ],
+      "coveredDates": [
+        "2025-12-22"
+      ],
+      "missedDates": [
+        "2025-09-23"
+      ]
+    },
+    {
+      "name": "安彩高科",
+      "code": "SH600207",
+      "manualCount": 3,
+      "coveredCount": 3,
+      "missedCount": 0,
+      "coverage": "100.0",
+      "manualDates": [
+        "2025-10-29",
+        "2026-02-06",
+        "2026-03-20"
+      ],
+      "coveredDates": [
+        "2025-10-29",
+        "2026-02-06",
+        "2026-03-20"
+      ],
+      "missedDates": []
+    },
+    {
+      "name": "宏昌电子",
+      "code": "SH603002",
+      "manualCount": 4,
+      "coveredCount": 4,
+      "missedCount": 0,
+      "coverage": "100.0",
+      "manualDates": [
+        "2026-01-14",
+        "2026-01-20",
+        "2026-04-03",
+        "2026-04-10"
+      ],
+      "coveredDates": [
+        "2026-01-14",
+        "2026-01-20",
+        "2026-04-03",
+        "2026-04-10"
+      ],
+      "missedDates": []
+    },
+    {
+      "name": "山东玻纤",
+      "code": "SH605006",
+      "manualCount": 2,
+      "coveredCount": 2,
+      "missedCount": 0,
+      "coverage": "100.0",
+      "manualDates": [
+        "2026-02-03",
+        "2026-04-09"
+      ],
+      "coveredDates": [
+        "2026-02-03",
+        "2026-04-09"
+      ],
+      "missedDates": []
+    },
+    {
+      "name": "常青科技",
+      "code": "SH603125",
+      "manualCount": 2,
+      "coveredCount": 2,
+      "missedCount": 0,
+      "coverage": "100.0",
+      "manualDates": [
+        "2025-06-27",
+        "2026-04-23"
+      ],
+      "coveredDates": [
+        "2025-06-27",
+        "2026-04-23"
+      ],
+      "missedDates": []
+    },
+    {
+      "name": "康强电子",
+      "code": "SZ002119",
+      "manualCount": 3,
+      "coveredCount": 2,
+      "missedCount": 1,
+      "coverage": "66.7",
+      "manualDates": [
+        "2025-01-03",
+        "2025-11-05",
+        "2026-01-14"
+      ],
+      "coveredDates": [
+        "2025-01-03",
+        "2026-01-14"
+      ],
+      "missedDates": [
+        "2025-11-05"
+      ]
+    },
+    {
+      "name": "快克智能",
+      "code": "SH603203",
+      "manualCount": 3,
+      "coveredCount": 2,
+      "missedCount": 1,
+      "coverage": "66.7",
+      "manualDates": [
+        "2025-06-20",
+        "2025-07-24",
+        "2026-04-02"
+      ],
+      "coveredDates": [
+        "2025-06-20",
+        "2026-04-02"
+      ],
+      "missedDates": [
+        "2025-07-24"
+      ]
+    },
+    {
+      "name": "恒为科技",
+      "code": "SH603496",
+      "manualCount": 3,
+      "coveredCount": 3,
+      "missedCount": 0,
+      "coverage": "100.0",
+      "manualDates": [
+        "2025-02-25",
+        "2025-09-09",
+        "2026-01-08"
+      ],
+      "coveredDates": [
+        "2025-02-25",
+        "2025-09-09",
+        "2026-01-08"
+      ],
+      "missedDates": []
+    },
+    {
+      "name": "恒润股份",
+      "code": "SH603985",
+      "manualCount": 2,
+      "coveredCount": 2,
+      "missedCount": 0,
+      "coverage": "100.0",
+      "manualDates": [
+        "2025-03-28",
+        "2026-04-15"
+      ],
+      "coveredDates": [
+        "2025-03-28",
+        "2026-04-15"
+      ],
+      "missedDates": []
+    },
+    {
+      "name": "新亚强",
+      "code": "SH603155",
+      "manualCount": 2,
+      "coveredCount": 1,
+      "missedCount": 1,
+      "coverage": "50.0",
+      "manualDates": [
+        "2025-11-24",
+        "2026-02-11"
+      ],
+      "coveredDates": [
+        "2025-11-24"
+      ],
+      "missedDates": [
+        "2026-02-11"
+      ]
+    },
+    {
+      "name": "明阳智能",
+      "code": "SH601615",
+      "manualCount": 3,
+      "coveredCount": 2,
+      "missedCount": 1,
+      "coverage": "66.7",
+      "manualDates": [
+        "2025-09-04",
+        "2025-09-23",
+        "2026-01-05"
+      ],
+      "coveredDates": [
+        "2025-09-04",
+        "2026-01-05"
+      ],
+      "missedDates": [
+        "2025-09-23"
+      ]
+    },
+    {
+      "name": "春秋电子",
+      "code": "SH603890",
+      "manualCount": 3,
+      "coveredCount": 3,
+      "missedCount": 0,
+      "coverage": "100.0",
+      "manualDates": [
+        "2025-10-23",
+        "2025-11-21",
+        "2026-04-07"
+      ],
+      "coveredDates": [
+        "2025-10-23",
+        "2025-11-21",
+        "2026-04-07"
+      ],
+      "missedDates": []
+    },
+    {
+      "name": "晶科科技",
+      "code": "SH601778",
+      "manualCount": 3,
+      "coveredCount": 3,
+      "missedCount": 0,
+      "coverage": "100.0",
+      "manualDates": [
+        "2025-08-13",
+        "2026-03-05",
+        "2026-04-10"
+      ],
+      "coveredDates": [
+        "2025-08-13",
+        "2026-03-05",
+        "2026-04-10"
+      ],
+      "missedDates": []
+    },
+    {
+      "name": "永创智能",
+      "code": "SH603901",
+      "manualCount": 3,
+      "coveredCount": 2,
+      "missedCount": 1,
+      "coverage": "66.7",
+      "manualDates": [
+        "2025-01-17",
+        "2025-04-22",
+        "2025-11-26"
+      ],
+      "coveredDates": [
+        "2025-04-22",
+        "2025-11-26"
+      ],
+      "missedDates": [
+        "2025-01-17"
+      ]
+    },
+    {
+      "name": "永杉锂业",
+      "code": "SH603399",
+      "manualCount": 2,
+      "coveredCount": 1,
+      "missedCount": 1,
+      "coverage": "50.0",
+      "manualDates": [
+        "2025-10-28",
+        "2026-04-07"
+      ],
+      "coveredDates": [
+        "2025-10-28"
+      ],
+      "missedDates": [
+        "2026-04-07"
+      ]
+    },
+    {
+      "name": "江化微",
+      "code": "SH603078",
+      "manualCount": 1,
+      "coveredCount": 1,
+      "missedCount": 0,
+      "coverage": "100.0",
+      "manualDates": [
+        "2026-01-09"
+      ],
+      "coveredDates": [
+        "2026-01-09"
+      ],
+      "missedDates": []
+    },
+    {
+      "name": "江苏有线",
+      "code": "SH600959",
+      "manualCount": 3,
+      "coveredCount": 2,
+      "missedCount": 1,
+      "coverage": "66.7",
+      "manualDates": [
+        "2025-05-28",
+        "2025-12-26",
+        "2026-01-22"
+      ],
+      "coveredDates": [
+        "2025-05-28",
+        "2026-01-22"
+      ],
+      "missedDates": [
+        "2025-12-26"
+      ]
+    },
+    {
+      "name": "沪电股份",
+      "code": "SZ002463",
+      "manualCount": 3,
+      "coveredCount": 3,
+      "missedCount": 0,
+      "coverage": "100.0",
+      "manualDates": [
+        "2025-07-03",
+        "2026-02-24",
+        "2026-04-07"
+      ],
+      "coveredDates": [
+        "2025-07-03",
+        "2026-02-24",
+        "2026-04-07"
+      ],
+      "missedDates": []
+    },
+    {
+      "name": "浙富控股",
+      "code": "SZ002266",
+      "manualCount": 3,
+      "coveredCount": 1,
+      "missedCount": 2,
+      "coverage": "33.3",
+      "manualDates": [
+        "2025-09-29",
+        "2026-01-06",
+        "2026-04-10"
+      ],
+      "coveredDates": [
+        "2026-04-10"
+      ],
+      "missedDates": [
+        "2025-09-29",
+        "2026-01-06"
+      ]
+    },
+    {
+      "name": "浙数文化",
+      "code": "SH600633",
+      "manualCount": 2,
+      "coveredCount": 0,
+      "missedCount": 2,
+      "coverage": "0.0",
+      "manualDates": [
+        "2026-01-07",
+        "2026-04-22"
+      ],
+      "coveredDates": [],
+      "missedDates": [
+        "2026-01-07",
+        "2026-04-22"
+      ]
+    },
+    {
+      "name": "浙文互联",
+      "code": "SH600986",
+      "manualCount": 3,
+      "coveredCount": 3,
+      "missedCount": 0,
+      "coverage": "100.0",
+      "manualDates": [
+        "2025-10-21",
+        "2025-12-30",
+        "2026-04-07"
+      ],
+      "coveredDates": [
+        "2025-10-21",
+        "2025-12-30",
+        "2026-04-07"
+      ],
+      "missedDates": []
+    },
+    {
+      "name": "游族网络",
+      "code": "SZ002174",
+      "manualCount": 2,
+      "coveredCount": 2,
+      "missedCount": 0,
+      "coverage": "100.0",
+      "manualDates": [
+        "2025-05-19",
+        "2025-07-23"
+      ],
+      "coveredDates": [
+        "2025-05-19",
+        "2025-07-23"
+      ],
+      "missedDates": []
+    },
+    {
+      "name": "滨化股份",
+      "code": "SH601678",
+      "manualCount": 1,
+      "coveredCount": 0,
+      "missedCount": 1,
+      "coverage": "0.0",
+      "manualDates": [
+        "2026-01-16"
+      ],
+      "coveredDates": [],
+      "missedDates": [
+        "2026-01-16"
+      ]
+    },
+    {
+      "name": "环旭电子",
+      "code": "SH601231",
+      "manualCount": 2,
+      "coveredCount": 1,
+      "missedCount": 1,
+      "coverage": "50.0",
+      "manualDates": [
+        "2025-07-24",
+        "2025-11-25"
+      ],
+      "coveredDates": [
+        "2025-11-25"
+      ],
+      "missedDates": [
+        "2025-07-24"
+      ]
+    },
+    {
+      "name": "盛洋科技",
+      "code": "SH603703",
+      "manualCount": 3,
+      "coveredCount": 1,
+      "missedCount": 2,
+      "coverage": "33.3",
+      "manualDates": [
+        "2025-09-23",
+        "2025-12-04",
+        "2025-12-24"
+      ],
+      "coveredDates": [
+        "2025-12-24"
+      ],
+      "missedDates": [
+        "2025-09-23",
+        "2025-12-04"
+      ]
+    },
+    {
+      "name": "睿能科技",
+      "code": "SH603933",
+      "manualCount": 4,
+      "coveredCount": 4,
+      "missedCount": 0,
+      "coverage": "100.0",
+      "manualDates": [
+        "2025-10-15",
+        "2025-11-26",
+        "2026-03-24",
+        "2026-04-28"
+      ],
+      "coveredDates": [
+        "2025-10-15",
+        "2025-11-26",
+        "2026-03-24",
+        "2026-04-28"
+      ],
+      "missedDates": []
+    },
+    {
+      "name": "福日电子",
+      "code": "SH600203",
+      "manualCount": 2,
+      "coveredCount": 2,
+      "missedCount": 0,
+      "coverage": "100.0",
+      "manualDates": [
+        "2025-02-21",
+        "2025-08-01"
+      ],
+      "coveredDates": [
+        "2025-02-21",
+        "2025-08-01"
+      ],
+      "missedDates": []
+    },
+    {
+      "name": "福蓉科技",
+      "code": "SH603327",
+      "manualCount": 2,
+      "coveredCount": 1,
+      "missedCount": 1,
+      "coverage": "50.0",
+      "manualDates": [
+        "2025-08-04",
+        "2025-11-20"
+      ],
+      "coveredDates": [
+        "2025-11-20"
+      ],
+      "missedDates": [
+        "2025-08-04"
+      ]
+    },
+    {
+      "name": "科森科技",
+      "code": "SH603626",
+      "manualCount": 2,
+      "coveredCount": 2,
+      "missedCount": 0,
+      "coverage": "100.0",
+      "manualDates": [
+        "2025-12-23",
+        "2026-02-05"
+      ],
+      "coveredDates": [
+        "2025-12-23",
+        "2026-02-05"
+      ],
+      "missedDates": []
+    },
+    {
+      "name": "立昂微",
+      "code": "SH605358",
+      "manualCount": 3,
+      "coveredCount": 1,
+      "missedCount": 2,
+      "coverage": "33.3",
+      "manualDates": [
+        "2025-12-09",
+        "2025-12-31",
+        "2026-04-16"
+      ],
+      "coveredDates": [
+        "2026-04-16"
+      ],
+      "missedDates": [
+        "2025-12-09",
+        "2025-12-31"
+      ]
+    },
+    {
+      "name": "立达信",
+      "code": "SH605365",
+      "manualCount": 4,
+      "coveredCount": 4,
+      "missedCount": 0,
+      "coverage": "100.0",
+      "manualDates": [
+        "2025-10-31",
+        "2025-12-16",
+        "2026-04-01",
+        "2026-04-14"
+      ],
+      "coveredDates": [
+        "2025-10-31",
+        "2025-12-16",
+        "2026-04-01",
+        "2026-04-14"
+      ],
+      "missedDates": []
+    },
+    {
+      "name": "紫光国微",
+      "code": "SZ002049",
+      "manualCount": 1,
+      "coveredCount": 1,
+      "missedCount": 0,
+      "coverage": "100.0",
+      "manualDates": [
+        "2025-07-31"
+      ],
+      "coveredDates": [
+        "2025-07-31"
+      ],
+      "missedDates": []
+    },
+    {
+      "name": "腾龙股份",
+      "code": "SH603158",
+      "manualCount": 3,
+      "coveredCount": 2,
+      "missedCount": 1,
+      "coverage": "66.7",
+      "manualDates": [
+        "2025-12-16",
+        "2026-03-10",
+        "2026-04-07"
+      ],
+      "coveredDates": [
+        "2026-03-10",
+        "2026-04-07"
+      ],
+      "missedDates": [
+        "2025-12-16"
+      ]
+    },
+    {
+      "name": "艾华集团",
+      "code": "SH603989",
+      "manualCount": 3,
+      "coveredCount": 3,
+      "missedCount": 0,
+      "coverage": "100.0",
+      "manualDates": [
+        "2025-04-07",
+        "2025-06-23",
+        "2025-12-19"
+      ],
+      "coveredDates": [
+        "2025-04-07",
+        "2025-06-23",
+        "2025-12-19"
+      ],
+      "missedDates": []
+    },
+    {
+      "name": "莲花控股",
+      "code": "SH600186",
+      "manualCount": 3,
+      "coveredCount": 3,
+      "missedCount": 0,
+      "coverage": "100.0",
+      "manualDates": [
+        "2025-01-27",
+        "2026-04-07",
+        "2026-04-15"
+      ],
+      "coveredDates": [
+        "2025-01-27",
+        "2026-04-07",
+        "2026-04-15"
+      ],
+      "missedDates": []
+    },
+    {
+      "name": "诺德股份",
+      "code": "SH600110",
+      "manualCount": 5,
+      "coveredCount": 4,
+      "missedCount": 1,
+      "coverage": "80.0",
+      "manualDates": [
+        "2025-06-16",
+        "2025-08-12",
+        "2025-11-06",
+        "2026-01-13",
+        "2026-03-25"
+      ],
+      "coveredDates": [
+        "2025-06-16",
+        "2025-08-12",
+        "2025-11-06",
+        "2026-03-25"
+      ],
+      "missedDates": [
+        "2026-01-13"
+      ]
+    },
+    {
+      "name": "赛腾股份",
+      "code": "SH603283",
+      "manualCount": 2,
+      "coveredCount": 2,
+      "missedCount": 0,
+      "coverage": "100.0",
+      "manualDates": [
+        "2025-07-31",
+        "2026-04-07"
+      ],
+      "coveredDates": [
+        "2025-07-31",
+        "2026-04-07"
+      ],
+      "missedDates": []
+    },
+    {
+      "name": "起帆电缆",
+      "code": "SH605222",
+      "manualCount": 3,
+      "coveredCount": 3,
+      "missedCount": 0,
+      "coverage": "100.0",
+      "manualDates": [
+        "2025-12-11",
+        "2026-01-16",
+        "2026-04-14"
+      ],
+      "coveredDates": [
+        "2025-12-11",
+        "2026-01-16",
+        "2026-04-14"
+      ],
+      "missedDates": []
+    },
+    {
+      "name": "超声电子",
+      "code": "SZ000823",
+      "manualCount": 3,
+      "coveredCount": 2,
+      "missedCount": 1,
+      "coverage": "66.7",
+      "manualDates": [
+        "2025-06-27",
+        "2025-12-03",
+        "2026-04-07"
+      ],
+      "coveredDates": [
+        "2025-06-27",
+        "2026-04-07"
+      ],
+      "missedDates": [
+        "2025-12-03"
+      ]
+    },
+    {
+      "name": "远东股份",
+      "code": "SH600869",
+      "manualCount": 2,
+      "coveredCount": 2,
+      "missedCount": 0,
+      "coverage": "100.0",
+      "manualDates": [
+        "2025-08-18",
+        "2026-01-05"
+      ],
+      "coveredDates": [
+        "2025-08-18",
+        "2026-01-05"
+      ],
+      "missedDates": []
+    },
+    {
+      "name": "通富微电",
+      "code": "SZ002156",
+      "manualCount": 2,
+      "coveredCount": 2,
+      "missedCount": 0,
+      "coverage": "100.0",
+      "manualDates": [
+        "2025-09-10",
+        "2026-01-14"
+      ],
+      "coveredDates": [
+        "2025-09-10",
+        "2026-01-14"
+      ],
+      "missedDates": []
+    },
+    {
+      "name": "金安国纪",
+      "code": "SZ002636",
+      "manualCount": 2,
+      "coveredCount": 2,
+      "missedCount": 0,
+      "coverage": "100.0",
+      "manualDates": [
+        "2026-01-14",
+        "2026-04-03"
+      ],
+      "coveredDates": [
+        "2026-01-14",
+        "2026-04-03"
+      ],
+      "missedDates": []
+    },
+    {
+      "name": "铁流股份",
+      "code": "SH603926",
+      "manualCount": 2,
+      "coveredCount": 2,
+      "missedCount": 0,
+      "coverage": "100.0",
+      "manualDates": [
+        "2025-08-19",
+        "2026-01-07"
+      ],
+      "coveredDates": [
+        "2025-08-19",
+        "2026-01-07"
+      ],
+      "missedDates": []
+    },
+    {
+      "name": "雪人集团",
+      "code": "SZ002639",
+      "manualCount": 3,
+      "coveredCount": 3,
+      "missedCount": 0,
+      "coverage": "100.0",
+      "manualDates": [
+        "2025-05-22",
+        "2025-12-10",
+        "2026-01-06"
+      ],
+      "coveredDates": [
+        "2025-05-22",
+        "2025-12-10",
+        "2026-01-06"
+      ],
+      "missedDates": []
+    },
+    {
+      "name": "露笑科技",
+      "code": "SZ002617",
+      "manualCount": 1,
+      "coveredCount": 0,
+      "missedCount": 1,
+      "coverage": "0.0",
+      "manualDates": [
+        "2025-09-03"
+      ],
+      "coveredDates": [],
+      "missedDates": [
+        "2025-09-03"
+      ]
+    },
+    {
+      "name": "风华高科",
+      "code": "SZ000636",
+      "manualCount": 3,
+      "coveredCount": 3,
+      "missedCount": 0,
+      "coverage": "100.0",
+      "manualDates": [
+        "2025-08-12",
+        "2026-01-15",
+        "2026-04-10"
+      ],
+      "coveredDates": [
+        "2025-08-12",
+        "2026-01-15",
+        "2026-04-10"
+      ],
+      "missedDates": []
+    },
+    {
+      "name": "风范股份",
+      "code": "SH601700",
+      "manualCount": 3,
+      "coveredCount": 2,
+      "missedCount": 1,
+      "coverage": "66.7",
+      "manualDates": [
+        "2025-10-30",
+        "2025-12-10",
+        "2026-02-11"
+      ],
+      "coveredDates": [
+        "2025-12-10",
+        "2026-02-11"
+      ],
+      "missedDates": [
+        "2025-10-30"
+      ]
+    },
+    {
+      "name": "高德红外",
+      "code": "SZ002414",
+      "manualCount": 4,
+      "coveredCount": 3,
+      "missedCount": 1,
+      "coverage": "75.0",
+      "manualDates": [
+        "2025-02-18",
+        "2025-06-24",
+        "2025-12-19",
+        "2026-04-24"
+      ],
+      "coveredDates": [
+        "2025-02-18",
+        "2025-12-19",
+        "2026-04-24"
+      ],
+      "missedDates": [
+        "2025-06-24"
+      ]
+    },
+    {
+      "name": "鼎胜新材",
+      "code": "SH603876",
+      "manualCount": 5,
+      "coveredCount": 4,
+      "missedCount": 1,
+      "coverage": "80.0",
+      "manualDates": [
+        "2025-09-01",
+        "2025-12-22",
+        "2026-02-05",
+        "2026-03-06",
+        "2026-03-23"
+      ],
+      "coveredDates": [
+        "2025-12-22",
+        "2026-02-05",
+        "2026-03-06",
+        "2026-03-23"
+      ],
+      "missedDates": [
+        "2025-09-01"
+      ]
+    }
+  ]
+}

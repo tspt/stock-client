@@ -1,14 +1,14 @@
 /**
- * ML买点识别模型 - v3.0 集成学习版
+ * ML买点识别模型 - v4.0 增强版
  *
- * 基于决策树的买点识别模型（双模型集成）
- * 训练时间: 2026-05-06
+ * 基于决策树的买点识别模型（单模型）
+ * 训练时间: 2026-05-07
  *
- * 模型1 (Config_19): 树深度18, 75个买点, 实际覆盖率96.15%
- * 模型2 (Config_21 Full): 树深度20, 78个买点, 中衡设计100%覆盖
- *
- * 集成策略: OR逻辑 - 任一模型识别即标记为买点
- * 预期效果: 结合两个模型优势，接近100%覆盖率
+ * 模型配置 (Config_22_Recall_Opt):
+ *   - 树深度: 20
+ *   - 负样本数: 1725 (25/股票)
+ *   - 训练数据: 69只股票, 188个买点
+ *   - 训练集召回率: 87.2%
  */
 
 import type { KLineData } from '@/types/stock';
@@ -16,38 +16,29 @@ import type { KLineData } from '@/types/stock';
 // ==================== 模型元数据 ====================
 
 export const MODEL_METADATA = {
-  version: 'v3.0',
-  configId: 'Ensemble_Config19_Config21',
-  trainingDate: '2026-05-06',
-  // 保持向后兼容的字段
+  version: 'v4.0',
+  configId: 'Config_22_Recall_Opt',
+  trainingDate: '2026-05-07',
   performance: {
-    accuracy: 100,
-    precision: 100,
-    recall: 100,
-    f1: 1.0,
+    accuracy: 98.6,
+    precision: 98.8,
+    recall: 87.2,
+    f1: 0.93,
   },
   trainingSamples: {
-    total: 1253, // 615 + 638
-    positive: 153, // 75 + 78
-    negative: 1100, // 540 + 560
+    total: 1913,
+    positive: 188,
+    negative: 1725,
   },
-  // 新增的集成学习信息
-  models: [
-    {
-      name: 'Config_19',
-      depth: 18,
-      samples: { total: 615, positive: 75, negative: 540 },
-      actualCoverage: 96.15,
-    },
-    {
-      name: 'Config_21_Full',
-      depth: 20,
-      samples: { total: 638, positive: 78, negative: 560 },
-      zhonghengCoverage: 100,
-    },
-  ],
-  ensembleStrategy: 'OR (Union)',
-  expectedCoverage: '~100%',
+  modelConfig: {
+    maxDepth: 20,
+    minSamplesSplit: 2,
+    negativeSamplesPerStock: 25,
+  },
+  trainingData: {
+    stocks: 69,
+    buyPoints: 188,
+  },
 };
 
 // ==================== 决策树类型定义 ====================
@@ -64,12 +55,10 @@ interface DecisionTreeNode {
 }
 
 // ==================== 决策树模型数据 ====================
-// 从 JSON 文件导入两个模型数据（集成学习）
-import modelDataConfig19 from './buypoint_model_v3_config19.json';
-import modelDataConfig21Full from './buypoint_model_v3_config21_full.json';
+// 从 JSON 文件导入 v4.0 模型数据
+import modelDataV4 from './buypoint_model_v4.json';
 
-const MODEL_TREE_CONFIG19: DecisionTreeNode = (modelDataConfig19 as any).tree;
-const MODEL_TREE_CONFIG21_FULL: DecisionTreeNode = (modelDataConfig21Full as any).tree;
+const MODEL_TREE_V4: DecisionTreeNode = (modelDataV4 as any).tree;
 
 // 特征名称映射
 const FEATURE_NAMES = [
@@ -247,12 +236,11 @@ export function predictBuyPoint(klineData: KLineData[], index: number): boolean 
     return false;
   }
 
-  // 使用两个模型分别预测
-  const prediction1 = predictWithTree(features, MODEL_TREE_CONFIG19);
-  const prediction2 = predictWithTree(features, MODEL_TREE_CONFIG21_FULL);
+  // 使用 v4.0 模型预测
+  const prediction = predictWithTree(features, MODEL_TREE_V4);
 
-  // 集成策略: OR逻辑 - 任一模型识别即标记为买点
-  return prediction1 === 1 || prediction2 === 1;
+  // 返回预测结果（1=买点，0=非买点）
+  return prediction === 1;
 }
 
 /**

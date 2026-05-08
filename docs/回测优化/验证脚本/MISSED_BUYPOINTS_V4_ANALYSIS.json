@@ -1,0 +1,398 @@
+{
+  "summary": {
+    "totalPoints": 188,
+    "coveredPoints": 148,
+    "missedPoints": 40,
+    "coverageRate": "78.72%"
+  },
+  "missedBuyPoints": [
+    {
+      "stockName": "三孚股份",
+      "stockCode": "SH603938",
+      "date": "2025-12-22"
+    },
+    {
+      "stockName": "三维通信",
+      "stockCode": "SZ002115",
+      "date": "2025-08-22"
+    },
+    {
+      "stockName": "三维通信",
+      "stockCode": "SZ002115",
+      "date": "2026-01-07"
+    },
+    {
+      "stockName": "中天科技",
+      "stockCode": "SH600522",
+      "date": "2025-09-17"
+    },
+    {
+      "stockName": "亨通光电",
+      "stockCode": "SH600487",
+      "date": "2025-08-07"
+    },
+    {
+      "stockName": "亨通光电",
+      "stockCode": "SH600487",
+      "date": "2026-01-16"
+    },
+    {
+      "stockName": "众源新材",
+      "stockCode": "SH603527",
+      "date": "2026-03-10"
+    },
+    {
+      "stockName": "佳力图",
+      "stockCode": "SH603912",
+      "date": "2026-02-06"
+    },
+    {
+      "stockName": "先导基电",
+      "stockCode": "SH600641",
+      "date": "2025-09-16"
+    },
+    {
+      "stockName": "先导基电",
+      "stockCode": "SH600641",
+      "date": "2026-04-03"
+    },
+    {
+      "stockName": "华东数控",
+      "stockCode": "SZ002248",
+      "date": "2025-08-01"
+    },
+    {
+      "stockName": "华东数控",
+      "stockCode": "SZ002248",
+      "date": "2025-10-28"
+    },
+    {
+      "stockName": "华天科技",
+      "stockCode": "SZ002185",
+      "date": "2025-08-15"
+    },
+    {
+      "stockName": "吉华集团",
+      "stockCode": "SH603980",
+      "date": "2025-06-06"
+    },
+    {
+      "stockName": "吉林化纤",
+      "stockCode": "SZ000420",
+      "date": "2025-05-13"
+    },
+    {
+      "stockName": "吉林化纤",
+      "stockCode": "SZ000420",
+      "date": "2025-08-19"
+    },
+    {
+      "stockName": "安彩高科",
+      "stockCode": "SH600207",
+      "date": "2026-03-20"
+    },
+    {
+      "stockName": "宏昌电子",
+      "stockCode": "SH603002",
+      "date": "2026-01-14"
+    },
+    {
+      "stockName": "山东玻纤",
+      "stockCode": "SH605006",
+      "date": "2026-02-03"
+    },
+    {
+      "stockName": "康强电子",
+      "stockCode": "SZ002119",
+      "date": "2025-11-05"
+    },
+    {
+      "stockName": "快克智能",
+      "stockCode": "SH603203",
+      "date": "2025-07-24"
+    },
+    {
+      "stockName": "春秋电子",
+      "stockCode": "SH603890",
+      "date": "2026-04-07"
+    },
+    {
+      "stockName": "晶科科技",
+      "stockCode": "SH601778",
+      "date": "2025-08-13"
+    },
+    {
+      "stockName": "永杉锂业",
+      "stockCode": "SH603399",
+      "date": "2025-10-28"
+    },
+    {
+      "stockName": "浙富控股",
+      "stockCode": "SZ002266",
+      "date": "2025-09-29"
+    },
+    {
+      "stockName": "浙富控股",
+      "stockCode": "SZ002266",
+      "date": "2026-04-10"
+    },
+    {
+      "stockName": "浙数文化",
+      "stockCode": "SH600633",
+      "date": "2026-04-22"
+    },
+    {
+      "stockName": "浙文互联",
+      "stockCode": "SH600986",
+      "date": "2025-10-21"
+    },
+    {
+      "stockName": "滨化股份",
+      "stockCode": "SH601678",
+      "date": "2026-01-16"
+    },
+    {
+      "stockName": "环旭电子",
+      "stockCode": "SH601231",
+      "date": "2025-07-24"
+    },
+    {
+      "stockName": "盛洋科技",
+      "stockCode": "SH603703",
+      "date": "2025-09-23"
+    },
+    {
+      "stockName": "盛洋科技",
+      "stockCode": "SH603703",
+      "date": "2025-12-04"
+    },
+    {
+      "stockName": "睿能科技",
+      "stockCode": "SH603933",
+      "date": "2025-10-15"
+    },
+    {
+      "stockName": "福蓉科技",
+      "stockCode": "SH603327",
+      "date": "2025-08-04"
+    },
+    {
+      "stockName": "艾华集团",
+      "stockCode": "SH603989",
+      "date": "2025-06-23"
+    },
+    {
+      "stockName": "远东股份",
+      "stockCode": "SH600869",
+      "date": "2026-01-05"
+    },
+    {
+      "stockName": "高德红外",
+      "stockCode": "SZ002414",
+      "date": "2025-06-24"
+    },
+    {
+      "stockName": "高德红外",
+      "stockCode": "SZ002414",
+      "date": "2025-12-19"
+    },
+    {
+      "stockName": "高德红外",
+      "stockCode": "SZ002414",
+      "date": "2026-04-24"
+    },
+    {
+      "stockName": "鼎胜新材",
+      "stockCode": "SH603876",
+      "date": "2025-09-01"
+    }
+  ],
+  "stockStats": {
+    "三孚股份": {
+      "code": "SH603938",
+      "manualCount": 2,
+      "missedCount": 1,
+      "coverage": "50.0"
+    },
+    "三维通信": {
+      "code": "SZ002115",
+      "manualCount": 3,
+      "missedCount": 2,
+      "coverage": "33.3"
+    },
+    "中天科技": {
+      "code": "SH600522",
+      "manualCount": 5,
+      "missedCount": 1,
+      "coverage": "80.0"
+    },
+    "亨通光电": {
+      "code": "SH600487",
+      "manualCount": 3,
+      "missedCount": 2,
+      "coverage": "33.3"
+    },
+    "众源新材": {
+      "code": "SH603527",
+      "manualCount": 3,
+      "missedCount": 1,
+      "coverage": "66.7"
+    },
+    "佳力图": {
+      "code": "SH603912",
+      "manualCount": 3,
+      "missedCount": 1,
+      "coverage": "66.7"
+    },
+    "先导基电": {
+      "code": "SH600641",
+      "manualCount": 3,
+      "missedCount": 2,
+      "coverage": "33.3"
+    },
+    "华东数控": {
+      "code": "SZ002248",
+      "manualCount": 2,
+      "missedCount": 2,
+      "coverage": "0.0"
+    },
+    "华天科技": {
+      "code": "SZ002185",
+      "manualCount": 2,
+      "missedCount": 1,
+      "coverage": "50.0"
+    },
+    "吉华集团": {
+      "code": "SH603980",
+      "manualCount": 3,
+      "missedCount": 1,
+      "coverage": "66.7"
+    },
+    "吉林化纤": {
+      "code": "SZ000420",
+      "manualCount": 4,
+      "missedCount": 2,
+      "coverage": "50.0"
+    },
+    "安彩高科": {
+      "code": "SH600207",
+      "manualCount": 3,
+      "missedCount": 1,
+      "coverage": "66.7"
+    },
+    "宏昌电子": {
+      "code": "SH603002",
+      "manualCount": 4,
+      "missedCount": 1,
+      "coverage": "75.0"
+    },
+    "山东玻纤": {
+      "code": "SH605006",
+      "manualCount": 2,
+      "missedCount": 1,
+      "coverage": "50.0"
+    },
+    "康强电子": {
+      "code": "SZ002119",
+      "manualCount": 3,
+      "missedCount": 1,
+      "coverage": "66.7"
+    },
+    "快克智能": {
+      "code": "SH603203",
+      "manualCount": 3,
+      "missedCount": 1,
+      "coverage": "66.7"
+    },
+    "春秋电子": {
+      "code": "SH603890",
+      "manualCount": 3,
+      "missedCount": 1,
+      "coverage": "66.7"
+    },
+    "晶科科技": {
+      "code": "SH601778",
+      "manualCount": 3,
+      "missedCount": 1,
+      "coverage": "66.7"
+    },
+    "永杉锂业": {
+      "code": "SH603399",
+      "manualCount": 2,
+      "missedCount": 1,
+      "coverage": "50.0"
+    },
+    "浙富控股": {
+      "code": "SZ002266",
+      "manualCount": 3,
+      "missedCount": 2,
+      "coverage": "33.3"
+    },
+    "浙数文化": {
+      "code": "SH600633",
+      "manualCount": 2,
+      "missedCount": 1,
+      "coverage": "50.0"
+    },
+    "浙文互联": {
+      "code": "SH600986",
+      "manualCount": 3,
+      "missedCount": 1,
+      "coverage": "66.7"
+    },
+    "滨化股份": {
+      "code": "SH601678",
+      "manualCount": 1,
+      "missedCount": 1,
+      "coverage": "0.0"
+    },
+    "环旭电子": {
+      "code": "SH601231",
+      "manualCount": 2,
+      "missedCount": 1,
+      "coverage": "50.0"
+    },
+    "盛洋科技": {
+      "code": "SH603703",
+      "manualCount": 3,
+      "missedCount": 2,
+      "coverage": "33.3"
+    },
+    "睿能科技": {
+      "code": "SH603933",
+      "manualCount": 4,
+      "missedCount": 1,
+      "coverage": "75.0"
+    },
+    "福蓉科技": {
+      "code": "SH603327",
+      "manualCount": 2,
+      "missedCount": 1,
+      "coverage": "50.0"
+    },
+    "艾华集团": {
+      "code": "SH603989",
+      "manualCount": 3,
+      "missedCount": 1,
+      "coverage": "66.7"
+    },
+    "远东股份": {
+      "code": "SH600869",
+      "manualCount": 2,
+      "missedCount": 1,
+      "coverage": "50.0"
+    },
+    "高德红外": {
+      "code": "SZ002414",
+      "manualCount": 4,
+      "missedCount": 3,
+      "coverage": "25.0"
+    },
+    "鼎胜新材": {
+      "code": "SH603876",
+      "manualCount": 5,
+      "missedCount": 1,
+      "coverage": "80.0"
+    }
+  }
+}
