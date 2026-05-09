@@ -279,7 +279,7 @@ export function BillboardPage() {
           <div className={styles.tableWrapper}>
             {loading && data.length === 0 ? (
               <div className={styles.loadingState}>
-                <Spin size="large" tip="加载中..." />
+                <Spin size="large" />
               </div>
             ) : data.length === 0 ? (
               <div className={styles.emptyState}>

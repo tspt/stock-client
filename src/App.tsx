@@ -39,7 +39,7 @@ const { Header, Content } = Layout;
 function AppContent() {
   const { theme: currentTheme } = useTheme();
   const { setSelectedStock } = useStockStore();
-  const [activeTab, setActiveTab] = useState('cookie-manager');
+  const [activeTab, setActiveTab] = useState('opportunity');
 
   // 检查 electronAPI 是否可用
   useEffect(() => {

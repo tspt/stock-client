@@ -21,7 +21,7 @@ export function FundamentalAnalysisCard({ code }: FundamentalAnalysisCardProps) 
     return (
       <Card className={styles.card}>
         <div className={styles.loadingContainer}>
-          <Spin size="large" tip="加载基本面数据..." />
+          <Spin size="large" />
         </div>
       </Card>
     );

@@ -12,52 +12,20 @@
   - 缓存管理器统一（services/cacheManager.ts）
   - 完成时间：2026-04-16
 
-- **[OPTIMIZATION_QUICK_REF.md](./OPTIMIZATION_QUICK_REF.md)** - 快速参考卡片
-  - 新增/修改文件清单
-  - 快速使用示例
-  - 验证状态
+#### 2. Services 按路由组织重构 ✅
 
----
+**状态：** 已完成（2026-04-16）
 
-### 🚧 进行中的重构
+- ✅ 所有模块已按功能域重组（core、hot、stocks、alerts、opportunity、fundamental、sector）
+- ✅ 旧文件已全部清理
+- ✅ 编译验证通过
 
-#### Services 按路由组织重构
+#### 3. 代理层 Cookie 失效问题修复
 
-**核心文档：**
-
-- **[SERVICES_REFACTORING_GUIDE.md](./SERVICES_REFACTORING_GUIDE.md)** ⭐ **主指南**
-  - 完整的重构步骤（560 行）
-  - 所有代码示例
-  - 验证与回退方案
-  - **推荐使用此文档执行重构**
-
-**辅助文档：**
-
-- **[SERVICES_REFACTORING_PLAN.md](./SERVICES_REFACTORING_PLAN.md)** - 原始计划
-
-  - 重构思路
-  - 目录结构设计
-
-- **[REFACTORING_PROGRESS.md](./REFACTORING_PROGRESS.md)** - 进度跟踪
-  - 实时进度（当前 25%）
-  - 待办清单
-  - 下一步行动
-
-**当前状态：**
-
-- ✅ core/ 模块完成
-- ✅ hot/ 模块完成
-- ⏳ 剩余 6 个模块待完成
-- 📊 完成度：25%
-
----
-
-### 📋 优化建议
-
-- **[OPTIMIZATION_SUGGESTIONS.md](./OPTIMIZATION_SUGGESTIONS.md)** - 完整优化建议
-  - 8 个优化领域分析
-  - 优先级排序
-  - 实施建议
+- **[PROXY_COOKIE_FIX.md](./PROXY_COOKIE_FIX.md)** ⭐ **重要技术记录**
+  - 完整的 ECONNRESET 问题分析和解决方案
+  - IPC 通信机制实现
+  - 完成时间：2026-04-25
 
 ---
 
@@ -68,31 +36,26 @@
 **已完成的优化：**
 
 - [查看环境配置和缓存优化](./OPTIMIZATION_COMPLETED.md)
-- [快速查阅使用方法](./OPTIMIZATION_QUICK_REF.md)
-
-**正在进行的重构：**
-
-- [🌟 开始 Services 重构（主指南）](./SERVICES_REFACTORING_GUIDE.md)
-- [查看重构进度](./REFACTORING_PROGRESS.md)
-- [了解重构计划](./SERVICES_REFACTORING_PLAN.md)
+- [查看 Services 重构完成情况](#2-services-按路由组织重构-)
+- [查看代理层 Cookie 问题修复](./PROXY_COOKIE_FIX.md)
 
 **未来优化方向：**
 
-- [查看所有优化建议](./OPTIMIZATION_SUGGESTIONS.md)
+- 类型定义拆分（待开始）
+- 工具函数重组（待开始）
 
 ---
 
 ## 📊 优化统计
 
-| 项目              | 状态      | 完成度 |
-| ----------------- | --------- | ------ |
-| 环境配置统一      | ✅ 已完成 | 100%   |
-| 缓存管理统一      | ✅ 已完成 | 100%   |
-| Services 路由重构 | 🚧 进行中 | 25%    |
-| 类型定义拆分      | ⏸️ 待开始 | 0%     |
-| 工具函数重组      | ⏸️ 待开始 | 0%     |
+| 项目                 | 状态      | 完成度 |
+| -------------------- | --------- | ------ |
+| 环境配置统一         | ✅ 已完成 | 100%   |
+| 缓存管理统一         | ✅ 已完成 | 100%   |
+| Services 路由重构    | ✅ 已完成 | 100%   |
+| 代理 Cookie 问题修复 | ✅ 已完成 | 100%   |
 
-**总体进度：** 2/6 完成 (33.3%)
+**总体进度：** 4/4 完成 (100%) ✅
 
 ---
 
@@ -100,19 +63,16 @@
 
 ### 对于新成员
 
-1. 先阅读 [OPTIMIZATION_SUGGESTIONS.md](./OPTIMIZATION_SUGGESTIONS.md) 了解整体优化方向
-2. 查看 [OPTIMIZATION_COMPLETED.md](./OPTIMIZATION_COMPLETED.md) 了解已完成的优化
-3. 如需参与重构，从 [SERVICES_REFACTORING_GUIDE.md](./SERVICES_REFACTORING_GUIDE.md) 开始
+1. 查看 [OPTIMIZATION_COMPLETED.md](./OPTIMIZATION_COMPLETED.md) 了解已完成的优化
+2. 如遇代理或 Cookie 问题，参考 [PROXY_COOKIE_FIX.md](./PROXY_COOKIE_FIX.md)
 
 ### 对于开发者
 
-- 日常开发参考：[OPTIMIZATION_QUICK_REF.md](./OPTIMIZATION_QUICK_REF.md)
-- 继续重构任务：[SERVICES_REFACTORING_GUIDE.md](./SERVICES_REFACTORING_GUIDE.md)
-- 查看进度：[REFACTORING_PROGRESS.md](./REFACTORING_PROGRESS.md)
+- 日常开发参考：[OPTIMIZATION_COMPLETED.md](./OPTIMIZATION_COMPLETED.md)
+- 代理/Cookie 问题：[PROXY_COOKIE_FIX.md](./PROXY_COOKIE_FIX.md)
 
 ### 对于维护者
 
-- 定期更新 [REFACTORING_PROGRESS.md](./REFACTORING_PROGRESS.md)
 - 完成后更新本文档的统计信息
 - 归档已完成的优化文档
 
@@ -150,5 +110,5 @@
 
 ---
 
-_最后更新：2026-04-16_  
+_最后更新：2026-05-09_  
 _维护者：开发团队_
