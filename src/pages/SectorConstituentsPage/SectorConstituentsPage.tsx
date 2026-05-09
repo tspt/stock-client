@@ -91,9 +91,9 @@ export function SectorConstituentsPage() {
   const handleUpdateSectorMapping = async () => {
     setUpdatingSectorInfo(true);
     try {
-      // 清除缓存，下次读取时会自动重建
-      clearSectorMappingCache();
-      message.success('板块信息已更新，股票列表的板块信息将同步更新');
+      // 清除缓存并更新 LocalStorage，将板块信息持久化到股票列表
+      await clearSectorMappingCache();
+      message.success('板块信息已同步到股票列表');
     } catch (error) {
       logger.error('更新板块信息失败:', error);
       message.error('更新板块信息失败');

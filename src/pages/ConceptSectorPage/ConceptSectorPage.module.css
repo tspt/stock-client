@@ -21,15 +21,48 @@
   width: 100%;
 }
 
-.searchBar {
+/* AutoComplete 搜索框样式 */
+:global(.searchBarWrapper) {
   background-color: var(--ant-color-fill-quaternary);
   border-radius: 6px;
   transition: all 0.3s;
 }
 
-.searchBar:hover,
-.searchBar:focus-within {
+:global(.searchBarWrapper:hover),
+:global(.searchBarWrapper:focus-within) {
   background-color: var(--ant-color-fill);
+}
+
+/* 修复 AutoComplete 内部 Input 的样式 */
+:global(.searchBarWrapper .ant-select-selector) {
+  background-color: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+}
+
+:global(.searchBarWrapper .ant-select-selection-search-input) {
+  margin: 0 !important;
+}
+
+:global(.searchBarWrapper .ant-input-affix-wrapper) {
+  padding: 4px 0 !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+:global(.searchBarWrapper .ant-input) {
+  background-color: transparent !important;
+}
+
+:global(.searchBarWrapper .ant-input-prefix) {
+  margin-right: 0 !important;
+  padding-left: 4px !important;
+}
+
+/* 搜索框 placeholder 左边距 */
+:global(.searchBarWrapper .ant-select-selection-placeholder) {
+  padding-left: 28px !important;
 }
 
 .content {

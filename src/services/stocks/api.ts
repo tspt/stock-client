@@ -20,7 +20,6 @@ import {
   CACHE_TTL,
 } from '@/utils/config/constants';
 import { logger } from '@/utils/business/logger';
-import { enhanceStocksWithSectors } from './sectorEnhancer';
 
 /** 并发时复用同一次拉取，避免缓存失效瞬间多次打满接口 */
 let biyingHsltListFetchPromise: Promise<StockInfo[]> | null = null;
@@ -28,13 +27,13 @@ let biyingHsltListFetchPromise: Promise<StockInfo[]> | null = null;
 /**
  * 获取所有股票列表
  * 从 biyingapi 获取全量股票数据；优先使用 localStorage 缓存（默认约 1 个月过期）
- * 返回的股票数据包含行业和概念板块信息（动态增强）
+ * 返回的股票数据包含行业和概念板块信息（已持久化到 LocalStorage）
  */
 export async function getAllStocks(): Promise<StockInfo[]> {
   const cached = readBiyingHsltListCache();
   if (cached) {
-    // 动态增强：即使从缓存读取，也添加最新的板块信息
-    return await enhanceStocksWithSectors(cached);
+    // 直接返回缓存数据，板块信息已持久化
+    return cached;
   }
 
   if (biyingHsltListFetchPromise) {
@@ -66,8 +65,9 @@ export async function getAllStocks(): Promise<StockInfo[]> {
           });
         }
 
-        // 增强股票数据，添加行业和概念信息
-        return await enhanceStocksWithSectors(stocks);
+        // 注意：新获取的股票列表不包含板块信息
+        // 需要用户在成分股大全页面点击“同步”按钮来添加
+        return stocks;
       }
 
       return [];

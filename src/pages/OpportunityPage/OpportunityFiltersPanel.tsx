@@ -716,7 +716,14 @@ export function OpportunityFiltersPanel({
         </div>
       )}
       <Drawer
-        title="筛选条件"
+        title={
+          <Space size="middle">
+            <span>筛选条件</span>
+            <span style={{ fontSize: 12, color: 'var(--ant-color-text-secondary)', fontWeight: 'normal' }}>
+              💡 提示：所有"检索根数"均指从最新K线向前追溯的交易日数量
+            </span>
+          </Space>
+        }
         placement="right"
         width={FILTER_DRAWER_WIDTH}
         open={drawerOpen}
@@ -737,17 +744,6 @@ export function OpportunityFiltersPanel({
         className={styles.filterDrawerWrap}
       >
         <div className={styles.filterDrawerBody}>
-          {/* 统一提示信息 */}
-          <div style={{
-            padding: '8px 12px',
-            marginBottom: 12,
-            backgroundColor: 'var(--ant-color-bg-layout)',
-            borderRadius: 4,
-            fontSize: 12,
-            color: 'var(--ant-color-text-secondary)'
-          }}>
-            💡 提示：所有"检索根数"均指从最新K线向前追溯的交易日数量
-          </div>
           <Collapse
             bordered={false}
             ghost
@@ -1075,9 +1071,8 @@ export function OpportunityFiltersPanel({
                       <Checkbox
                         checked={aiAnalysisEnabled}
                         onChange={(e) => setAiAnalysisEnabled(e.target.checked)}
-                        style={{ fontWeight: 'bold' }}
                       >
-                        启用 AI 分析筛选
+                        启用AI分析筛选
                       </Checkbox>
                     </div>
 
@@ -1613,104 +1608,108 @@ export function OpportunityFiltersPanel({
                         ghost
                         activeKey={showPatternAdvanced ? ['advanced'] : []}
                         onChange={(keys) => setShowPatternAdvanced((keys as string[]).includes('advanced'))}
-                      >
-                        <Collapse.Panel
-                          key="advanced"
-                          header={<span style={{ fontSize: 13, color: '#666' }}>🔧 形态识别高级配置</span>}
-                        >
-                          {/* 启用成交量确认 */}
-                          <div className={styles.filterRow}>
-                            <div className={styles.filterItem}>
-                              <Checkbox
-                                checked={patternUseVolumeConfirmation}
-                                onChange={(e) => setPatternUseVolumeConfirmation(e.target.checked)}
-                              >
-                                启用成交量确认
-                              </Checkbox>
-                            </div>
-                          </div>
-
-                          {patternUseVolumeConfirmation && (
-                            <>
-                              <div className={styles.filterRow}>
-                                <div className={styles.filterItem}>
-                                  <span className={styles.filterLabel}>成交量倍数：</span>
-                                  <InputNumber
-                                    value={patternVolumeMultiplier}
-                                    min={1.0}
-                                    max={5.0}
-                                    step={0.1}
-                                    precision={1}
-                                    style={{ width: 80 }}
-                                    onChange={(v) => {
-                                      const next = typeof v === 'number' && isFinite(v) ? v : 1.5;
-                                      setPatternVolumeMultiplier(Math.max(1.0, Math.min(5.0, next)));
-                                    }}
-                                  />
-                                  <span style={{ marginLeft: 4, fontSize: 12, color: '#999' }}>倍</span>
+                        items={[
+                          {
+                            key: 'advanced',
+                            label: <span style={{ fontSize: 13, color: '#666' }}>🔧 形态识别高级配置</span>,
+                            children: (
+                              <>
+                                {/* 启用成交量确认 */}
+                                <div className={styles.filterRow}>
+                                  <div className={styles.filterItem}>
+                                    <Checkbox
+                                      checked={patternUseVolumeConfirmation}
+                                      onChange={(e) => setPatternUseVolumeConfirmation(e.target.checked)}
+                                    >
+                                      启用成交量确认
+                                    </Checkbox>
+                                  </div>
                                 </div>
-                              </div>
 
-                              <div className={styles.filterRow}>
-                                <div className={styles.filterItem}>
-                                  <Checkbox
-                                    checked={patternRequireVolumeForReversal}
-                                    onChange={(e) => setPatternRequireVolumeForReversal(e.target.checked)}
-                                  >
-                                    反转形态强制成交量确认
-                                  </Checkbox>
+                                {patternUseVolumeConfirmation && (
+                                  <>
+                                    <div className={styles.filterRow}>
+                                      <div className={styles.filterItem}>
+                                        <span className={styles.filterLabel}>成交量倍数：</span>
+                                        <InputNumber
+                                          value={patternVolumeMultiplier}
+                                          min={1.0}
+                                          max={5.0}
+                                          step={0.1}
+                                          precision={1}
+                                          style={{ width: 80 }}
+                                          onChange={(v) => {
+                                            const next = typeof v === 'number' && isFinite(v) ? v : 1.5;
+                                            setPatternVolumeMultiplier(Math.max(1.0, Math.min(5.0, next)));
+                                          }}
+                                        />
+                                        <span style={{ marginLeft: 4, fontSize: 12, color: '#999' }}>倍</span>
+                                      </div>
+                                    </div>
+
+                                    <div className={styles.filterRow}>
+                                      <div className={styles.filterItem}>
+                                        <Checkbox
+                                          checked={patternRequireVolumeForReversal}
+                                          onChange={(e) => setPatternRequireVolumeForReversal(e.target.checked)}
+                                        >
+                                          反转形态强制成交量确认
+                                        </Checkbox>
+                                      </div>
+                                    </div>
+                                  </>
+                                )}
+
+                                {/* 趋势背景周期 */}
+                                <div className={styles.filterRow}>
+                                  <div className={styles.filterItem}>
+                                    <span className={styles.filterLabel}>趋势背景周期：</span>
+                                    <InputNumber
+                                      value={patternTrendBackgroundLookback}
+                                      min={5}
+                                      max={30}
+                                      step={1}
+                                      style={{ width: 80 }}
+                                      onChange={(v) => {
+                                        const next = typeof v === 'number' && isFinite(v) ? Math.floor(v) : 10;
+                                        setPatternTrendBackgroundLookback(Math.min(30, Math.max(5, next)));
+                                      }}
+                                    />
+                                    <span style={{ marginLeft: 4, fontSize: 12, color: '#999' }}>根K线</span>
+                                  </div>
                                 </div>
-                              </div>
-                            </>
-                          )}
 
-                          {/* 趋势背景周期 */}
-                          <div className={styles.filterRow}>
-                            <div className={styles.filterItem}>
-                              <span className={styles.filterLabel}>趋势背景周期：</span>
-                              <InputNumber
-                                value={patternTrendBackgroundLookback}
-                                min={5}
-                                max={30}
-                                step={1}
-                                style={{ width: 80 }}
-                                onChange={(v) => {
-                                  const next = typeof v === 'number' && isFinite(v) ? Math.floor(v) : 10;
-                                  setPatternTrendBackgroundLookback(Math.min(30, Math.max(5, next)));
-                                }}
-                              />
-                              <span style={{ marginLeft: 4, fontSize: 12, color: '#999' }}>根K线</span>
-                            </div>
-                          </div>
-
-                          {/* 说明文字 */}
-                          <div
-                            style={{
-                              marginTop: 8,
-                              padding: 8,
-                              background: '#f5f5f5',
-                              borderRadius: 4,
-                              fontSize: 12,
-                              color: '#666',
-                            }}
-                          >
-                            <div>
-                              💡 <strong>说明：</strong>
-                            </div>
-                            <ul style={{ margin: '4px 0 0 0', paddingLeft: 20 }}>
-                              <li>
-                                <strong>成交量确认</strong>：形态出现时成交量需放大到均量的指定倍数
-                              </li>
-                              <li>
-                                <strong>趋势背景</strong>：检查形态前N根K线的趋势方向，确保形态出现在合适的趋势环境中
-                              </li>
-                              <li>
-                                <strong>强制确认</strong>：开启后，反转形态必须满足成交量条件才有效
-                              </li>
-                            </ul>
-                          </div>
-                        </Collapse.Panel>
-                      </Collapse>
+                                {/* 说明文字 */}
+                                <div
+                                  style={{
+                                    marginTop: 8,
+                                    padding: 8,
+                                    background: '#f5f5f5',
+                                    borderRadius: 4,
+                                    fontSize: 12,
+                                    color: '#666',
+                                  }}
+                                >
+                                  <div>
+                                    💡 <strong>说明：</strong>
+                                  </div>
+                                  <ul style={{ margin: '4px 0 0 0', paddingLeft: 20 }}>
+                                    <li>
+                                      <strong>成交量确认</strong>：形态出现时成交量需放大到均量的指定倍数
+                                    </li>
+                                    <li>
+                                      <strong>趋势背景</strong>：检查形态前N根K线的趋势方向，确保形态出现在合适的趋势环境中
+                                    </li>
+                                    <li>
+                                      <strong>强制确认</strong>：开启后，反转形态必须满足成交量条件才有效
+                                    </li>
+                                  </ul>
+                                </div>
+                              </>
+                            ),
+                          },
+                        ]}
+                      />
                     </div>
 
                     {/* K线形态筛选 - 单根 */}

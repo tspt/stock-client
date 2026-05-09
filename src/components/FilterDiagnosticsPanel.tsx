@@ -10,8 +10,6 @@ import { Card, Collapse, Table, Tag, Progress, Row, Col, Statistic } from 'antd'
 import type { FilterSkippedItem } from '@/types/opportunityFilter';
 import type { OpportunityFilterSnapshot } from '@/types/opportunityFilter';
 
-const { Panel } = Collapse;
-
 interface FilterDiagnosticsPanelProps {
   skipped: FilterSkippedItem[];
   filters: OpportunityFilterSnapshot;
@@ -87,67 +85,83 @@ export const FilterDiagnosticsPanel: React.FC<FilterDiagnosticsPanelProps> = ({
 
   return (
     <Card size="small" title="筛选诊断仪表盘（原因+股票结合视图）" style={{ marginTop: 16 }}>
-      <Collapse defaultActiveKey={['summary']}>
-        <Panel key="summary" header={`总体统计 - 共筛除 ${totalSkipped} 只股票`}>
-          <Row gutter={16}>
-            <Col span={8}>
-              <Statistic 
-                title="筛除比例" 
-                value={totalSkipped} 
-                suffix="只" 
-              />
-            </Col>
-            <Col span={8}>
-              <Statistic 
-                title="主要原因" 
-                value={topReason[0]} 
-                suffix={`(${topReason[1]}次)`} 
-              />
-            </Col>
-            <Col span={8}>
-              <Progress 
-                type="dashboard" 
-                percent={Math.round((totalSkipped / 100) * 100) || 0} 
-                strokeColor="#ff4d4f" 
-              />
-            </Col>
-          </Row>
-        </Panel>
-
-        <Panel key="reasons" header="原因维度统计（柱状分布）">
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {reasonStats.map(([reason, count], index) => (
-              <div key={index} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <div style={{ width: 180, fontSize: 12 }}>{reason}</div>
-                <Progress 
-                  percent={Math.round((count / totalSkipped) * 100)} 
-                  format={() => count.toString()} 
-                  strokeColor="#1890ff" 
-                  style={{ flex: 1 }}
-                />
+      <Collapse
+        defaultActiveKey={['summary']}
+        items={[
+          {
+            key: 'summary',
+            label: `总体统计 - 共筛除 ${totalSkipped} 只股票`,
+            children: (
+              <Row gutter={16}>
+                <Col span={8}>
+                  <Statistic
+                    title="筛除比例"
+                    value={totalSkipped}
+                    suffix="只"
+                  />
+                </Col>
+                <Col span={8}>
+                  <Statistic
+                    title="主要原因"
+                    value={topReason[0]}
+                    suffix={`(${topReason[1]}次)`}
+                  />
+                </Col>
+                <Col span={8}>
+                  <Progress
+                    type="dashboard"
+                    percent={Math.round((totalSkipped / 100) * 100) || 0}
+                    strokeColor="#ff4d4f"
+                  />
+                </Col>
+              </Row>
+            ),
+          },
+          {
+            key: 'reasons',
+            label: '原因维度统计（柱状分布）',
+            children: (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {reasonStats.map(([reason, count], index) => (
+                  <div key={index} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <div style={{ width: 180, fontSize: 12 }}>{reason}</div>
+                    <Progress
+                      percent={Math.round((count / totalSkipped) * 100)}
+                      format={() => count.toString()}
+                      strokeColor="#1890ff"
+                      style={{ flex: 1 }}
+                    />
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        </Panel>
-
-        <Panel key="stocks" header="股票维度统计（Top 受影响股票）">
-          <Table 
-            dataSource={stockStats} 
-            columns={columns} 
-            pagination={false}
-            size="small"
-            scroll={{ y: 240 }}
-          />
-        </Panel>
-
-        <Panel key="cross" header="交叉分析（原因与股票关联）">
-          <div style={{ color: '#666', fontSize: 13, padding: '12px', background: '#f5f5f5', borderRadius: 6 }}>
-            点击上方原因或股票可查看详细关联（当前版本为基础交叉视图，后续可扩展为热力图）
-            <br />
-            主要瓶颈原因已按频率排序显示，便于快速定位筛选问题。
-          </div>
-        </Panel>
-      </Collapse>
+            ),
+          },
+          {
+            key: 'stocks',
+            label: '股票维度统计（Top 受影响股票）',
+            children: (
+              <Table
+                dataSource={stockStats}
+                columns={columns}
+                pagination={false}
+                size="small"
+                scroll={{ y: 240 }}
+              />
+            ),
+          },
+          {
+            key: 'cross',
+            label: '交叉分析（原因与股票关联）',
+            children: (
+              <div style={{ color: '#666', fontSize: 13, padding: '12px', background: '#f5f5f5', borderRadius: 6 }}>
+                点击上方原因或股票可查看详细关联（当前版本为基础交叉视图，后续可扩展为热力图）
+                <br />
+                主要瓶颈原因已按频率排序显示，便于快速定位筛选问题。
+              </div>
+            ),
+          },
+        ]}
+      />
     </Card>
   );
 };
