@@ -28,8 +28,9 @@ import {
   CheckCircleOutlined,
   CloseCircleOutlined,
   StopOutlined,
-  DownloadOutlined,
-  UploadOutlined,
+  SyncOutlined,
+  ImportOutlined,
+  ExportOutlined,
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import CookiePoolManager from '@/utils/storage/cookiePoolManager';
@@ -61,7 +62,6 @@ export function CookieManagerPage() {
     status: string;
     cookie?: string;
   } | null>(null);
-  const progressListenerRef = useRef<(() => void) | null>(null);
   const [isFetching, setIsFetching] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -107,9 +107,6 @@ export function CookieManagerPage() {
   useEffect(() => {
     loadData();
   }, []);
-
-
-
   // 自动获取Cookie
   const handleAutoFetch = async () => {
     if (!window.electronAPI) {
@@ -129,10 +126,9 @@ export function CookieManagerPage() {
     // 设置进度监听器
     const electronAPI = window.electronAPI as any;
     if (electronAPI.onCookieFetchProgress) {
-      const unsubscribe = electronAPI.onCookieFetchProgress((progress: any) => {
+      electronAPI.onCookieFetchProgress((progress: any) => {
         setFetchProgress(progress);
       });
-      progressListenerRef.current = unsubscribe;
     }
 
     try {
@@ -164,11 +160,6 @@ export function CookieManagerPage() {
     } finally {
       setIsFetching(false);
       setFetchProgress(null);
-      // 清理监听器
-      if (progressListenerRef.current) {
-        progressListenerRef.current();
-        progressListenerRef.current = null;
-      }
     }
   };
 
@@ -199,8 +190,13 @@ export function CookieManagerPage() {
       const a = document.createElement('a');
       a.href = url;
 
-      // 使用后端生成的文件名
-      const filename = (blob as any).name || 'cookies_export.json';
+      // 生成文件名
+      const timestamp = new Date()
+        .toISOString()
+        .replace(/[:.]/g, '-')
+        .replace('T', '_')
+        .substring(0, 19);
+      const filename = `cookies_${exportFilter}_${timestamp}.json`;
       a.download = filename;
 
       // 触发下载
@@ -511,7 +507,7 @@ export function CookieManagerPage() {
               自动获取
             </Button>
             <Button
-              icon={<ReloadOutlined />}
+              icon={<SyncOutlined />}
               onClick={handleTestAllCookies}
               disabled={testProgress?.isTesting || loading}
               loading={testProgress?.isTesting}
@@ -544,7 +540,7 @@ export function CookieManagerPage() {
                 删除失败 ({failedCookiesCount})
               </Button>
             </Popconfirm>
-            <Button icon={<UploadOutlined />} onClick={handleTriggerImport}>
+            <Button icon={<ImportOutlined />} onClick={handleTriggerImport}>
               导入Cookie
             </Button>
             <input
@@ -554,7 +550,7 @@ export function CookieManagerPage() {
               style={{ display: 'none' }}
               onChange={handleImportCookies}
             />
-            <Button icon={<DownloadOutlined />} onClick={() => setIsExportModalVisible(true)}>
+            <Button icon={<ExportOutlined />} onClick={() => setIsExportModalVisible(true)}>
               导出Cookie
             </Button>
           </Space>
@@ -623,8 +619,6 @@ export function CookieManagerPage() {
           </div>
         </Card>
       </Card>
-
-
 
       {/* 自动获取对话框 */}
       <Modal
