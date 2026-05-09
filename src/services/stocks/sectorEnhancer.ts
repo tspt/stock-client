@@ -5,6 +5,7 @@
 
 import { getIndustrySectors, getConceptSectors } from '@/utils/storage/sectorStocksIndexedDB';
 import type { StockInfo } from '@/types/stock';
+import { logger } from '@/utils/business/logger';
 
 export interface EnhancedStockInfo extends StockInfo {
   industry?: string; // 所属行业板块代码
@@ -56,7 +57,7 @@ async function buildSectorMapping(): Promise<
       });
     });
   } catch (error) {
-    console.error('[SectorEnhancer] 构建板块映射失败:', error);
+    logger.error('[SectorEnhancer] 构建板块映射失败:', error);
   }
 
   return mapping;
@@ -103,5 +104,5 @@ export async function enhanceStocksWithSectors(stocks: StockInfo[]): Promise<Enh
  */
 export function clearSectorMappingCache(): void {
   mappingCache = null;
-  console.log('[SectorEnhancer] 板块映射缓存已清除');
+  logger.info('[SectorEnhancer] 板块映射缓存已清除');
 }

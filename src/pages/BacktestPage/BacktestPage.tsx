@@ -11,6 +11,7 @@ import VirtualList from 'rc-virtual-list';
 import { getStocksHistory, getSignalBacktestsByCode, clearAllSignalBacktests, batchSaveSignalBacktests, getAllSignalBacktests, getStockHistory } from '@/utils/storage/opportunityIndexedDB';
 import { getModelMetadata } from '@/utils/analysis/mlBuypointModel';
 import { DEFAULT_EXPORT_STOCKS, getEnabledExportStocks, updateStocksFromScan, type ExportStockConfig } from '@/config/exportStocksConfig';
+import { logger } from '@/utils/business/logger';
 import styles from './BacktestPage.module.css';
 
 const { Header, Content } = Layout;
@@ -109,7 +110,7 @@ export function BacktestPage() {
         }
       }
     } catch (error) {
-      console.error('加载保存的回测结果失败:', error);
+      logger.error('加载保存的回测结果失败:', error);
     } finally {
       setLoading(false);
     }
@@ -201,7 +202,7 @@ export function BacktestPage() {
       }
     } catch (error) {
       message.error('回测执行失败');
-      console.error(error);
+      logger.error(error);
       setBacktesting(false);
     }
   };
@@ -239,7 +240,7 @@ export function BacktestPage() {
       await batchSaveSignalBacktests(backtestResults);
       message.success('回测结果已保存到本地存储');
     } catch (error) {
-      console.error('保存回测结果失败:', error);
+      logger.error('保存回测结果失败:', error);
       message.error('保存回测结果失败');
     }
   };
@@ -296,7 +297,7 @@ export function BacktestPage() {
         setDateInput('');
       }
     } catch (error) {
-      console.error('读取日期买点失败:', error);
+      logger.error('读取日期买点失败:', error);
       setDateInput('');
     }
 
@@ -375,7 +376,7 @@ export function BacktestPage() {
         message.error('保存失败: ' + (result.error || '未知错误'));
       }
     } catch (error) {
-      console.error('保存股票数据失败:', error);
+      logger.error('保存股票数据失败:', error);
       message.error('保存失败: ' + (error as Error).message);
     } finally {
       setSaving(false);
@@ -412,7 +413,7 @@ export function BacktestPage() {
         message.error('扫描失败: ' + (result.error || '未知错误'));
       }
     } catch (error) {
-      console.error('扫描目录失败:', error);
+      logger.error('扫描目录失败:', error);
       message.error('扫描失败: ' + (error as Error).message);
     } finally {
       setScanning(false);
@@ -501,7 +502,7 @@ export function BacktestPage() {
         setExportAllModalOpen(false);
       }
     } catch (error) {
-      console.error('导出失败:', error);
+      logger.error('导出失败:', error);
       message.error('导出失败: ' + (error as Error).message);
     } finally {
       setExporting(false);

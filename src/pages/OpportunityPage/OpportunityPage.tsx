@@ -1111,30 +1111,30 @@ export function OpportunityPage() {
     const hasConceptFilter = conceptSectors && conceptSectors.length > 0;
 
     if ((hasIndustryFilter || hasConceptFilter) && filteredAnalysisData.length > 0) {
-      console.log('=== 板块筛选结果 ===');
+      logger.debug('=== 板块筛选结果 ===');
 
       if (hasIndustryFilter) {
-        console.log('行业筛选:', {
+        logger.debug('行业筛选:', {
           选中板块: industrySectors,
           模式: industrySectorInvert ? '排除选中' : '只包含选中'
         });
       }
 
       if (hasConceptFilter) {
-        console.log('概念筛选:', {
+        logger.debug('概念筛选:', {
           选中板块: conceptSectors,
           模式: conceptSectorInvert ? '排除选中' : '只包含选中'
         });
       }
 
-      console.log('筛选后股票数量:', filteredAnalysisData.length);
-      console.log('筛选后股票列表:', filteredAnalysisData.map(item => ({
+      logger.debug('筛选后股票数量:', filteredAnalysisData.length);
+      logger.debug('筛选后股票列表:', filteredAnalysisData.map(item => ({
         code: item.code,
         name: item.name,
         industry: item.industry,
         concepts: item.concepts
       })));
-      console.log('==================');
+      logger.debug('==================');
     }
   }, [filteredAnalysisData, industrySectors, conceptSectors, industrySectorInvert, conceptSectorInvert]);
 

@@ -28,6 +28,7 @@ import { exportSectorStocksToJSON, importSectorStocksFromJSON } from '@/utils/ex
 import { CACHE_TTL, CACHE_KEYS } from '@/utils/config/constants';
 import { getStorage } from '@/utils/storage/storage';
 import type { StockInfo } from '@/types/stock';
+import { logger } from '@/utils/business/logger';
 import styles from './DataManagerPage.module.css';
 
 const { Title, Text } = Typography;
@@ -83,7 +84,6 @@ export function DataManagerPage() {
         const age = now - cache.savedAt;
         const ttl = CACHE_TTL.STOCK_LIST;
         const isExpired = age > ttl;
-        const daysRemaining = Math.max(0, Math.floor((ttl - age) / (1000 * 60 * 60 * 24)));
 
         setStockListStatus({
           count: cache.stocks.length,
@@ -97,7 +97,7 @@ export function DataManagerPage() {
         });
       }
     } catch (error) {
-      console.error('加载股票列表状态失败:', error);
+      logger.error('加载股票列表状态失败:', error);
     }
   };
 
@@ -133,7 +133,7 @@ export function DataManagerPage() {
         setConceptBasicStatus({ count: 0, isExpired: true });
       }
     } catch (error) {
-      console.error('加载板块基础信息状态失败:', error);
+      logger.error('加载板块基础信息状态失败:', error);
     }
   };
 
@@ -171,7 +171,7 @@ export function DataManagerPage() {
         setConceptStocksStatus({ count: 0, isExpired: true });
       }
     } catch (error) {
-      console.error('加载成分股数据状态失败:', error);
+      logger.error('加载成分股数据状态失败:', error);
     }
   };
 
@@ -197,7 +197,7 @@ export function DataManagerPage() {
       await loadStockListStatus();
     } catch (error) {
       antMessage.error('刷新失败，请查看控制台');
-      console.error('刷新股票列表失败:', error);
+      logger.error('刷新股票列表失败:', error);
     } finally {
       setRefreshingStockList(false);
     }
@@ -229,7 +229,7 @@ export function DataManagerPage() {
       await loadSectorBasicStatus();
     } catch (error) {
       antMessage.error('刷新失败');
-      console.error('刷新行业板块基础信息失败:', error);
+      logger.error('刷新行业板块基础信息失败:', error);
     } finally {
       setRefreshingIndustryBasic(false);
     }
@@ -244,7 +244,7 @@ export function DataManagerPage() {
       await loadSectorBasicStatus();
     } catch (error) {
       antMessage.error('刷新失败');
-      console.error('刷新概念板块基础信息失败:', error);
+      logger.error('刷新概念板块基础信息失败:', error);
     } finally {
       setRefreshingConceptBasic(false);
     }
@@ -275,7 +275,7 @@ export function DataManagerPage() {
       antMessage.success('导出成功');
     } catch (error) {
       antMessage.error('导出失败');
-      console.error('导出成分股数据失败:', error);
+      logger.error('导出成分股数据失败:', error);
     }
   };
 
@@ -292,7 +292,7 @@ export function DataManagerPage() {
       }
     } catch (error) {
       antMessage.error('导入失败');
-      console.error('导入成分股数据失败:', error);
+      logger.error('导入成分股数据失败:', error);
     } finally {
       setImportingSectorStocks(false);
     }
@@ -314,7 +314,7 @@ export function DataManagerPage() {
           await loadSectorStocksStatus();
         } catch (error) {
           antMessage.error('清空失败');
-          console.error('清空成分股数据失败:', error);
+          logger.error('清空成分股数据失败:', error);
         } finally {
           setClearingSectorStocks(false);
         }

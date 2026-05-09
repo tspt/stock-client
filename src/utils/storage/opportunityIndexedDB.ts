@@ -17,6 +17,7 @@ import {
   STOCK_HISTORY_STORE_NAME,
   SIGNAL_BACKTEST_STORE_NAME,
 } from '../config/constants';
+import { logger } from '@/utils/business/logger';
 
 let dbInstance: IDBDatabase | null = null;
 
@@ -395,7 +396,7 @@ export async function batchSaveSignalBacktests(results: SignalBacktestResult[]):
         completed++;
         if (completed === total) {
           // 即使有错误也继续，避免阻塞整个流程
-          console.warn('部分信号回测结果保存失败', result);
+          logger.warn('部分信号回测结果保存失败', result);
           resolve();
         }
       };
