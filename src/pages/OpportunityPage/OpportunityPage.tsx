@@ -309,6 +309,9 @@ export function OpportunityPage() {
   const [filterDiagnosticsDrawerOpen, setFilterDiagnosticsDrawerOpen] = useState(false); // 筛选诊断抽屉状态
   const [errorExpanded, setErrorExpanded] = useState(false); // 失败详情展开状态
 
+  // AI分析版本选择
+  const [aiVersion, setAiVersion] = useState<'v1' | 'v2'>('v1'); // 默认使用v1.0原始版
+
   const [sharpMoveFilterEnabled, setSharpMoveFilterEnabled] = useState<boolean>(
     INITIAL_FILTER_STATE.sharpMoveFilterEnabled
   );
@@ -1286,6 +1289,76 @@ export function OpportunityPage() {
     await startAnalysis(currentPeriod, filteredStocks, currentCount);
   };
 
+  // 仅刷新AI分析（不重新获取K线数据）
+  const handleRefreshAI = async () => {
+    if (analysisData.length === 0) {
+      message.warning('请先执行一键分析');
+      return;
+    }
+
+    try {
+      message.loading({ content: '正在刷新AI分析...', key: 'refreshAI' });
+
+      logger.info(`开始刷新AI分析，总股票数: ${analysisData.length}`);
+
+      // 清空AI缓存
+      clearAICache();
+
+      // 根据版本选择导入对应的AI分析模块（使用相对路径）
+      let performAIAnalysis: any;
+      if (aiVersion === 'v2') {
+        const module = await import('../../services/opportunity/ai-v2.0');
+        performAIAnalysis = module.performAIAnalysis;
+      } else {
+        const module = await import('../../services/opportunity/ai');
+        performAIAnalysis = module.performAIAnalysis;
+      }
+
+      // 批量重新计算AI分析
+      let updatedCount = 0;
+      let skippedCount = 0;
+      const updatedData = analysisData.map(stock => {
+        const klineData = klineDataCache.get(stock.code);
+        if (klineData && klineData.length >= 30) {
+          try {
+            // 构建 allStockData Map（用于相似形态匹配）
+            const allStockData = new Map<string, { code: string; name: string; klineData: typeof klineData }>();
+            allStockData.set(stock.code, { code: stock.code, name: stock.name, klineData });
+
+            // 重新计算AI分析
+            const aiAnalysis = performAIAnalysis(klineData, stock, allStockData);
+            updatedCount++;
+            return {
+              ...stock,
+              aiAnalysis,
+              analysisTimestamp: Date.now(),
+            };
+          } catch (error) {
+            logger.warn(`[${stock.code}] AI分析刷新失败:`, error);
+            return stock; // 失败则保留原数据
+          }
+        } else {
+          skippedCount++;
+          logger.debug(`[${stock.code}] 跳过：K线数据不足 (${klineData?.length || 0}条)`);
+        }
+        return stock;
+      });
+
+      logger.info(`AI分析刷新完成：更新${updatedCount}只，跳过${skippedCount}只`);
+
+      // 更新store中的分析数据
+      useOpportunityStore.setState({ analysisData: updatedData });
+
+      message.success({
+        content: `AI分析已刷新（${aiVersion === 'v2' ? 'v2.0优化版' : 'v1.0原始版'}），共更新 ${updatedCount} 只股票`,
+        key: 'refreshAI'
+      });
+    } catch (error) {
+      logger.error('刷新AI分析失败:', error);
+      message.error({ content: '刷新AI分析失败', key: 'refreshAI' });
+    }
+  };
+
   const handleCancel = () => {
     cancelAnalysis();
     message.info('分析已取消');
@@ -1594,6 +1667,25 @@ export function OpportunityPage() {
           >
             一键分析
           </Button>
+          <Button
+            icon={<ReloadOutlined />}
+            onClick={handleRefreshAI}
+            disabled={loading || analysisData.length === 0}
+            title="仅重新计算AI分析，速度更快"
+          >
+            刷新AI
+          </Button>
+          <Select
+            value={aiVersion}
+            onChange={(value) => setAiVersion(value)}
+            style={{ width: 120 }}
+            options={[
+              { label: 'v1.0 原始版', value: 'v1' },
+              { label: 'v2.0 优化版', value: 'v2' },
+            ]}
+            disabled={loading}
+            title="选择AI分析算法版本"
+          />
           <Button icon={<ClearOutlined />} onClick={handleResetQueryBar} disabled={loading}>
             重置
           </Button>
