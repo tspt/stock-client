@@ -886,7 +886,7 @@ export function OpportunityPage() {
     };
   }, [updateTableHeight, analysisData.length]);
 
-  // 根据选择的市场类型和名称类型筛选股票
+  // 根据选择的市场类型、名称类型、行业和概念板块筛选股票
   // 优化：简化过滤逻辑，减少分支判断
   const filteredStocks = useMemo<StockInfo[]>(() => {
     if (allStocks.length === 0) {
@@ -940,9 +940,48 @@ export function OpportunityPage() {
     return allStocks.filter((stock) => {
       const pureCode = getPureCode(stock.code);
       const isST = stock.name.includes('ST');
-      return marketMatchFn(pureCode) && nameTypeMatchFn(isST);
+
+      // 市场筛选
+      if (!marketMatchFn(pureCode)) return false;
+
+      // 名称类型筛选
+      if (!nameTypeMatchFn(isST)) return false;
+
+      // 行业板块筛选（预过滤）
+      if (industrySectors && industrySectors.length > 0) {
+        const hasIndustry = stock.industry && industrySectors.includes(stock.industry);
+        if (industrySectorInvert) {
+          // 反选模式：排除选中板块的股票
+          if (hasIndustry) return false;
+        } else {
+          // 正常模式：只包含选中板块的股票
+          if (!hasIndustry) return false;
+        }
+      }
+
+      // 概念板块筛选（预过滤）
+      if (conceptSectors && conceptSectors.length > 0) {
+        if (!stock.concepts || stock.concepts.length === 0) {
+          // 如果股票没有概念板块
+          if (!conceptSectorInvert) {
+            return false; // 正常模式：没有概念板块的股票被排除
+          }
+          // 反选模式：没有概念板块的股票保留（因为不在排除列表中）
+        } else {
+          const hasMatchingConcept = stock.concepts.some((c: string) => conceptSectors.includes(c));
+          if (conceptSectorInvert) {
+            // 反选模式：排除选中板块的股票
+            if (hasMatchingConcept) return false;
+          } else {
+            // 正常模式：只包含选中板块的股票
+            if (!hasMatchingConcept) return false;
+          }
+        }
+      }
+
+      return true;
     });
-  }, [allStocks, selectedMarket, nameType]);
+  }, [allStocks, selectedMarket, nameType, industrySectors, conceptSectors, industrySectorInvert, conceptSectorInvert]);
 
   const filterSnapshot = useMemo<OpportunityFilterSnapshot>(
     () => ({

@@ -467,6 +467,26 @@ export function SectorConstituentsPage() {
             </Text>
           </div>
           <div style={{ display: 'flex', gap: '8px' }}>
+            <Tooltip title="将板块成分股信息同步到股票列表">
+              <Button
+                icon={<ArrowRightOutlined />}
+                onClick={handleUpdateSectorMapping}
+                loading={updatingSectorInfo}
+              />
+            </Tooltip>
+            <Button
+              icon={<FilterOutlined />}
+              onClick={() => setFilterDrawerOpen(true)}
+              style={{
+                borderColor: hasActiveFilters(filterPrefs) ? 'var(--ant-color-primary)' : undefined,
+                color: hasActiveFilters(filterPrefs) ? 'var(--ant-color-primary)' : undefined,
+              }}
+            >
+              全局筛选
+              {hasActiveFilters(filterPrefs) && (
+                <span style={{ marginLeft: 4, fontSize: 10 }}>●</span>
+              )}
+            </Button>
             {loading ? (
               <Button danger onClick={handleCancelFetch}>
                 取消获取
@@ -481,19 +501,6 @@ export function SectorConstituentsPage() {
                 </Button>
               )
             )}
-            <Button
-              icon={<FilterOutlined />}
-              onClick={() => setFilterDrawerOpen(true)}
-              style={{
-                borderColor: hasActiveFilters(filterPrefs) ? 'var(--ant-color-primary)' : undefined,
-                color: hasActiveFilters(filterPrefs) ? 'var(--ant-color-primary)' : undefined,
-              }}
-            >
-              全局筛选
-              {hasActiveFilters(filterPrefs) && (
-                <span style={{ marginLeft: 4, fontSize: 10 }}>●</span>
-              )}
-            </Button>
             <Button
               icon={<RocketOutlined />}
               onClick={handleStartRemainingFetch}
@@ -553,25 +560,15 @@ export function SectorConstituentsPage() {
                   {industryData.length}
                 </span>
               </Space>
-              <Space size={4}>
-                <Input
-                  placeholder="搜索"
-                  value={industrySearch}
-                  onChange={handleIndustrySearchChange}
-                  onClear={handleIndustryClear}
-                  allowClear
-                  size="small"
-                  className={styles.searchInput}
-                />
-                <Tooltip title="将成分股数据同步到股票列表，使股票包含行业和概念信息">
-                  <Button
-                    size="small"
-                    icon={<ArrowRightOutlined />}
-                    onClick={handleUpdateSectorMapping}
-                    loading={updatingSectorInfo}
-                  />
-                </Tooltip>
-              </Space>
+              <Input
+                placeholder="搜索"
+                value={industrySearch}
+                onChange={handleIndustrySearchChange}
+                onClear={handleIndustryClear}
+                allowClear
+                size="small"
+                className={styles.searchInput}
+              />
             </div>
             <div ref={industryListRef} className={styles.listContainer}>
               <VirtualList
@@ -603,25 +600,15 @@ export function SectorConstituentsPage() {
                   {conceptData.length}
                 </span>
               </Space>
-              <Space size={4}>
-                <Input
-                  placeholder="搜索"
-                  value={conceptSearch}
-                  onChange={handleConceptSearchChange}
-                  onClear={handleConceptClear}
-                  allowClear
-                  size="small"
-                  className={styles.searchInput}
-                />
-                <Tooltip title="将成分股数据同步到股票列表，使股票包含行业和概念信息">
-                  <Button
-                    size="small"
-                    icon={<ArrowRightOutlined />}
-                    onClick={handleUpdateSectorMapping}
-                    loading={updatingSectorInfo}
-                  />
-                </Tooltip>
-              </Space>
+              <Input
+                placeholder="搜索"
+                value={conceptSearch}
+                onChange={handleConceptSearchChange}
+                onClear={handleConceptClear}
+                allowClear
+                size="small"
+                className={styles.searchInput}
+              />
             </div>
             <div ref={conceptListRef} className={styles.listContainer}>
               <VirtualList

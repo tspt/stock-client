@@ -13,7 +13,7 @@ export const OPPORTUNITY_DEFAULT_BASIC_FILTERS = {
   /** 股票名称类型 */
   nameType: 'non_st' as const,
   /** 价格 */
-  priceRange: { min: 3, max: 50 },
+  priceRange: { min: 3, max: 100 },
   /** 市值范围（亿） */
   marketCapRange: { min: 30, max: 1000 },
   /** 总股本范围（亿） */
@@ -37,9 +37,12 @@ export const OPPORTUNITY_DEFAULT_INDUSTRY_SECTORS = {
     'BK0422', // 物流
     'BK0450', // 航运港口
     'BK0451', // 房地产开发
+    // 'BK0465', // 化学制药
     'BK0473', // 证券Ⅱ
     'BK0474', // 保险Ⅱ
     'BK0475', // 银行Ⅱ
+    'BK0482', // 一般零售
+    'BK0727', // 医疗服务
     'BK0732', // 贵金属
     'BK0734', // 饰品
     'BK0740', // 教育
