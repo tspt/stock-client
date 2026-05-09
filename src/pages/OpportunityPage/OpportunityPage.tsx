@@ -3,9 +3,9 @@
  */
 
 import { useEffect, useState, useMemo, useRef, useCallback, useLayoutEffect } from 'react';
-import { Layout, Card, Button, Space, Progress, Select, Collapse, App, InputNumber, Dropdown, Alert, Tag, Tooltip, Badge, Popover } from 'antd';
+import { Layout, Card, Button, Space, Progress, Select, Collapse, App, InputNumber, Dropdown, Alert, Tag, Tooltip, Badge, Popover, Checkbox } from 'antd';
 import {
-  PlayCircleOutlined,
+  RocketOutlined,
   StopOutlined,
   ExportOutlined,
   SettingOutlined,
@@ -56,6 +56,7 @@ import {
   OPPORTUNITY_DEFAULT_LIMIT_MOVES,
   OPPORTUNITY_DEFAULT_BASIC_FILTERS,
   OPPORTUNITY_DEFAULT_SHARP_MOVE_FULL,
+  OPPORTUNITY_DEFAULT_INDUSTRY_SECTORS,
 } from '@/utils/config/opportunityAnalysisDefaults';
 import { getUnifiedSectorBasics } from '@/services/hot/unified-sectors';
 import type { IndustrySectorBasicInfo, ConceptSectorBasicInfo } from '@/types/stock';
@@ -244,7 +245,7 @@ export function OpportunityPage() {
   }, [analysisData, klineDataCache]);
 
   const [columnSettingsVisible, setColumnSettingsVisible] = useState(false);
-  const [selectedMarket, setSelectedMarket] = useState<string>(INITIAL_FILTER_STATE.selectedMarket);
+  const [selectedMarket, setSelectedMarket] = useState<string[]>([...INITIAL_FILTER_STATE.selectedMarket]);
   const [priceRange, setPriceRange] = useState<{ min?: number; max?: number }>(INITIAL_FILTER_STATE.priceRange);
   const [nameType, setNameType] = useState<string>(INITIAL_FILTER_STATE.nameType);
 
@@ -405,9 +406,11 @@ export function OpportunityPage() {
   );
 
   // 行业板块筛选状态
-  const [industrySectors, setIndustrySectors] = useState<string[]>([]);
+  const [industrySectors, setIndustrySectors] = useState<string[]>([...OPPORTUNITY_DEFAULT_INDUSTRY_SECTORS.excludedIndustries]);
+  const [industrySectorInvert, setIndustrySectorInvert] = useState<boolean>(OPPORTUNITY_DEFAULT_INDUSTRY_SECTORS.invertEnabled);
   // 概念板块筛选状态
   const [conceptSectors, setConceptSectors] = useState<string[]>([]);
+  const [conceptSectorInvert, setConceptSectorInvert] = useState<boolean>(false); // 概念板块反选状态
   // 行业板块选项
   const [industrySectorOptions, setIndustrySectorOptions] = useState<{ label: string; value: string }[]>([]);
   // 概念板块选项
@@ -892,16 +895,32 @@ export function OpportunityPage() {
 
     // 预先确定市场匹配函数，避免在循环中重复 switch
     let marketMatchFn: (code: string) => boolean;
-    switch (selectedMarket) {
-      case 'hs_main':
-        marketMatchFn = (pureCode: string) => pureCode.startsWith('60') || pureCode.startsWith('00');
-        break;
-      case 'sz_gem':
-        marketMatchFn = (pureCode: string) => pureCode.startsWith('30');
-        break;
-      default:
-        marketMatchFn = () => false;
+
+    // 如果没有选择任何市场，则不显示任何股票
+    if (selectedMarket.length === 0) {
+      return [];
     }
+
+    // 构建市场匹配函数数组
+    const marketMatchers: Array<(pureCode: string) => boolean> = [];
+    selectedMarket.forEach(market => {
+      switch (market) {
+        case 'hs_main':
+          marketMatchers.push((pureCode: string) => pureCode.startsWith('60') || pureCode.startsWith('00'));
+          break;
+        case 'sz_gem':
+          marketMatchers.push((pureCode: string) => pureCode.startsWith('30'));
+          break;
+      }
+    });
+
+    // 如果没有任何有效的市场选择，返回空数组
+    if (marketMatchers.length === 0) {
+      return [];
+    }
+
+    // 只要匹配任何一个选中的市场即可
+    marketMatchFn = (pureCode: string) => marketMatchers.some(matcher => matcher(pureCode));
 
     // 预先确定名称类型匹配函数
     let nameTypeMatchFn: (isST: boolean) => boolean;
@@ -1082,7 +1101,42 @@ export function OpportunityPage() {
       filters: filterSnapshot,
       industrySectors,
       conceptSectors,
+      industrySectorInvert,
+      conceptSectorInvert,
     });
+
+  // 打印反选后的股票信息
+  useEffect(() => {
+    const hasIndustryFilter = industrySectors && industrySectors.length > 0;
+    const hasConceptFilter = conceptSectors && conceptSectors.length > 0;
+
+    if ((hasIndustryFilter || hasConceptFilter) && filteredAnalysisData.length > 0) {
+      console.log('=== 板块筛选结果 ===');
+
+      if (hasIndustryFilter) {
+        console.log('行业筛选:', {
+          选中板块: industrySectors,
+          模式: industrySectorInvert ? '排除选中' : '只包含选中'
+        });
+      }
+
+      if (hasConceptFilter) {
+        console.log('概念筛选:', {
+          选中板块: conceptSectors,
+          模式: conceptSectorInvert ? '排除选中' : '只包含选中'
+        });
+      }
+
+      console.log('筛选后股票数量:', filteredAnalysisData.length);
+      console.log('筛选后股票列表:', filteredAnalysisData.map(item => ({
+        code: item.code,
+        name: item.name,
+        industry: item.industry,
+        concepts: item.concepts
+      })));
+      console.log('==================');
+    }
+  }, [filteredAnalysisData, industrySectors, conceptSectors, industrySectorInvert, conceptSectorInvert]);
 
   useEffect(() => {
     if (filterSkippedItems.length === 0) {
@@ -1093,7 +1147,7 @@ export function OpportunityPage() {
   /** 仅重置顶部：市场、名称类型、周期、K 线数量 */
   const handleResetQueryBar = () => {
     const s = INITIAL_FILTER_STATE;
-    setSelectedMarket(s.selectedMarket);
+    setSelectedMarket([...s.selectedMarket]);
     setNameType(s.nameType);
     useOpportunityStore.setState({
       currentPeriod: INITIAL_OPPORTUNITY_QUERY.currentPeriod,
@@ -1172,8 +1226,10 @@ export function OpportunityPage() {
     setAiTrendScoreRange({ ...s.aiTrendScoreRange });
     setAiRiskScoreRange({ ...s.aiRiskScoreRange });
     // 重置行业板块和概念板块筛选
-    setIndustrySectors([]);
+    setIndustrySectors([...OPPORTUNITY_DEFAULT_INDUSTRY_SECTORS.excludedIndustries]);
     setConceptSectors([]);
+    setIndustrySectorInvert(OPPORTUNITY_DEFAULT_INDUSTRY_SECTORS.invertEnabled);
+    setConceptSectorInvert(false);
     patchSavedPrefsFiltersToDefaults();
     message.info('已恢复默认筛选条件');
   };
@@ -1368,16 +1424,19 @@ export function OpportunityPage() {
           <Space.Compact className={styles.spaceCompact}>
             <span className={styles.label}>市场：</span>
             <Select
+              mode="multiple"
               value={selectedMarket}
-              onChange={(value: string) => {
+              onChange={(value: string[]) => {
                 setSelectedMarket(value);
                 if (analysisData.length > 0) {
                   message.info('市场已更改，请重新分析');
                 }
               }}
               options={MARKET_OPTIONS}
-              style={{ width: 110 }}
+              style={{ width: 200 }}
               disabled={loading}
+              maxTagCount={2}
+              maxTagPlaceholder={(omitted) => `+${omitted.length}`}
             />
           </Space.Compact>
           <Space.Compact className={styles.spaceCompact}>
@@ -1414,6 +1473,14 @@ export function OpportunityPage() {
               maxTagCount={2}
               maxTagPlaceholder={(omitted) => `+${omitted.length}`}
             />
+            <Checkbox
+              checked={industrySectorInvert}
+              onChange={(e) => setIndustrySectorInvert(e.target.checked)}
+              style={{ marginLeft: 8, whiteSpace: 'nowrap' }}
+              disabled={loading || industrySectors.length === 0}
+            >
+              排除选中
+            </Checkbox>
           </Space.Compact>
           <Space.Compact className={styles.spaceCompact} style={{ flex: 3, minWidth: 280 }}>
             <span className={styles.label}>概念：</span>
@@ -1434,6 +1501,14 @@ export function OpportunityPage() {
               maxTagCount={2}
               maxTagPlaceholder={(omitted) => `+${omitted.length}`}
             />
+            <Checkbox
+              checked={conceptSectorInvert}
+              onChange={(e) => setConceptSectorInvert(e.target.checked)}
+              style={{ marginLeft: 8, whiteSpace: 'nowrap' }}
+              disabled={loading || conceptSectors.length === 0}
+            >
+              排除选中
+            </Checkbox>
           </Space.Compact>
           <Space.Compact className={styles.spaceCompact}>
             <span className={styles.label}>周期：</span>
@@ -1473,7 +1548,7 @@ export function OpportunityPage() {
           {/* 操作按钮 */}
           <Button
             type="primary"
-            icon={<PlayCircleOutlined />}
+            icon={<RocketOutlined />}
             onClick={handleAnalyze}
             loading={loading}
             disabled={loading || filteredStocks.length === 0}
@@ -1734,10 +1809,14 @@ export function OpportunityPage() {
             industrySectors={industrySectors}
             setIndustrySectors={setIndustrySectors}
             industrySectorOptions={industrySectorOptions}
+            industrySectorInvert={industrySectorInvert}
+            setIndustrySectorInvert={setIndustrySectorInvert}
             // 概念板块筛选
             conceptSectors={conceptSectors}
             setConceptSectors={setConceptSectors}
             conceptSectorOptions={conceptSectorOptions}
+            conceptSectorInvert={conceptSectorInvert}
+            setConceptSectorInvert={setConceptSectorInvert}
             // 重置筛选按钮
             resetFilterButton={
               <Button icon={<ClearOutlined />} onClick={handleResetFilterForms} disabled={loading}>

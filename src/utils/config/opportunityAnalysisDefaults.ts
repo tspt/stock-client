@@ -8,14 +8,14 @@
 
 /** 基础筛选默认配置 */
 export const OPPORTUNITY_DEFAULT_BASIC_FILTERS = {
-  /** 选择市场 */
-  selectedMarket: 'hs_main' as const,
+  /** 选择市场（多选） */
+  selectedMarket: ['hs_main', 'sz_gem'] as const,
   /** 股票名称类型 */
   nameType: 'non_st' as const,
   /** 价格 */
-  priceRange: { min: 3, max: 30 },
+  priceRange: { min: 3, max: 50 },
   /** 市值范围（亿） */
-  marketCapRange: { min: 30, max: 500 },
+  marketCapRange: { min: 30, max: 1000 },
   /** 总股本范围（亿） */
   totalSharesRange: { min: 1, max: 50 },
   /** 换手率范围（%） */
@@ -26,6 +26,66 @@ export const OPPORTUNITY_DEFAULT_BASIC_FILTERS = {
 export const OPPORTUNITY_DEFAULT_LIMIT_MOVES = {
   /** 涨停/跌停统计周期 */
   period: 20,
+} as const;
+
+/** 行业板块筛选默认配置 */
+export const OPPORTUNITY_DEFAULT_INDUSTRY_SECTORS = {
+  /** 默认选中的行业代码列表（排除这些传统行业） */
+  excludedIndustries: [
+    'BK1020', // 航空机场
+    'BK0421', // 铁路公路
+    'BK0422', // 物流
+    'BK0450', // 航运港口
+    'BK0451', // 房地产开发
+    'BK0473', // 证券Ⅱ
+    'BK0474', // 保险Ⅱ
+    'BK0475', // 银行Ⅱ
+    'BK0732', // 贵金属
+    'BK0734', // 饰品
+    'BK0740', // 教育
+    'BK1027', // 小金属
+    'BK1028', // 燃气Ⅱ
+    'BK1040', // 中药Ⅱ
+    'BK1041', // 医疗器械
+    'BK1042', // 医药商业
+    'BK1044', // 生物制品
+    'BK1045', // 房地产服务
+    'BK1222', // 影视院线
+    'BK1226', // 普钢
+    'BK1227', // 特钢Ⅱ
+    'BK1228', // 冶钢原料
+    'BK1243', // 其他家电Ⅱ
+    'BK1239', // 白色家电
+    'BK1241', // 黑色家电
+    'BK1240', // 厨卫电器
+    'BK1244', // 小家电
+    'BK1249', // 焦炭Ⅱ
+    'BK1250', // 煤炭开采
+    'BK1251', // 个护用品
+    'BK1252', // 化妆品
+    'BK1253', // 医疗美容
+    'BK1254', // 动物保健Ⅱ
+    'BK1256', // 农产品加工
+    'BK1257', // 农业综合Ⅱ
+    'BK1258', // 饲料
+    'BK1259', // 养殖业
+    'BK1260', // 渔业
+    'BK1261', // 种植业
+    'BK1269', // 旅游零售Ⅱ
+    'BK1270', // 专业连锁Ⅱ
+    'BK1271', // 酒店餐饮
+    'BK1272', // 旅游及景区
+    'BK1274', // 炼化及贸易
+    'BK1275', // 油服工程
+    'BK1276', // 油气开采Ⅱ
+    'BK1277', // 白酒Ⅱ
+    'BK1279', // 非白酒
+    'BK1280', // 食品加工
+    'BK1281', // 休闲食品
+    'BK1282', // 饮料乳品
+  ],
+  /** 默认启用排除选中模式 */
+  invertEnabled: true,
 } as const;
 
 // ==================== 2. AI分析筛选 ====================

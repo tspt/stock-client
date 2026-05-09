@@ -3,14 +3,15 @@
  */
 
 import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
-import { Layout, Button, Progress, Input, Typography, Empty, App, Space } from 'antd';
-import { RocketOutlined, LoadingOutlined, ExportOutlined, FilterOutlined } from '@ant-design/icons';
+import { Layout, Button, Progress, Input, Typography, Empty, App, Space, Tooltip } from 'antd';
+import { RocketOutlined, LoadingOutlined, ExportOutlined, FilterOutlined, SyncOutlined, ArrowRightOutlined } from '@ant-design/icons';
 import VirtualList from 'rc-virtual-list';
 import { fetchAllSectorsStocks, fetchRemainingSectorsStocks, type SectorFullData, type FetchProgress, type FailedSector, type StockSimpleInfo } from '@/services/hot/sector-stocks-service';
 import { getIndustrySectors, getConceptSectors, type SectorWithStocks } from '@/utils/storage/sectorStocksIndexedDB';
 import { CACHE_TTL } from '@/utils/config/constants';
 import { logger } from '@/utils/business/logger';
 import { StockFilterDrawer } from '@/components/StockFilterDrawer/StockFilterDrawer';
+import { clearSectorMappingCache } from '@/services/stocks/sectorEnhancer';
 import {
   loadSectorFilterPrefs,
   saveSectorFilterPrefs,
@@ -74,6 +75,7 @@ export function SectorConstituentsPage() {
   const [filterPrefs, setFilterPrefs] = useState<SectorFilterPrefs>(DEFAULT_FILTER_PREFS);
   const abortControllerRef = useRef<AbortController | null>(null);
   const hasLoadedRef = useRef(false);
+  const [updatingSectorInfo, setUpdatingSectorInfo] = useState(false);
 
   // 搜索防抖定时器
   const industrySearchTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -84,6 +86,21 @@ export function SectorConstituentsPage() {
   const conceptListRef = useRef<HTMLDivElement>(null);
   const [industryListHeight, setIndustryListHeight] = useState(200);
   const [conceptListHeight, setConceptListHeight] = useState(200);
+
+  // 手动触发更新板块映射缓存
+  const handleUpdateSectorMapping = async () => {
+    setUpdatingSectorInfo(true);
+    try {
+      // 清除缓存，下次读取时会自动重建
+      clearSectorMappingCache();
+      message.success('板块信息已更新，股票列表的板块信息将同步更新');
+    } catch (error) {
+      logger.error('更新板块信息失败:', error);
+      message.error('更新板块信息失败');
+    } finally {
+      setUpdatingSectorInfo(false);
+    }
+  };
 
   // 页面加载时从 IndexedDB 读取缓存，并加载筛选配置
   useEffect(() => {
@@ -240,7 +257,7 @@ export function SectorConstituentsPage() {
       if (signal.aborted) {
         message.info('已取消获取');
       } else if (result.failed.length === 0) {
-        message.success('数据获取完成');
+        message.success('数据获取完成，请点击“更新板块信息”按钮同步到股票列表');
       } else {
         message.warning(`获取完成，但有 ${result.failed.length} 个板块失败，可点击重试`);
       }
@@ -301,7 +318,7 @@ export function SectorConstituentsPage() {
       if (signal.aborted) {
         message.info('已取消获取');
       } else if (result.failed.length === 0) {
-        message.success('剩余数据获取完成');
+        message.success('剩余数据获取完成，请点击“更新板块信息”按钮同步到股票列表');
       } else {
         message.warning(`获取完成,但有 ${result.failed.length} 个板块失败,可点击重试`);
       }
@@ -536,15 +553,25 @@ export function SectorConstituentsPage() {
                   {industryData.length}
                 </span>
               </Space>
-              <Input
-                placeholder="搜索"
-                value={industrySearch}
-                onChange={handleIndustrySearchChange}
-                onClear={handleIndustryClear}
-                allowClear
-                size="small"
-                className={styles.searchInput}
-              />
+              <Space size={4}>
+                <Input
+                  placeholder="搜索"
+                  value={industrySearch}
+                  onChange={handleIndustrySearchChange}
+                  onClear={handleIndustryClear}
+                  allowClear
+                  size="small"
+                  className={styles.searchInput}
+                />
+                <Tooltip title="将成分股数据同步到股票列表，使股票包含行业和概念信息">
+                  <Button
+                    size="small"
+                    icon={<ArrowRightOutlined />}
+                    onClick={handleUpdateSectorMapping}
+                    loading={updatingSectorInfo}
+                  />
+                </Tooltip>
+              </Space>
             </div>
             <div ref={industryListRef} className={styles.listContainer}>
               <VirtualList
@@ -576,15 +603,25 @@ export function SectorConstituentsPage() {
                   {conceptData.length}
                 </span>
               </Space>
-              <Input
-                placeholder="搜索"
-                value={conceptSearch}
-                onChange={handleConceptSearchChange}
-                onClear={handleConceptClear}
-                allowClear
-                size="small"
-                className={styles.searchInput}
-              />
+              <Space size={4}>
+                <Input
+                  placeholder="搜索"
+                  value={conceptSearch}
+                  onChange={handleConceptSearchChange}
+                  onClear={handleConceptClear}
+                  allowClear
+                  size="small"
+                  className={styles.searchInput}
+                />
+                <Tooltip title="将成分股数据同步到股票列表，使股票包含行业和概念信息">
+                  <Button
+                    size="small"
+                    icon={<ArrowRightOutlined />}
+                    onClick={handleUpdateSectorMapping}
+                    loading={updatingSectorInfo}
+                  />
+                </Tooltip>
+              </Space>
             </div>
             <div ref={conceptListRef} className={styles.listContainer}>
               <VirtualList

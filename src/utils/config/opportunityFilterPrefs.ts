@@ -8,6 +8,8 @@ import {
   OPPORTUNITY_DEFAULT_CONSOLIDATION,
   OPPORTUNITY_DEFAULT_SHARP_MOVE,
   OPPORTUNITY_DEFAULT_TREND_LINE,
+  OPPORTUNITY_DEFAULT_INDUSTRY_SECTORS,
+  OPPORTUNITY_DEFAULT_BASIC_FILTERS,
 } from '@/utils/config/opportunityAnalysisDefaults';
 import { logger } from '../business/logger';
 
@@ -76,7 +78,7 @@ const VALID_CONSOLIDATION_TYPES: ConsolidationType[] = ['low_stable', 'high_stab
 
 export interface OpportunityFilterPrefs {
   version: typeof PREFS_VERSION;
-  selectedMarket: string;
+  selectedMarket: string[];
   nameType: string;
   currentPeriod: KLinePeriod;
   currentCount: number;
@@ -194,7 +196,10 @@ export function loadOpportunityFilterPrefs(): OpportunityFilterPrefs | null {
     if (!raw) return null;
     const p = JSON.parse(raw) as unknown;
     if (!isRecord(p) || p.version !== PREFS_VERSION) return null;
-    if (typeof p.selectedMarket !== 'string' || typeof p.nameType !== 'string') return null;
+    // 验证 selectedMarket 必须是字符串数组
+    if (!Array.isArray(p.selectedMarket)) return null;
+    const selectedMarket = p.selectedMarket.filter((item: any) => typeof item === 'string');
+    if (typeof p.nameType !== 'string') return null;
     if (
       typeof p.currentPeriod !== 'string' ||
       !VALID_PERIODS.includes(p.currentPeriod as KLinePeriod)
@@ -207,7 +212,7 @@ export function loadOpportunityFilterPrefs(): OpportunityFilterPrefs | null {
 
     const prefs: OpportunityFilterPrefs = {
       version: PREFS_VERSION,
-      selectedMarket: p.selectedMarket,
+      selectedMarket: selectedMarket,
       nameType: p.nameType,
       currentPeriod: p.currentPeriod as KLinePeriod,
       currentCount: Math.floor(p.currentCount),
@@ -410,8 +415,8 @@ export function getDefaultFilterPrefsFields(): Omit<
 
 /** 与 INITIAL_OPPORTUNITY_QUERY + 页面默认市场/名称类型一致 */
 export const DEFAULT_QUERY_PREFS_FIELDS = {
-  selectedMarket: 'hs_main',
-  nameType: 'non_st',
+  selectedMarket: [...OPPORTUNITY_DEFAULT_BASIC_FILTERS.selectedMarket], // 默认选中沪深主板和创业板
+  nameType: OPPORTUNITY_DEFAULT_BASIC_FILTERS.nameType,
   currentPeriod: 'day' as KLinePeriod,
   currentCount: 500,
 };
@@ -440,7 +445,7 @@ export function patchSavedPrefsFiltersToDefaults(): void {
 
 /** 将已校验的偏好写回页面 state（不含 store 的 period/count，由调用方按是否有缓存决定） */
 export interface OpportunityFilterPrefsApplyActions {
-  setSelectedMarket: (v: string) => void;
+  setSelectedMarket: (v: string[]) => void;
   setNameType: (v: string) => void;
   setPriceRange: (v: { min?: number; max?: number }) => void;
   setMarketCapRange: (v: { min?: number; max?: number }) => void;

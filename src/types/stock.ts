@@ -10,6 +10,10 @@ export interface StockInfo {
   market: 'SH' | 'SZ';
   /** 所属分组ID列表（支持多标签） */
   groupIds?: string[];
+  /** 所属行业板块代码（如 "BK1020"） */
+  industry?: string;
+  /** 所属概念板块代码列表 */
+  concepts?: string[];
 }
 
 /**
@@ -373,6 +377,10 @@ export interface StockOpportunityData {
   analysisTimestamp?: number;
   /** 今日交易信号 */
   tradingSignal?: TradingSignal;
+  /** 所属行业板块 */
+  industry?: string;
+  /** 所属概念板块列表 */
+  concepts?: string[];
   /** 分析时间戳 */
   analyzedAt: number;
   /** 错误信息（如果获取失败） */

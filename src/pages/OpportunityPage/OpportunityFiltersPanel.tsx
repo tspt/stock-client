@@ -376,10 +376,14 @@ export interface OpportunityFiltersPanelProps {
   industrySectors?: string[];
   setIndustrySectors: (v: string[]) => void;
   industrySectorOptions?: { label: string; value: string }[];
+  industrySectorInvert?: boolean;
+  setIndustrySectorInvert?: (v: boolean) => void;
   // 概念板块筛选
   conceptSectors?: string[];
   setConceptSectors: (v: string[]) => void;
   conceptSectorOptions?: { label: string; value: string }[];
+  conceptSectorInvert?: boolean;
+  setConceptSectorInvert?: (v: boolean) => void;
   // 重置筛选按钮
   resetFilterButton?: React.ReactNode;
   // 外部控制的抽屉状态
@@ -533,10 +537,14 @@ export function OpportunityFiltersPanel({
   industrySectors,
   setIndustrySectors,
   industrySectorOptions = [],
+  industrySectorInvert = false,
+  setIndustrySectorInvert,
   // 概念板块筛选
   conceptSectors,
   setConceptSectors,
   conceptSectorOptions = [],
+  conceptSectorInvert = false,
+  setConceptSectorInvert,
   // 重置筛选按钮
   resetFilterButton,
   // 外部控制的抽屉状态

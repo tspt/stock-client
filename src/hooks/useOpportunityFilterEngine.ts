@@ -62,6 +62,8 @@ interface UseOpportunityFilterEngineArgs {
   filters: OpportunityFilterSnapshot;
   industrySectors?: string[];
   conceptSectors?: string[];
+  industrySectorInvert?: boolean; // 行业板块反选
+  conceptSectorInvert?: boolean; // 概念板块反选
 }
 
 interface UseOpportunityFilterEngineResult {
@@ -77,6 +79,8 @@ export function useOpportunityFilterEngine({
   filters,
   industrySectors,
   conceptSectors,
+  industrySectorInvert = false,
+  conceptSectorInvert = false,
 }: UseOpportunityFilterEngineArgs): UseOpportunityFilterEngineResult {
   const [filteredData, setFilteredData] = useState<StockOpportunityData[]>([]);
   const [filtering, setFiltering] = useState(false);
@@ -225,21 +229,47 @@ export function useOpportunityFilterEngine({
 
       // 行业板块筛选
       if (industrySectors && industrySectors.length > 0) {
-        if (!item.industry || !industrySectors.includes(item.industry)) {
-          return false;
+        const hasIndustry = item.industry && industrySectors.includes(item.industry);
+        // 如果启用反选，则排除选中板块的股票；否则只包含选中板块的股票
+        if (industrySectorInvert) {
+          // 反选模式：排除选中板块的股票
+          if (hasIndustry) {
+            return false;
+          }
+        } else {
+          // 正常模式：只包含选中板块的股票
+          if (!hasIndustry) {
+            return false;
+          }
         }
       }
+      // 如果 industrySectors 为空数组，不进行行业筛选
 
       // 概念板块筛选
       if (conceptSectors && conceptSectors.length > 0) {
         if (!item.concepts || item.concepts.length === 0) {
-          return false;
-        }
-        const hasMatchingConcept = item.concepts.some((c) => conceptSectors.includes(c));
-        if (!hasMatchingConcept) {
-          return false;
+          // 如果股票没有概念板块
+          if (!conceptSectorInvert) {
+            return false; // 正常模式：没有概念板块的股票被排除
+          }
+          // 反选模式：没有概念板块的股票保留（因为不在排除列表中）
+        } else {
+          const hasMatchingConcept = item.concepts.some((c: string) => conceptSectors.includes(c));
+          // 如果启用反选，则排除选中板块的股票；否则只包含选中板块的股票
+          if (conceptSectorInvert) {
+            // 反选模式：排除选中板块的股票
+            if (hasMatchingConcept) {
+              return false;
+            }
+          } else {
+            // 正常模式：只包含选中板块的股票
+            if (!hasMatchingConcept) {
+              return false;
+            }
+          }
         }
       }
+      // 如果 conceptSectors 为空数组，不进行概念筛选
 
       return true;
     });

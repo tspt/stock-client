@@ -88,7 +88,7 @@
 }
 
 .sidebar {
-  width: 280px;
+  width: 320px;
   flex-shrink: 0;
   background: #fff;
   border-right: 1px solid var(--ant-color-border-secondary);
@@ -112,7 +112,6 @@
 
 .sectionHeader {
   padding: 10px 16px;
-  margin-bottom: 4px;
   display: flex;
   justify-content: space-between;
   align-items: center;

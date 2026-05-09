@@ -6,7 +6,7 @@
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { Layout, Card, Button, Space, Table, Progress, Select, DatePicker, Tag, Row, Col, Input, Typography, App, Drawer, Modal } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { ExperimentOutlined, ReloadOutlined, SearchOutlined, FilterOutlined, ClearOutlined, CopyOutlined } from '@ant-design/icons';
+import { ExperimentOutlined, ReloadOutlined, SearchOutlined, FilterOutlined, ClearOutlined, ExportOutlined, CopyOutlined } from '@ant-design/icons';
 import VirtualList from 'rc-virtual-list';
 import { getStocksHistory, getSignalBacktestsByCode, clearAllSignalBacktests, batchSaveSignalBacktests, getAllSignalBacktests, getStockHistory } from '@/utils/storage/opportunityIndexedDB';
 import { getModelMetadata } from '@/utils/analysis/mlBuypointModel';
@@ -806,7 +806,7 @@ export function BacktestPage() {
               筛选条件
             </Button>
             <Button
-              icon={<CopyOutlined />}
+              icon={<ExportOutlined />}
               onClick={handleOpenExportAllModal}
               disabled={groupedResults.length === 0}
             >
