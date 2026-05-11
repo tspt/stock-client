@@ -107,6 +107,14 @@ export interface OpportunityFilterSnapshot {
   aiTrendScoreRange: NumberRange;
   /** AI风险评分范围（0-100，分数越高风险越低） */
   aiRiskScoreRange: NumberRange;
+  /** 行业板块筛选 */
+  industrySectors?: string[];
+  /** 概念板块筛选 */
+  conceptSectors?: string[];
+  /** 行业板块反选 */
+  industrySectorInvert?: boolean;
+  /** 概念板块反选 */
+  conceptSectorInvert?: boolean;
 }
 
 export interface FilterSkippedItem {

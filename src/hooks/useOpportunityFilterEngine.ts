@@ -227,51 +227,8 @@ export function useOpportunityFilterEngine({
     const lightFiltered = currentAnalysisData.filter((item) => {
       if (!passLightFilters(item, currentFilters)) return false;
 
-      // 行业板块筛选
-      if (industrySectors && industrySectors.length > 0) {
-        const hasIndustry = item.industry && industrySectors.includes(item.industry.code);
-        // 如果启用反选，则排除选中板块的股票；否则只包含选中板块的股票
-        if (industrySectorInvert) {
-          // 反选模式：排除选中板块的股票
-          if (hasIndustry) {
-            return false;
-          }
-        } else {
-          // 正常模式：只包含选中板块的股票
-          if (!hasIndustry) {
-            return false;
-          }
-        }
-      }
-      // 如果 industrySectors 为空数组，不进行行业筛选
-
-      // 概念板块筛选
-      if (conceptSectors && conceptSectors.length > 0) {
-        if (!item.concepts || item.concepts.length === 0) {
-          // 如果股票没有概念板块
-          if (!conceptSectorInvert) {
-            return false; // 正常模式：没有概念板块的股票被排除
-          }
-          // 反选模式：没有概念板块的股票保留（因为不在排除列表中）
-        } else {
-          const hasMatchingConcept = item.concepts.some((c: { code: string; name: string }) =>
-            conceptSectors.includes(c.code)
-          );
-          // 如果启用反选，则排除选中板块的股票；否则只包含选中板块的股票
-          if (conceptSectorInvert) {
-            // 反选模式：排除选中板块的股票
-            if (hasMatchingConcept) {
-              return false;
-            }
-          } else {
-            // 正常模式：只包含选中板块的股票
-            if (!hasMatchingConcept) {
-              return false;
-            }
-          }
-        }
-      }
-      // 如果 conceptSectors 为空数组，不进行概念筛选
+      // 注意：行业板块和概念板块筛选已移至工作线程中执行
+      // 此处不再重复执行，避免双重过滤导致的问题
 
       return true;
     });
@@ -329,7 +286,7 @@ export function useOpportunityFilterEngine({
         clearTimeout(debounceTimerRef.current);
       }
     };
-  }, [analysisData, filters, dataVersion, triggerDebouncedFilter, industrySectors, conceptSectors]);
+  }, [analysisData, filters, dataVersion, triggerDebouncedFilter]);
 
   const clearAICache = useCallback(() => {
     const worker = workerRef.current;

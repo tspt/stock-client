@@ -154,6 +154,7 @@ export const OPPORTUNITY_DEFAULT_COLUMNS = [
     { key: 'opportunityChangePercent', title: '区间最大值回撤比', visible: true, width: 150 },
     { key: 'industry', title: '所属行业', visible: true, width: 120 },
     { key: 'concepts', title: '所属概念', visible: true, width: 200 },
+    { key: 'tradingSignal', title: '交易信号', visible: true, width: 150 },
     { key: 'consolidationStatus', title: '横盘状态', visible: true, width: 100 },
     { key: 'consolidationTypes', title: '命中类型', visible: true, width: 280 },
     { key: 'consolidationReason', title: '命中说明', visible: true, width: 280 },

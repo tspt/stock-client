@@ -707,6 +707,53 @@ async function runFilterTask(
         nextItem = itemForAIFilter;
       }
 
+      // 行业板块筛选
+      if (filters.industrySectors && filters.industrySectors.length > 0) {
+        const hasIndustry =
+          nextItem.industry && filters.industrySectors.includes(nextItem.industry.code);
+        const invertMode = filters.industrySectorInvert || false;
+
+        if (invertMode) {
+          // 反选模式：排除选中板块的股票
+          if (hasIndustry) {
+            continue;
+          }
+        } else {
+          // 正常模式：只包含选中板块的股票
+          if (!hasIndustry) {
+            continue;
+          }
+        }
+      }
+
+      // 概念板块筛选
+      if (filters.conceptSectors && filters.conceptSectors.length > 0) {
+        if (!nextItem.concepts || nextItem.concepts.length === 0) {
+          // 如果股票没有概念板块
+          if (!filters.conceptSectorInvert) {
+            continue; // 正常模式：没有概念板块的股票被排除
+          }
+          // 反选模式：没有概念板块的股票保留（因为不在排除列表中）
+        } else {
+          const hasMatchingConcept = nextItem.concepts.some((c: { code: string; name: string }) =>
+            filters.conceptSectors!.includes(c.code)
+          );
+          const invertMode = filters.conceptSectorInvert || false;
+
+          if (invertMode) {
+            // 反选模式：排除选中板块的股票
+            if (hasMatchingConcept) {
+              continue;
+            }
+          } else {
+            // 正常模式：只包含选中板块的股票
+            if (!hasMatchingConcept) {
+              continue;
+            }
+          }
+        }
+      }
+
       result.push(nextItem);
     } catch {
       mergeSkippedReason(skippedMap, item.code, item.name, '筛选计算异常，已跳过该股');

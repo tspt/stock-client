@@ -226,25 +226,36 @@ export function OpportunityPage() {
 
   // 为每只股票计算交易信号
   const processedData = useMemo(() => {
+    // 构建股票代码到完整信息的映射（包含 industry 和 concepts）
+    const stockInfoMap = new Map(
+      allStocks.map((stock) => [stock.code, { industry: stock.industry, concepts: stock.concepts }])
+    );
+
     return analysisData.map((item) => {
+      // 从 allStocks 中补充 industry 和 concepts 字段
+      const stockInfo = stockInfoMap.get(item.code);
+      const enrichedItem = stockInfo
+        ? { ...item, industry: stockInfo.industry, concepts: stockInfo.concepts }
+        : item;
+
       // 从 klineDataCache 中获取 K 线数据
-      const cachedKline = klineDataCache?.get(item.code);
+      const cachedKline = klineDataCache?.get(enrichedItem.code);
       if (!cachedKline || cachedKline.length < 60) {
         // 如果K线数据不足，移除tradingSignal字段
-        const { tradingSignal: _, ...rest } = item;
+        const { tradingSignal: _, ...rest } = enrichedItem;
         return rest;
       }
 
       const signal = detectTradingSignal(cachedKline);
       // 确保 tradingSignal 要么是 TradingSignal 对象，要么不存在（undefined）
       if (signal) {
-        return { ...item, tradingSignal: signal };
+        return { ...enrichedItem, tradingSignal: signal };
       }
       // 如果没有信号，移除tradingSignal字段
-      const { tradingSignal: __, ...rest } = item;
+      const { tradingSignal: __, ...rest } = enrichedItem;
       return rest;
     });
-  }, [analysisData, klineDataCache]);
+  }, [analysisData, klineDataCache, allStocks]);
 
   const [columnSettingsVisible, setColumnSettingsVisible] = useState(false);
   const [selectedMarket, setSelectedMarket] = useState<string[]>([...INITIAL_FILTER_STATE.selectedMarket]);
@@ -1062,6 +1073,10 @@ export function OpportunityPage() {
       aiPatternScoreRange,
       aiTrendScoreRange,
       aiRiskScoreRange,
+      industrySectors,
+      conceptSectors,
+      industrySectorInvert,
+      conceptSectorInvert,
     }),
     [
       priceRange,
@@ -1135,6 +1150,10 @@ export function OpportunityPage() {
       aiPatternScoreRange,
       aiTrendScoreRange,
       aiRiskScoreRange,
+      industrySectors,
+      conceptSectors,
+      industrySectorInvert,
+      conceptSectorInvert,
     ]
   );
 
