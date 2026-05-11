@@ -51,6 +51,12 @@ export const OpportunityTable = memo(function OpportunityTable({ data, columns, 
         return record.trendLine?.reasonText ?? '';
       case 'sharpMoveLabels':
         return record.sharpMovePatterns?.labels?.join('、') ?? '';
+      case 'industry':
+        return record.industry?.name ?? '';
+      case 'concepts':
+        return record.concepts?.map(c => c.name).join('、') ?? '';
+      case 'tradingSignal':
+        return record.tradingSignal?.type ?? '';
       default:
         return (record as any)[key];
     }
@@ -68,7 +74,7 @@ export const OpportunityTable = memo(function OpportunityTable({ data, columns, 
 
   const formatValue = (value: any, key: string, record?: StockOpportunityData): string | number | React.ReactNode => {
     if (key === 'consolidationStatus') {
-      if (!record?.consolidation) return '-';
+      if (!record?.consolidation) return '';
       const isConsolidation = record.consolidation.isConsolidation;
       return (
         <span className={isConsolidation ? styles.consolidationYes : styles.consolidationNo}>
@@ -80,7 +86,7 @@ export const OpportunityTable = memo(function OpportunityTable({ data, columns, 
     if (key === 'consolidationTypes') {
       const labels = record?.consolidation?.matchedTypeLabels;
       if (!labels?.length) {
-        return '-';
+        return '';
       }
       return (
         <div className={styles.consolidationTypes}>
@@ -94,11 +100,11 @@ export const OpportunityTable = memo(function OpportunityTable({ data, columns, 
     }
 
     if (key === 'consolidationReason') {
-      return record?.consolidation?.reasonText || '-';
+      return record?.consolidation?.reasonText || '';
     }
 
     if (key === 'trendLineStatus') {
-      if (!record?.trendLine) return '-';
+      if (!record?.trendLine) return '';
       const hit = record.trendLine.isHit;
       return (
         <span className={hit ? styles.consolidationYes : styles.consolidationNo}>{hit ? '是' : '否'}</span>
@@ -106,7 +112,7 @@ export const OpportunityTable = memo(function OpportunityTable({ data, columns, 
     }
 
     if (key === 'trendLineReason') {
-      if (!record?.trendLine) return '-';
+      if (!record?.trendLine) return '';
       const { lookback, consecutive, reasonText } = record.trendLine;
       return (
         <span>
@@ -117,7 +123,7 @@ export const OpportunityTable = memo(function OpportunityTable({ data, columns, 
     }
 
     if (value === null || value === undefined || value === '') {
-      return '-';
+      return '';
     }
 
     switch (key) {
@@ -129,7 +135,7 @@ export const OpportunityTable = memo(function OpportunityTable({ data, columns, 
       case 'change':
         return value >= 0 ? `+${value.toFixed(2)}` : value.toFixed(2);
       case 'changePercent':
-        return value !== null && value !== undefined ? `${value.toFixed(2)}%` : '-';
+        return value !== null && value !== undefined ? `${value.toFixed(2)}%` : '';
       case 'volume':
         return formatVolumeInBillion(Number(value));
       case 'amount':
@@ -146,9 +152,9 @@ export const OpportunityTable = memo(function OpportunityTable({ data, columns, 
       case 'kdjK':
       case 'kdjD':
       case 'kdjJ':
-        return value !== undefined && value !== null ? Number(value).toFixed(2) : '-';
+        return value !== undefined && value !== null ? Number(value).toFixed(2) : '';
       case 'opportunityChangePercent':
-        return value !== null && value !== undefined ? `${Number(value).toFixed(2)}%` : '-';
+        return value !== null && value !== undefined ? `${Number(value).toFixed(2)}%` : '';
       case 'ma5':
       case 'ma10':
       case 'ma20':
@@ -157,15 +163,32 @@ export const OpportunityTable = memo(function OpportunityTable({ data, columns, 
       case 'ma120':
       case 'ma240':
       case 'ma360':
-        return value !== undefined && value !== null ? `${Number(value).toFixed(2)}%` : '-';
+        return value !== undefined && value !== null ? `${Number(value).toFixed(2)}%` : '';
       case 'sharpMoveLabels': {
         const labels = record?.sharpMovePatterns?.labels;
-        if (!labels || labels.length === 0) return '-';
+        if (!labels || labels.length === 0) return '';
         return labels.join('、');
+      }
+      case 'industry': {
+        return record?.industry?.name || '';
+      }
+      case 'concepts': {
+        if (!record?.concepts || record.concepts.length === 0) {
+          return '';
+        }
+        return (
+          <div className={styles.consolidationTypes}>
+            {record.concepts.map((concept) => (
+              <span key={concept.code} className={styles.consolidationTag}>
+                {concept.name}
+              </span>
+            ))}
+          </div>
+        );
       }
       case 'tradingSignal': {
         const signal = record?.tradingSignal;
-        if (!signal) return <span style={{ color: '#999' }}>-</span>;
+        if (!signal) return '';
 
         let color = '#666';
         let text = '观望';
@@ -259,7 +282,7 @@ export const OpportunityTable = memo(function OpportunityTable({ data, columns, 
         fixed: 'right',
         render: (_: any, record: StockOpportunityData) => {
           if (!record.aiAnalysis) {
-            return <span style={{ color: '#d9d9d9' }}>-</span>;
+            return '';
           }
           return (
             <a

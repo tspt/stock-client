@@ -1,4 +1,24 @@
 /**
+ * 行业板块信息
+ */
+export interface IndustryInfo {
+  /** 板块代码 */
+  code: string;
+  /** 板块名称 */
+  name: string;
+}
+
+/**
+ * 概念板块信息
+ */
+export interface ConceptInfo {
+  /** 板块代码 */
+  code: string;
+  /** 板块名称 */
+  name: string;
+}
+
+/**
  * 股票基础信息
  */
 export interface StockInfo {
@@ -10,10 +30,10 @@ export interface StockInfo {
   market: 'SH' | 'SZ';
   /** 所属分组ID列表（支持多标签） */
   groupIds?: string[];
-  /** 所属行业板块代码（如 "BK1020"） */
-  industry?: string;
-  /** 所属概念板块代码列表 */
-  concepts?: string[];
+  /** 所属行业板块信息 */
+  industry?: IndustryInfo;
+  /** 所属概念板块信息列表 */
+  concepts?: ConceptInfo[];
 }
 
 /**
@@ -377,10 +397,10 @@ export interface StockOpportunityData {
   analysisTimestamp?: number;
   /** 今日交易信号 */
   tradingSignal?: TradingSignal;
-  /** 所属行业板块 */
-  industry?: string;
-  /** 所属概念板块列表 */
-  concepts?: string[];
+  /** 所属行业板块信息 */
+  industry?: IndustryInfo;
+  /** 所属概念板块信息列表 */
+  concepts?: ConceptInfo[];
   /** 分析时间戳 */
   analyzedAt: number;
   /** 错误信息（如果获取失败） */
@@ -931,10 +951,10 @@ export interface StockRecordItem {
   code: string;
   /** 股票名称 */
   name: string;
-  /** 所属概念板块列表 */
-  concepts?: string[];
-  /** 所属行业板块 */
-  industry?: string;
+  /** 所属概念板块信息列表 */
+  concepts?: ConceptInfo[];
+  /** 所属行业板块信息 */
+  industry?: IndustryInfo;
   /** 记录时间戳 */
   timestamp: number;
 }
@@ -965,10 +985,10 @@ export interface StockStatistics {
   count: number;
   /** 最新上榜日期 */
   latestDate: string;
-  /** 所属概念板块列表（去重） */
-  concepts: string[];
-  /** 所属行业板块（取最新） */
-  industry?: string;
+  /** 所属概念板块信息列表（去重） */
+  concepts: ConceptInfo[];
+  /** 所属行业板块信息（取最新） */
+  industry?: IndustryInfo;
   /** 所有上榜日期列表 */
   dates: string[];
 }

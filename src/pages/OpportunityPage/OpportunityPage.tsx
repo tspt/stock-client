@@ -230,6 +230,7 @@ export function OpportunityPage() {
       // 从 klineDataCache 中获取 K 线数据
       const cachedKline = klineDataCache?.get(item.code);
       if (!cachedKline || cachedKline.length < 60) {
+        // 如果K线数据不足，移除tradingSignal字段
         const { tradingSignal: _, ...rest } = item;
         return rest;
       }
@@ -239,6 +240,7 @@ export function OpportunityPage() {
       if (signal) {
         return { ...item, tradingSignal: signal };
       }
+      // 如果没有信号，移除tradingSignal字段
       const { tradingSignal: __, ...rest } = item;
       return rest;
     });
@@ -952,7 +954,7 @@ export function OpportunityPage() {
 
       // 行业板块筛选（预过滤）
       if (industrySectors && industrySectors.length > 0) {
-        const hasIndustry = stock.industry && industrySectors.includes(stock.industry);
+        const hasIndustry = stock.industry && industrySectors.includes(stock.industry.code);
         if (industrySectorInvert) {
           // 反选模式：排除选中板块的股票
           if (hasIndustry) return false;
@@ -971,7 +973,7 @@ export function OpportunityPage() {
           }
           // 反选模式：没有概念板块的股票保留（因为不在排除列表中）
         } else {
-          const hasMatchingConcept = stock.concepts.some((c: string) => conceptSectors.includes(c));
+          const hasMatchingConcept = stock.concepts.some((c: { code: string; name: string }) => conceptSectors.includes(c.code));
           if (conceptSectorInvert) {
             // 反选模式：排除选中板块的股票
             if (hasMatchingConcept) return false;
@@ -2092,7 +2094,7 @@ export function OpportunityPage() {
         {analysisData.length > 0 ? (
           <Card className={styles.tableCard} ref={tableCardRef}>
             <OpportunityTable
-              data={filteredAnalysisData}
+              data={filteredAnalysisData as StockOpportunityData[]}
               columns={columnConfig}
               sortConfig={sortConfig}
               onSortChange={updateSortConfig}

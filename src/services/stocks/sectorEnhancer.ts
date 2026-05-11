@@ -4,7 +4,7 @@
  */
 
 import { getIndustrySectors, getConceptSectors } from '@/utils/storage/sectorStocksIndexedDB';
-import type { StockInfo } from '@/types/stock';
+import type { StockInfo, IndustryInfo, ConceptInfo } from '@/types/stock';
 import { logger } from '@/utils/business/logger';
 
 /**
@@ -34,9 +34,9 @@ function normalizeStockCode(code: string): string {
  * 从 IndexedDB 构建股票 -> 板块映射表
  */
 async function buildSectorMapping(): Promise<
-  Map<string, { industry?: string; concepts?: string[] }>
+  Map<string, { industry?: IndustryInfo; concepts?: ConceptInfo[] }>
 > {
-  const mapping = new Map<string, { industry?: string; concepts?: string[] }>();
+  const mapping = new Map<string, { industry?: IndustryInfo; concepts?: ConceptInfo[] }>();
 
   try {
     // 1. 获取行业板块
@@ -49,7 +49,7 @@ async function buildSectorMapping(): Promise<
           mapping.set(normalizedCode, {});
         }
         const info = mapping.get(normalizedCode)!;
-        info.industry = sector.code;
+        info.industry = { code: sector.code, name: sector.name };
       });
     });
 
@@ -66,7 +66,7 @@ async function buildSectorMapping(): Promise<
         if (!info.concepts) {
           info.concepts = [];
         }
-        info.concepts.push(sector.code);
+        info.concepts.push({ code: sector.code, name: sector.name });
       });
     });
   } catch (error) {

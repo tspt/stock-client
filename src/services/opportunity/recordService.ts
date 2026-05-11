@@ -109,8 +109,10 @@ export async function calculateStockStatistics(dateRange?: {
 
           // 合并概念板块（去重）
           if (item.concepts) {
-            const conceptSet = new Set([...existing.concepts, ...item.concepts]);
-            existing.concepts = Array.from(conceptSet);
+            // 使用 code 作为唯一标识进行去重
+            const existingConceptCodes = new Set(existing.concepts.map((c) => c.code));
+            const newConcepts = item.concepts.filter((c) => !existingConceptCodes.has(c.code));
+            existing.concepts = [...existing.concepts, ...newConcepts];
           }
 
           // 更新行业（取最新的）

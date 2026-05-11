@@ -127,15 +127,15 @@ export function AnalysisRecordPage() {
       dataIndex: 'concepts',
       key: 'concepts',
       width: 200,
-      render: (concepts: string[]) => {
+      render: (concepts?: Array<{ code: string; name: string }>) => {
         if (!concepts || concepts.length === 0) {
           return <span style={{ color: '#999' }}>-</span>;
         }
         return (
           <div className={styles.conceptTags}>
             {concepts.slice(0, 3).map((concept) => (
-              <Tag key={concept} color="purple">
-                {concept}
+              <Tag key={concept.code} color="purple">
+                {concept.name}
               </Tag>
             ))}
             {concepts.length > 3 && (
@@ -150,7 +150,7 @@ export function AnalysisRecordPage() {
       dataIndex: 'industry',
       key: 'industry',
       width: 120,
-      render: (industry?: string) => industry || <span style={{ color: '#999' }}>-</span>,
+      render: (industry?: { code: string; name: string }) => industry?.name || <span style={{ color: '#999' }}>-</span>,
     },
   ];
 

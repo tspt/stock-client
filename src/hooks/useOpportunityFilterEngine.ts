@@ -229,7 +229,7 @@ export function useOpportunityFilterEngine({
 
       // 行业板块筛选
       if (industrySectors && industrySectors.length > 0) {
-        const hasIndustry = item.industry && industrySectors.includes(item.industry);
+        const hasIndustry = item.industry && industrySectors.includes(item.industry.code);
         // 如果启用反选，则排除选中板块的股票；否则只包含选中板块的股票
         if (industrySectorInvert) {
           // 反选模式：排除选中板块的股票
@@ -254,7 +254,9 @@ export function useOpportunityFilterEngine({
           }
           // 反选模式：没有概念板块的股票保留（因为不在排除列表中）
         } else {
-          const hasMatchingConcept = item.concepts.some((c: string) => conceptSectors.includes(c));
+          const hasMatchingConcept = item.concepts.some((c: { code: string; name: string }) =>
+            conceptSectors.includes(c.code)
+          );
           // 如果启用反选，则排除选中板块的股票；否则只包含选中板块的股票
           if (conceptSectorInvert) {
             // 反选模式：排除选中板块的股票
