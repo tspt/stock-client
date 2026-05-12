@@ -56,6 +56,7 @@ export const OPPORTUNITY_DEFAULT_INDUSTRY_SECTORS = {
     'BK1222', // 影视院线
     'BK1226', // 普钢
     'BK1227', // 特钢Ⅱ
+    'BK1245', // 照明设备Ⅱ
     'BK1228', // 冶钢原料
     'BK1243', // 其他家电Ⅱ
     'BK1239', // 白色家电
@@ -65,6 +66,10 @@ export const OPPORTUNITY_DEFAULT_INDUSTRY_SECTORS = {
     'BK1249', // 焦炭Ⅱ
     'BK1250', // 煤炭开采
     'BK1251', // 个护用品
+    'BK1225', // 服装家纺
+    'BK0424', // 水泥
+    'BK1267', // 造纸
+    'BK1247', // 基础建设
     'BK1252', // 化妆品
     'BK1253', // 医疗美容
     'BK1254', // 动物保健Ⅱ
@@ -84,6 +89,7 @@ export const OPPORTUNITY_DEFAULT_INDUSTRY_SECTORS = {
     'BK1277', // 白酒Ⅱ
     'BK1279', // 非白酒
     'BK1280', // 食品加工
+    'BK0440', // 家居用品
     'BK1281', // 休闲食品
     'BK1282', // 饮料乳品
   ],
