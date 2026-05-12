@@ -1,0 +1,337 @@
+[
+  {
+    "code": "BK1037",
+    "name": "消费电子",
+    "mainNetInflow": 1353725696
+  },
+  {
+    "code": "BK1036",
+    "name": "半导体",
+    "mainNetInflow": 1019224320
+  },
+  {
+    "code": "BK0459",
+    "name": "元件",
+    "mainNetInflow": 543475200
+  },
+  {
+    "code": "BK1262",
+    "name": "乘用车",
+    "mainNetInflow": 432166416
+  },
+  {
+    "code": "BK1032",
+    "name": "风电设备",
+    "mainNetInflow": 274985488
+  },
+  {
+    "code": "BK1039",
+    "name": "电子化学品Ⅱ",
+    "mainNetInflow": 252092848
+  },
+  {
+    "code": "BK0546",
+    "name": "玻璃玻纤",
+    "mainNetInflow": 172734352
+  },
+  {
+    "code": "BK1219",
+    "name": "电视广播Ⅱ",
+    "mainNetInflow": 167589845
+  },
+  {
+    "code": "BK1218",
+    "name": "出版",
+    "mainNetInflow": 72702760
+  },
+  {
+    "code": "BK1237",
+    "name": "自动化设备",
+    "mainNetInflow": 69205136
+  },
+  {
+    "code": "BK1264",
+    "name": "商用车",
+    "mainNetInflow": 36786496
+  },
+  {
+    "code": "BK0454",
+    "name": "塑料",
+    "mainNetInflow": 27975104
+  },
+  {
+    "code": "BK1038",
+    "name": "光学光电子",
+    "mainNetInflow": 26983856
+  },
+  {
+    "code": "BK1266",
+    "name": "文娱用品",
+    "mainNetInflow": -11457916
+  },
+  {
+    "code": "BK0726",
+    "name": "工程咨询服务Ⅱ",
+    "mainNetInflow": -14916576
+  },
+  {
+    "code": "BK1263",
+    "name": "摩托车及其他",
+    "mainNetInflow": -19569624
+  },
+  {
+    "code": "BK1246",
+    "name": "房屋建设Ⅱ",
+    "mainNetInflow": -25944291
+  },
+  {
+    "code": "BK1043",
+    "name": "专业服务",
+    "mainNetInflow": -27970069
+  },
+  {
+    "code": "BK1255",
+    "name": "林业Ⅱ",
+    "mainNetInflow": -29234791
+  },
+  {
+    "code": "BK1018",
+    "name": "橡胶",
+    "mainNetInflow": -30396438
+  },
+  {
+    "code": "BK1273",
+    "name": "体育Ⅱ",
+    "mainNetInflow": -32623013
+  },
+  {
+    "code": "BK1268",
+    "name": "互联网电商",
+    "mainNetInflow": -33433809
+  },
+  {
+    "code": "BK1015",
+    "name": "能源金属",
+    "mainNetInflow": -33587456
+  },
+  {
+    "code": "BK1224",
+    "name": "纺织制造",
+    "mainNetInflow": -43468709
+  },
+  {
+    "code": "BK1288",
+    "name": "金属新材料",
+    "mainNetInflow": -44040329
+  },
+  {
+    "code": "BK1278",
+    "name": "调味发酵品Ⅱ",
+    "mainNetInflow": -46301343
+  },
+  {
+    "code": "BK0484",
+    "name": "贸易Ⅱ",
+    "mainNetInflow": -49882423
+  },
+  {
+    "code": "BK0476",
+    "name": "装修建材",
+    "mainNetInflow": -52479117
+  },
+  {
+    "code": "BK1030",
+    "name": "电机Ⅱ",
+    "mainNetInflow": -53254432
+  },
+  {
+    "code": "BK1020",
+    "name": "非金属材料Ⅱ",
+    "mainNetInflow": -62742190
+  },
+  {
+    "code": "BK1248",
+    "name": "专业工程",
+    "mainNetInflow": -67854688
+  },
+  {
+    "code": "BK0725",
+    "name": "装修装饰Ⅱ",
+    "mainNetInflow": -72209377
+  },
+  {
+    "code": "BK1034",
+    "name": "其他电源设备Ⅱ",
+    "mainNetInflow": -73297120
+  },
+  {
+    "code": "BK1229",
+    "name": "地面兵装Ⅱ",
+    "mainNetInflow": -88308907
+  },
+  {
+    "code": "BK1223",
+    "name": "其他电子Ⅱ",
+    "mainNetInflow": -89170096
+  },
+  {
+    "code": "BK0471",
+    "name": "化学纤维",
+    "mainNetInflow": -107842221
+  },
+  {
+    "code": "BK1235",
+    "name": "环境治理",
+    "mainNetInflow": -114760368
+  },
+  {
+    "code": "BK1234",
+    "name": "环保设备Ⅱ",
+    "mainNetInflow": -118835861
+  },
+  {
+    "code": "BK0739",
+    "name": "工程机械",
+    "mainNetInflow": -123176091
+  },
+  {
+    "code": "BK1230",
+    "name": "航海装备Ⅱ",
+    "mainNetInflow": -156347232
+  },
+  {
+    "code": "BK1265",
+    "name": "包装印刷",
+    "mainNetInflow": -159007984
+  },
+  {
+    "code": "BK0738",
+    "name": "多元金融",
+    "mainNetInflow": -160984113
+  },
+  {
+    "code": "BK1242",
+    "name": "家电零部件Ⅱ",
+    "mainNetInflow": -162987504
+  },
+  {
+    "code": "BK0539",
+    "name": "综合Ⅱ",
+    "mainNetInflow": -185679376
+  },
+  {
+    "code": "BK1221",
+    "name": "数字媒体",
+    "mainNetInflow": -192606998
+  },
+  {
+    "code": "BK1232",
+    "name": "航天装备Ⅱ",
+    "mainNetInflow": -256730304
+  },
+  {
+    "code": "BK0910",
+    "name": "专用设备",
+    "mainNetInflow": -319704720
+  },
+  {
+    "code": "BK0465",
+    "name": "化学制药",
+    "mainNetInflow": -327354224
+  },
+  {
+    "code": "BK0731",
+    "name": "农化制品",
+    "mainNetInflow": -363001280
+  },
+  {
+    "code": "BK1019",
+    "name": "化学原料",
+    "mainNetInflow": -364182784
+  },
+  {
+    "code": "BK1046",
+    "name": "游戏Ⅱ",
+    "mainNetInflow": -436738688
+  },
+  {
+    "code": "BK1287",
+    "name": "工业金属",
+    "mainNetInflow": -484518544
+  },
+  {
+    "code": "BK0735",
+    "name": "计算机设备",
+    "mainNetInflow": -497153136
+  },
+  {
+    "code": "BK0736",
+    "name": "通信服务",
+    "mainNetInflow": -505839712
+  },
+  {
+    "code": "BK0428",
+    "name": "电力",
+    "mainNetInflow": -509737664
+  },
+  {
+    "code": "BK1220",
+    "name": "广告营销",
+    "mainNetInflow": -518410864
+  },
+  {
+    "code": "BK1231",
+    "name": "航空装备Ⅱ",
+    "mainNetInflow": -559778016
+  },
+  {
+    "code": "BK0545",
+    "name": "通用设备",
+    "mainNetInflow": -656757664
+  },
+  {
+    "code": "BK0481",
+    "name": "汽车零部件",
+    "mainNetInflow": -685341632
+  },
+  {
+    "code": "BK0538",
+    "name": "化学制品",
+    "mainNetInflow": -736588384
+  },
+  {
+    "code": "BK0448",
+    "name": "通信设备",
+    "mainNetInflow": -780503808
+  },
+  {
+    "code": "BK0457",
+    "name": "电网设备",
+    "mainNetInflow": -798646112
+  },
+  {
+    "code": "BK1233",
+    "name": "军工电子Ⅱ",
+    "mainNetInflow": -824048816
+  },
+  {
+    "code": "BK0737",
+    "name": "软件开发",
+    "mainNetInflow": -843693760
+  },
+  {
+    "code": "BK1033",
+    "name": "电池",
+    "mainNetInflow": -969024000
+  },
+  {
+    "code": "BK1031",
+    "name": "光伏设备",
+    "mainNetInflow": -1196148224
+  },
+  {
+    "code": "BK1238",
+    "name": "IT服务Ⅱ",
+    "mainNetInflow": -1958909744
+  }
+]

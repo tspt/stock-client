@@ -4,13 +4,16 @@
  */
 
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
-import { Layout, Card, Button, Space, Table, Progress, Select, DatePicker, Tag, Row, Col, Input, Typography, App, Drawer, Modal } from 'antd';
+import { Layout, Card, Button, Space, Table, Progress, Select, DatePicker, Tag, Row, Col, Input, Typography, App, Drawer, Modal, Checkbox, InputNumber } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { ExperimentOutlined, ReloadOutlined, SearchOutlined, FilterOutlined, ClearOutlined, ExportOutlined, CopyOutlined } from '@ant-design/icons';
 import VirtualList from 'rc-virtual-list';
 import { getStocksHistory, getSignalBacktestsByCode, clearAllSignalBacktests, batchSaveSignalBacktests, getAllSignalBacktests, getStockHistory } from '@/utils/storage/opportunityIndexedDB';
 import { getModelMetadata } from '@/utils/analysis/mlBuypointModel';
 import { DEFAULT_EXPORT_STOCKS, getEnabledExportStocks, updateStocksFromScan, type ExportStockConfig } from '@/config/exportStocksConfig';
+import { exportLatestSignalsToPng } from '@/utils/export/backtestExportUtils';
+import { OPPORTUNITY_DEFAULT_INDUSTRY_SECTORS, OPPORTUNITY_DEFAULT_BASIC_FILTERS } from '@/utils/config/opportunityAnalysisDefaults';
+import { getUnifiedSectorBasics } from '@/services/hot/unified-sectors';
 import { logger } from '@/utils/business/logger';
 import styles from './BacktestPage.module.css';
 
@@ -27,8 +30,22 @@ export function BacktestPage() {
   const [groupedResults, setGroupedResults] = useState<any[]>([]);
   const [selectedStockCode, setSelectedStockCode] = useState<string | null>(null);
   const [searchText, setSearchText] = useState('');
-  const [marketType, setMarketType] = useState<string>('hs_main');
+  // 市场筛选（多选）
+  const [selectedMarket, setSelectedMarket] = useState<string[]>([...OPPORTUNITY_DEFAULT_BASIC_FILTERS.selectedMarket]);
   const [nameType, setNameType] = useState<string>('non_st');
+  // 行业板块筛选
+  const [industrySectors, setIndustrySectors] = useState<string[]>([...OPPORTUNITY_DEFAULT_INDUSTRY_SECTORS.excludedIndustries]);
+  const [industrySectorInvert, setIndustrySectorInvert] = useState<boolean>(OPPORTUNITY_DEFAULT_INDUSTRY_SECTORS.invertEnabled);
+  // 概念板块筛选
+  const [conceptSectors, setConceptSectors] = useState<string[]>([]);
+  const [conceptSectorInvert, setConceptSectorInvert] = useState<boolean>(false);
+  // 板块选项
+  const [industrySectorOptions, setIndustrySectorOptions] = useState<{ label: string; value: string }[]>([]);
+  const [conceptSectorOptions, setConceptSectorOptions] = useState<{ label: string; value: string }[]>([]);
+  // 价格、市值、总股数范围
+  const [priceRange, setPriceRange] = useState<{ min?: number; max?: number }>({ ...OPPORTUNITY_DEFAULT_BASIC_FILTERS.priceRange });
+  const [marketCapRange, setMarketCapRange] = useState<{ min?: number; max?: number }>({ ...OPPORTUNITY_DEFAULT_BASIC_FILTERS.marketCapRange });
+  const [totalSharesRange, setTotalSharesRange] = useState<{ min?: number; max?: number }>({ ...OPPORTUNITY_DEFAULT_BASIC_FILTERS.totalSharesRange });
   const [timeRange, setTimeRange] = useState<number>(0);
   const [minWinRate, setMinWinRate] = useState<number>(0); // 近3日胜率最低值
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
@@ -40,6 +57,7 @@ export function BacktestPage() {
   const [scanning, setScanning] = useState(false); // 扫描状态
   const [dateInput, setDateInput] = useState(''); // 多行文本输入
   const [saving, setSaving] = useState(false);
+  const [exportingLatest, setExportingLatest] = useState(false); // 导出最新信号状态
   const workerRef = useRef<Worker | null>(null);
   const taskIdCounter = useRef(0);
   const listContainerRef = useRef<HTMLDivElement>(null);
@@ -78,7 +96,19 @@ export function BacktestPage() {
   // 页面加载时从 IndexedDB 读取已保存的回测结果
   useEffect(() => {
     loadSavedBacktestResults();
+    loadSectorOptions();
   }, []);
+
+  // 加载板块选项数据
+  const loadSectorOptions = async () => {
+    try {
+      const { industry, concept } = await getUnifiedSectorBasics();
+      setIndustrySectorOptions(industry.map((s) => ({ label: s.name, value: s.code })));
+      setConceptSectorOptions(concept.map((s) => ({ label: s.name, value: s.code })));
+    } catch (error) {
+      logger.error('加载板块选项失败:', error);
+    }
+  };
 
   // 从 IndexedDB 加载已保存的回测结果
   const loadSavedBacktestResults = async () => {
@@ -508,11 +538,60 @@ export function BacktestPage() {
       setExporting(false);
     }
   };
+
+  // 导出最新日期的信号股票为图片
+  const handleExportLatestSignals = async () => {
+    if (groupedResults.length === 0) {
+      message.warning('暂无回测数据');
+      return;
+    }
+
+    try {
+      setExportingLatest(true);
+      message.info('正在准备导出最新信号股票...');
+
+      // 获取所有回测结果
+      const allResults = await getAllSignalBacktests();
+
+      if (allResults.length === 0) {
+        message.warning('没有可用的回测数据');
+        setExportingLatest(false);
+        return;
+      }
+
+      // 调用导出函数，传入当前筛选条件
+      await exportLatestSignalsToPng(allResults, {
+        fileNamePrefix: '最新信号股票',
+        selectedMarket,
+        industrySectors,
+        industrySectorInvert,
+        conceptSectors,
+        conceptSectorInvert,
+        priceRange,
+        marketCapRange,
+        totalSharesRange,
+      });
+
+      message.success('导出成功！');
+    } catch (error) {
+      logger.error('导出最新信号股票失败:', error);
+      message.error('导出失败: ' + (error as Error).message);
+    } finally {
+      setExportingLatest(false);
+    }
+  };
   const handleResetFilter = () => {
-    setMarketType('hs_main');
+    setSelectedMarket([...OPPORTUNITY_DEFAULT_BASIC_FILTERS.selectedMarket]);
     setNameType('non_st');
-    setTimeRange(7);
-    setMinWinRate(75);
+    setIndustrySectors([...OPPORTUNITY_DEFAULT_INDUSTRY_SECTORS.excludedIndustries]);
+    setIndustrySectorInvert(OPPORTUNITY_DEFAULT_INDUSTRY_SECTORS.invertEnabled);
+    setConceptSectors([]);
+    setConceptSectorInvert(false);
+    setPriceRange({ ...OPPORTUNITY_DEFAULT_BASIC_FILTERS.priceRange });
+    setMarketCapRange({ ...OPPORTUNITY_DEFAULT_BASIC_FILTERS.marketCapRange });
+    setTotalSharesRange({ ...OPPORTUNITY_DEFAULT_BASIC_FILTERS.totalSharesRange });
+    setTimeRange(0);
+    setMinWinRate(0);
     setSearchText('');
     message.success('已重置筛选条件');
   };
@@ -522,8 +601,14 @@ export function BacktestPage() {
     const parts: string[] = [];
 
     // 市场类型
-    const marketLabel = marketType === 'hs_main' ? '沪深主板' : marketType === 'sz_gem' ? '创业板' : '全部';
-    parts.push(`市场:${marketLabel}`);
+    if (selectedMarket.length > 0) {
+      const marketLabels = selectedMarket.map(m => {
+        if (m === 'hs_main') return '沪深主板';
+        if (m === 'sz_gem') return '创业板';
+        return m;
+      });
+      parts.push(`市场:${marketLabels.join('、')}`);
+    }
 
     // 名称类型
     const nameLabel = nameType === 'st' ? 'ST' : nameType === 'non_st' ? '非ST' : '不限';
@@ -608,14 +693,15 @@ export function BacktestPage() {
   const getFilteredStockList = () => {
     let filtered = groupedResults;
 
-    // 1. 按市场类型过滤
-    if (marketType !== 'all') {
+    // 1. 按市场类型过滤（多选）
+    if (selectedMarket.length > 0) {
       filtered = filtered.filter(item => {
-        // 去除市场前缀（SH/SZ/BJ）
         const pureCode = item.code.replace(/^(SH|SZ|BJ)/, '');
-        if (marketType === 'hs_main') return pureCode.startsWith('60') || pureCode.startsWith('00');
-        if (marketType === 'sz_gem') return pureCode.startsWith('30');
-        return true;
+        return selectedMarket.some(market => {
+          if (market === 'hs_main') return pureCode.startsWith('60') || pureCode.startsWith('00');
+          if (market === 'sz_gem') return pureCode.startsWith('30');
+          return true;
+        });
       });
     }
 
@@ -678,6 +764,23 @@ export function BacktestPage() {
       );
     }
 
+    // 5. 按价格范围过滤（需要异步获取股票历史数据）
+    // 注意：这里简化处理，实际应该从 IndexedDB 获取最新价格
+    // 由于 groupedResults 中没有价格信息，暂时跳过此过滤
+    // TODO: 如果需要价格过滤，需要从 getStocksHistory 获取数据
+
+    // 6. 按市值范围过滤
+    // TODO: 需要从 stock history 中获取市值信息
+
+    // 7. 按总股数范围过滤
+    // TODO: 需要从 stock history 中获取总股数信息
+
+    // 8. 按行业板块过滤
+    // TODO: 需要从 allStocks 或 stock history 中获取行业信息
+
+    // 9. 按概念板块过滤
+    // TODO: 需要从 allStocks 或 stock history 中获取概念信息
+
     return filtered;
   };
 
@@ -694,7 +797,7 @@ export function BacktestPage() {
       // 如果没有筛选结果，清空选中
       setSelectedStockCode(null);
     }
-  }, [marketType, nameType, searchText, minWinRate, timeRange, groupedResults]);
+  }, [selectedMarket, nameType, searchText, minWinRate, timeRange, priceRange, marketCapRange, totalSharesRange, industrySectors, conceptSectors, groupedResults]);
 
   // 表格列定义
   const columns: ColumnsType<any> = [
@@ -812,6 +915,14 @@ export function BacktestPage() {
               disabled={groupedResults.length === 0}
             >
               导出指定股票
+            </Button>
+            <Button
+              icon={<ExportOutlined />}
+              onClick={handleExportLatestSignals}
+              disabled={groupedResults.length === 0 || exportingLatest}
+              loading={exportingLatest}
+            >
+              导出最新信号股票
             </Button>
             <Button
               type="primary"
@@ -1028,25 +1139,28 @@ export function BacktestPage() {
       <Drawer
         title="筛选条件"
         placement="right"
-        width={400}
+        width={500}
         open={filterDrawerOpen}
         onClose={() => setFilterDrawerOpen(false)}
         destroyOnHidden
         styles={{ body: { padding: '16px 16px', height: 'calc(100vh - 64px)', display: 'flex', flexDirection: 'column' } }}
       >
         <div style={{ flex: 1, overflow: 'auto' }}>
-          {/* 市场类型 */}
+          {/* 市场类型（多选） */}
           <div className={styles.filterRow}>
             <div className={styles.filterItem}>
               <span className={styles.filterLabel}>市场类型</span>
               <Select
-                value={marketType}
-                onChange={setMarketType}
+                mode="multiple"
+                value={selectedMarket}
+                onChange={setSelectedMarket}
+                style={{ width: '100%' }}
+                placeholder="请选择市场"
                 options={[
                   { label: '沪深主板', value: 'hs_main' },
                   { label: '创业板', value: 'sz_gem' },
-                  { label: '全部', value: 'all' },
                 ]}
+                maxTagCount="responsive"
               />
             </div>
           </div>
@@ -1058,12 +1172,133 @@ export function BacktestPage() {
               <Select
                 value={nameType}
                 onChange={setNameType}
+                style={{ width: '100%' }}
                 options={[
                   { label: '非ST', value: 'non_st' },
                   { label: 'ST', value: 'st' },
                   { label: '不限', value: 'all' },
                 ]}
               />
+            </div>
+          </div>
+
+          {/* 行业板块 */}
+          <div className={styles.filterRow}>
+            <div className={styles.filterItem}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                <span className={styles.filterLabel}>行业板块</span>
+                <Checkbox
+                  checked={industrySectorInvert}
+                  onChange={(e) => setIndustrySectorInvert(e.target.checked)}
+                >
+                  排除选中
+                </Checkbox>
+              </div>
+              <Select
+                mode="multiple"
+                value={industrySectors}
+                onChange={setIndustrySectors}
+                style={{ width: '100%' }}
+                placeholder="选择行业板块"
+                options={industrySectorOptions}
+                maxTagCount="responsive"
+              />
+            </div>
+          </div>
+
+          {/* 概念板块 */}
+          <div className={styles.filterRow}>
+            <div className={styles.filterItem}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                <span className={styles.filterLabel}>概念板块</span>
+                <Checkbox
+                  checked={conceptSectorInvert}
+                  onChange={(e) => setConceptSectorInvert(e.target.checked)}
+                >
+                  排除选中
+                </Checkbox>
+              </div>
+              <Select
+                mode="multiple"
+                value={conceptSectors}
+                onChange={setConceptSectors}
+                style={{ width: '100%' }}
+                placeholder="选择概念板块"
+                options={conceptSectorOptions}
+                maxTagCount="responsive"
+              />
+            </div>
+          </div>
+
+          {/* 价格范围 */}
+          <div className={styles.filterRow}>
+            <div className={styles.filterItem}>
+              <span className={styles.filterLabel}>价格范围（元）</span>
+              <Space style={{ width: '100%' }}>
+                <InputNumber
+                  placeholder="最小"
+                  value={priceRange.min}
+                  onChange={(value) => setPriceRange({ ...priceRange, min: value ?? undefined })}
+                  style={{ flex: 1 }}
+                  min={0}
+                />
+                <span>-</span>
+                <InputNumber
+                  placeholder="最大"
+                  value={priceRange.max}
+                  onChange={(value) => setPriceRange({ ...priceRange, max: value ?? undefined })}
+                  style={{ flex: 1 }}
+                  min={0}
+                />
+              </Space>
+            </div>
+          </div>
+
+          {/* 市值范围 */}
+          <div className={styles.filterRow}>
+            <div className={styles.filterItem}>
+              <span className={styles.filterLabel}>总市值（亿）</span>
+              <Space style={{ width: '100%' }}>
+                <InputNumber
+                  placeholder="最小"
+                  value={marketCapRange.min}
+                  onChange={(value) => setMarketCapRange({ ...marketCapRange, min: value ?? undefined })}
+                  style={{ flex: 1 }}
+                  min={0}
+                />
+                <span>-</span>
+                <InputNumber
+                  placeholder="最大"
+                  value={marketCapRange.max}
+                  onChange={(value) => setMarketCapRange({ ...marketCapRange, max: value ?? undefined })}
+                  style={{ flex: 1 }}
+                  min={0}
+                />
+              </Space>
+            </div>
+          </div>
+
+          {/* 总股数范围 */}
+          <div className={styles.filterRow}>
+            <div className={styles.filterItem}>
+              <span className={styles.filterLabel}>总股数（亿）</span>
+              <Space style={{ width: '100%' }}>
+                <InputNumber
+                  placeholder="最小"
+                  value={totalSharesRange.min}
+                  onChange={(value) => setTotalSharesRange({ ...totalSharesRange, min: value ?? undefined })}
+                  style={{ flex: 1 }}
+                  min={0}
+                />
+                <span>-</span>
+                <InputNumber
+                  placeholder="最大"
+                  value={totalSharesRange.max}
+                  onChange={(value) => setTotalSharesRange({ ...totalSharesRange, max: value ?? undefined })}
+                  style={{ flex: 1 }}
+                  min={0}
+                />
+              </Space>
             </div>
           </div>
 
