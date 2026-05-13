@@ -13,6 +13,10 @@ release
 .DS_Store
 *.local
 
+# Data directories
+docs/回测优化/股票数据/
+docs/回测优化/历史回测数据/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
