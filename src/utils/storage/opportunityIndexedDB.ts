@@ -8,6 +8,7 @@ import type {
   KLineData,
   StockQuote,
   StockDetail,
+  IndustryInfo,
 } from '@/types/stock';
 import {
   OPPORTUNITY_DB_NAME,
@@ -216,6 +217,7 @@ export interface StockHistoryRecord {
   dailyLines: KLineData[];
   latestQuote: StockQuote | null;
   latestDetail?: StockDetail | null; // 新增：最新详情数据
+  industry?: IndustryInfo; // 新增：所属行业信息
   updatedAt: number;
 }
 

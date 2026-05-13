@@ -15,6 +15,7 @@ import { DEFAULT_EXPORT_STOCKS, getEnabledExportStocks, updateStocksFromScan, ty
 import { exportLatestSignalsToPng } from '@/utils/export/backtestExportUtils';
 import { OPPORTUNITY_DEFAULT_INDUSTRY_SECTORS, OPPORTUNITY_DEFAULT_BASIC_FILTERS } from '@/utils/config/opportunityAnalysisDefaults';
 import { getUnifiedSectorBasics } from '@/services/hot/unified-sectors';
+import { useAllStocks } from '@/hooks/useAllStocks';
 import { logger } from '@/utils/business/logger';
 import styles from './BacktestPage.module.css';
 
@@ -28,8 +29,9 @@ const StockListItem = React.memo(React.forwardRef<HTMLDivElement, {
   isSelected: boolean;
   onSelect: (code: string) => void;
   onExport: (code: string, name: string) => void;
+  industry?: { code: string; name: string } | null;
   style?: React.CSSProperties;
-}>(({ item, isSelected, onSelect, onExport, style }, ref) => {
+}>(({ item, isSelected, onSelect, onExport, industry, style }, ref) => {
   return (
     <div
       ref={ref}
@@ -39,7 +41,14 @@ const StockListItem = React.memo(React.forwardRef<HTMLDivElement, {
     >
       <div className={styles.stockItemContent}>
         <div className={styles.stockInfo}>
-          <div className={styles.stockName}>{item.name}</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div className={styles.stockName}>{item.name}</div>
+            {industry && (
+              <Tag color="green" style={{ fontSize: 11, margin: 0, padding: '0 6px' }}>
+                {industry.name}
+              </Tag>
+            )}
+          </div>
           <div className={styles.stockCode}>{item.code}</div>
         </div>
         <Tag color="blue" className={styles.signalCount}>{item.signals.length}个信号</Tag>
@@ -62,6 +71,7 @@ StockListItem.displayName = 'StockListItem';
 
 export function BacktestPage() {
   const { message } = App.useApp();
+  const { allStocks } = useAllStocks();
   const [loading, setLoading] = useState(false);
   const [backtesting, setBacktesting] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -1001,7 +1011,7 @@ export function BacktestPage() {
   const getFilterSummary = () => {
     const parts: string[] = [];
 
-    // 市场类型
+    // 市场
     if (selectedMarket.length > 0) {
       const marketLabels = selectedMarket.map(m => {
         if (m === 'hs_main') return '沪深主板';
@@ -1011,7 +1021,7 @@ export function BacktestPage() {
       parts.push(`市场:${marketLabels.join('、')}`);
     }
 
-    // 名称类型
+    // 名称
     const nameLabel = nameType === 'st' ? 'ST' : nameType === 'non_st' ? '非ST' : '不限';
     parts.push(`名称:${nameLabel}`);
 
@@ -1096,7 +1106,7 @@ export function BacktestPage() {
 
     let filtered = [...groupedResults]; // 创建副本以避免修改原数组
 
-    // 1. 按市场类型过滤（多选）
+    // 1. 按市场过滤（多选）
     if (selectedMarket.length > 0) {
       filtered = filtered.filter(item => {
         const pureCode = item.code.replace(/^(SH|SZ|BJ)/, '');
@@ -1108,7 +1118,7 @@ export function BacktestPage() {
       });
     }
 
-    // 2. 按名称类型过滤（ST筛选）
+    // 2. 按名称过滤（ST筛选）
     if (nameType !== 'all') {
       filtered = filtered.filter(item => {
         const isST = item.name.includes('ST');
@@ -1279,7 +1289,17 @@ export function BacktestPage() {
       });
     }
 
-    return filtered;
+    // 为每个股票添加industry信息
+    const filteredWithIndustry = filtered.map(item => {
+      const stockCode = normalizeStockCode(item.code);
+      const sectorInfo = stockSectorMapping.get(stockCode);
+      return {
+        ...item,
+        industry: sectorInfo?.industry || null,
+      };
+    });
+
+    return filteredWithIndustry;
   }, [
     groupedResults,
     selectedMarket,
@@ -1637,6 +1657,7 @@ export function BacktestPage() {
                         isSelected={selectedStockCode === item.code}
                         onSelect={setSelectedStockCode}
                         onExport={handleOpenExportDrawer}
+                        industry={item.industry}
                         style={style}
                       />
                     )}
@@ -1797,10 +1818,10 @@ export function BacktestPage() {
         styles={{ body: { padding: '16px 16px', height: 'calc(100vh - 64px)', display: 'flex', flexDirection: 'column' } }}
       >
         <div style={{ flex: 1, overflow: 'auto' }}>
-          {/* 市场类型（多选） */}
+          {/* 市场（多选） */}
           <div className={styles.filterRow}>
             <div className={styles.filterItem}>
-              <span className={styles.filterLabel}>市场类型：</span>
+              <span className={styles.filterLabel}>市场：</span>
               <Select
                 mode="multiple"
                 value={selectedMarket}
@@ -1816,10 +1837,10 @@ export function BacktestPage() {
             </div>
           </div>
 
-          {/* 名称类型 */}
+          {/* 名称 */}
           <div className={styles.filterRow}>
             <div className={styles.filterItem}>
-              <span className={styles.filterLabel}>名称类型：</span>
+              <span className={styles.filterLabel}>名称：</span>
               <Select
                 value={nameType}
                 onChange={setNameType}
@@ -1960,6 +1981,7 @@ export function BacktestPage() {
               <Select
                 value={timeRange}
                 onChange={setTimeRange}
+                style={{ width: 120 }}
                 options={[
                   { label: '近7天', value: 7 },
                   { label: '近14天', value: 14 },
