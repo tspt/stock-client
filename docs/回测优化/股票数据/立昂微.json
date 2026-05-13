@@ -4,30 +4,6 @@
         "name": "立昂微",
         "dailyLines": [
             {
-                "time": 1712678400000,
-                "open": 21.71,
-                "close": 21.11,
-                "high": 21.71,
-                "low": 20.9,
-                "volume": 56029
-            },
-            {
-                "time": 1712764800000,
-                "open": 20.93,
-                "close": 20.83,
-                "high": 21.35,
-                "low": 20.78,
-                "volume": 48594
-            },
-            {
-                "time": 1712851200000,
-                "open": 20.91,
-                "close": 20.46,
-                "high": 21.13,
-                "low": 20.45,
-                "volume": 50093
-            },
-            {
                 "time": 1713110400000,
                 "open": 20.5,
                 "close": 20.32,
@@ -4002,23 +3978,55 @@
                 "high": 44.69,
                 "low": 41.52,
                 "volume": 478987
+            },
+            {
+                "time": 1778083200000,
+                "open": 43.3,
+                "close": 45.44,
+                "high": 46.32,
+                "low": 42.24,
+                "volume": 460044
+            },
+            {
+                "time": 1778169600000,
+                "open": 45.48,
+                "close": 49.98,
+                "high": 49.98,
+                "low": 45.35,
+                "volume": 613436
+            },
+            {
+                "time": 1778428800000,
+                "open": 51.48,
+                "close": 50.14,
+                "high": 51.52,
+                "low": 48.58,
+                "volume": 775572
+            },
+            {
+                "time": 1778515200000,
+                "open": 50.15,
+                "close": 51.03,
+                "high": 52.6,
+                "low": 48.8,
+                "volume": 586284
             }
         ],
         "latestQuote": {
             "code": "SH605358",
             "name": "",
-            "price": 43.32,
+            "price": 51.03,
             "change": 0,
             "changePercent": 0,
-            "open": 42.29,
+            "open": 50.15,
             "prevClose": 0,
-            "high": 44.69,
-            "low": 41.52,
-            "volume": 478987,
+            "high": 52.6,
+            "low": 48.8,
+            "volume": 586284,
             "amount": 0,
-            "timestamp": 1777996800000
+            "timestamp": 1778515200000
         },
-        "updatedAt": 1778076351258
+        "updatedAt": 1778571541578
     },
     "buypointDate": [
         "2026/04/16",

@@ -4,30 +4,6 @@
         "name": "吉华集团",
         "dailyLines": [
             {
-                "time": 1711900800000,
-                "open": 3.71,
-                "close": 3.85,
-                "high": 3.89,
-                "low": 3.71,
-                "volume": 96010
-            },
-            {
-                "time": 1711987200000,
-                "open": 3.86,
-                "close": 4.02,
-                "high": 4.23,
-                "low": 3.84,
-                "volume": 272950
-            },
-            {
-                "time": 1712073600000,
-                "open": 3.99,
-                "close": 3.88,
-                "high": 4.05,
-                "low": 3.85,
-                "volume": 180266
-            },
-            {
                 "time": 1712505600000,
                 "open": 3.88,
                 "close": 3.71,
@@ -4002,23 +3978,55 @@
                 "high": 6.4,
                 "low": 6.29,
                 "volume": 180764
+            },
+            {
+                "time": 1778083200000,
+                "open": 6.36,
+                "close": 6.43,
+                "high": 6.5,
+                "low": 6.36,
+                "volume": 158936
+            },
+            {
+                "time": 1778169600000,
+                "open": 6.47,
+                "close": 6.46,
+                "high": 6.48,
+                "low": 6.4,
+                "volume": 129697
+            },
+            {
+                "time": 1778428800000,
+                "open": 6.47,
+                "close": 6.4,
+                "high": 6.52,
+                "low": 6.35,
+                "volume": 146474
+            },
+            {
+                "time": 1778515200000,
+                "open": 6.39,
+                "close": 6.32,
+                "high": 6.4,
+                "low": 6.24,
+                "volume": 119022
             }
         ],
         "latestQuote": {
             "code": "SH603980",
             "name": "",
-            "price": 6.38,
+            "price": 6.32,
             "change": 0,
             "changePercent": 0,
-            "open": 6.33,
+            "open": 6.39,
             "prevClose": 0,
             "high": 6.4,
-            "low": 6.29,
-            "volume": 180764,
+            "low": 6.24,
+            "volume": 119022,
             "amount": 0,
-            "timestamp": 1777996800000
+            "timestamp": 1778515200000
         },
-        "updatedAt": 1778076330415
+        "updatedAt": 1778571521568
     },
     "buypointDate": [
         "2026/01/27",

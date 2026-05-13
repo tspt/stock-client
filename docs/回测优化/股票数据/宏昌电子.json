@@ -4,30 +4,6 @@
         "name": "宏昌电子",
         "dailyLines": [
             {
-                "time": 1712678400000,
-                "open": 5.45,
-                "close": 5.26,
-                "high": 5.45,
-                "low": 5.19,
-                "volume": 147223
-            },
-            {
-                "time": 1712764800000,
-                "open": 5.17,
-                "close": 5.21,
-                "high": 5.31,
-                "low": 5.17,
-                "volume": 109514
-            },
-            {
-                "time": 1712851200000,
-                "open": 5.22,
-                "close": 5.22,
-                "high": 5.33,
-                "low": 5.2,
-                "volume": 115999
-            },
-            {
                 "time": 1713110400000,
                 "open": 5.18,
                 "close": 4.97,
@@ -4002,23 +3978,55 @@
                 "high": 14.44,
                 "low": 13.83,
                 "volume": 758489
+            },
+            {
+                "time": 1778083200000,
+                "open": 13.94,
+                "close": 15.32,
+                "high": 15.32,
+                "low": 13.68,
+                "volume": 698409
+            },
+            {
+                "time": 1778169600000,
+                "open": 15.5,
+                "close": 15.32,
+                "high": 15.74,
+                "low": 14.84,
+                "volume": 782087
+            },
+            {
+                "time": 1778428800000,
+                "open": 15.6,
+                "close": 15.31,
+                "high": 15.68,
+                "low": 15.08,
+                "volume": 645160
+            },
+            {
+                "time": 1778515200000,
+                "open": 15.21,
+                "close": 15.1,
+                "high": 15.38,
+                "low": 14.72,
+                "volume": 562763
             }
         ],
         "latestQuote": {
             "code": "SH603002",
             "name": "",
-            "price": 13.93,
+            "price": 15.1,
             "change": 0,
             "changePercent": 0,
-            "open": 14,
+            "open": 15.21,
             "prevClose": 0,
-            "high": 14.44,
-            "low": 13.83,
-            "volume": 758489,
+            "high": 15.38,
+            "low": 14.72,
+            "volume": 562763,
             "amount": 0,
-            "timestamp": 1777996800000
+            "timestamp": 1778515200000
         },
-        "updatedAt": 1778076224863
+        "updatedAt": 1778571431078
     },
     "buypointDate": [
         "2026/01/14",

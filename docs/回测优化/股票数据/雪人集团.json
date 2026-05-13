@@ -4,46 +4,6 @@
         "name": "雪人集团",
         "dailyLines": [
             {
-                "time": 1712678400000,
-                "open": 6.96,
-                "close": 6.77,
-                "high": 6.98,
-                "low": 6.69,
-                "volume": 96952
-            },
-            {
-                "time": 1712764800000,
-                "open": 6.75,
-                "close": 6.86,
-                "high": 6.94,
-                "low": 6.63,
-                "volume": 101485
-            },
-            {
-                "time": 1712851200000,
-                "open": 6.88,
-                "close": 6.75,
-                "high": 6.9,
-                "low": 6.74,
-                "volume": 71849
-            },
-            {
-                "time": 1713110400000,
-                "open": 6.76,
-                "close": 6.46,
-                "high": 6.8,
-                "low": 6.31,
-                "volume": 144912
-            },
-            {
-                "time": 1713196800000,
-                "open": 6.46,
-                "close": 5.92,
-                "high": 6.5,
-                "low": 5.86,
-                "volume": 203815
-            },
-            {
                 "time": 1713283200000,
                 "open": 6,
                 "close": 6.42,
@@ -4002,23 +3962,63 @@
                 "high": 18.22,
                 "low": 17.8,
                 "volume": 442481
+            },
+            {
+                "time": 1778083200000,
+                "open": 18.25,
+                "close": 18.3,
+                "high": 18.47,
+                "low": 18.01,
+                "volume": 481098
+            },
+            {
+                "time": 1778169600000,
+                "open": 18.15,
+                "close": 18.43,
+                "high": 18.68,
+                "low": 18.1,
+                "volume": 496381
+            },
+            {
+                "time": 1778428800000,
+                "open": 18.55,
+                "close": 18.32,
+                "high": 18.68,
+                "low": 18.31,
+                "volume": 503405
+            },
+            {
+                "time": 1778515200000,
+                "open": 18.3,
+                "close": 17.84,
+                "high": 18.59,
+                "low": 17.8,
+                "volume": 546691
+            },
+            {
+                "time": 1778601600000,
+                "open": 17.84,
+                "close": 17.88,
+                "high": 18.05,
+                "low": 17.61,
+                "volume": 359342
             }
         ],
         "latestQuote": {
             "code": "SZ002639",
             "name": "",
-            "price": 18.11,
+            "price": 17.88,
             "change": 0,
             "changePercent": 0,
-            "open": 17.97,
+            "open": 17.84,
             "prevClose": 0,
-            "high": 18.22,
-            "low": 17.8,
-            "volume": 442481,
+            "high": 18.05,
+            "low": 17.61,
+            "volume": 359342,
             "amount": 0,
-            "timestamp": 1777996800000
+            "timestamp": 1778601600000
         },
-        "updatedAt": 1778075961873
+        "updatedAt": 1778663350586
     },
     "buypointDate": [
         "2025/12/10",

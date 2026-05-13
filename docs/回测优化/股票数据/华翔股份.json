@@ -4,30 +4,6 @@
         "name": "华翔股份",
         "dailyLines": [
             {
-                "time": 1712678400000,
-                "open": 12.09,
-                "close": 11.97,
-                "high": 12.29,
-                "low": 11.85,
-                "volume": 23565
-            },
-            {
-                "time": 1712764800000,
-                "open": 11.8,
-                "close": 12.03,
-                "high": 12.16,
-                "low": 11.8,
-                "volume": 13139
-            },
-            {
-                "time": 1712851200000,
-                "open": 12.1,
-                "close": 12.22,
-                "high": 12.36,
-                "low": 12.1,
-                "volume": 20877
-            },
-            {
                 "time": 1713110400000,
                 "open": 12.18,
                 "close": 11.78,
@@ -4002,23 +3978,55 @@
                 "high": 22.66,
                 "low": 20.89,
                 "volume": 193326
+            },
+            {
+                "time": 1778083200000,
+                "open": 22.33,
+                "close": 22.62,
+                "high": 22.81,
+                "low": 21.94,
+                "volume": 131125
+            },
+            {
+                "time": 1778169600000,
+                "open": 22.63,
+                "close": 22.41,
+                "high": 22.75,
+                "low": 22.14,
+                "volume": 115069
+            },
+            {
+                "time": 1778428800000,
+                "open": 22.43,
+                "close": 22.18,
+                "high": 22.88,
+                "low": 21.81,
+                "volume": 121966
+            },
+            {
+                "time": 1778515200000,
+                "open": 22.19,
+                "close": 22.23,
+                "high": 22.56,
+                "low": 21.9,
+                "volume": 89591
             }
         ],
         "latestQuote": {
             "code": "SH603112",
             "name": "",
-            "price": 22.31,
+            "price": 22.23,
             "change": 0,
             "changePercent": 0,
-            "open": 21.5,
+            "open": 22.19,
             "prevClose": 0,
-            "high": 22.66,
-            "low": 20.89,
-            "volume": 193326,
+            "high": 22.56,
+            "low": 21.9,
+            "volume": 89591,
             "amount": 0,
-            "timestamp": 1777996800000
+            "timestamp": 1778515200000
         },
-        "updatedAt": 1778076239028
+        "updatedAt": 1778571448717
     },
     "buypointDate": [
         "2026/04/13"

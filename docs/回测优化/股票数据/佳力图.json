@@ -4,30 +4,6 @@
         "name": "佳力图",
         "dailyLines": [
             {
-                "time": 1712678400000,
-                "open": 7.76,
-                "close": 7.32,
-                "high": 7.76,
-                "low": 7.24,
-                "volume": 192751
-            },
-            {
-                "time": 1712764800000,
-                "open": 7.32,
-                "close": 7.22,
-                "high": 7.4,
-                "low": 7.2,
-                "volume": 124327
-            },
-            {
-                "time": 1712851200000,
-                "open": 7.27,
-                "close": 7.2,
-                "high": 7.34,
-                "low": 7.16,
-                "volume": 100566
-            },
-            {
                 "time": 1713110400000,
                 "open": 7.16,
                 "close": 7.01,
@@ -4002,23 +3978,55 @@
                 "high": 11.25,
                 "low": 10.85,
                 "volume": 460492
+            },
+            {
+                "time": 1778083200000,
+                "open": 11.29,
+                "close": 11.33,
+                "high": 11.36,
+                "low": 11.06,
+                "volume": 308200
+            },
+            {
+                "time": 1778169600000,
+                "open": 11.25,
+                "close": 11.64,
+                "high": 11.86,
+                "low": 11.09,
+                "volume": 387621
+            },
+            {
+                "time": 1778428800000,
+                "open": 11.64,
+                "close": 11.51,
+                "high": 11.74,
+                "low": 11.32,
+                "volume": 321368
+            },
+            {
+                "time": 1778515200000,
+                "open": 11.41,
+                "close": 11.41,
+                "high": 11.47,
+                "low": 11.19,
+                "volume": 251434
             }
         ],
         "latestQuote": {
             "code": "SH603912",
             "name": "",
-            "price": 11.13,
+            "price": 11.41,
             "change": 0,
             "changePercent": 0,
-            "open": 10.96,
+            "open": 11.41,
             "prevClose": 0,
-            "high": 11.25,
-            "low": 10.85,
-            "volume": 460492,
+            "high": 11.47,
+            "low": 11.19,
+            "volume": 251434,
             "amount": 0,
-            "timestamp": 1777996800000
+            "timestamp": 1778515200000
         },
-        "updatedAt": 1778076325084
+        "updatedAt": 1778571512295
     },
     "buypointDate": [
         "2026/04/16",

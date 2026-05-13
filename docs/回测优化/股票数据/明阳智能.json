@@ -4,30 +4,6 @@
         "name": "明阳智能",
         "dailyLines": [
             {
-                "time": 1711468800000,
-                "open": 9.77,
-                "close": 9.35,
-                "high": 9.8,
-                "low": 9.34,
-                "volume": 245329
-            },
-            {
-                "time": 1711555200000,
-                "open": 9.3,
-                "close": 9.4,
-                "high": 9.55,
-                "low": 9.3,
-                "volume": 228151
-            },
-            {
-                "time": 1711641600000,
-                "open": 9.35,
-                "close": 9.41,
-                "high": 9.46,
-                "low": 9.27,
-                "volume": 177170
-            },
-            {
                 "time": 1711900800000,
                 "open": 9.42,
                 "close": 9.69,
@@ -4002,23 +3978,55 @@
                 "high": 15.94,
                 "low": 15.58,
                 "volume": 766677
+            },
+            {
+                "time": 1778083200000,
+                "open": 15.9,
+                "close": 15.94,
+                "high": 16.26,
+                "low": 15.8,
+                "volume": 749199
+            },
+            {
+                "time": 1778169600000,
+                "open": 15.94,
+                "close": 16.66,
+                "high": 16.86,
+                "low": 15.75,
+                "volume": 1290387
+            },
+            {
+                "time": 1778428800000,
+                "open": 16.97,
+                "close": 17.13,
+                "high": 17.36,
+                "low": 16.93,
+                "volume": 1333553
+            },
+            {
+                "time": 1778515200000,
+                "open": 17.2,
+                "close": 16.43,
+                "high": 17.3,
+                "low": 16.43,
+                "volume": 968678
             }
         ],
         "latestQuote": {
             "code": "SH601615",
             "name": "",
-            "price": 15.84,
+            "price": 16.43,
             "change": 0,
             "changePercent": 0,
-            "open": 15.84,
+            "open": 17.2,
             "prevClose": 0,
-            "high": 15.94,
-            "low": 15.58,
-            "volume": 766677,
+            "high": 17.3,
+            "low": 16.43,
+            "volume": 968678,
             "amount": 0,
-            "timestamp": 1777996800000
+            "timestamp": 1778515200000
         },
-        "updatedAt": 1778076204583
+        "updatedAt": 1778571420669
     },
     "buypointDate": [
         "2025/09/04",

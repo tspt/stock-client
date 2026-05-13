@@ -4,30 +4,6 @@
         "name": "光电股份",
         "dailyLines": [
             {
-                "time": 1712678400000,
-                "open": 9.65,
-                "close": 9.41,
-                "high": 9.65,
-                "low": 9.31,
-                "volume": 51005
-            },
-            {
-                "time": 1712764800000,
-                "open": 9.3,
-                "close": 9.4,
-                "high": 9.53,
-                "low": 9.28,
-                "volume": 32929
-            },
-            {
-                "time": 1712851200000,
-                "open": 9.38,
-                "close": 9.27,
-                "high": 9.45,
-                "low": 9.24,
-                "volume": 23343
-            },
-            {
                 "time": 1713110400000,
                 "open": 9.34,
                 "close": 9.05,
@@ -4002,23 +3978,55 @@
                 "high": 23.99,
                 "low": 22.18,
                 "volume": 451271
+            },
+            {
+                "time": 1778083200000,
+                "open": 23.8,
+                "close": 23.97,
+                "high": 24.35,
+                "low": 23.15,
+                "volume": 446557
+            },
+            {
+                "time": 1778169600000,
+                "open": 23.96,
+                "close": 24.8,
+                "high": 24.84,
+                "low": 23.25,
+                "volume": 438290
+            },
+            {
+                "time": 1778428800000,
+                "open": 26.07,
+                "close": 27.28,
+                "high": 27.28,
+                "low": 26.05,
+                "volume": 340924
+            },
+            {
+                "time": 1778515200000,
+                "open": 29.99,
+                "close": 29.08,
+                "high": 29.99,
+                "low": 27.83,
+                "volume": 865882
             }
         ],
         "latestQuote": {
             "code": "SH600184",
             "name": "",
-            "price": 23.4,
+            "price": 29.08,
             "change": 0,
             "changePercent": 0,
-            "open": 22.18,
+            "open": 29.99,
             "prevClose": 0,
-            "high": 23.99,
-            "low": 22.18,
-            "volume": 451271,
+            "high": 29.99,
+            "low": 27.83,
+            "volume": 865882,
             "amount": 0,
-            "timestamp": 1777996800000
+            "timestamp": 1778515200000
         },
-        "updatedAt": 1778076051266
+        "updatedAt": 1778571327244
     },
     "buypointDate": [
         "2026/04/15",

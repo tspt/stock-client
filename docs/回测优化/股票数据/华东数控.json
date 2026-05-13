@@ -4,46 +4,6 @@
         "name": "华东数控",
         "dailyLines": [
             {
-                "time": 1712678400000,
-                "open": 7.6,
-                "close": 7.6,
-                "high": 7.6,
-                "low": 7.6,
-                "volume": 168649
-            },
-            {
-                "time": 1712764800000,
-                "open": 7.6,
-                "close": 7.9,
-                "high": 8.22,
-                "low": 7.37,
-                "volume": 597002
-            },
-            {
-                "time": 1712851200000,
-                "open": 7.6,
-                "close": 7.48,
-                "high": 7.72,
-                "low": 7.2,
-                "volume": 359474
-            },
-            {
-                "time": 1713110400000,
-                "open": 6.96,
-                "close": 6.73,
-                "high": 7.22,
-                "low": 6.73,
-                "volume": 274535
-            },
-            {
-                "time": 1713196800000,
-                "open": 6.35,
-                "close": 6.06,
-                "high": 6.45,
-                "low": 6.06,
-                "volume": 117031
-            },
-            {
                 "time": 1713283200000,
                 "open": 5.7,
                 "close": 6.28,
@@ -4002,23 +3962,63 @@
                 "high": 13.2,
                 "low": 12.92,
                 "volume": 186659
+            },
+            {
+                "time": 1778083200000,
+                "open": 13.18,
+                "close": 13.62,
+                "high": 14.05,
+                "low": 13.08,
+                "volume": 357458
+            },
+            {
+                "time": 1778169600000,
+                "open": 13.52,
+                "close": 13.56,
+                "high": 13.73,
+                "low": 13.5,
+                "volume": 202876
+            },
+            {
+                "time": 1778428800000,
+                "open": 13.5,
+                "close": 13.67,
+                "high": 13.79,
+                "low": 13.48,
+                "volume": 191665
+            },
+            {
+                "time": 1778515200000,
+                "open": 13.62,
+                "close": 13.51,
+                "high": 13.83,
+                "low": 13.47,
+                "volume": 175581
+            },
+            {
+                "time": 1778601600000,
+                "open": 13.53,
+                "close": 13.52,
+                "high": 13.65,
+                "low": 13.38,
+                "volume": 149675
             }
         ],
         "latestQuote": {
             "code": "SZ002248",
             "name": "",
-            "price": 13.17,
+            "price": 13.52,
             "change": 0,
             "changePercent": 0,
-            "open": 13,
+            "open": 13.53,
             "prevClose": 0,
-            "high": 13.2,
-            "low": 12.92,
-            "volume": 186659,
+            "high": 13.65,
+            "low": 13.38,
+            "volume": 149675,
             "amount": 0,
-            "timestamp": 1777996800000
+            "timestamp": 1778601600000
         },
-        "updatedAt": 1778075907502
+        "updatedAt": 1778663300789
     },
     "buypointDate": [
         "2025/10/28",

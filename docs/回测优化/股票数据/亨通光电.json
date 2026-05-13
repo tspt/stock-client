@@ -4,30 +4,6 @@
         "name": "亨通光电",
         "dailyLines": [
             {
-                "time": 1712678400000,
-                "open": 12.13,
-                "close": 11.87,
-                "high": 12.13,
-                "low": 11.76,
-                "volume": 332546
-            },
-            {
-                "time": 1712764800000,
-                "open": 11.8,
-                "close": 11.89,
-                "high": 12.04,
-                "low": 11.76,
-                "volume": 218210
-            },
-            {
-                "time": 1712851200000,
-                "open": 11.91,
-                "close": 12.51,
-                "high": 12.82,
-                "low": 11.9,
-                "volume": 993905
-            },
-            {
                 "time": 1713110400000,
                 "open": 12.52,
                 "close": 12.85,
@@ -4002,23 +3978,55 @@
                 "high": 72.27,
                 "low": 67.5,
                 "volume": 1915747
+            },
+            {
+                "time": 1778083200000,
+                "open": 74.55,
+                "close": 75.96,
+                "high": 76.63,
+                "low": 71.8,
+                "volume": 1908904
+            },
+            {
+                "time": 1778169600000,
+                "open": 74.25,
+                "close": 77.27,
+                "high": 79.49,
+                "low": 74.25,
+                "volume": 1633023
+            },
+            {
+                "time": 1778428800000,
+                "open": 79.3,
+                "close": 74.99,
+                "high": 79.9,
+                "low": 73.83,
+                "volume": 2388971
+            },
+            {
+                "time": 1778515200000,
+                "open": 75.5,
+                "close": 75.1,
+                "high": 78.5,
+                "low": 74.66,
+                "volume": 1770023
             }
         ],
         "latestQuote": {
             "code": "SH600487",
             "name": "",
-            "price": 71.8,
+            "price": 75.1,
             "change": 0,
             "changePercent": 0,
-            "open": 67.5,
+            "open": 75.5,
             "prevClose": 0,
-            "high": 72.27,
-            "low": 67.5,
-            "volume": 1915747,
+            "high": 78.5,
+            "low": 74.66,
+            "volume": 1770023,
             "amount": 0,
-            "timestamp": 1777996800000
+            "timestamp": 1778515200000
         },
-        "updatedAt": 1778076103328
+        "updatedAt": 1778571359389
     },
     "buypointDate": [
         "2026/01/16",

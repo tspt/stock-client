@@ -4,30 +4,6 @@
         "name": "科森科技",
         "dailyLines": [
             {
-                "time": 1712678400000,
-                "open": 7.7,
-                "close": 7.1,
-                "high": 7.73,
-                "low": 7.04,
-                "volume": 703324
-            },
-            {
-                "time": 1712764800000,
-                "open": 7.09,
-                "close": 6.82,
-                "high": 7.27,
-                "low": 6.8,
-                "volume": 523181
-            },
-            {
-                "time": 1712851200000,
-                "open": 6.92,
-                "close": 6.51,
-                "high": 6.92,
-                "low": 6.47,
-                "volume": 456154
-            },
-            {
                 "time": 1713110400000,
                 "open": 6.41,
                 "close": 6.06,
@@ -4002,23 +3978,55 @@
                 "high": 25.88,
                 "low": 25,
                 "volume": 473626
+            },
+            {
+                "time": 1778083200000,
+                "open": 25.33,
+                "close": 27.13,
+                "high": 27.3,
+                "low": 25.23,
+                "volume": 533218
+            },
+            {
+                "time": 1778169600000,
+                "open": 26.9,
+                "close": 27.7,
+                "high": 28.84,
+                "low": 26.75,
+                "volume": 538934
+            },
+            {
+                "time": 1778428800000,
+                "open": 27.29,
+                "close": 27.62,
+                "high": 27.84,
+                "low": 26.48,
+                "volume": 436669
+            },
+            {
+                "time": 1778515200000,
+                "open": 27.51,
+                "close": 26.6,
+                "high": 27.99,
+                "low": 26.17,
+                "volume": 448129
             }
         ],
         "latestQuote": {
             "code": "SH603626",
             "name": "",
-            "price": 25.44,
+            "price": 26.6,
             "change": 0,
             "changePercent": 0,
-            "open": 25.47,
+            "open": 27.51,
             "prevClose": 0,
-            "high": 25.88,
-            "low": 25,
-            "volume": 473626,
+            "high": 27.99,
+            "low": 26.17,
+            "volume": 448129,
             "amount": 0,
-            "timestamp": 1777996800000
+            "timestamp": 1778515200000
         },
-        "updatedAt": 1778076296587
+        "updatedAt": 1778571493961
     },
     "buypointDate": [
         "2026/02/05",

@@ -4,30 +4,6 @@
         "name": "福蓉科技",
         "dailyLines": [
             {
-                "time": 1712678400000,
-                "open": 17.5,
-                "close": 16.33,
-                "high": 17.62,
-                "low": 16.06,
-                "volume": 335862
-            },
-            {
-                "time": 1712764800000,
-                "open": 16.4,
-                "close": 16.12,
-                "high": 16.8,
-                "low": 16.06,
-                "volume": 258876
-            },
-            {
-                "time": 1712851200000,
-                "open": 16.18,
-                "close": 15.98,
-                "high": 16.47,
-                "low": 15.89,
-                "volume": 222651
-            },
-            {
                 "time": 1713110400000,
                 "open": 16.04,
                 "close": 15.46,
@@ -4002,23 +3978,55 @@
                 "high": 10.99,
                 "low": 10.77,
                 "volume": 410601
+            },
+            {
+                "time": 1778083200000,
+                "open": 10.95,
+                "close": 11.04,
+                "high": 11.15,
+                "low": 10.87,
+                "volume": 428426
+            },
+            {
+                "time": 1778169600000,
+                "open": 11.03,
+                "close": 11.16,
+                "high": 11.26,
+                "low": 10.86,
+                "volume": 405480
+            },
+            {
+                "time": 1778428800000,
+                "open": 11.3,
+                "close": 10.93,
+                "high": 11.33,
+                "low": 10.87,
+                "volume": 406024
+            },
+            {
+                "time": 1778515200000,
+                "open": 10.9,
+                "close": 10.83,
+                "high": 11.15,
+                "low": 10.76,
+                "volume": 291455
             }
         ],
         "latestQuote": {
             "code": "SH603327",
             "name": "",
-            "price": 10.94,
+            "price": 10.83,
             "change": 0,
             "changePercent": 0,
-            "open": 10.89,
+            "open": 10.9,
             "prevClose": 0,
-            "high": 10.99,
-            "low": 10.77,
-            "volume": 410601,
+            "high": 11.15,
+            "low": 10.76,
+            "volume": 291455,
             "amount": 0,
-            "timestamp": 1777996800000
+            "timestamp": 1778515200000
         },
-        "updatedAt": 1778076270331
+        "updatedAt": 1778571474728
     },
     "buypointDate": [
         "2025/11/20",

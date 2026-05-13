@@ -4,30 +4,6 @@
         "name": "莲花控股",
         "dailyLines": [
             {
-                "time": 1712678400000,
-                "open": 4.57,
-                "close": 4.39,
-                "high": 4.58,
-                "low": 4.35,
-                "volume": 668537
-            },
-            {
-                "time": 1712764800000,
-                "open": 4.35,
-                "close": 4.38,
-                "high": 4.46,
-                "low": 4.31,
-                "volume": 409347
-            },
-            {
-                "time": 1712851200000,
-                "open": 4.36,
-                "close": 4.31,
-                "high": 4.44,
-                "low": 4.28,
-                "volume": 447889
-            },
-            {
                 "time": 1713110400000,
                 "open": 4.29,
                 "close": 4.13,
@@ -4002,23 +3978,55 @@
                 "high": 11.53,
                 "low": 10.71,
                 "volume": 4139553
+            },
+            {
+                "time": 1778083200000,
+                "open": 11.27,
+                "close": 11.13,
+                "high": 11.44,
+                "low": 10.82,
+                "volume": 3321134
+            },
+            {
+                "time": 1778169600000,
+                "open": 10.8,
+                "close": 10.5,
+                "high": 10.85,
+                "low": 10.28,
+                "volume": 3227011
+            },
+            {
+                "time": 1778428800000,
+                "open": 10.5,
+                "close": 10.3,
+                "high": 10.67,
+                "low": 9.8,
+                "volume": 3447625
+            },
+            {
+                "time": 1778515200000,
+                "open": 10.15,
+                "close": 9.99,
+                "high": 10.21,
+                "low": 9.81,
+                "volume": 2231384
             }
         ],
         "latestQuote": {
             "code": "SH600186",
             "name": "",
-            "price": 11.4,
+            "price": 9.99,
             "change": 0,
             "changePercent": 0,
-            "open": 10.95,
+            "open": 10.15,
             "prevClose": 0,
-            "high": 11.53,
-            "low": 10.71,
-            "volume": 4139553,
+            "high": 10.21,
+            "low": 9.81,
+            "volume": 2231384,
             "amount": 0,
-            "timestamp": 1777996800000
+            "timestamp": 1778515200000
         },
-        "updatedAt": 1778076051358
+        "updatedAt": 1778571329895
     },
     "buypointDate": [
         "2026/04/07",

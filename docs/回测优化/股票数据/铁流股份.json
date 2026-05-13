@@ -4,30 +4,6 @@
         "name": "铁流股份",
         "dailyLines": [
             {
-                "time": 1712678400000,
-                "open": 10.02,
-                "close": 9.6,
-                "high": 10.02,
-                "low": 9.39,
-                "volume": 68492
-            },
-            {
-                "time": 1712764800000,
-                "open": 9.55,
-                "close": 9.59,
-                "high": 9.73,
-                "low": 9.36,
-                "volume": 45831
-            },
-            {
-                "time": 1712851200000,
-                "open": 9.64,
-                "close": 9.62,
-                "high": 9.87,
-                "low": 9.59,
-                "volume": 37804
-            },
-            {
                 "time": 1713110400000,
                 "open": 9.57,
                 "close": 8.93,
@@ -4002,23 +3978,55 @@
                 "high": 22.73,
                 "low": 21.51,
                 "volume": 131520
+            },
+            {
+                "time": 1778083200000,
+                "open": 21.77,
+                "close": 22.35,
+                "high": 22.5,
+                "low": 21.5,
+                "volume": 90662
+            },
+            {
+                "time": 1778169600000,
+                "open": 22.2,
+                "close": 22.72,
+                "high": 23.25,
+                "low": 22.15,
+                "volume": 111595
+            },
+            {
+                "time": 1778428800000,
+                "open": 23.2,
+                "close": 23.7,
+                "high": 24.8,
+                "low": 23.2,
+                "volume": 151952
+            },
+            {
+                "time": 1778515200000,
+                "open": 23.94,
+                "close": 23.59,
+                "high": 24,
+                "low": 23.04,
+                "volume": 101216
             }
         ],
         "latestQuote": {
             "code": "SH603926",
             "name": "",
-            "price": 21.76,
+            "price": 23.59,
             "change": 0,
             "changePercent": 0,
-            "open": 21.88,
+            "open": 23.94,
             "prevClose": 0,
-            "high": 22.73,
-            "low": 21.51,
-            "volume": 131520,
+            "high": 24,
+            "low": 23.04,
+            "volume": 101216,
             "amount": 0,
-            "timestamp": 1777996800000
+            "timestamp": 1778515200000
         },
-        "updatedAt": 1778076326334
+        "updatedAt": 1778571513218
     },
     "buypointDate": [
         "2026/01/07",

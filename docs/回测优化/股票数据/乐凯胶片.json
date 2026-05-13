@@ -4,30 +4,6 @@
         "name": "乐凯胶片",
         "dailyLines": [
             {
-                "time": 1712678400000,
-                "open": 6.38,
-                "close": 6.28,
-                "high": 6.47,
-                "low": 6.21,
-                "volume": 70468
-            },
-            {
-                "time": 1712764800000,
-                "open": 6.2,
-                "close": 6.3,
-                "high": 6.43,
-                "low": 6.15,
-                "volume": 59594
-            },
-            {
-                "time": 1712851200000,
-                "open": 6.3,
-                "close": 6.21,
-                "high": 6.32,
-                "low": 6.18,
-                "volume": 62849
-            },
-            {
                 "time": 1713110400000,
                 "open": 6.22,
                 "close": 5.74,
@@ -4002,23 +3978,55 @@
                 "high": 11.66,
                 "low": 11.35,
                 "volume": 329402
+            },
+            {
+                "time": 1778083200000,
+                "open": 11.52,
+                "close": 11.59,
+                "high": 11.82,
+                "low": 11.46,
+                "volume": 240610
+            },
+            {
+                "time": 1778169600000,
+                "open": 11.56,
+                "close": 11.82,
+                "high": 12.02,
+                "low": 11.47,
+                "volume": 269918
+            },
+            {
+                "time": 1778428800000,
+                "open": 11.94,
+                "close": 12.17,
+                "high": 12.8,
+                "low": 11.7,
+                "volume": 383909
+            },
+            {
+                "time": 1778515200000,
+                "open": 12.18,
+                "close": 11.84,
+                "high": 12.41,
+                "low": 11.66,
+                "volume": 294527
             }
         ],
         "latestQuote": {
             "code": "SH600135",
             "name": "",
-            "price": 11.46,
+            "price": 11.84,
             "change": 0,
             "changePercent": 0,
-            "open": 11.38,
+            "open": 12.18,
             "prevClose": 0,
-            "high": 11.66,
-            "low": 11.35,
-            "volume": 329402,
+            "high": 12.41,
+            "low": 11.66,
+            "volume": 294527,
             "amount": 0,
-            "timestamp": 1777996800000
+            "timestamp": 1778515200000
         },
-        "updatedAt": 1778076046330
+        "updatedAt": 1778571322390
     },
     "buypointDate": [
         "2026/03/06",

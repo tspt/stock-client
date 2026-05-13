@@ -4,30 +4,6 @@
         "name": "江化微",
         "dailyLines": [
             {
-                "time": 1711900800000,
-                "open": 13.03,
-                "close": 13.27,
-                "high": 13.3,
-                "low": 13.03,
-                "volume": 45599
-            },
-            {
-                "time": 1711987200000,
-                "open": 13.26,
-                "close": 13.21,
-                "high": 13.27,
-                "low": 13.02,
-                "volume": 41706
-            },
-            {
-                "time": 1712073600000,
-                "open": 13.2,
-                "close": 13.24,
-                "high": 13.53,
-                "low": 12.96,
-                "volume": 63090
-            },
-            {
                 "time": 1712505600000,
                 "open": 13.05,
                 "close": 12.52,
@@ -4002,23 +3978,55 @@
                 "high": 26.54,
                 "low": 25.38,
                 "volume": 353366
+            },
+            {
+                "time": 1778083200000,
+                "open": 26.3,
+                "close": 27.34,
+                "high": 27.5,
+                "low": 25.77,
+                "volume": 390399
+            },
+            {
+                "time": 1778169600000,
+                "open": 26.88,
+                "close": 26.37,
+                "high": 26.93,
+                "low": 26.26,
+                "volume": 283391
+            },
+            {
+                "time": 1778428800000,
+                "open": 26.75,
+                "close": 28.61,
+                "high": 29,
+                "low": 26.25,
+                "volume": 471290
+            },
+            {
+                "time": 1778515200000,
+                "open": 28.33,
+                "close": 28.22,
+                "high": 28.6,
+                "low": 27.39,
+                "volume": 331426
             }
         ],
         "latestQuote": {
             "code": "SH603078",
             "name": "",
-            "price": 26.25,
+            "price": 28.22,
             "change": 0,
             "changePercent": 0,
-            "open": 25.75,
+            "open": 28.33,
             "prevClose": 0,
-            "high": 26.54,
-            "low": 25.38,
-            "volume": 353366,
+            "high": 28.6,
+            "low": 27.39,
+            "volume": 331426,
             "amount": 0,
-            "timestamp": 1777996800000
+            "timestamp": 1778515200000
         },
-        "updatedAt": 1778076234295
+        "updatedAt": 1778571444181
     },
     "buypointDate": [
         "2026/01/09"

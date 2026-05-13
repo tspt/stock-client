@@ -4,30 +4,6 @@
         "name": "浙数文化",
         "dailyLines": [
             {
-                "time": 1712678400000,
-                "open": 11,
-                "close": 10.41,
-                "high": 11,
-                "low": 10.4,
-                "volume": 260626
-            },
-            {
-                "time": 1712764800000,
-                "open": 10.24,
-                "close": 10.46,
-                "high": 10.65,
-                "low": 10.2,
-                "volume": 183632
-            },
-            {
-                "time": 1712851200000,
-                "open": 10.4,
-                "close": 10.08,
-                "high": 10.45,
-                "low": 10.07,
-                "volume": 211974
-            },
-            {
                 "time": 1713110400000,
                 "open": 10.05,
                 "close": 9.96,
@@ -4002,23 +3978,55 @@
                 "high": 13.79,
                 "low": 13.18,
                 "volume": 726420
+            },
+            {
+                "time": 1778083200000,
+                "open": 13.68,
+                "close": 13.94,
+                "high": 14.08,
+                "low": 13.65,
+                "volume": 641527
+            },
+            {
+                "time": 1778169600000,
+                "open": 13.9,
+                "close": 13.94,
+                "high": 14.1,
+                "low": 13.78,
+                "volume": 548976
+            },
+            {
+                "time": 1778428800000,
+                "open": 14.02,
+                "close": 13.82,
+                "high": 14.09,
+                "low": 13.71,
+                "volume": 485504
+            },
+            {
+                "time": 1778515200000,
+                "open": 13.84,
+                "close": 13.42,
+                "high": 13.86,
+                "low": 13.37,
+                "volume": 476279
             }
         ],
         "latestQuote": {
             "code": "SH600633",
             "name": "",
-            "price": 13.68,
+            "price": 13.42,
             "change": 0,
             "changePercent": 0,
-            "open": 13.2,
+            "open": 13.84,
             "prevClose": 0,
-            "high": 13.79,
-            "low": 13.18,
-            "volume": 726420,
+            "high": 13.86,
+            "low": 13.37,
+            "volume": 476279,
             "amount": 0,
-            "timestamp": 1777996800000
+            "timestamp": 1778515200000
         },
-        "updatedAt": 1778076132060
+        "updatedAt": 1778571375349
     },
     "buypointDate": [
         "2026/04/22",

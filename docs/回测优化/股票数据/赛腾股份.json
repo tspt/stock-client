@@ -4,30 +4,6 @@
         "name": "赛腾股份",
         "dailyLines": [
             {
-                "time": 1712678400000,
-                "open": 69.78,
-                "close": 67.69,
-                "high": 70.21,
-                "low": 67.17,
-                "volume": 52432
-            },
-            {
-                "time": 1712764800000,
-                "open": 67.18,
-                "close": 68.25,
-                "high": 69.79,
-                "low": 67.01,
-                "volume": 53102
-            },
-            {
-                "time": 1712851200000,
-                "open": 68.8,
-                "close": 69.75,
-                "high": 71.46,
-                "low": 68.8,
-                "volume": 71509
-            },
-            {
                 "time": 1713110400000,
                 "open": 68.99,
                 "close": 68,
@@ -4002,23 +3978,55 @@
                 "high": 57.3,
                 "low": 54.76,
                 "volume": 215889
+            },
+            {
+                "time": 1778083200000,
+                "open": 55.49,
+                "close": 55.95,
+                "high": 55.98,
+                "low": 54.7,
+                "volume": 148343
+            },
+            {
+                "time": 1778169600000,
+                "open": 54.83,
+                "close": 54.7,
+                "high": 55.77,
+                "low": 54.2,
+                "volume": 127198
+            },
+            {
+                "time": 1778428800000,
+                "open": 56.3,
+                "close": 57.73,
+                "high": 58.62,
+                "low": 56.09,
+                "volume": 204254
+            },
+            {
+                "time": 1778515200000,
+                "open": 57.72,
+                "close": 57.75,
+                "high": 58.78,
+                "low": 56.38,
+                "volume": 149312
             }
         ],
         "latestQuote": {
             "code": "SH603283",
             "name": "",
-            "price": 54.85,
+            "price": 57.75,
             "change": 0,
             "changePercent": 0,
-            "open": 56.48,
+            "open": 57.72,
             "prevClose": 0,
-            "high": 57.3,
-            "low": 54.76,
-            "volume": 215889,
+            "high": 58.78,
+            "low": 56.38,
+            "volume": 149312,
             "amount": 0,
-            "timestamp": 1777996800000
+            "timestamp": 1778515200000
         },
-        "updatedAt": 1778076264834
+        "updatedAt": 1778571468733
     },
     "buypointDate": [
         "2026/04/07",

@@ -4,46 +4,6 @@
         "name": "九鼎新材",
         "dailyLines": [
             {
-                "time": 1712678400000,
-                "open": 5.83,
-                "close": 5.7,
-                "high": 5.91,
-                "low": 5.61,
-                "volume": 92447
-            },
-            {
-                "time": 1712764800000,
-                "open": 5.63,
-                "close": 5.64,
-                "high": 5.74,
-                "low": 5.56,
-                "volume": 79677
-            },
-            {
-                "time": 1712851200000,
-                "open": 5.65,
-                "close": 5.53,
-                "high": 5.68,
-                "low": 5.51,
-                "volume": 73634
-            },
-            {
-                "time": 1713110400000,
-                "open": 5.49,
-                "close": 5.14,
-                "high": 5.56,
-                "low": 5,
-                "volume": 167193
-            },
-            {
-                "time": 1713196800000,
-                "open": 5.12,
-                "close": 4.79,
-                "high": 5.16,
-                "low": 4.74,
-                "volume": 169084
-            },
-            {
                 "time": 1713283200000,
                 "open": 4.82,
                 "close": 5.27,
@@ -4002,23 +3962,63 @@
                 "high": 14.12,
                 "low": 13.4,
                 "volume": 699677
+            },
+            {
+                "time": 1778083200000,
+                "open": 14.08,
+                "close": 14.49,
+                "high": 14.56,
+                "low": 13.91,
+                "volume": 927992
+            },
+            {
+                "time": 1778169600000,
+                "open": 14.35,
+                "close": 14.52,
+                "high": 14.61,
+                "low": 13.88,
+                "volume": 815987
+            },
+            {
+                "time": 1778428800000,
+                "open": 14.6,
+                "close": 14.31,
+                "high": 14.83,
+                "low": 14.2,
+                "volume": 659250
+            },
+            {
+                "time": 1778515200000,
+                "open": 14.2,
+                "close": 14.11,
+                "high": 14.43,
+                "low": 13.71,
+                "volume": 537781
+            },
+            {
+                "time": 1778601600000,
+                "open": 13.95,
+                "close": 14.33,
+                "high": 14.7,
+                "low": 13.74,
+                "volume": 695126
             }
         ],
         "latestQuote": {
             "code": "SZ002201",
             "name": "",
-            "price": 13.83,
+            "price": 14.33,
             "change": 0,
             "changePercent": 0,
-            "open": 13.5,
+            "open": 13.95,
             "prevClose": 0,
-            "high": 14.12,
-            "low": 13.4,
-            "volume": 699677,
+            "high": 14.7,
+            "low": 13.74,
+            "volume": 695126,
             "amount": 0,
-            "timestamp": 1777996800000
+            "timestamp": 1778601600000
         },
-        "updatedAt": 1778075901723
+        "updatedAt": 1778663293791
     },
     "buypointDate": [
         "2026/04/15",

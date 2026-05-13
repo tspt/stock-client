@@ -1,0 +1,835 @@
+{
+  "exportTime": "2026-05-13T10:33:10.877Z",
+  "format": "json",
+  "batchInfo": {
+    "currentBatch": 31,
+    "totalBatches": 31,
+    "stocksInBatch": 6
+  },
+  "totalStocks": 6,
+  "totalSignals": 26,
+  "data": [
+    {
+      "code": "SZ301656",
+      "name": "联合动力",
+      "signals": [
+        {
+          "signalDate": "2026-01-20",
+          "entryPrice": 27.85,
+          "returns": {
+            "day1": {
+              "value": 0.9,
+              "actualDays": 1
+            },
+            "day2": {
+              "value": -0.32,
+              "actualDays": 2
+            },
+            "day3": {
+              "value": 0.18,
+              "actualDays": 3
+            },
+            "day5": {
+              "value": -2.91,
+              "actualDays": 5
+            },
+            "day10": {
+              "value": -5.46,
+              "actualDays": 10
+            },
+            "day20": {
+              "value": -5.85,
+              "actualDays": 20
+            }
+          }
+        },
+        {
+          "signalDate": "2026-02-05",
+          "entryPrice": 26.3,
+          "returns": {
+            "day1": {
+              "value": -0.19,
+              "actualDays": 1
+            },
+            "day2": {
+              "value": 0.76,
+              "actualDays": 2
+            },
+            "day3": {
+              "value": 0.04,
+              "actualDays": 3
+            },
+            "day5": {
+              "value": -1.06,
+              "actualDays": 5
+            },
+            "day10": {
+              "value": -0.49,
+              "actualDays": 10
+            },
+            "day20": {
+              "value": -3.31,
+              "actualDays": 20
+            }
+          }
+        },
+        {
+          "signalDate": "2026-02-06",
+          "entryPrice": 26.25,
+          "returns": {
+            "day1": {
+              "value": 0.95,
+              "actualDays": 1
+            },
+            "day2": {
+              "value": 0.23,
+              "actualDays": 2
+            },
+            "day3": {
+              "value": -0.27,
+              "actualDays": 3
+            },
+            "day5": {
+              "value": -1.33,
+              "actualDays": 5
+            },
+            "day10": {
+              "value": -2.86,
+              "actualDays": 10
+            },
+            "day20": {
+              "value": -1.1,
+              "actualDays": 20
+            }
+          }
+        },
+        {
+          "signalDate": "2026-02-26",
+          "entryPrice": 26.4,
+          "returns": {
+            "day1": {
+              "value": -0.87,
+              "actualDays": 1
+            },
+            "day2": {
+              "value": -3.41,
+              "actualDays": 2
+            },
+            "day3": {
+              "value": -6.14,
+              "actualDays": 3
+            },
+            "day5": {
+              "value": -7.2,
+              "actualDays": 5
+            },
+            "day10": {
+              "value": -4.28,
+              "actualDays": 10
+            },
+            "day20": {
+              "value": -11.67,
+              "actualDays": 20
+            }
+          }
+        }
+      ],
+      "calculatedAt": 1778664699710
+    },
+    {
+      "code": "SZ301658",
+      "name": "首航新能",
+      "signals": [
+        {
+          "signalDate": "2026-02-09",
+          "entryPrice": 33.66,
+          "returns": {
+            "day1": {
+              "value": -1.37,
+              "actualDays": 1
+            },
+            "day2": {
+              "value": -3.65,
+              "actualDays": 2
+            },
+            "day3": {
+              "value": -2.32,
+              "actualDays": 3
+            },
+            "day5": {
+              "value": -4.04,
+              "actualDays": 5
+            },
+            "day10": {
+              "value": 7.22,
+              "actualDays": 10
+            },
+            "day20": {
+              "value": 40.76,
+              "actualDays": 20
+            }
+          }
+        }
+      ],
+      "calculatedAt": 1778664699710
+    },
+    {
+      "code": "SZ301662",
+      "name": "宏工科技",
+      "signals": [
+        {
+          "signalDate": "2025-07-08",
+          "entryPrice": 118.7,
+          "returns": {
+            "day1": {
+              "value": -2.7,
+              "actualDays": 1
+            },
+            "day2": {
+              "value": -8.5,
+              "actualDays": 2
+            },
+            "day3": {
+              "value": -7.99,
+              "actualDays": 3
+            },
+            "day5": {
+              "value": -18.88,
+              "actualDays": 5
+            },
+            "day10": {
+              "value": -9.37,
+              "actualDays": 10
+            },
+            "day20": {
+              "value": -13.06,
+              "actualDays": 20
+            }
+          }
+        },
+        {
+          "signalDate": "2025-07-09",
+          "entryPrice": 115.5,
+          "returns": {
+            "day1": {
+              "value": -5.97,
+              "actualDays": 1
+            },
+            "day2": {
+              "value": -5.45,
+              "actualDays": 2
+            },
+            "day3": {
+              "value": -15.54,
+              "actualDays": 3
+            },
+            "day5": {
+              "value": -17.25,
+              "actualDays": 5
+            },
+            "day10": {
+              "value": -8.51,
+              "actualDays": 10
+            },
+            "day20": {
+              "value": -11.73,
+              "actualDays": 20
+            }
+          }
+        },
+        {
+          "signalDate": "2026-01-30",
+          "entryPrice": 174.74,
+          "returns": {
+            "day1": {
+              "value": -5.73,
+              "actualDays": 1
+            },
+            "day2": {
+              "value": 2.32,
+              "actualDays": 2
+            },
+            "day3": {
+              "value": -0.71,
+              "actualDays": 3
+            },
+            "day5": {
+              "value": 7.37,
+              "actualDays": 5
+            },
+            "day10": {
+              "value": -4.7,
+              "actualDays": 10
+            },
+            "day20": {
+              "value": -8.03,
+              "actualDays": 20
+            }
+          }
+        },
+        {
+          "signalDate": "2026-02-03",
+          "entryPrice": 178.8,
+          "returns": {
+            "day1": {
+              "value": -2.96,
+              "actualDays": 1
+            },
+            "day2": {
+              "value": 10.46,
+              "actualDays": 2
+            },
+            "day3": {
+              "value": 4.93,
+              "actualDays": 3
+            },
+            "day5": {
+              "value": -0.09,
+              "actualDays": 5
+            },
+            "day10": {
+              "value": 1.21,
+              "actualDays": 10
+            },
+            "day20": {
+              "value": -6.45,
+              "actualDays": 20
+            }
+          }
+        },
+        {
+          "signalDate": "2026-02-09",
+          "entryPrice": 191.3,
+          "returns": {
+            "day1": {
+              "value": -6.62,
+              "actualDays": 1
+            },
+            "day2": {
+              "value": -9.77,
+              "actualDays": 2
+            },
+            "day3": {
+              "value": -12.28,
+              "actualDays": 3
+            },
+            "day5": {
+              "value": -12.81,
+              "actualDays": 5
+            },
+            "day10": {
+              "value": -3.15,
+              "actualDays": 10
+            },
+            "day20": {
+              "value": -23.42,
+              "actualDays": 20
+            }
+          }
+        }
+      ],
+      "calculatedAt": 1778664699710
+    },
+    {
+      "code": "SZ301665",
+      "name": "泰禾股份",
+      "signals": [
+        {
+          "signalDate": "2025-11-11",
+          "entryPrice": 31.43,
+          "returns": {
+            "day1": {
+              "value": -1.65,
+              "actualDays": 1
+            },
+            "day2": {
+              "value": 0.54,
+              "actualDays": 2
+            },
+            "day3": {
+              "value": -0.16,
+              "actualDays": 3
+            },
+            "day5": {
+              "value": -0.92,
+              "actualDays": 5
+            },
+            "day10": {
+              "value": -2.51,
+              "actualDays": 10
+            },
+            "day20": {
+              "value": -8.46,
+              "actualDays": 20
+            }
+          }
+        },
+        {
+          "signalDate": "2026-01-26",
+          "entryPrice": 32.8,
+          "returns": {
+            "day1": {
+              "value": 0.27,
+              "actualDays": 1
+            },
+            "day2": {
+              "value": 0.98,
+              "actualDays": 2
+            },
+            "day3": {
+              "value": -6.1,
+              "actualDays": 3
+            },
+            "day5": {
+              "value": -13.2,
+              "actualDays": 5
+            },
+            "day10": {
+              "value": -9.05,
+              "actualDays": 10
+            },
+            "day20": {
+              "value": -9.79,
+              "actualDays": 20
+            }
+          }
+        }
+      ],
+      "calculatedAt": 1778664699710
+    },
+    {
+      "code": "SZ301668",
+      "name": "昊创瑞通",
+      "signals": [
+        {
+          "signalDate": "2026-02-24",
+          "entryPrice": 53.59,
+          "returns": {
+            "day1": {
+              "value": 0.75,
+              "actualDays": 1
+            },
+            "day2": {
+              "value": 1.98,
+              "actualDays": 2
+            },
+            "day3": {
+              "value": 1.57,
+              "actualDays": 3
+            },
+            "day5": {
+              "value": -1.9,
+              "actualDays": 5
+            },
+            "day10": {
+              "value": 11.18,
+              "actualDays": 10
+            },
+            "day20": {
+              "value": 4.27,
+              "actualDays": 20
+            }
+          }
+        },
+        {
+          "signalDate": "2026-03-04",
+          "entryPrice": 54.96,
+          "returns": {
+            "day1": {
+              "value": 1.31,
+              "actualDays": 1
+            },
+            "day2": {
+              "value": 4.18,
+              "actualDays": 2
+            },
+            "day3": {
+              "value": 9.17,
+              "actualDays": 3
+            },
+            "day5": {
+              "value": 5,
+              "actualDays": 5
+            },
+            "day10": {
+              "value": 8.15,
+              "actualDays": 10
+            },
+            "day20": {
+              "value": -9.04,
+              "actualDays": 20
+            }
+          }
+        },
+        {
+          "signalDate": "2026-03-05",
+          "entryPrice": 55.68,
+          "returns": {
+            "day1": {
+              "value": 2.84,
+              "actualDays": 1
+            },
+            "day2": {
+              "value": 7.76,
+              "actualDays": 2
+            },
+            "day3": {
+              "value": 7,
+              "actualDays": 3
+            },
+            "day5": {
+              "value": 2.95,
+              "actualDays": 5
+            },
+            "day10": {
+              "value": 3.66,
+              "actualDays": 10
+            },
+            "day20": {
+              "value": -12.75,
+              "actualDays": 20
+            }
+          }
+        },
+        {
+          "signalDate": "2026-03-18",
+          "entryPrice": 59.44,
+          "returns": {
+            "day1": {
+              "value": -2.89,
+              "actualDays": 1
+            },
+            "day2": {
+              "value": -8.31,
+              "actualDays": 2
+            },
+            "day3": {
+              "value": -12.85,
+              "actualDays": 3
+            },
+            "day5": {
+              "value": -7.79,
+              "actualDays": 5
+            },
+            "day10": {
+              "value": -15.9,
+              "actualDays": 10
+            },
+            "day20": {
+              "value": -12.82,
+              "actualDays": 20
+            }
+          }
+        }
+      ],
+      "calculatedAt": 1778664699710
+    },
+    {
+      "code": "SZ302132",
+      "name": "中航成飞",
+      "signals": [
+        {
+          "signalDate": "2024-06-05",
+          "entryPrice": 40.19,
+          "returns": {
+            "day1": {
+              "value": -2.11,
+              "actualDays": 1
+            },
+            "day2": {
+              "value": -2.39,
+              "actualDays": 2
+            },
+            "day3": {
+              "value": -1.59,
+              "actualDays": 3
+            },
+            "day5": {
+              "value": -1.32,
+              "actualDays": 5
+            },
+            "day10": {
+              "value": -3.21,
+              "actualDays": 10
+            },
+            "day20": {
+              "value": 15.35,
+              "actualDays": 20
+            }
+          }
+        },
+        {
+          "signalDate": "2024-06-21",
+          "entryPrice": 39.53,
+          "returns": {
+            "day1": {
+              "value": 4.68,
+              "actualDays": 1
+            },
+            "day2": {
+              "value": 1.72,
+              "actualDays": 2
+            },
+            "day3": {
+              "value": 5.57,
+              "actualDays": 3
+            },
+            "day5": {
+              "value": 14.47,
+              "actualDays": 5
+            },
+            "day10": {
+              "value": 25.32,
+              "actualDays": 10
+            },
+            "day20": {
+              "value": 21.38,
+              "actualDays": 20
+            }
+          }
+        },
+        {
+          "signalDate": "2024-06-25",
+          "entryPrice": 40.21,
+          "returns": {
+            "day1": {
+              "value": 3.78,
+              "actualDays": 1
+            },
+            "day2": {
+              "value": 12.86,
+              "actualDays": 2
+            },
+            "day3": {
+              "value": 12.53,
+              "actualDays": 3
+            },
+            "day5": {
+              "value": 8.13,
+              "actualDays": 5
+            },
+            "day10": {
+              "value": 23.7,
+              "actualDays": 10
+            },
+            "day20": {
+              "value": 15.32,
+              "actualDays": 20
+            }
+          }
+        },
+        {
+          "signalDate": "2024-07-15",
+          "entryPrice": 50.88,
+          "returns": {
+            "day1": {
+              "value": -2.06,
+              "actualDays": 1
+            },
+            "day2": {
+              "value": -7.04,
+              "actualDays": 2
+            },
+            "day3": {
+              "value": -5.23,
+              "actualDays": 3
+            },
+            "day5": {
+              "value": -4.87,
+              "actualDays": 5
+            },
+            "day10": {
+              "value": -5.72,
+              "actualDays": 10
+            },
+            "day20": {
+              "value": -13.11,
+              "actualDays": 20
+            }
+          }
+        },
+        {
+          "signalDate": "2024-07-18",
+          "entryPrice": 48.22,
+          "returns": {
+            "day1": {
+              "value": -0.5,
+              "actualDays": 1
+            },
+            "day2": {
+              "value": 0.37,
+              "actualDays": 2
+            },
+            "day3": {
+              "value": -3.84,
+              "actualDays": 3
+            },
+            "day5": {
+              "value": -7.24,
+              "actualDays": 5
+            },
+            "day10": {
+              "value": 0.41,
+              "actualDays": 10
+            },
+            "day20": {
+              "value": -9.56,
+              "actualDays": 20
+            }
+          }
+        },
+        {
+          "signalDate": "2025-08-18",
+          "entryPrice": 85.87,
+          "returns": {
+            "day1": {
+              "value": 0.68,
+              "actualDays": 1
+            },
+            "day2": {
+              "value": 2.22,
+              "actualDays": 2
+            },
+            "day3": {
+              "value": 4.94,
+              "actualDays": 3
+            },
+            "day5": {
+              "value": 17.97,
+              "actualDays": 5
+            },
+            "day10": {
+              "value": 22.96,
+              "actualDays": 10
+            },
+            "day20": {
+              "value": -4.96,
+              "actualDays": 20
+            }
+          }
+        },
+        {
+          "signalDate": "2025-08-19",
+          "entryPrice": 86.45,
+          "returns": {
+            "day1": {
+              "value": 1.54,
+              "actualDays": 1
+            },
+            "day2": {
+              "value": 4.23,
+              "actualDays": 2
+            },
+            "day3": {
+              "value": 14.93,
+              "actualDays": 3
+            },
+            "day5": {
+              "value": 13.85,
+              "actualDays": 5
+            },
+            "day10": {
+              "value": 22.87,
+              "actualDays": 10
+            },
+            "day20": {
+              "value": -5.4,
+              "actualDays": 20
+            }
+          }
+        },
+        {
+          "signalDate": "2025-08-21",
+          "entryPrice": 90.11,
+          "returns": {
+            "day1": {
+              "value": 10.27,
+              "actualDays": 1
+            },
+            "day2": {
+              "value": 12.42,
+              "actualDays": 2
+            },
+            "day3": {
+              "value": 9.22,
+              "actualDays": 3
+            },
+            "day5": {
+              "value": 5.03,
+              "actualDays": 5
+            },
+            "day10": {
+              "value": -7.89,
+              "actualDays": 10
+            },
+            "day20": {
+              "value": -8.88,
+              "actualDays": 20
+            }
+          }
+        },
+        {
+          "signalDate": "2026-01-12",
+          "entryPrice": 88.01,
+          "returns": {
+            "day1": {
+              "value": -5.86,
+              "actualDays": 1
+            },
+            "day2": {
+              "value": -6.52,
+              "actualDays": 2
+            },
+            "day3": {
+              "value": -5.59,
+              "actualDays": 3
+            },
+            "day5": {
+              "value": -5.89,
+              "actualDays": 5
+            },
+            "day10": {
+              "value": -10.82,
+              "actualDays": 10
+            },
+            "day20": {
+              "value": -12.11,
+              "actualDays": 20
+            }
+          }
+        },
+        {
+          "signalDate": "2026-03-02",
+          "entryPrice": 82.91,
+          "returns": {
+            "day1": {
+              "value": -5.66,
+              "actualDays": 1
+            },
+            "day2": {
+              "value": -4.79,
+              "actualDays": 2
+            },
+            "day3": {
+              "value": -7.27,
+              "actualDays": 3
+            },
+            "day5": {
+              "value": -10.66,
+              "actualDays": 5
+            },
+            "day10": {
+              "value": -11.75,
+              "actualDays": 10
+            },
+            "day20": {
+              "value": -18.26,
+              "actualDays": 20
+            }
+          }
+        }
+      ],
+      "calculatedAt": 1778664699710
+    }
+  ]
+}

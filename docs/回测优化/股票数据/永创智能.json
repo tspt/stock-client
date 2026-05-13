@@ -4,30 +4,6 @@
         "name": "永创智能",
         "dailyLines": [
             {
-                "time": 1712678400000,
-                "open": 8.66,
-                "close": 8.26,
-                "high": 8.7,
-                "low": 8.2,
-                "volume": 70952
-            },
-            {
-                "time": 1712764800000,
-                "open": 8.2,
-                "close": 8.35,
-                "high": 8.44,
-                "low": 8.15,
-                "volume": 48597
-            },
-            {
-                "time": 1712851200000,
-                "open": 8.35,
-                "close": 8.18,
-                "high": 8.44,
-                "low": 8.14,
-                "volume": 50999
-            },
-            {
                 "time": 1713110400000,
                 "open": 8.12,
                 "close": 7.86,
@@ -4002,23 +3978,55 @@
                 "high": 12.76,
                 "low": 12.25,
                 "volume": 176943
+            },
+            {
+                "time": 1778083200000,
+                "open": 12.6,
+                "close": 12.83,
+                "high": 13.05,
+                "low": 12.52,
+                "volume": 183969
+            },
+            {
+                "time": 1778169600000,
+                "open": 12.8,
+                "close": 12.99,
+                "high": 12.99,
+                "low": 12.64,
+                "volume": 169877
+            },
+            {
+                "time": 1778428800000,
+                "open": 12.99,
+                "close": 12.9,
+                "high": 13.06,
+                "low": 12.83,
+                "volume": 149957
+            },
+            {
+                "time": 1778515200000,
+                "open": 12.93,
+                "close": 12.89,
+                "high": 13.07,
+                "low": 12.75,
+                "volume": 123957
             }
         ],
         "latestQuote": {
             "code": "SH603901",
             "name": "",
-            "price": 12.58,
+            "price": 12.89,
             "change": 0,
             "changePercent": 0,
-            "open": 12.25,
+            "open": 12.93,
             "prevClose": 0,
-            "high": 12.76,
-            "low": 12.25,
-            "volume": 176943,
+            "high": 13.07,
+            "low": 12.75,
+            "volume": 123957,
             "amount": 0,
-            "timestamp": 1777996800000
+            "timestamp": 1778515200000
         },
-        "updatedAt": 1778076324117
+        "updatedAt": 1778571511083
     },
     "buypointDate": [
         "2025/11/26",

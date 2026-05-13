@@ -4,30 +4,6 @@
         "name": "远东股份",
         "dailyLines": [
             {
-                "time": 1712678400000,
-                "open": 4.13,
-                "close": 3.94,
-                "high": 4.15,
-                "low": 3.91,
-                "volume": 235897
-            },
-            {
-                "time": 1712764800000,
-                "open": 3.9,
-                "close": 4.03,
-                "high": 4.08,
-                "low": 3.88,
-                "volume": 185637
-            },
-            {
-                "time": 1712851200000,
-                "open": 4.03,
-                "close": 3.99,
-                "high": 4.06,
-                "low": 3.98,
-                "volume": 141064
-            },
-            {
                 "time": 1713110400000,
                 "open": 4.01,
                 "close": 3.97,
@@ -4002,23 +3978,55 @@
                 "high": 18.66,
                 "low": 17.31,
                 "volume": 1118822
+            },
+            {
+                "time": 1778083200000,
+                "open": 18.8,
+                "close": 19.57,
+                "high": 19.58,
+                "low": 18.51,
+                "volume": 1141301
+            },
+            {
+                "time": 1778169600000,
+                "open": 19.06,
+                "close": 18.93,
+                "high": 19.39,
+                "low": 18.91,
+                "volume": 842125
+            },
+            {
+                "time": 1778428800000,
+                "open": 19.39,
+                "close": 20.82,
+                "high": 20.82,
+                "low": 19.39,
+                "volume": 1235965
+            },
+            {
+                "time": 1778515200000,
+                "open": 21.46,
+                "close": 22.9,
+                "high": 22.9,
+                "low": 21.31,
+                "volume": 671837
             }
         ],
         "latestQuote": {
             "code": "SH600869",
             "name": "",
-            "price": 18.24,
+            "price": 22.9,
             "change": 0,
             "changePercent": 0,
-            "open": 17.31,
+            "open": 21.46,
             "prevClose": 0,
-            "high": 18.66,
-            "low": 17.31,
-            "volume": 1118822,
+            "high": 22.9,
+            "low": 21.31,
+            "volume": 671837,
             "amount": 0,
-            "timestamp": 1777996800000
+            "timestamp": 1778515200000
         },
-        "updatedAt": 1778076166287
+        "updatedAt": 1778571397151
     },
     "buypointDate": [
         "2025/08/18",
