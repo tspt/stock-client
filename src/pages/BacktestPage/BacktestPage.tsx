@@ -5,9 +5,9 @@
 
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import React from 'react';
-import { Layout, Card, Button, Space, Table, Progress, Select, DatePicker, Tag, Row, Col, Input, Typography, App, Drawer, Modal, Checkbox, InputNumber } from 'antd';
+import { Layout, Card, Button, Space, Table, Progress, Select, DatePicker, Tag, Row, Col, Input, Typography, App, Drawer, Modal, Checkbox, InputNumber, Dropdown, type MenuProps } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { ExperimentOutlined, ReloadOutlined, SearchOutlined, FilterOutlined, ClearOutlined, ExportOutlined, CopyOutlined } from '@ant-design/icons';
+import { ExperimentOutlined, ReloadOutlined, SearchOutlined, FilterOutlined, ClearOutlined, ExportOutlined, CopyOutlined, DownOutlined } from '@ant-design/icons';
 import VirtualList from 'rc-virtual-list';
 import { getStocksHistory, getSignalBacktestsByCode, clearAllSignalBacktests, batchSaveSignalBacktests, getAllSignalBacktests, getStockHistory } from '@/utils/storage/opportunityIndexedDB';
 import { getModelMetadata } from '@/utils/analysis/mlBuypointModel';
@@ -88,9 +88,9 @@ export function BacktestPage() {
   const [marketCapRange, setMarketCapRange] = useState<{ min?: number; max?: number }>({ ...OPPORTUNITY_DEFAULT_BASIC_FILTERS.marketCapRange });
   const [totalSharesRange, setTotalSharesRange] = useState<{ min?: number; max?: number }>({ ...OPPORTUNITY_DEFAULT_BASIC_FILTERS.totalSharesRange });
   const [timeRange, setTimeRange] = useState<number>(0);
-  const [minWinRate, setMinWinRate] = useState<number>(50); // 近3日胜率最低值
-  const [minWinRateDay1, setMinWinRateDay1] = useState<number>(50); // 近1日胜率最低值
-  const [minWinRateDay2, setMinWinRateDay2] = useState<number>(50); // 近2日胜率最低值
+  const [minWinRate, setMinWinRate] = useState<number>(0); // 近3日胜率最低值
+  const [minWinRateDay1, setMinWinRateDay1] = useState<number>(0); // 近1日胜率最低值
+  const [minWinRateDay2, setMinWinRateDay2] = useState<number>(0); // 近2日胜率最低值
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
   const [exportDrawerOpen, setExportDrawerOpen] = useState(false);
   const [exportingStock, setExportingStock] = useState<{ code: string; name: string } | null>(null);
@@ -101,6 +101,9 @@ export function BacktestPage() {
   const [dateInput, setDateInput] = useState(''); // 多行文本输入
   const [saving, setSaving] = useState(false);
   const [exportingLatest, setExportingLatest] = useState(false); // 导出最新信号状态
+  // 批量导出K线数据相关状态
+  const [batchExportModalOpen, setBatchExportModalOpen] = useState(false);
+  const [batchExporting, setBatchExporting] = useState(false);
   const workerRef = useRef<Worker | null>(null);
   const taskIdCounter = useRef(0);
   const listContainerRef = useRef<HTMLDivElement>(null);
@@ -691,6 +694,143 @@ export function BacktestPage() {
       setExportingLatest(false);
     }
   };
+
+  // 打开批量导出K线数据模态框
+  const handleOpenBatchExportModal = async () => {
+    setBatchExportModalOpen(true);
+    // 自动执行扫描
+    await handleScanStockDirectoryForBatchExport();
+  };
+
+  // 扫描股票数据目录获取最新股票列表（用于批量导出）
+  const handleScanStockDirectoryForBatchExport = async () => {
+    if (!window.electronAPI?.scanStockDataDirectory) {
+      message.error('扫描功能不可用');
+      return;
+    }
+
+    try {
+      setScanning(true);
+
+      const result = await window.electronAPI.scanStockDataDirectory();
+
+      if (result.success && result.stocks) {
+        // 更新配置（临时，仅用于本次导出）
+        updateStocksFromScan(result.stocks);
+
+        // 选中所有股票
+        setSelectedExportStocks(result.stocks.map((s: { code: string }) => s.code));
+      } else {
+        message.error('扫描失败: ' + (result.error || '未知错误'));
+      }
+    } catch (error) {
+      logger.error('扫描目录失败:', error);
+      message.error('扫描失败: ' + (error as Error).message);
+    } finally {
+      setScanning(false);
+    }
+  };
+
+  // 执行批量导出K线数据
+  const handleBatchExportKlineData = async () => {
+    if (selectedExportStocks.length === 0) {
+      message.warning('请至少选择一只股票');
+      return;
+    }
+
+    try {
+      setBatchExporting(true);
+      message.info(`正在准备导出 ${selectedExportStocks.length} 只股票的K线数据...`);
+
+      // 从 IndexedDB 获取所有选中股票的历史数据
+      const stocksData: Array<{
+        code: string;
+        name: string;
+        klineData: any[];
+        latestQuote?: any;
+        updatedAt?: number;
+      }> = [];
+
+      for (const code of selectedExportStocks) {
+        try {
+          const historyRecord = await getStockHistory(code);
+          if (historyRecord) {
+            stocksData.push({
+              code: historyRecord.code,
+              name: historyRecord.name,
+              klineData: historyRecord.dailyLines,
+              latestQuote: historyRecord.latestQuote,
+              updatedAt: historyRecord.updatedAt,
+            });
+          } else {
+            logger.warn(`[BacktestPage] 未找到股票 ${code} 的历史数据`);
+          }
+        } catch (error) {
+          logger.error(`[BacktestPage] 获取股票 ${code} 数据失败:`, error);
+        }
+      }
+
+      if (stocksData.length === 0) {
+        message.warning('选中的股票没有历史数据');
+        setBatchExporting(false);
+        return;
+      }
+
+      // 调用 Electron API 进行批量导出
+      if (window.electronAPI?.batchExportKlineData) {
+        const result = await window.electronAPI.batchExportKlineData(stocksData);
+
+        if (result.success) {
+          const { summary } = result;
+          if (summary) {
+            message.success(
+              `批量导出完成！\n总计: ${summary.total} 只\n成功: ${summary.success} 只\n失败: ${summary.fail} 只`
+            );
+          } else {
+            message.success('批量导出完成！');
+          }
+          setBatchExportModalOpen(false);
+        } else {
+          message.error('批量导出失败: ' + (result.error || '未知错误'));
+        }
+      } else {
+        message.error('批量导出功能不可用');
+      }
+    } catch (error) {
+      logger.error('批量导出失败:', error);
+      message.error('批量导出失败: ' + (error as Error).message);
+    } finally {
+      setBatchExporting(false);
+    }
+  };
+
+  // 导出下拉菜单项
+  const exportMenuItems: MenuProps['items'] = useMemo(
+    () => [
+      {
+        key: 'export-designated',
+        label: '导出指定股票',
+        icon: <ExportOutlined />,
+        onClick: handleOpenExportAllModal,
+        disabled: groupedResults.length === 0,
+      },
+      {
+        key: 'batch-export-kline',
+        label: '批量导出K线数据',
+        icon: <ExportOutlined />,
+        onClick: handleOpenBatchExportModal,
+      },
+      {
+        key: 'export-latest-signals',
+        label: '导出最新信号股票',
+        icon: <ExportOutlined />,
+        onClick: handleExportLatestSignals,
+        disabled: groupedResults.length === 0 || exportingLatest,
+      },
+    ],
+    [groupedResults.length, exportingLatest]
+  );
+
   const handleResetFilter = () => {
     setSelectedMarket([...OPPORTUNITY_DEFAULT_BASIC_FILTERS.selectedMarket]);
     setNameType('non_st');
@@ -1220,21 +1360,14 @@ export function BacktestPage() {
             <Button icon={<FilterOutlined />} onClick={() => setFilterDrawerOpen(true)}>
               筛选条件
             </Button>
-            <Button
-              icon={<ExportOutlined />}
-              onClick={handleOpenExportAllModal}
-              disabled={groupedResults.length === 0}
-            >
-              导出指定股票
-            </Button>
-            <Button
-              icon={<ExportOutlined />}
-              onClick={handleExportLatestSignals}
-              disabled={groupedResults.length === 0 || exportingLatest}
-              loading={exportingLatest}
-            >
-              导出最新信号股票
-            </Button>
+
+            {/* 导出下拉菜单 */}
+            <Dropdown menu={{ items: exportMenuItems }} placement="bottomRight">
+              <Button icon={<ExportOutlined />}>
+                导出 <DownOutlined style={{ fontSize: 10, marginLeft: 4 }} />
+              </Button>
+            </Dropdown>
+
             <Button
               type="primary"
               icon={<ExperimentOutlined />}
@@ -1843,6 +1976,65 @@ export function BacktestPage() {
           <div style={{ marginTop: 12 }}>
             <Text type="secondary" style={{ fontSize: 12 }}>
               提示：默认导出股票数据目录中的股票，可手动调整选择。数据将保存到 docs/回测优化/历史回测数据 目录，格式为JSON。
+            </Text>
+          </div>
+        </div>
+      </Modal>
+
+      {/* 批量导出K线数据模态框 */}
+      <Modal
+        title="批量导出K线数据"
+        open={batchExportModalOpen}
+        onCancel={() => setBatchExportModalOpen(false)}
+        onOk={handleBatchExportKlineData}
+        confirmLoading={batchExporting}
+        width={800}
+        okText="导出"
+        cancelText="取消"
+      >
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ marginBottom: 12 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+              <Text strong>选择股票 ({selectedExportStocks.length}/{DEFAULT_EXPORT_STOCKS.stocks.length})：</Text>
+              <Button
+                size="small"
+                onClick={toggleSelectAll}
+              >
+                {selectedExportStocks.length === DEFAULT_EXPORT_STOCKS.stocks.length ? '取消全选' : '全选'}
+              </Button>
+            </div>
+            <div style={{
+              maxHeight: 300,
+              overflow: 'auto',
+              border: '1px solid #d9d9d9',
+              borderRadius: 4,
+              padding: 8
+            }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 8 }}>
+                {DEFAULT_EXPORT_STOCKS.stocks.map(stock => (
+                  <div
+                    key={stock.code}
+                    style={{
+                      padding: '6px 8px',
+                      border: selectedExportStocks.includes(stock.code) ? '1px solid #1890ff' : '1px solid #d9d9d9',
+                      borderRadius: 4,
+                      cursor: 'pointer',
+                      backgroundColor: selectedExportStocks.includes(stock.code) ? '#e6f7ff' : 'transparent',
+                      fontSize: 12
+                    }}
+                    onClick={() => toggleStockSelection(stock.code)}
+                  >
+                    <div style={{ fontWeight: 500 }}>{stock.name}</div>
+                    <div style={{ color: '#8c8c8c', fontSize: 11 }}>{stock.code}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div style={{ marginTop: 12 }}>
+            <Text type="secondary" style={{ fontSize: 12 }}>
+              提示：默认导出股票数据目录中的股票，可手动调整选择。如果目标文件中 buypointDate 不为空数组，则不会覆盖该字段，只更新 data 字段。数据将保存到 docs/回测优化/股票数据 目录。
             </Text>
           </div>
         </div>

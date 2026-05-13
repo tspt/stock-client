@@ -742,6 +742,89 @@ function setupIpcHandlers() {
             return [];
         }
     });
+    /**
+     * 批量导出K线数据
+     */
+    ipcMain.handle('batch-export-kline-data', async (_event, stocksData) => {
+        try {
+            mainLog(`[主进程] 开始批量导出 ${stocksData.length} 只股票的K线数据`);
+            let stockDataDir;
+            if (isDev) {
+                stockDataDir = join(app.getAppPath(), 'docs', '回测优化', '股票数据');
+            }
+            else {
+                const exeDir = join(app.getPath('exe'), '..');
+                stockDataDir = join(exeDir, 'docs', '回测优化', '股票数据');
+            }
+            // 确保目录存在
+            if (!existsSync(stockDataDir)) {
+                mkdirSync(stockDataDir, { recursive: true });
+                mainLog(`[主进程] 创建目录: ${stockDataDir}`);
+            }
+            const results = [];
+            for (const stockData of stocksData) {
+                try {
+                    const filePath = join(stockDataDir, `${stockData.name}.json`);
+                    mainLog(`[主进程] 处理股票: ${stockData.name} (${stockData.code})`);
+                    // 检查文件是否存在
+                    let existingBuypointDate = [];
+                    if (existsSync(filePath)) {
+                        try {
+                            const content = readFileSync(filePath, 'utf-8');
+                            const existingData = JSON.parse(content);
+                            mainLog(`[主进程] 找到现有文件: ${filePath}`);
+                            // 如果已有数据且 buypointDate 不为空数组，则保留原有的 buypointDate
+                            if (existingData.buypointDate && existingData.buypointDate.length > 0) {
+                                existingBuypointDate = existingData.buypointDate;
+                                mainLog(`[主进程] 保留原有的 buypointDate (${existingBuypointDate.length} 个日期)`);
+                            }
+                        }
+                        catch (parseError) {
+                            mainLog(`[主进程] 解析现有文件失败: ${parseError}`, true);
+                        }
+                    }
+                    // 构建新的数据结构
+                    const newData = {
+                        data: {
+                            code: stockData.code,
+                            name: stockData.name,
+                            dailyLines: stockData.klineData,
+                            latestQuote: stockData.latestQuote || null,
+                            updatedAt: stockData.updatedAt || Date.now(),
+                        },
+                        buypointDate: existingBuypointDate,
+                    };
+                    const jsonContent = JSON.stringify(newData, null, 4);
+                    writeFileSync(filePath, jsonContent, 'utf-8');
+                    mainLog(`[主进程] 成功保存: ${filePath}`);
+                    results.push({ code: stockData.code, name: stockData.name, success: true });
+                }
+                catch (error) {
+                    const errorMessage = error instanceof Error ? error.message : String(error);
+                    mainLog(`[主进程] 导出股票 ${stockData.name} 失败: ${errorMessage}`, true);
+                    results.push({
+                        code: stockData.code,
+                        name: stockData.name,
+                        success: false,
+                        error: errorMessage,
+                    });
+                }
+            }
+            const successCount = results.filter((r) => r.success).length;
+            const failCount = results.filter((r) => !r.success).length;
+            mainLog(`[主进程] 批量导出完成: 成功 ${successCount}, 失败 ${failCount}`);
+            return {
+                success: true,
+                results,
+                summary: { total: stocksData.length, success: successCount, fail: failCount },
+            };
+        }
+        catch (error) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            mainLog(`[主进程] 批量导出失败: ${errorMessage}`, true);
+            return { success: false, error: errorMessage, results: [] };
+        }
+    });
 }
 // 应用准备就绪
 app.whenReady().then(async () => {

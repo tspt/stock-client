@@ -62,6 +62,22 @@ export interface ElectronAPI {
   /** 读取股票JSON文件中的日期买点 */
   readStockBuyPoints: (filePath: string) => Promise<string[]>;
 
+  /** 批量导出K线数据 */
+  batchExportKlineData: (
+    stocksData: Array<{
+      code: string;
+      name: string;
+      klineData: any[];
+      latestQuote?: any;
+      updatedAt?: number;
+    }>
+  ) => Promise<{
+    success: boolean;
+    results?: Array<{ code: string; name: string; success: boolean; error?: string }>;
+    summary?: { total: number; success: number; fail: number };
+    error?: string;
+  }>;
+
   /** 监听Cookie获取进度 */
   onCookieFetchProgress: (
     callback: (progress: {

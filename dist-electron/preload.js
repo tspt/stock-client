@@ -56,6 +56,10 @@ try {
         readStockBuyPoints: (filePath) => {
             return electron_1.ipcRenderer.invoke('read-stock-buy-points', filePath);
         },
+        // 批量导出K线数据
+        batchExportKlineData: (stocksData) => {
+            return electron_1.ipcRenderer.invoke('batch-export-kline-data', stocksData);
+        },
         // 监听Cookie获取进度
         onCookieFetchProgress: (callback) => {
             const listener = (_event, progress) => callback(progress);

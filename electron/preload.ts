@@ -77,6 +77,19 @@ try {
       return ipcRenderer.invoke('read-stock-buy-points', filePath);
     },
 
+    // 批量导出K线数据
+    batchExportKlineData: (
+      stocksData: Array<{
+        code: string;
+        name: string;
+        klineData: any[];
+        latestQuote?: any;
+        updatedAt?: number;
+      }>
+    ) => {
+      return ipcRenderer.invoke('batch-export-kline-data', stocksData);
+    },
+
     // 监听Cookie获取进度
     onCookieFetchProgress: (callback: (progress: any) => void) => {
       const listener = (_event: any, progress: any) => callback(progress);
