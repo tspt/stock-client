@@ -1,0 +1,101 @@
+/* 添加到自选股弹窗样式 */
+
+.modal {
+  :global(.ant-modal-body) {
+    padding: 16px;
+  }
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.selectAllBtn {
+  padding: 0;
+  height: auto;
+}
+
+.stockGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 8px 0;
+}
+
+.stockCard {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  background-color: #fff;
+
+  &:hover {
+    border-color: #1890ff;
+    background-color: #e6f7ff;
+  }
+
+  &.selected {
+    border-color: #1890ff;
+    background-color: #e6f7ff;
+  }
+}
+
+.checkbox {
+  flex-shrink: 0;
+}
+
+.stockInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.stockName {
+  font-size: 13px;
+  font-weight: 500;
+  color: #262626;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.stockCode {
+  font-size: 11px;
+  color: #8c8c8c;
+  margin-top: 2px;
+}
+
+.groupSelector {
+  padding-top: 8px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.groupLabel {
+  font-size: 13px;
+  color: #595959;
+  margin-bottom: 8px;
+}
+
+.tips {
+  font-size: 12px;
+  color: #8c8c8c;
+  padding: 8px 12px;
+  background-color: #fafafa;
+  border-radius: 4px;
+  line-height: 1.5;
+}

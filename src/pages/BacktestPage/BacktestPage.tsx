@@ -4,6 +4,7 @@
  */
 
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
+import React from 'react';
 import { Layout, Card, Button, Space, Table, Progress, Select, DatePicker, Tag, Row, Col, Input, Typography, App, Drawer, Modal, Checkbox, InputNumber } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { ExperimentOutlined, ReloadOutlined, SearchOutlined, FilterOutlined, ClearOutlined, ExportOutlined, CopyOutlined } from '@ant-design/icons';
@@ -20,6 +21,44 @@ import styles from './BacktestPage.module.css';
 const { Header, Content } = Layout;
 const { Text } = Typography;
 const { RangePicker } = DatePicker;
+
+// Memoized 列表项组件，防止不必要的重渲染
+const StockListItem = React.memo(React.forwardRef<HTMLDivElement, {
+  item: any;
+  isSelected: boolean;
+  onSelect: (code: string) => void;
+  onExport: (code: string, name: string) => void;
+  style?: React.CSSProperties;
+}>(({ item, isSelected, onSelect, onExport, style }, ref) => {
+  return (
+    <div
+      ref={ref}
+      style={style}
+      className={`${styles.stockListItem} ${isSelected ? styles.selected : ''}`}
+      onClick={() => onSelect(item.code)}
+    >
+      <div className={styles.stockItemContent}>
+        <div className={styles.stockInfo}>
+          <div className={styles.stockName}>{item.name}</div>
+          <div className={styles.stockCode}>{item.code}</div>
+        </div>
+        <Tag color="blue" className={styles.signalCount}>{item.signals.length}个信号</Tag>
+      </div>
+      <Button
+        size="small"
+        icon={<CopyOutlined />}
+        onClick={(e) => {
+          e.stopPropagation();
+          onExport(item.code, item.name);
+        }}
+      >
+        复制
+      </Button>
+    </div>
+  );
+}));
+
+StockListItem.displayName = 'StockListItem';
 
 export function BacktestPage() {
   const { message } = App.useApp();
@@ -160,8 +199,19 @@ export function BacktestPage() {
 
   // 页面加载时从 IndexedDB 读取已保存的回测结果
   useEffect(() => {
-    loadSavedBacktestResults();
-    loadSectorOptions();
+    // 使用 Promise.all 并行加载，但确保状态更新的顺序性
+    const initializeData = async () => {
+      try {
+        await Promise.all([
+          loadSavedBacktestResults(),
+          loadSectorOptions()
+        ]);
+      } catch (error) {
+        logger.error('初始化数据失败:', error);
+      }
+    };
+
+    initializeData();
   }, []);
 
   // 加载板块选项数据
@@ -199,10 +249,9 @@ export function BacktestPage() {
         setResults(allSignals);
         const grouped = groupSignalsByStock(allSignals);
         setGroupedResults(grouped);
-        // 默认选中第一个有信号的股票
-        if (grouped.length > 0) {
-          setSelectedStockCode(grouped[0].code);
-        }
+
+        // 不在这里设置 selectedStockCode，让 useEffect 统一处理
+        // 这样可以避免与筛选逻辑冲突导致的二次渲染
       }
     } catch (error) {
       logger.error('加载保存的回测结果失败:', error);
@@ -268,10 +317,7 @@ export function BacktestPage() {
             // 按股票分组
             const grouped = groupSignalsByStock(allSignals);
             setGroupedResults(grouped);
-            // 默认选中第一个有信号的股票
-            if (grouped.length > 0) {
-              setSelectedStockCode(grouped[0].code);
-            }
+            // 不在这里设置 selectedStockCode，让 useEffect 统一处理
             setBacktesting(false);
             workerRef.current?.removeEventListener('message', onMessage);
 
@@ -716,71 +762,51 @@ export function BacktestPage() {
       day20: { total: 0, success: 0, rate: 0, incompleteCount: 0 },
     };
 
+    // 优化：只遍历一次信号数组，同时计算所有时间段的统计
     signals.forEach((signal: any) => {
-      // 1日收益
-      if (signal.returns.day1) {
-        stats.day1.total++;
-        if (signal.returns.day1.actualDays < 1) {
-          stats.day1.incompleteCount++;
+      const returns = signal.returns || {};
+
+      // 处理所有时间段的数据
+      const periods = [
+        { key: 'day1', days: 1 },
+        { key: 'day2', days: 2 },
+        { key: 'day3', days: 3 },
+        { key: 'day5', days: 5 },
+        { key: 'day10', days: 10 },
+        { key: 'day20', days: 20 }
+      ];
+
+      periods.forEach(({ key, days }) => {
+        const periodData = returns[key];
+        if (periodData) {
+          stats[key as keyof typeof stats].total++;
+          if (periodData.actualDays < days) {
+            stats[key as keyof typeof stats].incompleteCount++;
+          }
+          if (periodData.value > 0) {
+            stats[key as keyof typeof stats].success++;
+          }
         }
-        if (signal.returns.day1.value > 0) stats.day1.success++;
-      }
-      // 2日收益
-      if (signal.returns.day2) {
-        stats.day2.total++;
-        if (signal.returns.day2.actualDays < 2) {
-          stats.day2.incompleteCount++;
-        }
-        if (signal.returns.day2.value > 0) stats.day2.success++;
-      }
-      // 3日收益
-      if (signal.returns.day3) {
-        stats.day3.total++;
-        if (signal.returns.day3.actualDays < 3) {
-          stats.day3.incompleteCount++;
-        }
-        if (signal.returns.day3.value > 0) stats.day3.success++;
-      }
-      // 5日收益
-      if (signal.returns.day5) {
-        stats.day5.total++;
-        if (signal.returns.day5.actualDays < 5) {
-          stats.day5.incompleteCount++;
-        }
-        if (signal.returns.day5.value > 0) stats.day5.success++;
-      }
-      // 两周（约10天）收益
-      if (signal.returns.day10) {
-        stats.day10.total++;
-        if (signal.returns.day10.actualDays < 10) {
-          stats.day10.incompleteCount++;
-        }
-        if (signal.returns.day10.value > 0) stats.day10.success++;
-      }
-      // 一个月（约20天）收益
-      if (signal.returns.day20) {
-        stats.day20.total++;
-        if (signal.returns.day20.actualDays < 20) {
-          stats.day20.incompleteCount++;
-        }
-        if (signal.returns.day20.value > 0) stats.day20.success++;
-      }
+      });
     });
 
     // 计算胜率
-    stats.day1.rate = stats.day1.total > 0 ? (stats.day1.success / stats.day1.total) * 100 : 0;
-    stats.day2.rate = stats.day2.total > 0 ? (stats.day2.success / stats.day2.total) * 100 : 0;
-    stats.day3.rate = stats.day3.total > 0 ? (stats.day3.success / stats.day3.total) * 100 : 0;
-    stats.day5.rate = stats.day5.total > 0 ? (stats.day5.success / stats.day5.total) * 100 : 0;
-    stats.day10.rate = stats.day10.total > 0 ? (stats.day10.success / stats.day10.total) * 100 : 0;
-    stats.day20.rate = stats.day20.total > 0 ? (stats.day20.success / stats.day20.total) * 100 : 0;
+    Object.keys(stats).forEach(key => {
+      const periodStats = stats[key as keyof typeof stats];
+      periodStats.rate = periodStats.total > 0 ? (periodStats.success / periodStats.total) * 100 : 0;
+    });
 
     return stats;
   }, [selectedStockCode, groupedResults]);
 
   // 过滤股票列表（使用 useMemo 优化性能）
   const filteredStockList = useMemo(() => {
-    let filtered = groupedResults;
+    // 如果没有数据，直接返回空数组
+    if (!groupedResults || groupedResults.length === 0) {
+      return [];
+    }
+
+    let filtered = [...groupedResults]; // 创建副本以避免修改原数组
 
     // 1. 按市场类型过滤（多选）
     if (selectedMarket.length > 0) {
@@ -986,19 +1012,65 @@ export function BacktestPage() {
     normalizeStockCode,
   ]);
 
+  // 使用 ref 跟踪上一次的选中状态，避免不必要的更新
+  const prevFilteredStockListRef = useRef<any[]>([]);
+  const prevSelectedStockCodeRef = useRef<string | null>(null);
+  const selectionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isInitialLoadRef = useRef(true); // 标记是否是首次加载
+
   // 当筛选结果变化时，如果当前选中的股票不在结果中，自动选中第一个
   useEffect(() => {
-    if (filteredStockList.length > 0) {
-      // 如果当前选中的股票不在筛选结果中，选中第一个
-      const isCurrentSelected = filteredStockList.some(item => item.code === selectedStockCode);
-      if (!isCurrentSelected) {
-        setSelectedStockCode(filteredStockList[0].code);
-      }
-    } else {
-      // 如果没有筛选结果，清空选中
-      setSelectedStockCode(null);
+    // 清除之前的定时器
+    if (selectionTimerRef.current) {
+      clearTimeout(selectionTimerRef.current);
     }
-  }, [filteredStockList, selectedStockCode]);
+
+    // 如果是首次加载且有数据，立即选中第一个，不等待防抖
+    if (isInitialLoadRef.current && filteredStockList.length > 0 && !selectedStockCode) {
+      setSelectedStockCode(filteredStockList[0].code);
+      isInitialLoadRef.current = false;
+      prevFilteredStockListRef.current = filteredStockList;
+      prevSelectedStockCodeRef.current = filteredStockList[0].code;
+      return;
+    }
+
+    // 非首次加载，使用防抖
+    selectionTimerRef.current = setTimeout(() => {
+      // 检查是否有实际变化，避免不必要的更新
+      const hasListChanged = filteredStockList.length !== prevFilteredStockListRef.current.length ||
+        JSON.stringify(filteredStockList.map(item => item.code)) !==
+        JSON.stringify(prevFilteredStockListRef.current.map(item => item.code));
+
+      const hasSelectionChanged = selectedStockCode !== prevSelectedStockCodeRef.current;
+
+      if (hasListChanged || hasSelectionChanged) {
+        if (filteredStockList.length > 0) {
+          // 如果当前选中的股票不在筛选结果中，选中第一个
+          const isCurrentSelected = filteredStockList.some(item => item.code === selectedStockCode);
+          if (!isCurrentSelected) {
+            setSelectedStockCode(filteredStockList[0].code);
+          }
+        } else {
+          // 如果没有筛选结果，清空选中
+          if (selectedStockCode !== null) {
+            setSelectedStockCode(null);
+          }
+        }
+
+        // 更新 refs
+        prevFilteredStockListRef.current = filteredStockList;
+        prevSelectedStockCodeRef.current = selectedStockCode;
+      }
+    }, 100); // 100ms 防抖延迟
+
+    // 清理函数
+    return () => {
+      if (selectionTimerRef.current) {
+        clearTimeout(selectionTimerRef.current);
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filteredStockList]);
 
   // 表格列定义
   const columns: ColumnsType<any> = [
@@ -1251,32 +1323,18 @@ export function BacktestPage() {
                     height={listHeight}
                     itemHeight={64}
                     itemKey="code"
+                    // 添加稳定性优化，防止不必要的重渲染
+                    style={{ outline: 'none' }}
                   >
                     {(item, index, { style }) => (
-                      <div
+                      <StockListItem
                         key={item.code}
+                        item={item}
+                        isSelected={selectedStockCode === item.code}
+                        onSelect={setSelectedStockCode}
+                        onExport={handleOpenExportDrawer}
                         style={style}
-                        className={`${styles.stockListItem} ${selectedStockCode === item.code ? styles.selected : ''}`}
-                        onClick={() => setSelectedStockCode(item.code)}
-                      >
-                        <div className={styles.stockItemContent}>
-                          <div className={styles.stockInfo}>
-                            <div className={styles.stockName}>{item.name}</div>
-                            <div className={styles.stockCode}>{item.code}</div>
-                          </div>
-                          <Tag color="blue" className={styles.signalCount}>{item.signals.length}个信号</Tag>
-                        </div>
-                        <Button
-                          size="small"
-                          icon={<CopyOutlined />}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleOpenExportDrawer(item.code, item.name);
-                          }}
-                        >
-                          复制
-                        </Button>
-                      </div>
+                      />
                     )}
                   </VirtualList>
                 )}

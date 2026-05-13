@@ -24,6 +24,7 @@ import {
 import { OpportunityTable } from '@/components/OpportunityTable/OpportunityTable';
 import { ColumnSettings } from '@/components/ColumnSettings/ColumnSettings';
 import { AIAnalysisModal } from '@/components/AIAnalysisModal';
+import { AddStocksToWatchListModal } from '@/components/AddStocksToWatchListModal/AddStocksToWatchListModal';
 import { exportOpportunityToExcel } from '@/utils/export/opportunityExportUtils';
 import { exportStockNamesToExcel, exportStockNamesToPng } from '@/utils/export/stockNamesExportUtils';
 import { detectTradingSignal } from '@/utils/analysis/signalDetector';
@@ -322,8 +323,86 @@ export function OpportunityPage() {
   const [filterDiagnosticsDrawerOpen, setFilterDiagnosticsDrawerOpen] = useState(false); // 筛选诊断抽屉状态
   const [errorExpanded, setErrorExpanded] = useState(false); // 失败详情展开状态
 
-  // AI分析版本选择
+  // AI分析版本选择（切换时自动刷新）
   const [aiVersion, setAiVersion] = useState<'v1' | 'v2'>('v1'); // 默认使用v1.0原始版
+  const [showAddToWatchListModal, setShowAddToWatchListModal] = useState(false);
+  const [aiRefreshLoading, setAiRefreshLoading] = useState(false);
+
+  // AI版本切换时自动执行刷新
+  const handleAiVersionChange = async (version: 'v1' | 'v2') => {
+    if (analysisData.length === 0) {
+      message.warning('请先执行一键分析');
+      return;
+    }
+
+    try {
+      setAiRefreshLoading(true);
+      message.loading({ content: `正在切换到${version === 'v2' ? 'v2.0优化版' : 'v1.0原始版'}...`, key: 'aiVersionChange' });
+
+      logger.info(`切换AI版本到${version}，总股票数: ${analysisData.length}`);
+
+      // 清空AI缓存
+      clearAICache();
+
+      // 根据版本选择导入对应的AI分析模块（使用相对路径）
+      let performAIAnalysis: any;
+      if (version === 'v2') {
+        const module = await import('../../services/opportunity/ai-v2.0');
+        performAIAnalysis = module.performAIAnalysis;
+      } else {
+        const module = await import('../../services/opportunity/ai');
+        performAIAnalysis = module.performAIAnalysis;
+      }
+
+      // 批量重新计算AI分析
+      let updatedCount = 0;
+      let skippedCount = 0;
+      const updatedData = analysisData.map(stock => {
+        const klineData = klineDataCache.get(stock.code);
+        if (klineData && klineData.length >= 30) {
+          try {
+            // 构建 allStockData Map（用于相似形态匹配）
+            const allStockData = new Map<string, { code: string; name: string; klineData: typeof klineData }>();
+            allStockData.set(stock.code, { code: stock.code, name: stock.name, klineData });
+
+            // 重新计算AI分析
+            const aiAnalysis = performAIAnalysis(klineData, stock, allStockData);
+            updatedCount++;
+            return {
+              ...stock,
+              aiAnalysis,
+              analysisTimestamp: Date.now(),
+            };
+          } catch (error) {
+            logger.warn(`[${stock.code}] AI分析刷新失败:`, error);
+            return stock; // 失败则保留原数据
+          }
+        } else {
+          skippedCount++;
+          logger.debug(`[${stock.code}] 跳过：K线数据不足 (${klineData?.length || 0}条)`);
+        }
+        return stock;
+      });
+
+      logger.info(`AI分析刷新完成：更新${updatedCount}只，跳过${skippedCount}只`);
+
+      // 更新store中的分析数据
+      useOpportunityStore.setState({ analysisData: updatedData });
+
+      // 更新版本状态
+      setAiVersion(version);
+
+      message.success({
+        content: `已切换到${version === 'v2' ? 'v2.0优化版' : 'v1.0原始版'}，共更新 ${updatedCount} 只股票`,
+        key: 'aiVersionChange'
+      });
+    } catch (error) {
+      logger.error('切换AI版本失败:', error);
+      message.error({ content: '切换AI版本失败', key: 'aiVersionChange' });
+    } finally {
+      setAiRefreshLoading(false);
+    }
+  };
 
   const [sharpMoveFilterEnabled, setSharpMoveFilterEnabled] = useState<boolean>(
     INITIAL_FILTER_STATE.sharpMoveFilterEnabled
@@ -999,6 +1078,11 @@ export function OpportunityPage() {
     });
   }, [allStocks, selectedMarket, nameType, industrySectors, conceptSectors, industrySectorInvert, conceptSectorInvert]);
 
+  // 处理添加到自选股
+  const handleAddToWatchList = () => {
+    setShowAddToWatchListModal(true);
+  };
+
   const filterSnapshot = useMemo<OpportunityFilterSnapshot>(
     () => ({
       priceRange,
@@ -1310,76 +1394,6 @@ export function OpportunityPage() {
     await startAnalysis(currentPeriod, filteredStocks, currentCount);
   };
 
-  // 仅刷新AI分析（不重新获取K线数据）
-  const handleRefreshAI = async () => {
-    if (analysisData.length === 0) {
-      message.warning('请先执行一键分析');
-      return;
-    }
-
-    try {
-      message.loading({ content: '正在刷新AI分析...', key: 'refreshAI' });
-
-      logger.info(`开始刷新AI分析，总股票数: ${analysisData.length}`);
-
-      // 清空AI缓存
-      clearAICache();
-
-      // 根据版本选择导入对应的AI分析模块（使用相对路径）
-      let performAIAnalysis: any;
-      if (aiVersion === 'v2') {
-        const module = await import('../../services/opportunity/ai-v2.0');
-        performAIAnalysis = module.performAIAnalysis;
-      } else {
-        const module = await import('../../services/opportunity/ai');
-        performAIAnalysis = module.performAIAnalysis;
-      }
-
-      // 批量重新计算AI分析
-      let updatedCount = 0;
-      let skippedCount = 0;
-      const updatedData = analysisData.map(stock => {
-        const klineData = klineDataCache.get(stock.code);
-        if (klineData && klineData.length >= 30) {
-          try {
-            // 构建 allStockData Map（用于相似形态匹配）
-            const allStockData = new Map<string, { code: string; name: string; klineData: typeof klineData }>();
-            allStockData.set(stock.code, { code: stock.code, name: stock.name, klineData });
-
-            // 重新计算AI分析
-            const aiAnalysis = performAIAnalysis(klineData, stock, allStockData);
-            updatedCount++;
-            return {
-              ...stock,
-              aiAnalysis,
-              analysisTimestamp: Date.now(),
-            };
-          } catch (error) {
-            logger.warn(`[${stock.code}] AI分析刷新失败:`, error);
-            return stock; // 失败则保留原数据
-          }
-        } else {
-          skippedCount++;
-          logger.debug(`[${stock.code}] 跳过：K线数据不足 (${klineData?.length || 0}条)`);
-        }
-        return stock;
-      });
-
-      logger.info(`AI分析刷新完成：更新${updatedCount}只，跳过${skippedCount}只`);
-
-      // 更新store中的分析数据
-      useOpportunityStore.setState({ analysisData: updatedData });
-
-      message.success({
-        content: `AI分析已刷新（${aiVersion === 'v2' ? 'v2.0优化版' : 'v1.0原始版'}），共更新 ${updatedCount} 只股票`,
-        key: 'refreshAI'
-      });
-    } catch (error) {
-      logger.error('刷新AI分析失败:', error);
-      message.error({ content: '刷新AI分析失败', key: 'refreshAI' });
-    }
-  };
-
   const handleCancel = () => {
     cancelAnalysis();
     message.info('分析已取消');
@@ -1688,25 +1702,6 @@ export function OpportunityPage() {
           >
             一键分析
           </Button>
-          <Button
-            icon={<ReloadOutlined />}
-            onClick={handleRefreshAI}
-            disabled={loading || analysisData.length === 0}
-            title="仅重新计算AI分析，速度更快"
-          >
-            刷新AI
-          </Button>
-          <Select
-            value={aiVersion}
-            onChange={(value) => setAiVersion(value)}
-            style={{ width: 120 }}
-            options={[
-              { label: 'v1.0 原始版', value: 'v1' },
-              { label: 'v2.0 优化版', value: 'v2' },
-            ]}
-            disabled={loading}
-            title="选择AI分析算法版本"
-          />
           <Button icon={<ClearOutlined />} onClick={handleResetQueryBar} disabled={loading}>
             重置
           </Button>
@@ -1715,6 +1710,47 @@ export function OpportunityPage() {
               取消
             </Button>
           )}
+          <Select
+            value={aiVersion}
+            onChange={handleAiVersionChange}
+            style={{ width: 120 }}
+            options={[
+              { label: 'v1.0 原始版', value: 'v1' },
+              { label: 'v2.0 优化版', value: 'v2' },
+            ]}
+            disabled={loading || aiRefreshLoading || analysisData.length === 0}
+            title="切换AI分析算法版本（自动刷新）"
+          />
+          <Dropdown
+            menu={{
+              items: [
+                {
+                  key: 'addToWatchList',
+                  label: '添加到自选股',
+                  icon: <DatabaseOutlined />,
+                  disabled: loading || filteredAnalysisData.length === 0,
+                },
+                { type: 'divider' },
+                {
+                  key: 'addToRecord',
+                  label: '添加到记录',
+                  icon: <OrderedListOutlined />,
+                  disabled: loading || filteredAnalysisData.length === 0,
+                },
+              ],
+              onClick: ({ key }) => {
+                if (key === 'addToWatchList') {
+                  handleAddToWatchList();
+                } else if (key === 'addToRecord') {
+                  handleAddToRecord();
+                }
+              },
+            }}
+          >
+            <Button icon={<OrderedListOutlined />}>
+              添加到 <DownOutlined />
+            </Button>
+          </Dropdown>
           <Dropdown
             menu={{
               items: [
@@ -1740,13 +1776,6 @@ export function OpportunityPage() {
               导出/设置 <DownOutlined />
             </Button>
           </Dropdown>
-          <Button
-            icon={<DatabaseOutlined />}
-            onClick={handleAddToRecord}
-            disabled={loading || filteredAnalysisData.length === 0}
-          >
-            添加到记录
-          </Button>
           <Button
             icon={<FilterOutlined />}
             onClick={() => setFilterDrawerOpen(true)}
@@ -2154,6 +2183,12 @@ export function OpportunityPage() {
         open={filterDiagnosticsDrawerOpen}
         onClose={() => setFilterDiagnosticsDrawerOpen(false)}
         skipped={filterSkippedItems}
+      />
+
+      <AddStocksToWatchListModal
+        visible={showAddToWatchListModal}
+        stocks={filteredAnalysisData}
+        onClose={() => setShowAddToWatchListModal(false)}
       />
     </Layout >
   );
