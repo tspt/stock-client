@@ -90,6 +90,11 @@ try {
       return ipcRenderer.invoke('batch-export-kline-data', stocksData);
     },
 
+    // 分批保存回测信号数据
+    batchSaveBacktestSignals: (batches: Array<{ filename: string; data: any }>) => {
+      return ipcRenderer.invoke('batch-save-backtest-signals', batches);
+    },
+
     // 监听Cookie获取进度
     onCookieFetchProgress: (callback: (progress: any) => void) => {
       const listener = (_event: any, progress: any) => callback(progress);

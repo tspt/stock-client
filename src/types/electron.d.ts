@@ -78,6 +78,14 @@ export interface ElectronAPI {
     error?: string;
   }>;
 
+  /** 分批保存回测信号数据 */
+  batchSaveBacktestSignals: (batches: Array<{ filename: string; data: any }>) => Promise<{
+    success: boolean;
+    results?: Array<{ filename: string; success: boolean; error?: string }>;
+    summary?: { total: number; success: number; fail: number };
+    error?: string;
+  }>;
+
   /** 监听Cookie获取进度 */
   onCookieFetchProgress: (
     callback: (progress: {

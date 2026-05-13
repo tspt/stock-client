@@ -101,6 +101,8 @@ export function BacktestPage() {
   const [dateInput, setDateInput] = useState(''); // 多行文本输入
   const [saving, setSaving] = useState(false);
   const [exportingLatest, setExportingLatest] = useState(false); // 导出最新信号状态
+  const [exportingFiltered, setExportingFiltered] = useState(false); // 导出过滤后股票状态
+  const [exportProgress, setExportProgress] = useState({ current: 0, total: 0 }); // 导出进度
   // 批量导出K线数据相关状态
   const [batchExportModalOpen, setBatchExportModalOpen] = useState(false);
   const [batchExporting, setBatchExporting] = useState(false);
@@ -804,9 +806,155 @@ export function BacktestPage() {
     }
   };
 
+  // 导出过滤后的回测信号和K线数据（整合为一个按钮）
+  const handleExportFilteredData = async () => {
+    if (filteredStockList.length === 0) {
+      message.warning('没有可导出的股票');
+      return;
+    }
+
+    try {
+      setExportingFiltered(true);
+      setExportProgress({ current: 0, total: 0 });
+
+      const totalStocks = filteredStockList.length;
+      message.info(`正在准备导出 ${totalStocks} 只股票的数据...`);
+
+      // 并行获取回测信号和K线数据
+      const [allResults, stocksData] = await Promise.all([
+        getAllSignalBacktests(),
+        (async () => {
+          const data: Array<{
+            code: string;
+            name: string;
+            klineData: any[];
+            latestQuote?: any;
+            updatedAt?: number;
+          }> = [];
+
+          for (let i = 0; i < filteredStockList.length; i++) {
+            const stock = filteredStockList[i];
+            try {
+              const historyRecord = await getStockHistory(stock.code);
+              if (historyRecord) {
+                data.push({
+                  code: historyRecord.code,
+                  name: historyRecord.name,
+                  klineData: historyRecord.dailyLines,
+                  latestQuote: historyRecord.latestQuote,
+                  updatedAt: historyRecord.updatedAt,
+                });
+              }
+              // 更新进度：获取数据阶段
+              setExportProgress({ current: Math.floor((i + 1) / totalStocks * 30), total: 100 });
+            } catch (error) {
+              logger.error(`[BacktestPage] 获取股票 ${stock.code} 数据失败:`, error);
+            }
+          }
+          return data;
+        })()
+      ]);
+
+      // 过滤出当前筛选的股票回测信号
+      const filteredCodes = new Set(filteredStockList.map(stock => stock.code));
+      const filteredResults = allResults.filter(result => filteredCodes.has(result.code));
+
+      if (filteredResults.length === 0 && stocksData.length === 0) {
+        message.warning('筛选后的股票没有数据');
+        setExportingFiltered(false);
+        setExportProgress({ current: 0, total: 0 });
+        return;
+      }
+
+      // 1. 导出回测信号（分批）
+      let signalFilesCount = 0;
+      if (filteredResults.length > 0) {
+        const BATCH_SIZE = 100;
+        const batches: Array<{ filename: string; data: any }> = [];
+        const now = new Date();
+        const timestamp = now.toISOString().replace(/[:.]/g, '-').slice(0, 19);
+
+        for (let i = 0; i < filteredResults.length; i += BATCH_SIZE) {
+          const batch = filteredResults.slice(i, i + BATCH_SIZE);
+          const batchNumber = Math.floor(i / BATCH_SIZE) + 1;
+          const totalBatches = Math.ceil(filteredResults.length / BATCH_SIZE);
+
+          const batchData = {
+            exportTime: now.toISOString(),
+            format: 'json',
+            batchInfo: {
+              currentBatch: batchNumber,
+              totalBatches,
+              stocksInBatch: batch.length,
+            },
+            totalStocks: batch.length,
+            totalSignals: batch.reduce((sum, item) => sum + (item.signals?.length || 0), 0),
+            data: batch,
+          };
+
+          const filename = `backtest_filtered_${timestamp}_batch_${String(batchNumber).padStart(3, '0')}.json`;
+          batches.push({ filename, data: batchData });
+        }
+
+        if (window.electronAPI?.batchSaveBacktestSignals) {
+          // 模拟分批保存进度
+          const totalSignalBatches = batches.length;
+          for (let i = 0; i < totalSignalBatches; i++) {
+            const progress = 30 + Math.floor((i + 1) / totalSignalBatches * 35);
+            setExportProgress({ current: progress, total: 100 });
+            await new Promise(resolve => setTimeout(resolve, 50)); // 短暂延迟以显示进度
+          }
+
+          const signalResult = await window.electronAPI.batchSaveBacktestSignals(batches);
+          if (signalResult.success && signalResult.summary) {
+            signalFilesCount = signalResult.summary.success;
+          }
+        }
+      }
+
+      // 2. 导出K线数据
+      let klineStocksCount = 0;
+      if (stocksData.length > 0) {
+        if (window.electronAPI?.batchExportKlineData) {
+          // 模拟K线数据导出进度
+          const totalKlineStocks = stocksData.length;
+          for (let i = 0; i < totalKlineStocks; i++) {
+            const progress = 65 + Math.floor((i + 1) / totalKlineStocks * 35);
+            setExportProgress({ current: progress, total: 100 });
+            await new Promise(resolve => setTimeout(resolve, 10)); // 短暂延迟以显示进度
+          }
+
+          const klineResult = await window.electronAPI.batchExportKlineData(stocksData);
+          if (klineResult.success && klineResult.summary) {
+            klineStocksCount = klineResult.summary.success;
+          }
+        }
+      }
+
+      setExportProgress({ current: 100, total: 100 });
+      message.success(
+        `全部数据导出完成！\n回测信号: ${signalFilesCount} 个文件\nK线数据: ${klineStocksCount} 只股票`
+      );
+    } catch (error) {
+      logger.error('导出过滤后数据失败:', error);
+      message.error('导出失败: ' + (error as Error).message);
+    } finally {
+      setExportingFiltered(false);
+      setExportProgress({ current: 0, total: 0 });
+    }
+  };
+
   // 导出下拉菜单项
   const exportMenuItems: MenuProps['items'] = useMemo(
     () => [
+      {
+        key: 'export-filtered-data',
+        label: '导出过滤后股票数据',
+        icon: <ExportOutlined />,
+        onClick: handleExportFilteredData,
+        disabled: exportingFiltered,
+      },
+      { type: 'divider' },
       {
         key: 'export-designated',
         label: '导出指定股票',
@@ -828,7 +976,7 @@ export function BacktestPage() {
         disabled: groupedResults.length === 0 || exportingLatest,
       },
     ],
-    [groupedResults.length, exportingLatest]
+    [groupedResults.length, exportingLatest, exportingFiltered, handleExportFilteredData]
   );
 
   const handleResetFilter = () => {
@@ -1417,6 +1565,29 @@ export function BacktestPage() {
               status="active"
               showInfo={false}
               strokeColor="#1890ff"
+              trailColor="rgba(0, 0, 0, 0.06)"
+              size="small"
+              style={{ borderRadius: 4 }}
+            />
+          </div>
+        )}
+
+        {exportingFiltered && exportProgress.total > 0 && (
+          <div className={styles.progressOverlay}>
+            <div className={styles.progressInfo}>
+              <Text strong>导出进行中...</Text>
+              <Text type="secondary">
+                {exportProgress.current < 30 && '正在获取股票数据'}
+                {exportProgress.current >= 30 && exportProgress.current < 65 && '正在导出回测信号'}
+                {exportProgress.current >= 65 && exportProgress.current < 100 && '正在导出K线数据'}
+                {exportProgress.current === 100 && '导出完成'}
+              </Text>
+            </div>
+            <Progress
+              percent={Math.round((exportProgress.current / exportProgress.total) * 100)}
+              status="active"
+              showInfo={false}
+              strokeColor="#52c41a"
               trailColor="rgba(0, 0, 0, 0.06)"
               size="small"
               style={{ borderRadius: 4 }}

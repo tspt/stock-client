@@ -1011,6 +1011,67 @@ function setupIpcHandlers() {
       }
     }
   );
+
+  /**
+   * 分批保存回测信号数据
+   */
+  ipcMain.handle(
+    'batch-save-backtest-signals',
+    async (_event, batches: Array<{ filename: string; data: any }>) => {
+      try {
+        mainLog(`[主进程] 开始分批保存回测信号数据，共 ${batches.length} 个批次`);
+
+        let exportDir: string;
+        if (isDev) {
+          exportDir = join(app.getAppPath(), 'docs', '回测优化', '历史回测数据');
+        } else {
+          const exeDir = join(app.getPath('exe'), '..');
+          exportDir = join(exeDir, 'docs', '回测优化', '历史回测数据');
+        }
+
+        // 确保目录存在
+        if (!existsSync(exportDir)) {
+          mkdirSync(exportDir, { recursive: true });
+          mainLog(`[主进程] 创建导出目录: ${exportDir}`);
+        }
+
+        const results: Array<{ filename: string; success: boolean; error?: string }> = [];
+
+        for (const batch of batches) {
+          try {
+            const filePath = join(exportDir, batch.filename);
+            mainLog(`[主进程] 保存批次文件: ${batch.filename}`);
+
+            const jsonContent = JSON.stringify(batch.data, null, 2);
+            mainLog(`[主进程] 文件大小: ${jsonContent.length} 字节`);
+
+            writeFileSync(filePath, jsonContent, 'utf-8');
+            mainLog(`[主进程] 成功保存: ${filePath}`);
+
+            results.push({ filename: batch.filename, success: true });
+          } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            mainLog(`[主进程] 保存批次 ${batch.filename} 失败: ${errorMessage}`, true);
+            results.push({ filename: batch.filename, success: false, error: errorMessage });
+          }
+        }
+
+        const successCount = results.filter((r) => r.success).length;
+        const failCount = results.filter((r) => !r.success).length;
+        mainLog(`[主进程] 分批保存完成: 成功 ${successCount}, 失败 ${failCount}`);
+
+        return {
+          success: true,
+          results,
+          summary: { total: batches.length, success: successCount, fail: failCount },
+        };
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        mainLog(`[主进程] 分批保存失败: ${errorMessage}`, true);
+        return { success: false, error: errorMessage, results: [] };
+      }
+    }
+  );
 }
 
 // 应用准备就绪
