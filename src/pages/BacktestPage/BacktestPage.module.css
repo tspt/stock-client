@@ -271,7 +271,7 @@
 
 .filterItem {
   display: flex;
-  flex-direction: column;
+  align-items: center;
   gap: 8px;
   width: 100%;
 }
@@ -280,6 +280,7 @@
   font-size: 14px;
   white-space: nowrap;
   color: var(--ant-color-text);
+  min-width: fit-content;
 }
 
 /* 胜率统计汇总样式 */

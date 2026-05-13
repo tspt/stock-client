@@ -42,12 +42,16 @@ export function BacktestPage() {
   // 板块选项
   const [industrySectorOptions, setIndustrySectorOptions] = useState<{ label: string; value: string }[]>([]);
   const [conceptSectorOptions, setConceptSectorOptions] = useState<{ label: string; value: string }[]>([]);
+  // 股票板块映射
+  const [stockSectorMapping, setStockSectorMapping] = useState<Map<string, { industry?: { code: string; name: string }; concepts?: { code: string; name: string }[] }>>(new Map());
   // 价格、市值、总股数范围
   const [priceRange, setPriceRange] = useState<{ min?: number; max?: number }>({ ...OPPORTUNITY_DEFAULT_BASIC_FILTERS.priceRange });
   const [marketCapRange, setMarketCapRange] = useState<{ min?: number; max?: number }>({ ...OPPORTUNITY_DEFAULT_BASIC_FILTERS.marketCapRange });
   const [totalSharesRange, setTotalSharesRange] = useState<{ min?: number; max?: number }>({ ...OPPORTUNITY_DEFAULT_BASIC_FILTERS.totalSharesRange });
   const [timeRange, setTimeRange] = useState<number>(0);
-  const [minWinRate, setMinWinRate] = useState<number>(0); // 近3日胜率最低值
+  const [minWinRate, setMinWinRate] = useState<number>(50); // 近3日胜率最低值
+  const [minWinRateDay1, setMinWinRateDay1] = useState<number>(50); // 近1日胜率最低值
+  const [minWinRateDay2, setMinWinRateDay2] = useState<number>(50); // 近2日胜率最低值
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
   const [exportDrawerOpen, setExportDrawerOpen] = useState(false);
   const [exportingStock, setExportingStock] = useState<{ code: string; name: string } | null>(null);
@@ -65,6 +69,67 @@ export function BacktestPage() {
 
   // 获取模型元数据
   const modelMetadata = useMemo(() => getModelMetadata(), []);
+
+  // 股票代码规范化函数：将纯数字代码转换为标准格式
+  const normalizeStockCode = useCallback((code: string): string => {
+    if (code.startsWith('SH') || code.startsWith('SZ')) {
+      return code;
+    }
+    const prefix = code.substring(0, 2);
+    if (['60', '68', '90'].includes(prefix)) {
+      return `SH${code}`;
+    } else if (['00', '30'].includes(prefix)) {
+      return `SZ${code}`;
+    }
+    return code;
+  }, []);
+
+  // 加载板块映射
+  useEffect(() => {
+    const loadSectorMapping = async () => {
+      try {
+        const { getIndustrySectors, getConceptSectors } = await import('@/utils/storage/sectorStocksIndexedDB');
+
+        const mapping = new Map<string, { industry?: { code: string; name: string }; concepts?: { code: string; name: string }[] }>();
+
+        // 1. 加载行业板块
+        const industrySectors = await getIndustrySectors();
+        industrySectors.forEach((sector) => {
+          sector.children?.forEach((stock) => {
+            const normalizedCode = normalizeStockCode(stock.code);
+            if (!mapping.has(normalizedCode)) {
+              mapping.set(normalizedCode, {});
+            }
+            const info = mapping.get(normalizedCode)!;
+            info.industry = { code: sector.code, name: sector.name };
+          });
+        });
+
+        // 2. 加载概念板块
+        const conceptSectors = await getConceptSectors();
+        conceptSectors.forEach((sector) => {
+          sector.children?.forEach((stock) => {
+            const normalizedCode = normalizeStockCode(stock.code);
+            if (!mapping.has(normalizedCode)) {
+              mapping.set(normalizedCode, {});
+            }
+            const info = mapping.get(normalizedCode)!;
+            if (!info.concepts) {
+              info.concepts = [];
+            }
+            info.concepts.push({ code: sector.code, name: sector.name });
+          });
+        });
+
+        setStockSectorMapping(mapping);
+        logger.info(`[BacktestPage] 板块映射加载完成，共 ${mapping.size} 只股票`);
+      } catch (error) {
+        logger.error('[BacktestPage] 加载板块映射失败:', error);
+      }
+    };
+
+    loadSectorMapping();
+  }, [normalizeStockCode]);
 
   // 动态计算列表高度
   useEffect(() => {
@@ -592,6 +657,8 @@ export function BacktestPage() {
     setTotalSharesRange({ ...OPPORTUNITY_DEFAULT_BASIC_FILTERS.totalSharesRange });
     setTimeRange(0);
     setMinWinRate(0);
+    setMinWinRateDay1(0);
+    setMinWinRateDay2(0);
     setSearchText('');
     message.success('已重置筛选条件');
   };
@@ -631,6 +698,8 @@ export function BacktestPage() {
     const signals = getCurrentStockSignals();
     if (signals.length === 0) {
       return {
+        day1: { total: 0, success: 0, rate: 0, incompleteCount: 0 },
+        day2: { total: 0, success: 0, rate: 0, incompleteCount: 0 },
         day3: { total: 0, success: 0, rate: 0, incompleteCount: 0 },
         day5: { total: 0, success: 0, rate: 0, incompleteCount: 0 },
         day10: { total: 0, success: 0, rate: 0, incompleteCount: 0 },
@@ -639,6 +708,8 @@ export function BacktestPage() {
     }
 
     const stats = {
+      day1: { total: 0, success: 0, rate: 0, incompleteCount: 0 },
+      day2: { total: 0, success: 0, rate: 0, incompleteCount: 0 },
       day3: { total: 0, success: 0, rate: 0, incompleteCount: 0 },
       day5: { total: 0, success: 0, rate: 0, incompleteCount: 0 },
       day10: { total: 0, success: 0, rate: 0, incompleteCount: 0 },
@@ -646,6 +717,22 @@ export function BacktestPage() {
     };
 
     signals.forEach((signal: any) => {
+      // 1日收益
+      if (signal.returns.day1) {
+        stats.day1.total++;
+        if (signal.returns.day1.actualDays < 1) {
+          stats.day1.incompleteCount++;
+        }
+        if (signal.returns.day1.value > 0) stats.day1.success++;
+      }
+      // 2日收益
+      if (signal.returns.day2) {
+        stats.day2.total++;
+        if (signal.returns.day2.actualDays < 2) {
+          stats.day2.incompleteCount++;
+        }
+        if (signal.returns.day2.value > 0) stats.day2.success++;
+      }
       // 3日收益
       if (signal.returns.day3) {
         stats.day3.total++;
@@ -681,6 +768,8 @@ export function BacktestPage() {
     });
 
     // 计算胜率
+    stats.day1.rate = stats.day1.total > 0 ? (stats.day1.success / stats.day1.total) * 100 : 0;
+    stats.day2.rate = stats.day2.total > 0 ? (stats.day2.success / stats.day2.total) * 100 : 0;
     stats.day3.rate = stats.day3.total > 0 ? (stats.day3.success / stats.day3.total) * 100 : 0;
     stats.day5.rate = stats.day5.total > 0 ? (stats.day5.success / stats.day5.total) * 100 : 0;
     stats.day10.rate = stats.day10.total > 0 ? (stats.day10.success / stats.day10.total) * 100 : 0;
@@ -689,8 +778,8 @@ export function BacktestPage() {
     return stats;
   }, [selectedStockCode, groupedResults]);
 
-  // 过滤股票列表
-  const getFilteredStockList = () => {
+  // 过滤股票列表（使用 useMemo 优化性能）
+  const filteredStockList = useMemo(() => {
     let filtered = groupedResults;
 
     // 1. 按市场类型过滤（多选）
@@ -715,7 +804,59 @@ export function BacktestPage() {
       });
     }
 
-    // 3. 按近3日胜率过滤
+    // 3. 按近1日胜率过滤
+    if (minWinRateDay1 > 0) {
+      filtered = filtered.filter(item => {
+        // 计算该股票的近1日胜率
+        const totalSignals = item.signals.length;
+        if (totalSignals === 0) return false;
+
+        let successCount = 0;
+        let validCount = 0;
+
+        item.signals.forEach((signal: any) => {
+          // 只统计完整周期（actualDays >= 1）
+          if (signal.returns.day1 && signal.returns.day1.actualDays >= 1) {
+            validCount++;
+            if (signal.returns.day1.value > 0) {
+              successCount++;
+            }
+          }
+        });
+
+        if (validCount === 0) return false;
+        const winRate = (successCount / validCount) * 100;
+        return winRate >= minWinRateDay1;
+      });
+    }
+
+    // 4. 按近2日胜率过滤
+    if (minWinRateDay2 > 0) {
+      filtered = filtered.filter(item => {
+        // 计算该股票的近2日胜率
+        const totalSignals = item.signals.length;
+        if (totalSignals === 0) return false;
+
+        let successCount = 0;
+        let validCount = 0;
+
+        item.signals.forEach((signal: any) => {
+          // 只统计完整周期（actualDays >= 2）
+          if (signal.returns.day2 && signal.returns.day2.actualDays >= 2) {
+            validCount++;
+            if (signal.returns.day2.value > 0) {
+              successCount++;
+            }
+          }
+        });
+
+        if (validCount === 0) return false;
+        const winRate = (successCount / validCount) * 100;
+        return winRate >= minWinRateDay2;
+      });
+    }
+
+    // 5. 按近3日胜率过滤
     if (minWinRate > 0) {
       filtered = filtered.filter(item => {
         // 计算该股票的近3日胜率
@@ -741,7 +882,7 @@ export function BacktestPage() {
       });
     }
 
-    // 4. 按时间范围过滤（筛选近期出现的信号）
+    // 6. 按时间范围过滤（筛选近期出现的信号）
     if (timeRange > 0) {
       const now = new Date();
       const cutoffDate = new Date(now.getTime() - timeRange * 24 * 60 * 60 * 1000);
@@ -764,40 +905,100 @@ export function BacktestPage() {
       );
     }
 
-    // 5. 按价格范围过滤（需要异步获取股票历史数据）
+    // 7. 按价格范围过滤（需要异步获取股票历史数据）
     // 注意：这里简化处理，实际应该从 IndexedDB 获取最新价格
     // 由于 groupedResults 中没有价格信息，暂时跳过此过滤
     // TODO: 如果需要价格过滤，需要从 getStocksHistory 获取数据
 
-    // 6. 按市值范围过滤
+    // 8. 按市值范围过滤
     // TODO: 需要从 stock history 中获取市值信息
 
-    // 7. 按总股数范围过滤
+    // 9. 按总股数范围过滤
     // TODO: 需要从 stock history 中获取总股数信息
 
-    // 8. 按行业板块过滤
-    // TODO: 需要从 allStocks 或 stock history 中获取行业信息
+    // 10. 按行业板块过滤
+    if (industrySectors.length > 0) {
+      filtered = filtered.filter(item => {
+        const stockCode = normalizeStockCode(item.code);
+        const sectorInfo = stockSectorMapping.get(stockCode);
+        const stockIndustry = sectorInfo?.industry;
 
-    // 9. 按概念板块过滤
-    // TODO: 需要从 allStocks 或 stock history 中获取概念信息
+        if (!stockIndustry) {
+          // 没有行业信息的股票，根据 invert 决定是否保留
+          return industrySectorInvert; // 如果排除选中，则保留；否则过滤掉
+        }
+
+        const isSelected = industrySectors.includes(stockIndustry.code);
+
+        if (industrySectorInvert) {
+          // 排除选中：选中的行业不显示
+          return !isSelected;
+        } else {
+          // 包含选中：只显示选中的行业
+          return isSelected;
+        }
+      });
+    }
+
+    // 11. 按概念板块过滤
+    if (conceptSectors.length > 0) {
+      filtered = filtered.filter(item => {
+        const stockCode = normalizeStockCode(item.code);
+        const sectorInfo = stockSectorMapping.get(stockCode);
+        const stockConcepts = sectorInfo?.concepts || [];
+
+        if (stockConcepts.length === 0) {
+          // 没有概念信息的股票，根据 invert 决定是否保留
+          return conceptSectorInvert;
+        }
+
+        // 检查股票是否有选中的概念
+        const hasSelectedConcept = stockConcepts.some(c => conceptSectors.includes(c.code));
+
+        if (conceptSectorInvert) {
+          // 排除选中：有选中的概念则不显示
+          return !hasSelectedConcept;
+        } else {
+          // 包含选中：必须有选中的概念
+          return hasSelectedConcept;
+        }
+      });
+    }
 
     return filtered;
-  };
+  }, [
+    groupedResults,
+    selectedMarket,
+    nameType,
+    minWinRateDay1,
+    minWinRateDay2,
+    minWinRate,
+    timeRange,
+    searchText,
+    priceRange,
+    marketCapRange,
+    totalSharesRange,
+    industrySectors,
+    industrySectorInvert,
+    conceptSectors,
+    conceptSectorInvert,
+    stockSectorMapping,
+    normalizeStockCode,
+  ]);
 
   // 当筛选结果变化时，如果当前选中的股票不在结果中，自动选中第一个
   useEffect(() => {
-    const filteredList = getFilteredStockList();
-    if (filteredList.length > 0) {
+    if (filteredStockList.length > 0) {
       // 如果当前选中的股票不在筛选结果中，选中第一个
-      const isCurrentSelected = filteredList.some(item => item.code === selectedStockCode);
+      const isCurrentSelected = filteredStockList.some(item => item.code === selectedStockCode);
       if (!isCurrentSelected) {
-        setSelectedStockCode(filteredList[0].code);
+        setSelectedStockCode(filteredStockList[0].code);
       }
     } else {
       // 如果没有筛选结果，清空选中
       setSelectedStockCode(null);
     }
-  }, [selectedMarket, nameType, searchText, minWinRate, timeRange, priceRange, marketCapRange, totalSharesRange, industrySectors, conceptSectors, groupedResults]);
+  }, [filteredStockList, selectedStockCode]);
 
   // 表格列定义
   const columns: ColumnsType<any> = [
@@ -816,6 +1017,44 @@ export function BacktestPage() {
           </Tag>
         </Space>
       )
+    },
+    {
+      title: '1日收益',
+      dataIndex: ['returns', 'day1'],
+      key: 'day1',
+      render: (val: any) => {
+        if (!val) return '-';
+        const isComplete = val.actualDays >= 1;
+        return (
+          <span>
+            <span style={{ color: val.value > 0 ? '#ff4d4f' : '#52c41a' }}>
+              {val.value > 0 ? '+' : ''}{val.value}%
+            </span>
+            {!isComplete && (
+              <span className={styles.actualDaysTag}>({val.actualDays}天)</span>
+            )}
+          </span>
+        );
+      }
+    },
+    {
+      title: '2日收益',
+      dataIndex: ['returns', 'day2'],
+      key: 'day2',
+      render: (val: any) => {
+        if (!val) return '-';
+        const isComplete = val.actualDays >= 2;
+        return (
+          <span>
+            <span style={{ color: val.value > 0 ? '#ff4d4f' : '#52c41a' }}>
+              {val.value > 0 ? '+' : ''}{val.value}%
+            </span>
+            {!isComplete && (
+              <span className={styles.actualDaysTag}>({val.actualDays}天)</span>
+            )}
+          </span>
+        );
+      }
     },
     {
       title: '3日收益',
@@ -982,7 +1221,17 @@ export function BacktestPage() {
 
         <Row gutter={0} className={styles.mainRow}>
           <Col span={6} className={styles.stockListCol}>
-            <Card title="股票列表" className={styles.stockListCard}>
+            <Card
+              title={
+                <Space>
+                  <span>股票列表</span>
+                  <Tag color="blue" style={{ fontSize: 12, padding: '2px 8px' }}>
+                    {filteredStockList.length} 只
+                  </Tag>
+                </Space>
+              }
+              className={styles.stockListCard}
+            >
               <div className={styles.filterSection}>
                 <Input
                   placeholder="搜索股票名称或代码"
@@ -994,11 +1243,11 @@ export function BacktestPage() {
                 />
               </div>
               <div ref={listContainerRef} className={styles.stockListContainer}>
-                {getFilteredStockList().length === 0 ? (
+                {filteredStockList.length === 0 ? (
                   <div className={styles.emptyText}>暂无回测数据</div>
                 ) : (
                   <VirtualList
-                    data={getFilteredStockList()}
+                    data={filteredStockList}
                     height={listHeight}
                     itemHeight={64}
                     itemKey="code"
@@ -1039,6 +1288,46 @@ export function BacktestPage() {
               {/* 胜率统计汇总 */}
               {selectedStockCode && (
                 <div className={styles.statisticsSummary}>
+                  <div className={styles.statItem}>
+                    <div className={styles.statLabel}>1日胜率</div>
+                    <div className={styles.statValue} style={{
+                      color: signalStatistics.day1.total > 0
+                        ? (signalStatistics.day1.rate > 50 ? '#ff4d4f' : 'var(--ant-color-text-secondary)')
+                        : 'var(--ant-color-text-tertiary)'
+                    }}>
+                      {signalStatistics.day1.total > 0
+                        ? `${signalStatistics.day1.rate.toFixed(1)}%`
+                        : '—'}
+                    </div>
+                    <div className={styles.statDetail}>
+                      {signalStatistics.day1.success}/{signalStatistics.day1.total}
+                      {signalStatistics.day1.incompleteCount > 0 && (
+                        <span className={styles.incompleteTag}>
+                          ({signalStatistics.day1.incompleteCount}个不完整)
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <div className={styles.statItem}>
+                    <div className={styles.statLabel}>2日胜率</div>
+                    <div className={styles.statValue} style={{
+                      color: signalStatistics.day2.total > 0
+                        ? (signalStatistics.day2.rate > 50 ? '#ff4d4f' : 'var(--ant-color-text-secondary)')
+                        : 'var(--ant-color-text-tertiary)'
+                    }}>
+                      {signalStatistics.day2.total > 0
+                        ? `${signalStatistics.day2.rate.toFixed(1)}%`
+                        : '—'}
+                    </div>
+                    <div className={styles.statDetail}>
+                      {signalStatistics.day2.success}/{signalStatistics.day2.total}
+                      {signalStatistics.day2.incompleteCount > 0 && (
+                        <span className={styles.incompleteTag}>
+                          ({signalStatistics.day2.incompleteCount}个不完整)
+                        </span>
+                      )}
+                    </div>
+                  </div>
                   <div className={styles.statItem}>
                     <div className={styles.statLabel}>3日胜率</div>
                     <div className={styles.statValue} style={{
@@ -1149,7 +1438,7 @@ export function BacktestPage() {
           {/* 市场类型（多选） */}
           <div className={styles.filterRow}>
             <div className={styles.filterItem}>
-              <span className={styles.filterLabel}>市场类型</span>
+              <span className={styles.filterLabel}>市场类型：</span>
               <Select
                 mode="multiple"
                 value={selectedMarket}
@@ -1168,7 +1457,7 @@ export function BacktestPage() {
           {/* 名称类型 */}
           <div className={styles.filterRow}>
             <div className={styles.filterItem}>
-              <span className={styles.filterLabel}>名称类型</span>
+              <span className={styles.filterLabel}>名称类型：</span>
               <Select
                 value={nameType}
                 onChange={setNameType}
@@ -1185,8 +1474,17 @@ export function BacktestPage() {
           {/* 行业板块 */}
           <div className={styles.filterRow}>
             <div className={styles.filterItem}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                <span className={styles.filterLabel}>行业板块</span>
+              <span className={styles.filterLabel}>行业板块：</span>
+              <div style={{ flex: 1, display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <Select
+                  mode="multiple"
+                  value={industrySectors}
+                  onChange={setIndustrySectors}
+                  style={{ flex: 1 }}
+                  placeholder="选择行业板块"
+                  options={industrySectorOptions}
+                  maxTagCount="responsive"
+                />
                 <Checkbox
                   checked={industrySectorInvert}
                   onChange={(e) => setIndustrySectorInvert(e.target.checked)}
@@ -1194,23 +1492,23 @@ export function BacktestPage() {
                   排除选中
                 </Checkbox>
               </div>
-              <Select
-                mode="multiple"
-                value={industrySectors}
-                onChange={setIndustrySectors}
-                style={{ width: '100%' }}
-                placeholder="选择行业板块"
-                options={industrySectorOptions}
-                maxTagCount="responsive"
-              />
             </div>
           </div>
 
           {/* 概念板块 */}
           <div className={styles.filterRow}>
             <div className={styles.filterItem}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                <span className={styles.filterLabel}>概念板块</span>
+              <span className={styles.filterLabel}>概念板块：</span>
+              <div style={{ flex: 1, display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <Select
+                  mode="multiple"
+                  value={conceptSectors}
+                  onChange={setConceptSectors}
+                  style={{ flex: 1 }}
+                  placeholder="选择概念板块"
+                  options={conceptSectorOptions}
+                  maxTagCount="responsive"
+                />
                 <Checkbox
                   checked={conceptSectorInvert}
                   onChange={(e) => setConceptSectorInvert(e.target.checked)}
@@ -1218,22 +1516,13 @@ export function BacktestPage() {
                   排除选中
                 </Checkbox>
               </div>
-              <Select
-                mode="multiple"
-                value={conceptSectors}
-                onChange={setConceptSectors}
-                style={{ width: '100%' }}
-                placeholder="选择概念板块"
-                options={conceptSectorOptions}
-                maxTagCount="responsive"
-              />
             </div>
           </div>
 
           {/* 价格范围 */}
           <div className={styles.filterRow}>
             <div className={styles.filterItem}>
-              <span className={styles.filterLabel}>价格范围（元）</span>
+              <span className={styles.filterLabel}>价格范围（元）：</span>
               <Space style={{ width: '100%' }}>
                 <InputNumber
                   placeholder="最小"
@@ -1257,7 +1546,7 @@ export function BacktestPage() {
           {/* 市值范围 */}
           <div className={styles.filterRow}>
             <div className={styles.filterItem}>
-              <span className={styles.filterLabel}>总市值（亿）</span>
+              <span className={styles.filterLabel}>总市值（亿）：</span>
               <Space style={{ width: '100%' }}>
                 <InputNumber
                   placeholder="最小"
@@ -1281,7 +1570,7 @@ export function BacktestPage() {
           {/* 总股数范围 */}
           <div className={styles.filterRow}>
             <div className={styles.filterItem}>
-              <span className={styles.filterLabel}>总股数（亿）</span>
+              <span className={styles.filterLabel}>总股数（亿）：</span>
               <Space style={{ width: '100%' }}>
                 <InputNumber
                   placeholder="最小"
@@ -1305,7 +1594,7 @@ export function BacktestPage() {
           {/* 时间范围 */}
           <div className={styles.filterRow}>
             <div className={styles.filterItem}>
-              <span className={styles.filterLabel}>时间范围</span>
+              <span className={styles.filterLabel}>时间范围：</span>
               <Select
                 value={timeRange}
                 onChange={setTimeRange}
@@ -1321,10 +1610,52 @@ export function BacktestPage() {
             </div>
           </div>
 
+          {/* 近1日胜率 */}
+          <div className={styles.filterRow}>
+            <div className={styles.filterItem}>
+              <span className={styles.filterLabel}>近1日胜率 ≥ (%)：</span>
+              <Input
+                type="number"
+                value={minWinRateDay1}
+                onChange={(e) => {
+                  const value = Number(e.target.value);
+                  if (value >= 0 && value <= 100) {
+                    setMinWinRateDay1(value);
+                  }
+                }}
+                min={0}
+                max={100}
+                placeholder="0-100"
+                style={{ width: 120 }}
+              />
+            </div>
+          </div>
+
+          {/* 近2日胜率 */}
+          <div className={styles.filterRow}>
+            <div className={styles.filterItem}>
+              <span className={styles.filterLabel}>近2日胜率 ≥ (%)：</span>
+              <Input
+                type="number"
+                value={minWinRateDay2}
+                onChange={(e) => {
+                  const value = Number(e.target.value);
+                  if (value >= 0 && value <= 100) {
+                    setMinWinRateDay2(value);
+                  }
+                }}
+                min={0}
+                max={100}
+                placeholder="0-100"
+                style={{ width: 120 }}
+              />
+            </div>
+          </div>
+
           {/* 近3日胜率 */}
           <div className={styles.filterRow}>
             <div className={styles.filterItem}>
-              <span className={styles.filterLabel}>近3日胜率 ≥ (%)</span>
+              <span className={styles.filterLabel}>近3日胜率 ≥ (%)：</span>
               <Input
                 type="number"
                 value={minWinRate}
@@ -1336,7 +1667,8 @@ export function BacktestPage() {
                 }}
                 min={0}
                 max={100}
-                placeholder="输入 0-100 的数值，0表示不限"
+                placeholder="0-100"
+                style={{ width: 120 }}
               />
             </div>
           </div>

@@ -14,6 +14,8 @@ interface BacktestSignal {
   signalDate: string; // YYYY-MM-DD
   entryPrice: number;
   returns: {
+    day1?: { value: number; actualDays: number }; // 1日收益
+    day2?: { value: number; actualDays: number }; // 2日收益
     day3?: { value: number; actualDays: number }; // 可选，数据不足时为空
     day5?: { value: number; actualDays: number };
     day10?: { value: number; actualDays: number }; // 两周
@@ -84,6 +86,8 @@ self.onmessage = (e: MessageEvent<BacktestRequest>) => {
         signalDate,
         entryPrice,
         returns: {
+          day1: calculateReturn(1), // 1日收益
+          day2: calculateReturn(2), // 2日收益
           day3: calculateReturn(3),
           day5: calculateReturn(5),
           day10: calculateReturn(10), // 两周
