@@ -761,18 +761,25 @@ export function BacktestPage() {
         klineData: any[];
         latestQuote?: any;
         updatedAt?: number;
+        industry?: { code: string; name: string } | null;
       }> = [];
 
       for (const code of selectedExportStocks) {
         try {
           const historyRecord = await getStockHistory(code);
           if (historyRecord) {
+            // 从 stockSectorMapping 获取行业信息
+            const stockCode = normalizeStockCode(code);
+            const sectorInfo = stockSectorMapping.get(stockCode);
+            const industry = sectorInfo?.industry || null;
+
             stocksData.push({
               code: historyRecord.code,
               name: historyRecord.name,
               klineData: historyRecord.dailyLines,
               latestQuote: historyRecord.latestQuote,
               updatedAt: historyRecord.updatedAt,
+              industry,
             });
           } else {
             logger.warn(`[BacktestPage] 未找到股票 ${code} 的历史数据`);
@@ -840,6 +847,7 @@ export function BacktestPage() {
             klineData: any[];
             latestQuote?: any;
             updatedAt?: number;
+            industry?: { code: string; name: string } | null;
           }> = [];
 
           for (let i = 0; i < filteredStockList.length; i++) {
@@ -847,12 +855,18 @@ export function BacktestPage() {
             try {
               const historyRecord = await getStockHistory(stock.code);
               if (historyRecord) {
+                // 从 stockSectorMapping 获取行业信息
+                const stockCode = normalizeStockCode(stock.code);
+                const sectorInfo = stockSectorMapping.get(stockCode);
+                const industry = sectorInfo?.industry || null;
+
                 data.push({
                   code: historyRecord.code,
                   name: historyRecord.name,
                   klineData: historyRecord.dailyLines,
                   latestQuote: historyRecord.latestQuote,
                   updatedAt: historyRecord.updatedAt,
+                  industry,
                 });
               }
               // 更新进度：获取数据阶段

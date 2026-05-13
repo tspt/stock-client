@@ -920,6 +920,7 @@ function setupIpcHandlers() {
         klineData: any[];
         latestQuote?: any;
         updatedAt?: number;
+        industry?: { code: string; name: string } | null;
       }>
     ) => {
       try {
@@ -975,6 +976,7 @@ function setupIpcHandlers() {
                 latestQuote: stockData.latestQuote || null,
                 updatedAt: stockData.updatedAt || Date.now(),
               },
+              industry: stockData.industry || null,
               buypointDate: existingBuypointDate,
             };
 
