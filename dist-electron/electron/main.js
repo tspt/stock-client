@@ -792,6 +792,7 @@ function setupIpcHandlers() {
                             latestQuote: stockData.latestQuote || null,
                             updatedAt: stockData.updatedAt || Date.now(),
                         },
+                        industry: stockData.industry || null,
                         buypointDate: existingBuypointDate,
                     };
                     const jsonContent = JSON.stringify(newData, null, 4);
