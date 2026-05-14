@@ -13,51 +13,17 @@ import type { OpportunityFilterSnapshot } from '@/types/opportunityFilter';
 export function checkFilterCompatibility(filters: OpportunityFilterSnapshot): string[] {
   const warnings: string[] = [];
 
-  // 1. 横盘与上升趋势/下降趋势可能存在冲突
-  if (filters.consolidationFilterEnabled) {
-    if (filters.trendUptrend) {
-      warnings.push('⚠️ 横盘筛选与上升趋势可能存在冲突：横盘通常无明显趋势');
-    }
-    if (filters.trendDowntrend) {
-      warnings.push('⚠️ 横盘筛选与下降趋势可能存在冲突：横盘通常无明显趋势');
-    }
-  }
-
-  // 2. 仅急跌与AI看涨趋势矛盾
-  if (filters.sharpMoveFilterEnabled && filters.sharpMoveOnlyDrop && filters.aiAnalysisEnabled) {
-    if (filters.aiTrendUp) {
-      warnings.push('⚠️ 仅急跌形态与AI看涨趋势可能存在矛盾');
-    }
-  }
-
-  // 3. 仅急涨与AI看跌趋势矛盾
-  if (filters.sharpMoveFilterEnabled && filters.sharpMoveOnlyRise && filters.aiAnalysisEnabled) {
-    if (filters.aiTrendDown) {
-      warnings.push('⚠️ 仅急涨形态与AI看跌趋势可能存在矛盾');
-    }
-  }
-
-  // 4. 突破形态与横盘筛选冲突
-  if (filters.trendBreakout && filters.consolidationFilterEnabled) {
-    warnings.push('⚠️ 突破形态与横盘筛选可能冲突：突破意味着结束横盘');
-  }
-
-  // 5. 跌破形态与横盘筛选冲突
-  if (filters.trendBreakdown && filters.consolidationFilterEnabled) {
-    warnings.push('⚠️ 跌破形态与横盘筛选可能冲突：跌破意味着结束横盘');
-  }
-
-  // 6. MACD金叉与死叉同时勾选（虽然技术上可能，但罕见）
+  // 1. MACD金叉与死叉同时勾选（虽然技术上可能，但罕见）
   if (filters.macdGoldenCross && filters.macdDeathCross) {
     warnings.push('💡 同时勾选MACD金叉和死叉：将匹配任一条件（OR关系）');
   }
 
-  // 7. RSI超买超卖与趋势方向矛盾
-  if (filters.rsiRange.max !== undefined && filters.rsiRange.max < 30 && filters.trendUptrend) {
-    warnings.push('⚠️ RSI上限<30（超卖区）与上升趋势可能矛盾');
+  // 2. RSI超买超卖提示
+  if (filters.rsiRange.max !== undefined && filters.rsiRange.max < 30) {
+    warnings.push('💡 RSI上限<30（超卖区），将筛选超卖股票');
   }
-  if (filters.rsiRange.min !== undefined && filters.rsiRange.min > 70 && filters.trendDowntrend) {
-    warnings.push('⚠️ RSI下限>70（超买区）与下降趋势可能矛盾');
+  if (filters.rsiRange.min !== undefined && filters.rsiRange.min > 70) {
+    warnings.push('💡 RSI下限>70（超买区），将筛选超买股票');
   }
 
   return warnings;
@@ -77,34 +43,6 @@ export function getFilterComplexityScore(filters: OpportunityFilterSnapshot): nu
   if (filters.rsiRange.min !== undefined || filters.rsiRange.max !== undefined) score += 5;
   if (filters.macdGoldenCross || filters.macdDeathCross || filters.macdDivergence) score += 10;
   if (filters.bollingerUpper || filters.bollingerMiddle || filters.bollingerLower) score += 8;
-
-  // K线形态筛选（计算密集型）
-  const candlestickCount = [
-    filters.candlestickHammer,
-    filters.candlestickShootingStar,
-    filters.candlestickDoji,
-    filters.candlestickEngulfingBullish,
-    filters.candlestickEngulfingBearish,
-    filters.candlestickHaramiBullish,
-    filters.candlestickHaramiBearish,
-    filters.candlestickMorningStar,
-    filters.candlestickEveningStar,
-    filters.candlestickDarkCloudCover,
-    filters.candlestickPiercing,
-    filters.candlestickThreeBlackCrows,
-    filters.candlestickThreeWhiteSoldiers,
-  ].filter(Boolean).length;
-  score += candlestickCount * 3;
-
-  // 趋势形态筛选
-  const trendCount = [
-    filters.trendUptrend,
-    filters.trendDowntrend,
-    filters.trendSideways,
-    filters.trendBreakout,
-    filters.trendBreakdown,
-  ].filter(Boolean).length;
-  score += trendCount * 4;
 
   // 横盘分析（需要滑动窗口）
   if (filters.consolidationFilterEnabled) score += 15;
