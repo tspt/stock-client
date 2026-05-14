@@ -27,6 +27,7 @@ import {
   mkdirSync,
   readdirSync,
   readFileSync,
+  unlinkSync,
 } from 'fs';
 import { startEmbeddedApiProxy, stopEmbeddedApiProxy, initProxySession } from './localApiProxy.js';
 import { deriveEastmoneyRefererOrigin, isEastmoneyJsonpUrl } from './eastMoneyPush2Context.js';
@@ -1035,6 +1036,22 @@ function setupIpcHandlers() {
         if (!existsSync(exportDir)) {
           mkdirSync(exportDir, { recursive: true });
           mainLog(`[主进程] 创建导出目录: ${exportDir}`);
+        } else {
+          // 清空目录中的旧文件
+          mainLog(`[主进程] 清空历史回测数据目录: ${exportDir}`);
+          const files = readdirSync(exportDir);
+          let deletedCount = 0;
+          for (const file of files) {
+            const filePath = join(exportDir, file);
+            try {
+              unlinkSync(filePath);
+              deletedCount++;
+            } catch (error) {
+              const errorMessage = error instanceof Error ? error.message : String(error);
+              mainLog(`[主进程] 删除文件失败 ${file}: ${errorMessage}`, true);
+            }
+          }
+          mainLog(`[主进程] 已删除 ${deletedCount} 个旧文件`);
         }
 
         const results: Array<{ filename: string; success: boolean; error?: string }> = [];

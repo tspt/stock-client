@@ -850,10 +850,18 @@ export function BacktestPage() {
             industry?: { code: string; name: string } | null;
           }> = [];
 
+          // 批量获取所有股票的历史数据（优化：使用批量查询代替逐个查询）
+          const codes = filteredStockList.map(stock => stock.code);
+          const histories = await getStocksHistory(codes);
+
+          // 构建映射以便快速查找
+          const historyMap = new Map(histories.map(h => [h.code, h]));
+
+          // 处理每只股票的数据
           for (let i = 0; i < filteredStockList.length; i++) {
             const stock = filteredStockList[i];
             try {
-              const historyRecord = await getStockHistory(stock.code);
+              const historyRecord = historyMap.get(stock.code);
               if (historyRecord) {
                 // 从 stockSectorMapping 获取行业信息
                 const stockCode = normalizeStockCode(stock.code);
@@ -921,18 +929,12 @@ export function BacktestPage() {
         }
 
         if (window.electronAPI?.batchSaveBacktestSignals) {
-          // 模拟分批保存进度
-          const totalSignalBatches = batches.length;
-          for (let i = 0; i < totalSignalBatches; i++) {
-            const progress = 30 + Math.floor((i + 1) / totalSignalBatches * 35);
-            setExportProgress({ current: progress, total: 100 });
-            await new Promise(resolve => setTimeout(resolve, 50)); // 短暂延迟以显示进度
-          }
-
           const signalResult = await window.electronAPI.batchSaveBacktestSignals(batches);
           if (signalResult.success && signalResult.summary) {
             signalFilesCount = signalResult.summary.success;
           }
+          // 更新进度到65%
+          setExportProgress({ current: 65, total: 100 });
         }
       }
 
@@ -940,14 +942,6 @@ export function BacktestPage() {
       let klineStocksCount = 0;
       if (stocksData.length > 0) {
         if (window.electronAPI?.batchExportKlineData) {
-          // 模拟K线数据导出进度
-          const totalKlineStocks = stocksData.length;
-          for (let i = 0; i < totalKlineStocks; i++) {
-            const progress = 65 + Math.floor((i + 1) / totalKlineStocks * 35);
-            setExportProgress({ current: progress, total: 100 });
-            await new Promise(resolve => setTimeout(resolve, 10)); // 短暂延迟以显示进度
-          }
-
           const klineResult = await window.electronAPI.batchExportKlineData(stocksData);
           if (klineResult.success && klineResult.summary) {
             klineStocksCount = klineResult.summary.success;
