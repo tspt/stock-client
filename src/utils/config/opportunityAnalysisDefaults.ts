@@ -157,7 +157,7 @@ export const OPPORTUNITY_DEFAULT_SHARP_MOVE_FULL = {
   riseFlatDrop: false,
 } as const;
 
-// ==================== 6. 形态筛选 ====================
+// ==================== 6. 技术指标筛选 ====================
 
 /** 技术指标筛选默认配置 */
 export const OPPORTUNITY_DEFAULT_INDICATORS = {
@@ -165,24 +165,4 @@ export const OPPORTUNITY_DEFAULT_INDICATORS = {
   rsiPeriod: 14,
   /** 布林带阈值（0-1之间，即百分比） */
   bollingerThreshold: 0.02,
-} as const;
-
-/** K线形态识别默认配置 */
-export const OPPORTUNITY_DEFAULT_CANDLESTICK = {
-  /** K线形态回溯窗口大小（根数） */
-  lookback: 20,
-  /** 启用成交量确认 */
-  useVolumeConfirmation: true,
-  /** 反转形态强制成交量确认 */
-  requireVolumeForReversal: true,
-  /** 趋势背景回溯周期（根数） */
-  trendBackgroundLookback: 10,
-  /** 成交量放大倍数 */
-  volumeMultiplier: 1.5,
-} as const;
-
-/** 趋势形态识别默认配置 */
-export const OPPORTUNITY_DEFAULT_TREND_PATTERN = {
-  /** 趋势形态回溯窗口大小（根数） */
-  lookback: 20,
 } as const;

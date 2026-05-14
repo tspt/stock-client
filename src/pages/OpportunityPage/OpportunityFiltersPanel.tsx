@@ -10,7 +10,7 @@ import type { ConsolidationType } from '@/types/stock';
 import { PatternTooltip } from '@/components/PatternTooltip/PatternTooltip';
 import styles from './OpportunityPage.module.css';
 
-const ALL_FILTER_PANEL_KEYS = ['data', 'aiAnalysis', 'consolidation', 'trendLine', 'sharpMove', 'technicalIndicators'] as const;
+const ALL_FILTER_PANEL_KEYS = ['data', 'aiAnalysis', 'consolidation', 'trendLine', 'sharpMove'] as const;
 
 /** 筛选抽屉宽度：加宽以减少表单项折行与纵向滚动 */
 const FILTER_DRAWER_WIDTH = 'min(1000px, calc(100vw - 48px))' as const;
@@ -60,35 +60,6 @@ export function buildOpportunityFilterSummary(p: {
   sharpMoveRiseFlatDrop: boolean;
   // 新增技术指标筛选
   rsiRange: NumRange;
-  // K线形态筛选 - 单根
-  candlestickHammer: boolean;
-  candlestickShootingStar: boolean;
-  candlestickDoji: boolean;
-  // K线形态筛选 - 双根
-  candlestickEngulfingBullish: boolean;
-  candlestickEngulfingBearish: boolean;
-  candlestickHaramiBullish: boolean;
-  candlestickHaramiBearish: boolean;
-  // K线形态筛选 - 三根
-  candlestickMorningStar: boolean;
-  candlestickEveningStar: boolean;
-  candlestickDarkCloudCover: boolean;
-  candlestickPiercing: boolean;
-  candlestickThreeBlackCrows: boolean;
-  candlestickThreeWhiteSoldiers: boolean;
-  candlestickLookback: number;
-  // K线形态识别高级配置
-  patternUseVolumeConfirmation: boolean;
-  patternRequireVolumeForReversal: boolean;
-  patternTrendBackgroundLookback: number;
-  patternVolumeMultiplier: number;
-  // 趋势形态筛选
-  trendUptrend: boolean;
-  trendDowntrend: boolean;
-  trendSideways: boolean;
-  trendBreakout: boolean;
-  trendBreakdown: boolean;
-  trendLookback: number;
   // AI分析筛选
   aiAnalysisEnabled: boolean;
   aiTrendUp: boolean;
@@ -160,24 +131,7 @@ export function buildOpportunityFilterSummary(p: {
     parts.push(`异动${p.sharpMoveWindowBars}根/${p.sharpMoveMagnitude}%`);
   }
 
-  // K线形态汇总
-  const candleParts: string[] = [];
-  if (p.candlestickHammer) candleParts.push('锤头');
-  if (p.candlestickShootingStar) candleParts.push('射击');
-  if (p.candlestickDoji) candleParts.push('十字');
-  if (p.candlestickEngulfingBullish) candleParts.push('阳包阴');
-  if (p.candlestickEngulfingBearish) candleParts.push('阴包阳');
-  if (p.candlestickHaramiBullish) candleParts.push('阳孕阴');
-  if (p.candlestickHaramiBearish) candleParts.push('阴孕阳');
-  if (p.candlestickMorningStar) candleParts.push('早晨');
-  if (p.candlestickEveningStar) candleParts.push('黄昏');
-  if (p.candlestickDarkCloudCover) candleParts.push('乌云');
-  if (p.candlestickPiercing) candleParts.push('刺透');
-  if (p.candlestickThreeBlackCrows) candleParts.push('三鸦');
-  if (p.candlestickThreeWhiteSoldiers) candleParts.push('三兵');
-  if (candleParts.length > 0) {
-    parts.push(`形态${candleParts.join('、')}`);
-  }
+
 
   // AI分析汇总
   if (p.aiAnalysisEnabled) {
@@ -297,59 +251,6 @@ export interface OpportunityFiltersPanelProps {
   setRsiRange: SetRange;
   rsiPeriod: number;
   setRsiPeriod: (v: number) => void;
-  // K线形态筛选 props - 单根
-  candlestickHammer: boolean;
-  setCandlestickHammer: (v: boolean) => void;
-  candlestickShootingStar: boolean;
-  setCandlestickShootingStar: (v: boolean) => void;
-  candlestickDoji: boolean;
-  setCandlestickDoji: (v: boolean) => void;
-  // K线形态筛选 props - 双根
-  candlestickEngulfingBullish: boolean;
-  setCandlestickEngulfingBullish: (v: boolean) => void;
-  candlestickEngulfingBearish: boolean;
-  setCandlestickEngulfingBearish: (v: boolean) => void;
-  candlestickHaramiBullish: boolean;
-  setCandlestickHaramiBullish: (v: boolean) => void;
-  candlestickHaramiBearish: boolean;
-  setCandlestickHaramiBearish: (v: boolean) => void;
-  // K线形态筛选 props - 三根
-  candlestickMorningStar: boolean;
-  setCandlestickMorningStar: (v: boolean) => void;
-  candlestickEveningStar: boolean;
-  setCandlestickEveningStar: (v: boolean) => void;
-  candlestickDarkCloudCover: boolean;
-  setCandlestickDarkCloudCover: (v: boolean) => void;
-  candlestickPiercing: boolean;
-  setCandlestickPiercing: (v: boolean) => void;
-  candlestickThreeBlackCrows: boolean;
-  setCandlestickThreeBlackCrows: (v: boolean) => void;
-  candlestickThreeWhiteSoldiers: boolean;
-  setCandlestickThreeWhiteSoldiers: (v: boolean) => void;
-  candlestickLookback: number;
-  setCandlestickLookback: (v: number) => void;
-  // K线形态识别高级配置 props
-  patternUseVolumeConfirmation: boolean;
-  setPatternUseVolumeConfirmation: (v: boolean) => void;
-  patternRequireVolumeForReversal: boolean;
-  setPatternRequireVolumeForReversal: (v: boolean) => void;
-  patternTrendBackgroundLookback: number;
-  setPatternTrendBackgroundLookback: (v: number) => void;
-  patternVolumeMultiplier: number;
-  setPatternVolumeMultiplier: (v: number) => void;
-  // 趋势形态筛选 props
-  trendUptrend: boolean;
-  setTrendUptrend: (v: boolean) => void;
-  trendDowntrend: boolean;
-  setTrendDowntrend: (v: boolean) => void;
-  trendSideways: boolean;
-  setTrendSideways: (v: boolean) => void;
-  trendBreakout: boolean;
-  setTrendBreakout: (v: boolean) => void;
-  trendBreakdown: boolean;
-  setTrendBreakdown: (v: boolean) => void;
-  trendLookback: number;
-  setTrendLookback: (v: number) => void;
   // AI分析筛选 props
   aiAnalysisEnabled: boolean;
   setAiAnalysisEnabled: (v: boolean) => void;
@@ -458,59 +359,6 @@ export function OpportunityFiltersPanel({
   setRsiRange,
   rsiPeriod,
   setRsiPeriod,
-  // K线形态筛选 - 单根
-  candlestickHammer,
-  setCandlestickHammer,
-  candlestickShootingStar,
-  setCandlestickShootingStar,
-  candlestickDoji,
-  setCandlestickDoji,
-  // K线形态筛选 - 双根
-  candlestickEngulfingBullish,
-  setCandlestickEngulfingBullish,
-  candlestickEngulfingBearish,
-  setCandlestickEngulfingBearish,
-  candlestickHaramiBullish,
-  setCandlestickHaramiBullish,
-  candlestickHaramiBearish,
-  setCandlestickHaramiBearish,
-  // K线形态筛选 - 三根
-  candlestickMorningStar,
-  setCandlestickMorningStar,
-  candlestickEveningStar,
-  setCandlestickEveningStar,
-  candlestickDarkCloudCover,
-  setCandlestickDarkCloudCover,
-  candlestickPiercing,
-  setCandlestickPiercing,
-  candlestickThreeBlackCrows,
-  setCandlestickThreeBlackCrows,
-  candlestickThreeWhiteSoldiers,
-  setCandlestickThreeWhiteSoldiers,
-  candlestickLookback,
-  setCandlestickLookback,
-  // K线形态识别高级配置
-  patternUseVolumeConfirmation,
-  setPatternUseVolumeConfirmation,
-  patternRequireVolumeForReversal,
-  setPatternRequireVolumeForReversal,
-  patternTrendBackgroundLookback,
-  setPatternTrendBackgroundLookback,
-  patternVolumeMultiplier,
-  setPatternVolumeMultiplier,
-  // 趋势形态筛选
-  trendUptrend,
-  setTrendUptrend,
-  trendDowntrend,
-  setTrendDowntrend,
-  trendSideways,
-  setTrendSideways,
-  trendBreakout,
-  setTrendBreakout,
-  trendBreakdown,
-  setTrendBreakdown,
-  trendLookback,
-  setTrendLookback,
   // AI分析筛选
   aiAnalysisEnabled,
   setAiAnalysisEnabled,
@@ -552,7 +400,6 @@ export function OpportunityFiltersPanel({
   setDrawerOpen: externalSetDrawerOpen,
 }: OpportunityFiltersPanelProps) {
   const [internalDrawerOpen, setInternalDrawerOpen] = useState(false);
-  const [showPatternAdvanced, setShowPatternAdvanced] = useState(false);
 
   // 如果外部提供了控制，则使用外部的；否则使用内部的
   const drawerOpen = externalDrawerOpen !== undefined ? externalDrawerOpen : internalDrawerOpen;
@@ -592,30 +439,6 @@ export function OpportunityFiltersPanel({
         sharpMoveDropFlatRise,
         sharpMoveRiseFlatDrop,
         rsiRange,
-        candlestickHammer,
-        candlestickShootingStar,
-        candlestickDoji,
-        candlestickEngulfingBullish,
-        candlestickEngulfingBearish,
-        candlestickHaramiBullish,
-        candlestickHaramiBearish,
-        candlestickMorningStar,
-        candlestickEveningStar,
-        candlestickDarkCloudCover,
-        candlestickPiercing,
-        candlestickThreeBlackCrows,
-        candlestickThreeWhiteSoldiers,
-        candlestickLookback,
-        patternUseVolumeConfirmation,
-        patternRequireVolumeForReversal,
-        patternTrendBackgroundLookback,
-        patternVolumeMultiplier,
-        trendUptrend,
-        trendDowntrend,
-        trendSideways,
-        trendBreakout,
-        trendBreakdown,
-        trendLookback,
         aiAnalysisEnabled,
         aiTrendUp,
         aiTrendDown,
@@ -659,30 +482,6 @@ export function OpportunityFiltersPanel({
       sharpMoveDropFlatRise,
       sharpMoveRiseFlatDrop,
       rsiRange,
-      candlestickHammer,
-      candlestickShootingStar,
-      candlestickDoji,
-      candlestickEngulfingBullish,
-      candlestickEngulfingBearish,
-      candlestickHaramiBullish,
-      candlestickHaramiBearish,
-      candlestickMorningStar,
-      candlestickEveningStar,
-      candlestickDarkCloudCover,
-      candlestickPiercing,
-      candlestickThreeBlackCrows,
-      candlestickThreeWhiteSoldiers,
-      candlestickLookback,
-      patternUseVolumeConfirmation,
-      patternRequireVolumeForReversal,
-      patternTrendBackgroundLookback,
-      patternVolumeMultiplier,
-      trendUptrend,
-      trendDowntrend,
-      trendSideways,
-      trendBreakout,
-      trendBreakdown,
-      trendLookback,
       aiAnalysisEnabled,
       aiTrendUp,
       aiTrendDown,
@@ -1572,270 +1371,6 @@ export function OpportunityFiltersPanel({
                           onChange={(e) => setSharpMoveRiseFlatDrop(e.target.checked)}
                         >
                           急涨横盘急跌
-                        </Checkbox>
-                      </div>
-                    </div>
-                  </div>
-                ),
-              },
-              {
-                key: 'technicalIndicators',
-                label: '形态筛选',
-                children: (
-                  <div className={styles.filterContent}>
-                    {/* K线形态回溯窗口 */}
-                    <div className={styles.filterRow}>
-                      <div className={styles.filterItem}>
-                        <span className={styles.filterLabel}>K线形态检索根数：</span>
-                        <InputNumber
-                          value={candlestickLookback}
-                          min={5}
-                          max={200}
-                          step={5}
-                          style={{ width: 100 }}
-                          onChange={(v) => {
-                            const next = typeof v === 'number' && isFinite(v) ? Math.floor(v) : 20;
-                            setCandlestickLookback(Math.min(200, Math.max(5, next)));
-                          }}
-                        />
-                        <span style={{ marginLeft: 4 }}>根</span>
-                      </div>
-                    </div>
-
-                    {/* K线形态识别高级配置 */}
-                    <div className={styles.filterRow}>
-                      <Collapse
-                        ghost
-                        activeKey={showPatternAdvanced ? ['advanced'] : []}
-                        onChange={(keys) => setShowPatternAdvanced((keys as string[]).includes('advanced'))}
-                        items={[
-                          {
-                            key: 'advanced',
-                            label: <span style={{ fontSize: 13, color: '#666' }}>🔧 形态识别高级配置</span>,
-                            children: (
-                              <>
-                                {/* 启用成交量确认 */}
-                                <div className={styles.filterRow}>
-                                  <div className={styles.filterItem}>
-                                    <Checkbox
-                                      checked={patternUseVolumeConfirmation}
-                                      onChange={(e) => setPatternUseVolumeConfirmation(e.target.checked)}
-                                    >
-                                      启用成交量确认
-                                    </Checkbox>
-                                  </div>
-                                </div>
-
-                                {patternUseVolumeConfirmation && (
-                                  <>
-                                    <div className={styles.filterRow}>
-                                      <div className={styles.filterItem}>
-                                        <span className={styles.filterLabel}>成交量倍数：</span>
-                                        <InputNumber
-                                          value={patternVolumeMultiplier}
-                                          min={1.0}
-                                          max={5.0}
-                                          step={0.1}
-                                          precision={1}
-                                          style={{ width: 80 }}
-                                          onChange={(v) => {
-                                            const next = typeof v === 'number' && isFinite(v) ? v : 1.5;
-                                            setPatternVolumeMultiplier(Math.max(1.0, Math.min(5.0, next)));
-                                          }}
-                                        />
-                                        <span style={{ marginLeft: 4, fontSize: 12, color: '#999' }}>倍</span>
-                                      </div>
-                                    </div>
-
-                                    <div className={styles.filterRow}>
-                                      <div className={styles.filterItem}>
-                                        <Checkbox
-                                          checked={patternRequireVolumeForReversal}
-                                          onChange={(e) => setPatternRequireVolumeForReversal(e.target.checked)}
-                                        >
-                                          反转形态强制成交量确认
-                                        </Checkbox>
-                                      </div>
-                                    </div>
-                                  </>
-                                )}
-
-                                {/* 趋势背景周期 */}
-                                <div className={styles.filterRow}>
-                                  <div className={styles.filterItem}>
-                                    <span className={styles.filterLabel}>趋势背景周期：</span>
-                                    <InputNumber
-                                      value={patternTrendBackgroundLookback}
-                                      min={5}
-                                      max={30}
-                                      step={1}
-                                      style={{ width: 80 }}
-                                      onChange={(v) => {
-                                        const next = typeof v === 'number' && isFinite(v) ? Math.floor(v) : 10;
-                                        setPatternTrendBackgroundLookback(Math.min(30, Math.max(5, next)));
-                                      }}
-                                    />
-                                    <span style={{ marginLeft: 4, fontSize: 12, color: '#999' }}>根K线</span>
-                                  </div>
-                                </div>
-
-                                {/* 说明文字 */}
-                                <div
-                                  style={{
-                                    marginTop: 8,
-                                    padding: 8,
-                                    background: '#f5f5f5',
-                                    borderRadius: 4,
-                                    fontSize: 12,
-                                    color: '#666',
-                                  }}
-                                >
-                                  <div>
-                                    💡 <strong>说明：</strong>
-                                  </div>
-                                  <ul style={{ margin: '4px 0 0 0', paddingLeft: 20 }}>
-                                    <li>
-                                      <strong>成交量确认</strong>：形态出现时成交量需放大到均量的指定倍数
-                                    </li>
-                                    <li>
-                                      <strong>趋势背景</strong>：检查形态前N根K线的趋势方向，确保形态出现在合适的趋势环境中
-                                    </li>
-                                    <li>
-                                      <strong>强制确认</strong>：开启后，反转形态必须满足成交量条件才有效
-                                    </li>
-                                  </ul>
-                                </div>
-                              </>
-                            ),
-                          },
-                        ]}
-                      />
-                    </div>
-
-                    {/* K线形态筛选 - 单根 */}
-                    <div className={styles.filterRow}>
-                      <div className={styles.filterItem} style={{ flexWrap: 'wrap', gap: 8 }}>
-                        <span className={styles.filterLabel}>单根形态：</span>
-                        <PatternTooltip pattern="hammer" placement="top">
-                          <Checkbox checked={candlestickHammer} onChange={(e) => setCandlestickHammer(e.target.checked)}>
-                            锤头线
-                          </Checkbox>
-                        </PatternTooltip>
-                        <PatternTooltip pattern="shootingStar" placement="top">
-                          <Checkbox checked={candlestickShootingStar} onChange={(e) => setCandlestickShootingStar(e.target.checked)}>
-                            射击之星
-                          </Checkbox>
-                        </PatternTooltip>
-                        <PatternTooltip pattern="doji" placement="top">
-                          <Checkbox checked={candlestickDoji} onChange={(e) => setCandlestickDoji(e.target.checked)}>
-                            十字星
-                          </Checkbox>
-                        </PatternTooltip>
-                      </div>
-                    </div>
-
-                    {/* K线形态筛选 - 双根 */}
-                    <div className={styles.filterRow}>
-                      <div className={styles.filterItem} style={{ flexWrap: 'wrap', gap: 8 }}>
-                        <span className={styles.filterLabel}>双根形态：</span>
-                        <PatternTooltip pattern="engulfingBullish" placement="top">
-                          <Checkbox checked={candlestickEngulfingBullish} onChange={(e) => setCandlestickEngulfingBullish(e.target.checked)}>
-                            阳包阴
-                          </Checkbox>
-                        </PatternTooltip>
-                        <PatternTooltip pattern="engulfingBearish" placement="top">
-                          <Checkbox checked={candlestickEngulfingBearish} onChange={(e) => setCandlestickEngulfingBearish(e.target.checked)}>
-                            阴包阳
-                          </Checkbox>
-                        </PatternTooltip>
-                        <PatternTooltip pattern="haramiBullish" placement="top">
-                          <Checkbox checked={candlestickHaramiBullish} onChange={(e) => setCandlestickHaramiBullish(e.target.checked)}>
-                            阳孕阴
-                          </Checkbox>
-                        </PatternTooltip>
-                        <PatternTooltip pattern="haramiBearish" placement="top">
-                          <Checkbox checked={candlestickHaramiBearish} onChange={(e) => setCandlestickHaramiBearish(e.target.checked)}>
-                            阴孕阳
-                          </Checkbox>
-                        </PatternTooltip>
-                      </div>
-                    </div>
-
-                    {/* K线形态筛选 - 三根 */}
-                    <div className={styles.filterRow}>
-                      <div className={styles.filterItem} style={{ flexWrap: 'wrap', gap: 8 }}>
-                        <span className={styles.filterLabel}>三根形态：</span>
-                        <PatternTooltip pattern="morningStar" placement="top">
-                          <Checkbox checked={candlestickMorningStar} onChange={(e) => setCandlestickMorningStar(e.target.checked)}>
-                            早晨之星
-                          </Checkbox>
-                        </PatternTooltip>
-                        <PatternTooltip pattern="eveningStar" placement="top">
-                          <Checkbox checked={candlestickEveningStar} onChange={(e) => setCandlestickEveningStar(e.target.checked)}>
-                            黄昏之星
-                          </Checkbox>
-                        </PatternTooltip>
-                        <PatternTooltip pattern="darkCloudCover" placement="top">
-                          <Checkbox checked={candlestickDarkCloudCover} onChange={(e) => setCandlestickDarkCloudCover(e.target.checked)}>
-                            乌云盖顶
-                          </Checkbox>
-                        </PatternTooltip>
-                        <PatternTooltip pattern="piercing" placement="top">
-                          <Checkbox checked={candlestickPiercing} onChange={(e) => setCandlestickPiercing(e.target.checked)}>
-                            刺透形态
-                          </Checkbox>
-                        </PatternTooltip>
-                        <PatternTooltip pattern="threeBlackCrows" placement="top">
-                          <Checkbox checked={candlestickThreeBlackCrows} onChange={(e) => setCandlestickThreeBlackCrows(e.target.checked)}>
-                            三只乌鸦
-                          </Checkbox>
-                        </PatternTooltip>
-                        <PatternTooltip pattern="threeWhiteSoldiers" placement="top">
-                          <Checkbox checked={candlestickThreeWhiteSoldiers} onChange={(e) => setCandlestickThreeWhiteSoldiers(e.target.checked)}>
-                            三兵红烛
-                          </Checkbox>
-                        </PatternTooltip>
-                      </div>
-                    </div>
-
-
-                    {/* 趋势形态回溯窗口 */}
-                    <div className={styles.filterRow}>
-                      <div className={styles.filterItem}>
-                        <span className={styles.filterLabel}>趋势形态检索根数：</span>
-                        <InputNumber
-                          value={trendLookback}
-                          min={5}
-                          max={200}
-                          step={5}
-                          style={{ width: 100 }}
-                          onChange={(v) => {
-                            const next = typeof v === 'number' && isFinite(v) ? Math.floor(v) : 20;
-                            setTrendLookback(Math.min(200, Math.max(5, next)));
-                          }}
-                        />
-                        <span style={{ marginLeft: 4 }}>根</span>
-                      </div>
-                    </div>
-
-                    {/* 趋势形态筛选 */}
-                    <div className={styles.filterRow}>
-                      <div className={styles.filterItem} style={{ flexWrap: 'wrap', gap: 8 }}>
-                        <span className={styles.filterLabel}>趋势形态：</span>
-                        <Checkbox checked={trendUptrend} onChange={(e) => setTrendUptrend(e.target.checked)}>
-                          上升趋势
-                        </Checkbox>
-                        <Checkbox checked={trendDowntrend} onChange={(e) => setTrendDowntrend(e.target.checked)}>
-                          下降趋势
-                        </Checkbox>
-                        <Checkbox checked={trendSideways} onChange={(e) => setTrendSideways(e.target.checked)}>
-                          横盘整理
-                        </Checkbox>
-                        <Checkbox checked={trendBreakout} onChange={(e) => setTrendBreakout(e.target.checked)}>
-                          突破形态
-                        </Checkbox>
-                        <Checkbox checked={trendBreakdown} onChange={(e) => setTrendBreakdown(e.target.checked)}>
-                          跌破形态
                         </Checkbox>
                       </div>
                     </div>

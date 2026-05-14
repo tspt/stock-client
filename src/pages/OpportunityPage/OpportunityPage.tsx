@@ -50,8 +50,6 @@ import {
   OPPORTUNITY_DEFAULT_CONSOLIDATION,
   OPPORTUNITY_DEFAULT_SHARP_MOVE,
   OPPORTUNITY_DEFAULT_TREND_LINE,
-  OPPORTUNITY_DEFAULT_CANDLESTICK,
-  OPPORTUNITY_DEFAULT_TREND_PATTERN,
   OPPORTUNITY_DEFAULT_AI_ANALYSIS,
   OPPORTUNITY_DEFAULT_INDICATORS,
   OPPORTUNITY_DEFAULT_LIMIT_MOVES,
@@ -152,36 +150,6 @@ const INITIAL_FILTER_STATE = {
   bollingerMiddle: false,
   bollingerLower: false,
 
-  // K线形态筛选
-  candlestickHammer: false,
-  candlestickShootingStar: false,
-  candlestickDoji: false,
-  candlestickEngulfingBullish: false,
-  candlestickEngulfingBearish: false,
-  candlestickHaramiBullish: false,
-  candlestickHaramiBearish: false,
-  candlestickMorningStar: false,
-  candlestickEveningStar: false,
-  candlestickDarkCloudCover: false,
-  candlestickPiercing: false,
-  candlestickThreeBlackCrows: false,
-  candlestickThreeWhiteSoldiers: false,
-  candlestickLookback: OPPORTUNITY_DEFAULT_CANDLESTICK.lookback,
-
-  // K线形态识别高级配置
-  patternUseVolumeConfirmation: OPPORTUNITY_DEFAULT_CANDLESTICK.useVolumeConfirmation,
-  patternRequireVolumeForReversal: OPPORTUNITY_DEFAULT_CANDLESTICK.requireVolumeForReversal,
-  patternTrendBackgroundLookback: OPPORTUNITY_DEFAULT_CANDLESTICK.trendBackgroundLookback,
-  patternVolumeMultiplier: OPPORTUNITY_DEFAULT_CANDLESTICK.volumeMultiplier,
-
-  // 趋势形态筛选
-  trendUptrend: false,
-  trendDowntrend: false,
-  trendSideways: false,
-  trendBreakout: false,
-  trendBreakdown: false,
-  trendLookback: OPPORTUNITY_DEFAULT_TREND_PATTERN.lookback,
-
   // AI分析筛选
   aiAnalysisEnabled: OPPORTUNITY_DEFAULT_AI_ANALYSIS.enabled,
   aiTrendUp: OPPORTUNITY_DEFAULT_AI_ANALYSIS.trendUp,
@@ -276,7 +244,7 @@ export function OpportunityPage() {
   const [peRatioRange, setPeRatioRange] = useState<{ min?: number; max?: number }>(INITIAL_FILTER_STATE.peRatioRange);
   const [kdjJRange, setKdjJRange] = useState<{ min?: number; max?: number }>(INITIAL_FILTER_STATE.kdjJRange);
   /** 筛选 Collapse 当前展开的面板 key 列表；[] 表示各组均收起。默认展开所有筛选项 */
-  const [filterPanelActiveKey, setFilterPanelActiveKey] = useState<string[]>(['data', 'consolidation', 'trendLine', 'sharpMove', 'technicalIndicators', 'aiAnalysis']);
+  const [filterPanelActiveKey, setFilterPanelActiveKey] = useState<string[]>(['data', 'consolidation', 'trendLine', 'sharpMove', 'aiAnalysis']);
 
   // 涨停/跌停筛选状态
   const [recentLimitUpCount, setRecentLimitUpCount] = useState<number | undefined>(
@@ -436,46 +404,6 @@ export function OpportunityPage() {
   const [bollingerMiddle, setBollingerMiddle] = useState<boolean>(INITIAL_FILTER_STATE.bollingerMiddle);
   const [bollingerLower, setBollingerLower] = useState<boolean>(INITIAL_FILTER_STATE.bollingerLower);
 
-  // K线形态筛选状态 - 单根
-  const [candlestickHammer, setCandlestickHammer] = useState<boolean>(INITIAL_FILTER_STATE.candlestickHammer);
-  const [candlestickShootingStar, setCandlestickShootingStar] = useState<boolean>(INITIAL_FILTER_STATE.candlestickShootingStar);
-  const [candlestickDoji, setCandlestickDoji] = useState<boolean>(INITIAL_FILTER_STATE.candlestickDoji);
-  // K线形态筛选状态 - 双根
-  const [candlestickEngulfingBullish, setCandlestickEngulfingBullish] = useState<boolean>(INITIAL_FILTER_STATE.candlestickEngulfingBullish);
-  const [candlestickEngulfingBearish, setCandlestickEngulfingBearish] = useState<boolean>(INITIAL_FILTER_STATE.candlestickEngulfingBearish);
-  const [candlestickHaramiBullish, setCandlestickHaramiBullish] = useState<boolean>(INITIAL_FILTER_STATE.candlestickHaramiBullish);
-  const [candlestickHaramiBearish, setCandlestickHaramiBearish] = useState<boolean>(INITIAL_FILTER_STATE.candlestickHaramiBearish);
-  // K线形态筛选状态 - 三根
-  const [candlestickMorningStar, setCandlestickMorningStar] = useState<boolean>(INITIAL_FILTER_STATE.candlestickMorningStar);
-  const [candlestickEveningStar, setCandlestickEveningStar] = useState<boolean>(INITIAL_FILTER_STATE.candlestickEveningStar);
-  const [candlestickDarkCloudCover, setCandlestickDarkCloudCover] = useState<boolean>(INITIAL_FILTER_STATE.candlestickDarkCloudCover);
-  const [candlestickPiercing, setCandlestickPiercing] = useState<boolean>(INITIAL_FILTER_STATE.candlestickPiercing);
-  const [candlestickThreeBlackCrows, setCandlestickThreeBlackCrows] = useState<boolean>(INITIAL_FILTER_STATE.candlestickThreeBlackCrows);
-  const [candlestickThreeWhiteSoldiers, setCandlestickThreeWhiteSoldiers] = useState<boolean>(INITIAL_FILTER_STATE.candlestickThreeWhiteSoldiers);
-  const [candlestickLookback, setCandlestickLookback] = useState<number>(INITIAL_FILTER_STATE.candlestickLookback);
-
-  // K线形态识别高级配置状态
-  const [patternUseVolumeConfirmation, setPatternUseVolumeConfirmation] = useState<boolean>(
-    INITIAL_FILTER_STATE.patternUseVolumeConfirmation
-  );
-  const [patternRequireVolumeForReversal, setPatternRequireVolumeForReversal] = useState<boolean>(
-    INITIAL_FILTER_STATE.patternRequireVolumeForReversal
-  );
-  const [patternTrendBackgroundLookback, setPatternTrendBackgroundLookback] = useState<number>(
-    INITIAL_FILTER_STATE.patternTrendBackgroundLookback
-  );
-  const [patternVolumeMultiplier, setPatternVolumeMultiplier] = useState<number>(
-    INITIAL_FILTER_STATE.patternVolumeMultiplier
-  );
-
-  // 趋势形态筛选状态
-  const [trendUptrend, setTrendUptrend] = useState<boolean>(INITIAL_FILTER_STATE.trendUptrend);
-  const [trendDowntrend, setTrendDowntrend] = useState<boolean>(INITIAL_FILTER_STATE.trendDowntrend);
-  const [trendSideways, setTrendSideways] = useState<boolean>(INITIAL_FILTER_STATE.trendSideways);
-  const [trendBreakout, setTrendBreakout] = useState<boolean>(INITIAL_FILTER_STATE.trendBreakout);
-  const [trendBreakdown, setTrendBreakdown] = useState<boolean>(INITIAL_FILTER_STATE.trendBreakdown);
-  const [trendLookback, setTrendLookback] = useState<number>(INITIAL_FILTER_STATE.trendLookback);
-
   // AI分析筛选状态
   const [aiAnalysisEnabled, setAiAnalysisEnabled] = useState<boolean>(INITIAL_FILTER_STATE.aiAnalysisEnabled);
   const [aiTrendUp, setAiTrendUp] = useState<boolean>(INITIAL_FILTER_STATE.aiTrendUp);
@@ -558,30 +486,6 @@ export function OpportunityPage() {
           // 新增技术指标筛选 actions
           setRsiRange,
           setRsiPeriod,
-          // K线形态筛选 actions - 单根
-          setCandlestickHammer,
-          setCandlestickShootingStar,
-          setCandlestickDoji,
-          // K线形态筛选 actions - 双根
-          setCandlestickEngulfingBullish,
-          setCandlestickEngulfingBearish,
-          setCandlestickHaramiBullish,
-          setCandlestickHaramiBearish,
-          // K线形态筛选 actions - 三根
-          setCandlestickMorningStar,
-          setCandlestickEveningStar,
-          setCandlestickDarkCloudCover,
-          setCandlestickPiercing,
-          setCandlestickThreeBlackCrows,
-          setCandlestickThreeWhiteSoldiers,
-          setCandlestickLookback,
-          // 趋势形态筛选 actions
-          setTrendUptrend,
-          setTrendDowntrend,
-          setTrendSideways,
-          setTrendBreakout,
-          setTrendBreakdown,
-          setTrendLookback,
           // AI分析筛选 actions
           setAiAnalysisEnabled,
           setAiTrendUp,
@@ -677,26 +581,6 @@ export function OpportunityPage() {
         sharpMoveRiseFlatDrop,
         rsiRange: { ...rsiRange },
         rsiPeriod,
-        candlestickHammer,
-        candlestickShootingStar,
-        candlestickDoji,
-        candlestickEngulfingBullish,
-        candlestickEngulfingBearish,
-        candlestickHaramiBullish,
-        candlestickHaramiBearish,
-        candlestickMorningStar,
-        candlestickEveningStar,
-        candlestickDarkCloudCover,
-        candlestickPiercing,
-        candlestickThreeBlackCrows,
-        candlestickThreeWhiteSoldiers,
-        candlestickLookback,
-        trendUptrend,
-        trendDowntrend,
-        trendSideways,
-        trendBreakout,
-        trendBreakdown,
-        trendLookback,
         aiAnalysisEnabled,
         aiTrendUp,
         aiTrendDown,
@@ -746,26 +630,6 @@ export function OpportunityPage() {
     sharpMoveRiseFlatDrop,
     rsiRange,
     rsiPeriod,
-    candlestickHammer,
-    candlestickShootingStar,
-    candlestickDoji,
-    candlestickEngulfingBullish,
-    candlestickEngulfingBearish,
-    candlestickHaramiBullish,
-    candlestickHaramiBearish,
-    candlestickMorningStar,
-    candlestickEveningStar,
-    candlestickDarkCloudCover,
-    candlestickPiercing,
-    candlestickThreeBlackCrows,
-    candlestickThreeWhiteSoldiers,
-    candlestickLookback,
-    trendUptrend,
-    trendDowntrend,
-    trendSideways,
-    trendBreakout,
-    trendBreakdown,
-    trendLookback,
     aiAnalysisEnabled,
     aiTrendUp,
     aiTrendDown,
@@ -824,26 +688,6 @@ export function OpportunityPage() {
         sharpMoveRiseFlatDrop,
         rsiRange: { ...rsiRange },
         rsiPeriod,
-        candlestickHammer,
-        candlestickShootingStar,
-        candlestickDoji,
-        candlestickEngulfingBullish,
-        candlestickEngulfingBearish,
-        candlestickHaramiBullish,
-        candlestickHaramiBearish,
-        candlestickMorningStar,
-        candlestickEveningStar,
-        candlestickDarkCloudCover,
-        candlestickPiercing,
-        candlestickThreeBlackCrows,
-        candlestickThreeWhiteSoldiers,
-        candlestickLookback,
-        trendUptrend,
-        trendDowntrend,
-        trendSideways,
-        trendBreakout,
-        trendBreakdown,
-        trendLookback,
         aiAnalysisEnabled,
         aiTrendUp,
         aiTrendDown,
@@ -895,26 +739,6 @@ export function OpportunityPage() {
     sharpMoveRiseFlatDrop,
     rsiRange,
     rsiPeriod,
-    candlestickHammer,
-    candlestickShootingStar,
-    candlestickDoji,
-    candlestickEngulfingBullish,
-    candlestickEngulfingBearish,
-    candlestickHaramiBullish,
-    candlestickHaramiBearish,
-    candlestickMorningStar,
-    candlestickEveningStar,
-    candlestickDarkCloudCover,
-    candlestickPiercing,
-    candlestickThreeBlackCrows,
-    candlestickThreeWhiteSoldiers,
-    candlestickLookback,
-    trendUptrend,
-    trendDowntrend,
-    trendSideways,
-    trendBreakout,
-    trendBreakdown,
-    trendLookback,
     aiAnalysisEnabled,
     aiTrendUp,
     aiTrendDown,
@@ -1123,30 +947,6 @@ export function OpportunityPage() {
       bollingerUpper,
       bollingerMiddle,
       bollingerLower,
-      candlestickHammer,
-      candlestickShootingStar,
-      candlestickDoji,
-      candlestickEngulfingBullish,
-      candlestickEngulfingBearish,
-      candlestickHaramiBullish,
-      candlestickHaramiBearish,
-      candlestickMorningStar,
-      candlestickEveningStar,
-      candlestickDarkCloudCover,
-      candlestickPiercing,
-      candlestickThreeBlackCrows,
-      candlestickThreeWhiteSoldiers,
-      candlestickLookback,
-      patternUseVolumeConfirmation,
-      patternRequireVolumeForReversal,
-      patternTrendBackgroundLookback,
-      patternVolumeMultiplier,
-      trendUptrend,
-      trendDowntrend,
-      trendSideways,
-      trendBreakout,
-      trendBreakdown,
-      trendLookback,
       aiAnalysisEnabled,
       aiTrendUp,
       aiTrendDown,
@@ -1200,30 +1000,6 @@ export function OpportunityPage() {
       bollingerUpper,
       bollingerMiddle,
       bollingerLower,
-      candlestickHammer,
-      candlestickShootingStar,
-      candlestickDoji,
-      candlestickEngulfingBullish,
-      candlestickEngulfingBearish,
-      candlestickHaramiBullish,
-      candlestickHaramiBearish,
-      candlestickMorningStar,
-      candlestickEveningStar,
-      candlestickDarkCloudCover,
-      candlestickPiercing,
-      candlestickThreeBlackCrows,
-      candlestickThreeWhiteSoldiers,
-      candlestickLookback,
-      patternUseVolumeConfirmation,
-      patternRequireVolumeForReversal,
-      patternTrendBackgroundLookback,
-      patternVolumeMultiplier,
-      trendUptrend,
-      trendDowntrend,
-      trendSideways,
-      trendBreakout,
-      trendBreakdown,
-      trendLookback,
       aiAnalysisEnabled,
       aiTrendUp,
       aiTrendDown,
@@ -1339,28 +1115,6 @@ export function OpportunityPage() {
     // 重置新增的技术指标筛选
     setRsiRange({ ...s.rsiRange });
     setRsiPeriod(s.rsiPeriod);
-    // 重置K线形态筛选
-    setCandlestickHammer(s.candlestickHammer);
-    setCandlestickShootingStar(s.candlestickShootingStar);
-    setCandlestickDoji(s.candlestickDoji);
-    setCandlestickEngulfingBullish(s.candlestickEngulfingBullish);
-    setCandlestickEngulfingBearish(s.candlestickEngulfingBearish);
-    setCandlestickHaramiBullish(s.candlestickHaramiBullish);
-    setCandlestickHaramiBearish(s.candlestickHaramiBearish);
-    setCandlestickMorningStar(s.candlestickMorningStar);
-    setCandlestickEveningStar(s.candlestickEveningStar);
-    setCandlestickDarkCloudCover(s.candlestickDarkCloudCover);
-    setCandlestickPiercing(s.candlestickPiercing);
-    setCandlestickThreeBlackCrows(s.candlestickThreeBlackCrows);
-    setCandlestickThreeWhiteSoldiers(s.candlestickThreeWhiteSoldiers);
-    setCandlestickLookback(s.candlestickLookback);
-    // 重置趋势形态筛选
-    setTrendUptrend(s.trendUptrend);
-    setTrendDowntrend(s.trendDowntrend);
-    setTrendSideways(s.trendSideways);
-    setTrendBreakout(s.trendBreakout);
-    setTrendBreakdown(s.trendBreakdown);
-    setTrendLookback(s.trendLookback);
     // 重置AI分析筛选
     setAiAnalysisEnabled(s.aiAnalysisEnabled);
     setAiTrendUp(s.aiTrendUp);
@@ -1492,30 +1246,6 @@ export function OpportunityPage() {
           sharpMoveDropFlatRise,
           sharpMoveRiseFlatDrop,
           rsiRange,
-          candlestickHammer,
-          candlestickShootingStar,
-          candlestickDoji,
-          candlestickEngulfingBullish,
-          candlestickEngulfingBearish,
-          candlestickHaramiBullish,
-          candlestickHaramiBearish,
-          candlestickMorningStar,
-          candlestickEveningStar,
-          candlestickDarkCloudCover,
-          candlestickPiercing,
-          candlestickThreeBlackCrows,
-          candlestickThreeWhiteSoldiers,
-          candlestickLookback,
-          patternUseVolumeConfirmation,
-          patternRequireVolumeForReversal,
-          patternTrendBackgroundLookback,
-          patternVolumeMultiplier,
-          trendUptrend,
-          trendDowntrend,
-          trendSideways,
-          trendBreakout,
-          trendBreakdown,
-          trendLookback,
           aiAnalysisEnabled,
           aiTrendUp,
           aiTrendDown,
@@ -1914,57 +1644,6 @@ export function OpportunityPage() {
             setRsiRange={setRsiRange}
             rsiPeriod={rsiPeriod}
             setRsiPeriod={setRsiPeriod}
-            // K线形态筛选 props
-            candlestickHammer={candlestickHammer}
-            setCandlestickHammer={setCandlestickHammer}
-            candlestickShootingStar={candlestickShootingStar}
-            setCandlestickShootingStar={setCandlestickShootingStar}
-            candlestickDoji={candlestickDoji}
-            setCandlestickDoji={setCandlestickDoji}
-            candlestickEngulfingBullish={candlestickEngulfingBullish}
-            setCandlestickEngulfingBullish={setCandlestickEngulfingBullish}
-            candlestickEngulfingBearish={candlestickEngulfingBearish}
-            setCandlestickEngulfingBearish={setCandlestickEngulfingBearish}
-            candlestickHaramiBullish={candlestickHaramiBullish}
-            setCandlestickHaramiBullish={setCandlestickHaramiBullish}
-            candlestickHaramiBearish={candlestickHaramiBearish}
-            setCandlestickHaramiBearish={setCandlestickHaramiBearish}
-            candlestickMorningStar={candlestickMorningStar}
-            setCandlestickMorningStar={setCandlestickMorningStar}
-            candlestickEveningStar={candlestickEveningStar}
-            setCandlestickEveningStar={setCandlestickEveningStar}
-            candlestickDarkCloudCover={candlestickDarkCloudCover}
-            setCandlestickDarkCloudCover={setCandlestickDarkCloudCover}
-            candlestickPiercing={candlestickPiercing}
-            setCandlestickPiercing={setCandlestickPiercing}
-            candlestickThreeBlackCrows={candlestickThreeBlackCrows}
-            setCandlestickThreeBlackCrows={setCandlestickThreeBlackCrows}
-            candlestickThreeWhiteSoldiers={candlestickThreeWhiteSoldiers}
-            setCandlestickThreeWhiteSoldiers={setCandlestickThreeWhiteSoldiers}
-            candlestickLookback={candlestickLookback}
-            setCandlestickLookback={setCandlestickLookback}
-            // K线形态识别高级配置 props
-            patternUseVolumeConfirmation={patternUseVolumeConfirmation}
-            setPatternUseVolumeConfirmation={setPatternUseVolumeConfirmation}
-            patternRequireVolumeForReversal={patternRequireVolumeForReversal}
-            setPatternRequireVolumeForReversal={setPatternRequireVolumeForReversal}
-            patternTrendBackgroundLookback={patternTrendBackgroundLookback}
-            setPatternTrendBackgroundLookback={setPatternTrendBackgroundLookback}
-            patternVolumeMultiplier={patternVolumeMultiplier}
-            setPatternVolumeMultiplier={setPatternVolumeMultiplier}
-            // 趋势形态筛选 props
-            trendUptrend={trendUptrend}
-            setTrendUptrend={setTrendUptrend}
-            trendDowntrend={trendDowntrend}
-            setTrendDowntrend={setTrendDowntrend}
-            trendSideways={trendSideways}
-            setTrendSideways={setTrendSideways}
-            trendBreakout={trendBreakout}
-            setTrendBreakout={setTrendBreakout}
-            trendBreakdown={trendBreakdown}
-            setTrendBreakdown={setTrendBreakdown}
-            trendLookback={trendLookback}
-            setTrendLookback={setTrendLookback}
             // AI分析筛选 props
             aiAnalysisEnabled={aiAnalysisEnabled}
             setAiAnalysisEnabled={setAiAnalysisEnabled}
@@ -2064,30 +1743,6 @@ export function OpportunityPage() {
                   sharpMoveDropFlatRise,
                   sharpMoveRiseFlatDrop,
                   rsiRange,
-                  candlestickHammer,
-                  candlestickShootingStar,
-                  candlestickDoji,
-                  candlestickEngulfingBullish,
-                  candlestickEngulfingBearish,
-                  candlestickHaramiBullish,
-                  candlestickHaramiBearish,
-                  candlestickMorningStar,
-                  candlestickEveningStar,
-                  candlestickDarkCloudCover,
-                  candlestickPiercing,
-                  candlestickThreeBlackCrows,
-                  candlestickThreeWhiteSoldiers,
-                  candlestickLookback,
-                  patternUseVolumeConfirmation,
-                  patternRequireVolumeForReversal,
-                  patternTrendBackgroundLookback,
-                  patternVolumeMultiplier,
-                  trendUptrend,
-                  trendDowntrend,
-                  trendSideways,
-                  trendBreakout,
-                  trendBreakdown,
-                  trendLookback,
                   aiAnalysisEnabled,
                   aiTrendUp,
                   aiTrendDown,

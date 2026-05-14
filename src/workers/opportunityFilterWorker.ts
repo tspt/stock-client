@@ -12,8 +12,6 @@ import {
   isNearMiddleBand,
   isNearLowerBand,
 } from '@/utils/analysis/technicalIndicators';
-import { detectCandlestickPatternsInWindow } from '@/utils/analysis/candlestickPatterns';
-import { detectTrendPatterns } from '@/utils/analysis/trendPatterns';
 import type { KLineData, SharpMovePatternAnalysis, StockOpportunityData } from '@/types/stock';
 import type { OpportunityFilterSnapshot } from '@/types/opportunityFilter';
 import type {
@@ -86,29 +84,7 @@ function technicalIndicatorsFilterActive(filters: OpportunityFilterSnapshot): bo
     filters.macdDivergence ||
     filters.bollingerUpper ||
     filters.bollingerMiddle ||
-    filters.bollingerLower ||
-    // 单根形态
-    filters.candlestickHammer ||
-    filters.candlestickShootingStar ||
-    filters.candlestickDoji ||
-    // 双根形态
-    filters.candlestickEngulfingBullish ||
-    filters.candlestickEngulfingBearish ||
-    filters.candlestickHaramiBullish ||
-    filters.candlestickHaramiBearish ||
-    // 三根形态
-    filters.candlestickMorningStar ||
-    filters.candlestickEveningStar ||
-    filters.candlestickDarkCloudCover ||
-    filters.candlestickPiercing ||
-    filters.candlestickThreeBlackCrows ||
-    filters.candlestickThreeWhiteSoldiers ||
-    // 趋势形态
-    filters.trendUptrend ||
-    filters.trendDowntrend ||
-    filters.trendSideways ||
-    filters.trendBreakout ||
-    filters.trendBreakdown
+    filters.bollingerLower
   );
 }
 
@@ -204,83 +180,6 @@ function passesTechnicalIndicatorsFilter(
       (filters.bollingerLower && nearLower);
 
     if (!bbMatched) {
-      return false;
-    }
-  }
-
-  // K线形态筛选（回溯窗口内任一位置存在即通过）
-  if (
-    filters.candlestickHammer ||
-    filters.candlestickShootingStar ||
-    filters.candlestickDoji ||
-    filters.candlestickEngulfingBullish ||
-    filters.candlestickEngulfingBearish ||
-    filters.candlestickHaramiBullish ||
-    filters.candlestickHaramiBearish ||
-    filters.candlestickMorningStar ||
-    filters.candlestickEveningStar ||
-    filters.candlestickDarkCloudCover ||
-    filters.candlestickPiercing ||
-    filters.candlestickThreeBlackCrows ||
-    filters.candlestickThreeWhiteSoldiers
-  ) {
-    const candlestickLookback = filters.candlestickLookback || 20;
-    const patterns = detectCandlestickPatternsInWindow(klineData, candlestickLookback, {
-      useVolumeConfirmation: filters.patternUseVolumeConfirmation ?? true,
-      requireVolumeForReversal: filters.patternRequireVolumeForReversal ?? true,
-      trendBackgroundLookback: filters.patternTrendBackgroundLookback ?? 10,
-      volumeMultiplier: filters.patternVolumeMultiplier ?? 1.5,
-    });
-
-    // 单根形态
-    const singlePatternMatched =
-      (filters.candlestickHammer && patterns.hammer) ||
-      (filters.candlestickShootingStar && patterns.shootingStar) ||
-      (filters.candlestickDoji && patterns.doji);
-
-    // 双根形态
-    const doublePatternMatched =
-      (filters.candlestickEngulfingBullish && patterns.engulfingBullish) ||
-      (filters.candlestickEngulfingBearish && patterns.engulfingBearish) ||
-      (filters.candlestickHaramiBullish && patterns.haramiBullish) ||
-      (filters.candlestickHaramiBearish && patterns.haramiBearish);
-
-    // 三根形态
-    const triplePatternMatched =
-      (filters.candlestickMorningStar && patterns.morningStar) ||
-      (filters.candlestickEveningStar && patterns.eveningStar) ||
-      (filters.candlestickDarkCloudCover && patterns.darkCloudCover) ||
-      (filters.candlestickPiercing && patterns.piercing) ||
-      (filters.candlestickThreeBlackCrows && patterns.threeBlackCrows) ||
-      (filters.candlestickThreeWhiteSoldiers && patterns.threeWhiteSoldiers);
-
-    // 任一形态匹配即通过
-    const patternMatched = singlePatternMatched || doublePatternMatched || triplePatternMatched;
-
-    if (!patternMatched) {
-      return false;
-    }
-  }
-
-  // 趋势形态筛选
-  if (
-    filters.trendUptrend ||
-    filters.trendDowntrend ||
-    filters.trendSideways ||
-    filters.trendBreakout ||
-    filters.trendBreakdown
-  ) {
-    const trendLookback = filters.trendLookback || 20;
-    const trends = detectTrendPatterns(klineData, trendLookback);
-
-    const trendMatched =
-      (filters.trendUptrend && trends.uptrend) ||
-      (filters.trendDowntrend && trends.downtrend) ||
-      (filters.trendSideways && trends.sideways) ||
-      (filters.trendBreakout && trends.breakout) ||
-      (filters.trendBreakdown && trends.breakdown);
-
-    if (!trendMatched) {
       return false;
     }
   }

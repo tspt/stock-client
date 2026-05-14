@@ -58,37 +58,6 @@ export interface OpportunityFilterSnapshot {
   bollingerMiddle: boolean;
   /** 布林带下轨 */
   bollingerLower: boolean;
-  /** K线形态筛选 - 单根 */
-  candlestickHammer: boolean;
-  candlestickShootingStar: boolean;
-  candlestickDoji: boolean;
-  /** K线形态筛选 - 双根 */
-  candlestickEngulfingBullish: boolean;
-  candlestickEngulfingBearish: boolean;
-  candlestickHaramiBullish: boolean;
-  candlestickHaramiBearish: boolean;
-  /** K线形态筛选 - 三根 */
-  candlestickMorningStar: boolean;
-  candlestickEveningStar: boolean;
-  candlestickDarkCloudCover: boolean;
-  candlestickPiercing: boolean;
-  candlestickThreeBlackCrows: boolean;
-  candlestickThreeWhiteSoldiers: boolean;
-  /** K线形态回溯窗口大小（根数） */
-  candlestickLookback: number;
-  /** K线形态识别高级配置 */
-  patternUseVolumeConfirmation: boolean;
-  patternRequireVolumeForReversal: boolean;
-  patternTrendBackgroundLookback: number;
-  patternVolumeMultiplier: number;
-  /** 趋势形态筛选 */
-  trendUptrend: boolean;
-  trendDowntrend: boolean;
-  trendSideways: boolean;
-  trendBreakout: boolean;
-  trendBreakdown: boolean;
-  /** 趋势形态回溯窗口大小（根数） */
-  trendLookback: number;
   /** AI分析筛选开关 */
   aiAnalysisEnabled: boolean;
   /** AI趋势预测方向筛选 */
