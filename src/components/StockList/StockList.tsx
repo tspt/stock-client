@@ -27,8 +27,8 @@ import { AlertSettingModal } from '@/components/PriceAlert/AlertSettingModal';
 import { BUILTIN_GROUP_SELF_COLOR, BUILTIN_GROUP_SELF_ID, BUILTIN_GROUP_SELF_NAME } from '@/utils/config/constants';
 import styles from './StockList.module.css';
 
-/** 与 .listItem min-height + padding 对齐，供虚拟列表固定行高 */
-const LIST_ROW_HEIGHT = 48;
+/** 与 .listItem height + border 对齐，供虚拟列表固定行高 */
+const LIST_ROW_HEIGHT = 39; // 38px height + 1px border-bottom
 
 export const StockList = memo(function StockList() {
   const { message } = App.useApp();
@@ -72,11 +72,20 @@ export const StockList = memo(function StockList() {
     const el = listContainerRef.current;
     if (!el) return;
     const ro = new ResizeObserver((entries) => {
-      const h = Math.floor(entries[0]?.contentRect.height ?? 0);
-      setListHeight(h);
+      for (const entry of entries) {
+        const h = Math.floor(entry.contentRect.height);
+        if (h > 0) {
+          setListHeight(h);
+          break;
+        }
+      }
     });
     ro.observe(el);
-    setListHeight(Math.floor(el.clientHeight));
+    // 初始化时立即获取高度
+    const initialHeight = Math.floor(el.getBoundingClientRect().height);
+    if (initialHeight > 0) {
+      setListHeight(initialHeight);
+    }
     return () => ro.disconnect();
   }, []);
 

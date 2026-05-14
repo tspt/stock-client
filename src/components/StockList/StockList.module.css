@@ -1,9 +1,11 @@
 .stockList {
-  height: 100%;
+  flex: 1;
   display: flex;
   flex-direction: column;
   background: var(--ant-color-bg-container);
   overflow: hidden;
+  min-height: 0;
+  position: relative;
 }
 
 .header {
@@ -24,6 +26,7 @@
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
+  min-height: 0;
 }
 
 .listContainer::-webkit-scrollbar {
@@ -48,7 +51,7 @@
   cursor: pointer;
   transition: all 0.2s;
   border-bottom: 1px solid var(--ant-color-border-secondary);
-  min-height: 38px;
+  height: 38px;
   display: flex;
   align-items: center;
   justify-content: space-between;
