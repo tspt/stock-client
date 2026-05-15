@@ -272,6 +272,20 @@ export interface OpportunityFiltersPanelProps {
   setAiTrendScoreRange: SetRange;
   aiRiskScoreRange: { min?: number; max?: number };
   setAiRiskScoreRange: SetRange;
+  // v3.0 新增
+  aiVersion?: 'v1' | 'v2' | 'v3'; // 当前 AI 版本，用于控制 v3.0 筛选条件的显示
+  aiSignalConfluence?: boolean;
+  setAiSignalConfluence?: (v: boolean) => void;
+  aiMinSignalCount?: number;
+  setAiMinSignalCount?: (v: number) => void;
+  aiMinSignalRatio?: number;
+  setAiMinSignalRatio?: (v: number) => void;
+  aiPatternWinRateRange?: { min?: number; max?: number };
+  setAiPatternWinRateRange?: (v: { min?: number; max?: number }) => void;
+  aiMinSimilarPatterns?: number;
+  setAiMinSimilarPatterns?: (v: number) => void;
+  aiMinRiskRewardRatio?: number;
+  setAiMinRiskRewardRatio?: (v: number | undefined) => void;
 
   // 行业板块筛选
   industrySectors?: string[];
@@ -380,6 +394,20 @@ export function OpportunityFiltersPanel({
   setAiTrendScoreRange,
   aiRiskScoreRange,
   setAiRiskScoreRange,
+  // v3.0 新增
+  aiVersion,
+  aiSignalConfluence = false,
+  setAiSignalConfluence = () => { },
+  aiMinSignalCount = 4,
+  setAiMinSignalCount = () => { },
+  aiMinSignalRatio = 0.6,
+  setAiMinSignalRatio = () => { },
+  aiPatternWinRateRange = {},
+  setAiPatternWinRateRange = () => { },
+  aiMinSimilarPatterns = 3,
+  setAiMinSimilarPatterns = () => { },
+  aiMinRiskRewardRatio,
+  setAiMinRiskRewardRatio = () => { },
 
   // 行业板块筛选
   industrySectors,
@@ -1119,6 +1147,147 @@ export function OpportunityFiltersPanel({
                         （分数越高风险越低）
                       </span>
                     </div>
+
+                    {/* v3.0 新增：信号共识筛选 */}
+                    {aiVersion === 'v3' && (
+                      <div className={styles.filterItem} style={{ minWidth: 320 }}>
+                        <Checkbox
+                          checked={aiSignalConfluence}
+                          onChange={(e) => setAiSignalConfluence(e.target.checked)}
+                          disabled={!aiAnalysisEnabled}
+                        >
+                          要求信号共识（4+指标一致）
+                        </Checkbox>
+                        {aiSignalConfluence && (
+                          <div style={{ marginTop: 8, paddingLeft: 24 }}>
+                            <Space size="small">
+                              <span style={{ fontSize: 12 }}>最少信号数：</span>
+                              <InputNumber
+                                value={aiMinSignalCount}
+                                min={1}
+                                max={10}
+                                size="small"
+                                style={{ width: 60 }}
+                                disabled={!aiAnalysisEnabled}
+                                onChange={(v) => setAiMinSignalCount(typeof v === 'number' ? v : 4)}
+                              />
+                              <span style={{ fontSize: 12 }}>最小比例：</span>
+                              <InputNumber
+                                value={aiMinSignalRatio}
+                                min={0.3}
+                                max={1}
+                                step={0.1}
+                                size="small"
+                                style={{ width: 60 }}
+                                disabled={!aiAnalysisEnabled}
+                                onChange={(v) => setAiMinSignalRatio(typeof v === 'number' ? v : 0.6)}
+                              />
+                            </Space>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* v3.0 新增：相似形态胜率筛选 */}
+                    {aiVersion === 'v3' && (
+                      <div className={styles.filterItem} style={{ minWidth: 320 }}>
+                        <Checkbox
+                          checked={aiPatternWinRateRange.min !== undefined || aiPatternWinRateRange.max !== undefined}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setAiPatternWinRateRange({ min: 60, max: undefined });
+                            } else {
+                              setAiPatternWinRateRange({});
+                            }
+                          }}
+                          disabled={!aiAnalysisEnabled}
+                        >
+                          相似形态胜率
+                        </Checkbox>
+                        {(aiPatternWinRateRange.min !== undefined || aiPatternWinRateRange.max !== undefined) && (
+                          <div style={{ marginTop: 8, paddingLeft: 24 }}>
+                            <Space size="small">
+                              <InputNumber
+                                value={aiPatternWinRateRange.min}
+                                min={0}
+                                max={100}
+                                size="small"
+                                style={{ width: 70 }}
+                                placeholder="最低%"
+                                disabled={!aiAnalysisEnabled}
+                                onChange={(v) => {
+                                  const newRange = { ...aiPatternWinRateRange };
+                                  newRange.min = typeof v === 'number' && isFinite(v) ? v : undefined;
+                                  setAiPatternWinRateRange(newRange);
+                                }}
+                              />
+                              <span style={{ fontSize: 12 }}>~</span>
+                              <InputNumber
+                                value={aiPatternWinRateRange.max}
+                                min={0}
+                                max={100}
+                                size="small"
+                                style={{ width: 70 }}
+                                placeholder="最高%"
+                                disabled={!aiAnalysisEnabled}
+                                onChange={(v) => {
+                                  const newRange = { ...aiPatternWinRateRange };
+                                  newRange.max = typeof v === 'number' && isFinite(v) ? v : undefined;
+                                  setAiPatternWinRateRange(newRange);
+                                }}
+                              />
+                            </Space>
+                            <div style={{ marginTop: 4 }}>
+                              <Space size="small">
+                                <span style={{ fontSize: 12 }}>最少相似股票：</span>
+                                <InputNumber
+                                  value={aiMinSimilarPatterns}
+                                  min={1}
+                                  max={10}
+                                  size="small"
+                                  style={{ width: 60 }}
+                                  disabled={!aiAnalysisEnabled}
+                                  onChange={(v) => setAiMinSimilarPatterns(typeof v === 'number' ? v : 3)}
+                                />
+                              </Space>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* v3.0 新增：风险收益比筛选 */}
+                    {aiVersion === 'v3' && (
+                      <div className={styles.filterItem} style={{ minWidth: 320 }}>
+                        <Checkbox
+                          checked={aiMinRiskRewardRatio !== undefined}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setAiMinRiskRewardRatio(2);
+                            } else {
+                              setAiMinRiskRewardRatio(undefined);
+                            }
+                          }}
+                          disabled={!aiAnalysisEnabled}
+                        >
+                          风险收益比 ≥
+                        </Checkbox>
+                        {aiMinRiskRewardRatio !== undefined && (
+                          <span style={{ marginLeft: 8 }}>
+                            <InputNumber
+                              value={aiMinRiskRewardRatio}
+                              min={1}
+                              max={10}
+                              step={0.5}
+                              size="small"
+                              style={{ width: 70 }}
+                              disabled={!aiAnalysisEnabled}
+                              onChange={(v) => setAiMinRiskRewardRatio(typeof v === 'number' ? v : 2)}
+                            />
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </div>
                 ),
               },

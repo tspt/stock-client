@@ -76,6 +76,15 @@ export interface OpportunityFilterSnapshot {
   aiTrendScoreRange: NumberRange;
   /** AI风险评分范围（0-100，分数越高风险越低） */
   aiRiskScoreRange: NumberRange;
+  /** v3.0 新增：信号共识筛选 */
+  aiSignalConfluence?: boolean; // 是否要求信号共识
+  aiMinSignalCount?: number; // 最少支持信号数量（默认4）
+  aiMinSignalRatio?: number; // 最小信号比例（默认0.6）
+  /** v3.0 新增：相似形态胜率筛选 */
+  aiPatternWinRateRange?: NumberRange; // 相似形态胜率范围（0-100%）
+  aiMinSimilarPatterns?: number; // 最少相似股票数量（默认3）
+  /** v3.0 新增：风险收益比筛选 */
+  aiMinRiskRewardRatio?: number; // 最小风险收益比（默认2.0）
   /** 行业板块筛选 */
   industrySectors?: string[];
   /** 概念板块筛选 */

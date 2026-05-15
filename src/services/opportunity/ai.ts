@@ -1,6 +1,18 @@
 /**
- * AI辅助分析服务
+ * AI辅助分析服务 v1.0
  * 提供基于历史数据的趋势预测、相似形态识别、智能选股推荐功能
+ *
+ * v1.0 特点：
+ * - 简单固定权重算法
+ * - 统一阈值，不考虑个股差异
+ * - 6类技术指标（MA、RSI、MACD、布林带、趋势形态、成交量）
+ * - 计算速度快，逻辑清晰
+ *
+ * 与 v2.0 的区别：
+ * - v1.0：固定权重 + 统一阈值（简单快速）
+ * - v2.0：动态权重 + 个性化阈值（更精准）
+ *
+ * 适用场景：交易新手、高频交易、快速原型验证
  */
 
 import type {
@@ -572,7 +584,7 @@ export interface PatternRecognitionConfig {
 }
 
 const DEFAULT_PATTERN_CONFIG: PatternRecognitionConfig = {
-  searchScope: 100,
+  searchScope: 500,
   minSimilarity: 0.7,
   maxResults: 5,
   observationPeriod: 10,
@@ -582,6 +594,7 @@ const DEFAULT_PATTERN_CONFIG: PatternRecognitionConfig = {
  * 在当前股票池中查找相似形态
  */
 export function findSimilarPatterns(
+  currentCode: string,
   currentKLineData: KLineData[],
   allStockData: Map<string, { code: string; name: string; klineData: KLineData[] }>,
   config: PatternRecognitionConfig = DEFAULT_PATTERN_CONFIG
@@ -596,18 +609,18 @@ export function findSimilarPatterns(
   // 提取当前股票的形态特征
   const currentFeatures = extractPatternFeatures(currentKLineData);
 
+  // 将Map转换为数组并按股票代码排序，确保遍历顺序一致
+  const sortedStocks = Array.from(allStockData.entries()).sort((a, b) => a[0].localeCompare(b[0]));
+
   // 遍历所有股票数据
   let searchedCount = 0;
-  for (const [code, stockData] of allStockData.entries()) {
+  for (const [code, stockData] of sortedStocks) {
     if (searchedCount >= config.searchScope) {
       break;
     }
 
-    // 跳过自己
-    if (
-      stockData.klineData.length === currentLen &&
-      stockData.klineData.every((k, i) => k.close === currentKLineData[i].close)
-    ) {
+    // 跳过自己（通过股票代码判断）
+    if (code === currentCode) {
       continue;
     }
 
@@ -1043,7 +1056,7 @@ export function performAIAnalysis(
   // 相似形态识别（如果有股票池数据）
   let similarPatterns: SimilarPatternMatch[] | undefined;
   if (allStockData && allStockData.size > 0) {
-    similarPatterns = findSimilarPatterns(klineData, allStockData);
+    similarPatterns = findSimilarPatterns(opportunityData.code, klineData, allStockData);
   }
 
   // 智能推荐评分

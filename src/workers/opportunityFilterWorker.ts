@@ -321,6 +321,99 @@ function passesAIFilter(
     }
   }
 
+  // v3.0 新增：信号共识筛选
+  if (filters.aiSignalConfluence) {
+    if (!trendPrediction) {
+      return { passed: false, reason: '缺少趋势预测数据' };
+    }
+
+    const minSignalCount = filters.aiMinSignalCount || 4;
+    const minSignalRatio = filters.aiMinSignalRatio || 0.6;
+    const signalRatio =
+      trendPrediction.totalSignals > 0
+        ? trendPrediction.signalCount / trendPrediction.totalSignals
+        : 0;
+
+    if (trendPrediction.signalCount < minSignalCount) {
+      return {
+        passed: false,
+        reason: `支持信号数量不足：${trendPrediction.signalCount} < ${minSignalCount}`,
+      };
+    }
+
+    if (signalRatio < minSignalRatio) {
+      return {
+        passed: false,
+        reason: `信号共识度不足：${(signalRatio * 100).toFixed(1)}% < ${(
+          minSignalRatio * 100
+        ).toFixed(1)}%`,
+      };
+    }
+  }
+
+  // v3.0 新增：相似形态胜率筛选
+  if (
+    filters.aiPatternWinRateRange?.min !== undefined ||
+    filters.aiPatternWinRateRange?.max !== undefined
+  ) {
+    if (!item.aiAnalysis?.patternWinRate) {
+      return { passed: false, reason: '缺少相似形态胜率数据' };
+    }
+
+    const winRatePercent = item.aiAnalysis.patternWinRate * 100;
+
+    if (
+      filters.aiPatternWinRateRange.min !== undefined &&
+      winRatePercent < filters.aiPatternWinRateRange.min
+    ) {
+      return {
+        passed: false,
+        reason: `相似形态胜率过低：${winRatePercent.toFixed(1)}% < ${
+          filters.aiPatternWinRateRange.min
+        }%`,
+      };
+    }
+
+    if (
+      filters.aiPatternWinRateRange.max !== undefined &&
+      winRatePercent > filters.aiPatternWinRateRange.max
+    ) {
+      return {
+        passed: false,
+        reason: `相似形态胜率过高：${winRatePercent.toFixed(1)}% > ${
+          filters.aiPatternWinRateRange.max
+        }%`,
+      };
+    }
+  }
+
+  // v3.0 新增：最少相似股票数量
+  if (filters.aiMinSimilarPatterns) {
+    const patternCount = item.aiAnalysis?.similarPatterns?.length || 0;
+    if (patternCount < filters.aiMinSimilarPatterns) {
+      return {
+        passed: false,
+        reason: `相似股票数量不足：${patternCount} < ${filters.aiMinSimilarPatterns}`,
+      };
+    }
+  }
+
+  // v3.0 新增：风险收益比筛选
+  if (filters.aiMinRiskRewardRatio) {
+    if (!trendPrediction?.riskRewardRatio) {
+      return { passed: false, reason: '缺少风险收益比数据' };
+    }
+
+    if (trendPrediction.riskRewardRatio < filters.aiMinRiskRewardRatio) {
+      return {
+        passed: false,
+        reason: `风险收益比过低：${trendPrediction.riskRewardRatio.toFixed(2)} < ${
+          filters.aiMinRiskRewardRatio
+        }`,
+      };
+    }
+  }
+
   return { passed: true };
 }
 

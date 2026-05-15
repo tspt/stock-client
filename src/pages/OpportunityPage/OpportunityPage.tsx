@@ -29,7 +29,7 @@ import { exportOpportunityToExcel } from '@/utils/export/opportunityExportUtils'
 import { exportStockNamesToExcel, exportStockNamesToPng } from '@/utils/export/stockNamesExportUtils';
 import { detectTradingSignal } from '@/utils/analysis/signalDetector';
 import { addStocksToTodayRecord } from '@/services/opportunity/recordService';
-import type { ConsolidationType, KLinePeriod, StockInfo, StockOpportunityData } from '@/types/stock';
+import type { ConsolidationType, KLinePeriod, StockInfo, StockOpportunityData, KLineData } from '@/types/stock';
 import { useAllStocks } from '@/hooks/useAllStocks';
 import { logger } from '@/utils/business/logger';
 import { useOpportunityFilterEngine } from '@/hooks/useOpportunityFilterEngine';
@@ -161,6 +161,14 @@ const INITIAL_FILTER_STATE = {
   aiPatternScoreRange: {},
   aiTrendScoreRange: { min: OPPORTUNITY_DEFAULT_AI_ANALYSIS.trendScoreMin },
   aiRiskScoreRange: { min: OPPORTUNITY_DEFAULT_AI_ANALYSIS.riskScoreMin },
+
+  // v3.0 新增筛选条件
+  aiSignalConfluence: false,
+  aiMinSignalCount: 4,
+  aiMinSignalRatio: 0.6,
+  aiPatternWinRateRange: {} as { min?: number; max?: number },
+  aiMinSimilarPatterns: 3,
+  aiMinRiskRewardRatio: undefined as number | undefined,
 };
 
 /** 与 opportunityStore 初始值一致，用于「重置」恢复周期与 K 线数量 */
@@ -292,12 +300,12 @@ export function OpportunityPage() {
   const [errorExpanded, setErrorExpanded] = useState(false); // 失败详情展开状态
 
   // AI分析版本选择（切换时自动刷新）
-  const [aiVersion, setAiVersion] = useState<'v1' | 'v2'>('v1'); // 默认使用v1.0原始版
+  const [aiVersion, setAiVersion] = useState<'v1' | 'v2' | 'v3'>('v1'); // 默认使用v1.0原始版
   const [showAddToWatchListModal, setShowAddToWatchListModal] = useState(false);
   const [aiRefreshLoading, setAiRefreshLoading] = useState(false);
 
   // AI版本切换时自动执行刷新
-  const handleAiVersionChange = async (version: 'v1' | 'v2') => {
+  const handleAiVersionChange = async (version: 'v1' | 'v2' | 'v3') => {
     if (analysisData.length === 0) {
       message.warning('请先执行一键分析');
       return;
@@ -305,7 +313,7 @@ export function OpportunityPage() {
 
     try {
       setAiRefreshLoading(true);
-      message.loading({ content: `正在切换到${version === 'v2' ? 'v2.0优化版' : 'v1.0原始版'}...`, key: 'aiVersionChange' });
+      message.loading({ content: `正在切换到${version === 'v3' ? 'v3.0增强版' : version === 'v2' ? 'v2.0优化版' : 'v1.0原始版'}...`, key: 'aiVersionChange' });
 
       logger.info(`切换AI版本到${version}，总股票数: ${analysisData.length}`);
 
@@ -314,7 +322,10 @@ export function OpportunityPage() {
 
       // 根据版本选择导入对应的AI分析模块（使用相对路径）
       let performAIAnalysis: any;
-      if (version === 'v2') {
+      if (version === 'v3') {
+        const module = await import('../../services/opportunity/ai-v3.0');
+        performAIAnalysis = module.performAIAnalysis;
+      } else if (version === 'v2') {
         const module = await import('../../services/opportunity/ai-v2.0');
         performAIAnalysis = module.performAIAnalysis;
       } else {
@@ -325,17 +336,35 @@ export function OpportunityPage() {
       // 批量重新计算AI分析
       let updatedCount = 0;
       let skippedCount = 0;
+
+      // 构建完整的股票池数据（用于相似形态识别）
+      const allStockDataForAI = new Map<string, { code: string; name: string; klineData: KLineData[] }>();
+      analysisData.forEach(s => {
+        const kd = klineDataCache.get(s.code);
+        if (kd && kd.length >= 20) {
+          allStockDataForAI.set(s.code, {
+            code: s.code,
+            name: s.name,
+            klineData: kd
+          });
+        }
+      });
+
+      logger.info(`[AI版本切换] 股票池大小: ${allStockDataForAI.size}`);
+
       const updatedData = analysisData.map(stock => {
         const klineData = klineDataCache.get(stock.code);
         if (klineData && klineData.length >= 30) {
           try {
-            // 构建 allStockData Map（用于相似形态匹配）
-            const allStockData = new Map<string, { code: string; name: string; klineData: typeof klineData }>();
-            allStockData.set(stock.code, { code: stock.code, name: stock.name, klineData });
-
-            // 重新计算AI分析
-            const aiAnalysis = performAIAnalysis(klineData, stock, allStockData);
+            // 重新计算AI分析，传入完整股票池
+            const aiAnalysis = performAIAnalysis(klineData, stock, allStockDataForAI);
             updatedCount++;
+
+            // 记录相似形态信息
+            if (aiAnalysis.similarPatterns && aiAnalysis.similarPatterns.length > 0) {
+              logger.debug(`[${stock.code}] 找到 ${aiAnalysis.similarPatterns.length} 个相似形态`);
+            }
+
             return {
               ...stock,
               aiAnalysis,
@@ -361,7 +390,7 @@ export function OpportunityPage() {
       setAiVersion(version);
 
       message.success({
-        content: `已切换到${version === 'v2' ? 'v2.0优化版' : 'v1.0原始版'}，共更新 ${updatedCount} 只股票`,
+        content: `已切换到${version === 'v3' ? 'v3.0增强版' : version === 'v2' ? 'v2.0优化版' : 'v1.0原始版'}，共更新 ${updatedCount} 只股票`,
         key: 'aiVersionChange'
       });
     } catch (error) {
@@ -426,6 +455,18 @@ export function OpportunityPage() {
   );
   const [aiRiskScoreRange, setAiRiskScoreRange] = useState<{ min?: number; max?: number }>(
     INITIAL_FILTER_STATE.aiRiskScoreRange
+  );
+
+  // v3.0 新增筛选条件状态
+  const [aiSignalConfluence, setAiSignalConfluence] = useState<boolean>(INITIAL_FILTER_STATE.aiSignalConfluence);
+  const [aiMinSignalCount, setAiMinSignalCount] = useState<number>(INITIAL_FILTER_STATE.aiMinSignalCount);
+  const [aiMinSignalRatio, setAiMinSignalRatio] = useState<number>(INITIAL_FILTER_STATE.aiMinSignalRatio);
+  const [aiPatternWinRateRange, setAiPatternWinRateRange] = useState<{ min?: number; max?: number }>(
+    INITIAL_FILTER_STATE.aiPatternWinRateRange
+  );
+  const [aiMinSimilarPatterns, setAiMinSimilarPatterns] = useState<number>(INITIAL_FILTER_STATE.aiMinSimilarPatterns);
+  const [aiMinRiskRewardRatio, setAiMinRiskRewardRatio] = useState<number | undefined>(
+    INITIAL_FILTER_STATE.aiMinRiskRewardRatio
   );
 
   // 行业板块筛选状态
@@ -1443,10 +1484,11 @@ export function OpportunityPage() {
           <Select
             value={aiVersion}
             onChange={handleAiVersionChange}
-            style={{ width: 120 }}
+            style={{ width: 140 }}
             options={[
               { label: 'v1.0 原始版', value: 'v1' },
               { label: 'v2.0 优化版', value: 'v2' },
+              { label: 'v3.0 增强版', value: 'v3' },
             ]}
             disabled={loading || aiRefreshLoading || analysisData.length === 0}
             title="切换AI分析算法版本（自动刷新）"
@@ -1665,6 +1707,20 @@ export function OpportunityPage() {
             setAiTrendScoreRange={setAiTrendScoreRange}
             aiRiskScoreRange={aiRiskScoreRange}
             setAiRiskScoreRange={setAiRiskScoreRange}
+            // v3.0 新增筛选条件
+            aiVersion={aiVersion}
+            aiSignalConfluence={aiSignalConfluence}
+            setAiSignalConfluence={setAiSignalConfluence}
+            aiMinSignalCount={aiMinSignalCount}
+            setAiMinSignalCount={setAiMinSignalCount}
+            aiMinSignalRatio={aiMinSignalRatio}
+            setAiMinSignalRatio={setAiMinSignalRatio}
+            aiPatternWinRateRange={aiPatternWinRateRange}
+            setAiPatternWinRateRange={setAiPatternWinRateRange}
+            aiMinSimilarPatterns={aiMinSimilarPatterns}
+            setAiMinSimilarPatterns={setAiMinSimilarPatterns}
+            aiMinRiskRewardRatio={aiMinRiskRewardRatio}
+            setAiMinRiskRewardRatio={setAiMinRiskRewardRatio}
             // 行业板块筛选
             industrySectors={industrySectors}
             setIndustrySectors={setIndustrySectors}

@@ -108,7 +108,9 @@ async function analyzeOneStock(
   }
 
   // AI辅助分析（可选，避免影响主要流程）
-  let aiAnalysis;
+  // 注意：这里暂时跳过，后续会批量重新计算（传入完整股票池）
+  let aiAnalysis: any = undefined;
+  /*
   try {
     const tempOpportunityData: StockOpportunityData = {
       code,
@@ -135,6 +137,7 @@ async function analyzeOneStock(
   } catch (error) {
     logger.warn(`[${code}] AI分析失败:`, error);
   }
+  */
 
   // volume/amount 转为"亿单位"显示
   const volume = Number((quote.volume / VOLUME_AMOUNT_UNIT_CONVERSION).toFixed(2));
@@ -443,6 +446,54 @@ export function analyzeAllStocksOpportunity(
         percent: totalStocks > 0 ? (previousBatchesCompleted / totalStocks) * PROGRESS_BASE : 0,
       });
     }
+
+    // Step 3：批量重新计算AI分析（传入完整股票池以启用相似形态识别）
+    logger.info(`[AI分析] 开始批量计算相似形态，股票池大小: ${klineDataMap.size}`);
+    let aiUpdatedCount = 0;
+    const allStockDataForAI = new Map<
+      string,
+      { code: string; name: string; klineData: KLineData[] }
+    >();
+
+    // 构建完整的股票池数据（只包含有足够K线数据的股票）
+    results.forEach((result) => {
+      if (result.code && !result.error && klineDataMap.has(result.code)) {
+        const klineData = klineDataMap.get(result.code)!;
+        if (klineData && klineData.length >= 20) {
+          allStockDataForAI.set(result.code, {
+            code: result.code,
+            name: result.name,
+            klineData: klineData,
+          });
+        }
+      }
+    });
+
+    logger.info(`[AI分析] 有效股票池大小: ${allStockDataForAI.size}`);
+
+    // 批量更新AI分析
+    results.forEach((result) => {
+      if (result.code && !result.error && klineDataMap.has(result.code)) {
+        const klineData = klineDataMap.get(result.code)!;
+        if (klineData && klineData.length >= 30) {
+          try {
+            // 重新计算AI分析，传入完整股票池
+            const aiAnalysis = performAIAnalysis(klineData, result, allStockDataForAI);
+            result.aiAnalysis = aiAnalysis;
+            aiUpdatedCount++;
+
+            // 记录相似形态信息
+            if (aiAnalysis.similarPatterns && aiAnalysis.similarPatterns.length > 0) {
+              logger.debug(`[${result.code}] 找到 ${aiAnalysis.similarPatterns.length} 个相似形态`);
+            }
+          } catch (error) {
+            logger.warn(`[${result.code}] AI分析失败:`, error);
+          }
+        }
+      }
+    });
+
+    logger.info(`[AI分析] 批量计算完成，更新 ${aiUpdatedCount} 只股票`);
 
     return { results, errors, klineDataMap };
   })().catch((e) => {
