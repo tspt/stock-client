@@ -229,13 +229,16 @@ let industryModelsCache: Map<string, DecisionTreeNode[]> = new Map();
 export function setIndustryModels(models: LoadedIndustryModel[]): void {
   console.log('📥 setIndustryModels 被调用，接收到的模型数量:', models.length);
   if (models.length > 0) {
-    console.log('📥 前3个模型的 industryName:', models.slice(0, 3).map(m => m.industryName));
+    console.log(
+      '📥 前3个模型的 industryName:',
+      models.slice(0, 3).map((m) => m.industryName)
+    );
   }
-  
+
   industryModelsCache.clear();
   let loadedCount = 0;
-  
-  models.forEach(model => {
+
+  models.forEach((model) => {
     // 从JSON模型中提取决策树数组（注意：字段名是 trees 而不是 tree）
     const trees = model.modelData?.trees;
     if (trees && Array.isArray(trees) && trees.length > 0) {
@@ -245,7 +248,7 @@ export function setIndustryModels(models: LoadedIndustryModel[]): void {
       console.warn(`⚠️ 模型 [${model.industryName}] 没有有效的 trees 字段`);
     }
   });
-  
+
   console.log(`✅ 成功加载 ${loadedCount}/${models.length} 个行业模型`);
   console.log(`📊 当前缓存中的模型数量:`, industryModelsCache.size);
 }
@@ -280,7 +283,11 @@ function getIndustryModel(industryName?: string): DecisionTreeNode[] | null {
  * 1. 如果有行业模型且该行业有训练好的模型，使用行业模型
  * 2. 否则使用默认的全局模型（v4.0）
  */
-export function predictBuyPoint(klineData: KLineData[], index: number, industryName?: string): boolean {
+export function predictBuyPoint(
+  klineData: KLineData[],
+  index: number,
+  industryName?: string
+): boolean {
   // 计算特征
   const features = calculateFeatures(klineData, index);
 
@@ -295,7 +302,7 @@ export function predictBuyPoint(klineData: KLineData[], index: number, industryN
     // 对每棵树进行预测，然后投票
     let positiveVotes = 0;
     let negativeVotes = 0;
-    
+
     for (const tree of industryTrees) {
       const prediction = predictWithTree(features, tree);
       if (prediction === 1) {
@@ -304,7 +311,7 @@ export function predictBuyPoint(klineData: KLineData[], index: number, industryN
         negativeVotes++;
       }
     }
-    
+
     // 多数投票决定结果
     return positiveVotes > negativeVotes;
   }

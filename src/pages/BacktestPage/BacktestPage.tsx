@@ -298,23 +298,23 @@ export function BacktestPage() {
       // 步骤1: 加载所有行业模型
       setLoadingModels(true);
       setModelLoadProgress(0);
-      
+
       try {
         const modelManager = new IndustryModelManager({
           baseUrl: '/models/industry',
           failFast: true, // 加载失败时中断
         });
-        
+
         await modelManager.loadAllModels((progress) => {
           setModelLoadProgress(progress);
         });
-        
+
         // 将加载的模型传递给预测函数（主线程）
         const loadedModels: any[] = [];
         const industries = modelManager.getLoadedIndustries();
         console.log('📊 getLoadedIndustries 返回:', industries.length, '个行业');
         console.log('📊 前5个行业名称:', industries.slice(0, 5));
-        
+
         industries.forEach(industryName => {
           const model = modelManager.getModel(industryName);
           console.log(`🔍 获取模型 [${industryName}]:`, model ? '✅ 找到' : '❌ 未找到');
@@ -322,10 +322,10 @@ export function BacktestPage() {
             loadedModels.push(model);
           }
         });
-        
+
         console.log('📦 最终收集的模型数量:', loadedModels.length);
         setIndustryModels(loadedModels); // 设置主线程的模型缓存
-        
+
         // 同时传递模型给Worker线程
         if (workerRef.current && loadedModels.length > 0) {
           console.log('🔄 正在将模型传递给Worker线程...');
@@ -333,7 +333,7 @@ export function BacktestPage() {
             type: 'init_models',
             models: loadedModels,
           });
-          
+
           // 等待Worker确认接收
           await new Promise<void>((resolve) => {
             const onModelsReady = (e: MessageEvent) => {
@@ -346,7 +346,7 @@ export function BacktestPage() {
             workerRef.current?.addEventListener('message', onModelsReady);
           });
         }
-        
+
         setLoadingModels(false);
         message.success(`✅ 已加载 ${loadedModels.length} 个行业模型`);
       } catch (error) {
@@ -413,7 +413,7 @@ export function BacktestPage() {
             // 清空行业模型缓存
             clearIndustryModels();
 
-            const skippedMsg = skippedStocksList.length > 0 
+            const skippedMsg = skippedStocksList.length > 0
               ? `回测完成！共发现 ${allSignals.length} 个信号，${skippedStocksList.length} 只股票因缺少行业信息被跳过`
               : `回测完成！共发现 ${allSignals.length} 个信号`;
             message.success(skippedMsg);
@@ -428,7 +428,7 @@ export function BacktestPage() {
         // 获取股票的行业信息
         const sectorInfo = stockSectorMapping.get(history.code);
         const industryName = sectorInfo?.industry?.name;
-        
+
         // 如果没有行业信息，记录到跳过列表
         if (!industryName) {
           skippedStocksList.push({
@@ -438,7 +438,7 @@ export function BacktestPage() {
           });
           // 仍然发送任务，但 Worker 会使用默认模型
         }
-        
+
         const currentTaskId = `bt_${taskIdCounter.current++}_${history.code}`;
         workerRef.current.postMessage({
           requestId: currentTaskId,
@@ -1812,7 +1812,7 @@ export function BacktestPage() {
                 style={{ marginBottom: 16 }}
               />
             )}
-            
+
             <Card title="信号详情" className={styles.signalDetailCard}>
               {/* 胜率统计汇总 */}
               {selectedStockCode && (

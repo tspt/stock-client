@@ -11,7 +11,11 @@ import { predictBuyPoint } from './mlBuypointModel';
 /**
  * 综合筛选入口（使用 ML 模型）
  */
-export function runBacktestScreening(klineData: KLineData[], index: number, industryName?: string): boolean {
+export function runBacktestScreening(
+  klineData: KLineData[],
+  index: number,
+  industryName?: string
+): boolean {
   if (index < 20) return false;
 
   // 使用 ML 模型预测是否为买点（传入行业信息）
