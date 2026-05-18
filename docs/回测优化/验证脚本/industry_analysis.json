@@ -1,0 +1,2801 @@
+{
+  "汽车零部件 (BK0481)": {
+    "industry_name": "汽车零部件",
+    "industry_code": "BK0481",
+    "stock_count": 225,
+    "total_positive_samples": 0,
+    "total_negative_samples": 107799,
+    "total_samples": 107799,
+    "positive_ratio": 0.0,
+    "sample_stocks": [
+      {
+        "code": "SH603119",
+        "name": "DR浙江荣",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH600182",
+        "name": "S佳通",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ001278",
+        "name": "一彬科技",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ002085",
+        "name": "万丰奥威",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ000559",
+        "name": "万向钱潮",
+        "positive": 0,
+        "negative": 500
+      }
+    ]
+  },
+  "通用设备 (BK0545)": {
+    "industry_name": "通用设备",
+    "industry_code": "BK0545",
+    "stock_count": 181,
+    "total_positive_samples": 0,
+    "total_negative_samples": 89802,
+    "total_samples": 89802,
+    "positive_ratio": 0.0,
+    "sample_stocks": [
+      {
+        "code": "SZ301309",
+        "name": "万得凯",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ300112",
+        "name": "万讯自控",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ300066",
+        "name": "三川智慧",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ300515",
+        "name": "三德科技",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ300554",
+        "name": "三超新材",
+        "positive": 0,
+        "negative": 501
+      }
+    ]
+  },
+  "专用设备 (BK0910)": {
+    "industry_name": "专用设备",
+    "industry_code": "BK0910",
+    "stock_count": 146,
+    "total_positive_samples": 0,
+    "total_negative_samples": 72168,
+    "total_samples": 72168,
+    "positive_ratio": 0.0,
+    "sample_stocks": [
+      {
+        "code": "SH601038",
+        "name": "一拖股份",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH600520",
+        "name": "三佳科技",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH600843",
+        "name": "上工申贝",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH603159",
+        "name": "上海亚虹",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH600835",
+        "name": "上海机电",
+        "positive": 0,
+        "negative": 501
+      }
+    ]
+  },
+  "化学制品 (BK0538)": {
+    "industry_name": "化学制品",
+    "industry_code": "BK0538",
+    "stock_count": 144,
+    "total_positive_samples": 0,
+    "total_negative_samples": 70724,
+    "total_samples": 70724,
+    "positive_ratio": 0.0,
+    "sample_stocks": [
+      {
+        "code": "SH603062",
+        "name": "XD麦加芯",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ300758",
+        "name": "七彩化学",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH603172",
+        "name": "万丰股份",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH600309",
+        "name": "万华化学",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH603010",
+        "name": "万盛股份",
+        "positive": 0,
+        "negative": 501
+      }
+    ]
+  },
+  "电网设备 (BK0457)": {
+    "industry_name": "电网设备",
+    "industry_code": "BK0457",
+    "stock_count": 113,
+    "total_positive_samples": 0,
+    "total_negative_samples": 55438,
+    "total_samples": 55438,
+    "positive_ratio": 0.0,
+    "sample_stocks": [
+      {
+        "code": "SH603070",
+        "name": "万控智造",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ300882",
+        "name": "万胜智能",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ002276",
+        "name": "万马股份",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ300932",
+        "name": "三友联众",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ002112",
+        "name": "三变科技",
+        "positive": 0,
+        "negative": 501
+      }
+    ]
+  },
+  "化学制药 (BK0465)": {
+    "industry_name": "化学制药",
+    "industry_code": "BK0465",
+    "stock_count": 111,
+    "total_positive_samples": 0,
+    "total_negative_samples": 55521,
+    "total_samples": 55521,
+    "positive_ratio": 0.0,
+    "sample_stocks": [
+      {
+        "code": "SZ300723",
+        "name": "一品红",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH605177",
+        "name": "东亚药业",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ000597",
+        "name": "东北制药",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ002675",
+        "name": "东诚药业",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ000931",
+        "name": "中 关 村",
+        "positive": 0,
+        "negative": 501
+      }
+    ]
+  },
+  "电力 (BK0428)": {
+    "industry_name": "电力",
+    "industry_code": "BK0428",
+    "stock_count": 106,
+    "total_positive_samples": 0,
+    "total_negative_samples": 52797,
+    "total_samples": 52797,
+    "positive_ratio": 0.0,
+    "sample_stocks": [
+      {
+        "code": "SH600116",
+        "name": "三峡水利",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH600905",
+        "name": "三峡能源",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH600021",
+        "name": "上海电力",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH605028",
+        "name": "世茂能源",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ002310",
+        "name": "东方新能",
+        "positive": 0,
+        "negative": 501
+      }
+    ]
+  },
+  "IT服务Ⅱ (BK1238)": {
+    "industry_name": "IT服务Ⅱ",
+    "industry_code": "BK1238",
+    "stock_count": 89,
+    "total_positive_samples": 0,
+    "total_negative_samples": 44082,
+    "total_samples": 44082,
+    "positive_ratio": 0.0,
+    "sample_stocks": [
+      {
+        "code": "SH600845",
+        "name": "XD宝信软",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ300168",
+        "name": "万达信息",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ300150",
+        "name": "世纪瑞尔",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ002065",
+        "name": "东华软件",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ300166",
+        "name": "东方国信",
+        "positive": 0,
+        "negative": 501
+      }
+    ]
+  },
+  "环境治理 (BK1235)": {
+    "industry_name": "环境治理",
+    "industry_code": "BK1235",
+    "stock_count": 86,
+    "total_positive_samples": 0,
+    "total_negative_samples": 43082,
+    "total_samples": 43082,
+    "positive_ratio": 0.0,
+    "sample_stocks": [
+      {
+        "code": "SH601827",
+        "name": "三峰环境",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH603200",
+        "name": "上海洗霸",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH601200",
+        "name": "上海环境",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ002672",
+        "name": "东江环保",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH600133",
+        "name": "东湖高新",
+        "positive": 0,
+        "negative": 501
+      }
+    ]
+  },
+  "软件开发 (BK0737)": {
+    "industry_name": "软件开发",
+    "industry_code": "BK0737",
+    "stock_count": 84,
+    "total_positive_samples": 0,
+    "total_negative_samples": 42083,
+    "total_samples": 42083,
+    "positive_ratio": 0.0,
+    "sample_stocks": [
+      {
+        "code": "SZ300624",
+        "name": "万兴科技",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH601360",
+        "name": "三六零",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ301159",
+        "name": "三维天地",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ300226",
+        "name": "上海钢联",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ300556",
+        "name": "丝路视觉",
+        "positive": 0,
+        "negative": 501
+      }
+    ]
+  },
+  "消费电子 (BK1037)": {
+    "industry_name": "消费电子",
+    "industry_code": "BK1037",
+    "stock_count": 80,
+    "total_positive_samples": 0,
+    "total_negative_samples": 39539,
+    "total_samples": 39539,
+    "positive_ratio": 0.0,
+    "sample_stocks": [
+      {
+        "code": "SZ301180",
+        "name": "万祥科技",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ001314",
+        "name": "亿道信息",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ002866",
+        "name": "传艺科技",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ300793",
+        "name": "佳禾智能",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ301051",
+        "name": "信濠光电",
+        "positive": 0,
+        "negative": 501
+      }
+    ]
+  },
+  "光学光电子 (BK1038)": {
+    "industry_name": "光学光电子",
+    "industry_code": "BK1038",
+    "stock_count": 76,
+    "total_positive_samples": 0,
+    "total_negative_samples": 37850,
+    "total_samples": 37850,
+    "positive_ratio": 0.0,
+    "sample_stocks": [
+      {
+        "code": "SZ000100",
+        "name": "TCL科技",
+        "positive": 0,
+        "negative": 500
+      },
+      {
+        "code": "SZ002654",
+        "name": "万润科技",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ002876",
+        "name": "三利谱",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH600703",
+        "name": "三安光电",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ301183",
+        "name": "东田微",
+        "positive": 0,
+        "negative": 501
+      }
+    ]
+  },
+  "计算机设备 (BK0735)": {
+    "industry_name": "计算机设备",
+    "industry_code": "BK0735",
+    "stock_count": 71,
+    "total_positive_samples": 0,
+    "total_negative_samples": 35399,
+    "total_samples": 35399,
+    "positive_ratio": 0.0,
+    "sample_stocks": [
+      {
+        "code": "SZ300552",
+        "name": "万集科技",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ000066",
+        "name": "中国长城",
+        "positive": 0,
+        "negative": 500
+      },
+      {
+        "code": "SZ300270",
+        "name": "中威电子",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ300659",
+        "name": "中孚信息",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ002912",
+        "name": "中新赛克",
+        "positive": 0,
+        "negative": 501
+      }
+    ]
+  },
+  "电池 (BK1033)": {
+    "industry_name": "电池",
+    "industry_code": "BK1033",
+    "stock_count": 67,
+    "total_positive_samples": 0,
+    "total_negative_samples": 33325,
+    "total_samples": 33325,
+    "positive_ratio": 0.0,
+    "sample_stocks": [
+      {
+        "code": "SH600847",
+        "name": "万里股份",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ301150",
+        "name": "中一科技",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ300919",
+        "name": "中伟新材",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ301587",
+        "name": "中瑞股份",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ300035",
+        "name": "中科电气",
+        "positive": 0,
+        "negative": 501
+      }
+    ]
+  },
+  "通信设备 (BK0448)": {
+    "industry_name": "通信设备",
+    "industry_code": "BK0448",
+    "stock_count": 67,
+    "total_positive_samples": 0,
+    "total_negative_samples": 33565,
+    "total_samples": 33565,
+    "positive_ratio": 0.0,
+    "sample_stocks": [
+      {
+        "code": "SZ300710",
+        "name": "万隆光电",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ300698",
+        "name": "万马科技",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ002796",
+        "name": "世嘉科技",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ002017",
+        "name": "东信和平",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ300353",
+        "name": "东土科技",
+        "positive": 0,
+        "negative": 501
+      }
+    ]
+  },
+  "塑料 (BK0454)": {
+    "industry_name": "塑料",
+    "industry_code": "BK0454",
+    "stock_count": 62,
+    "total_positive_samples": 0,
+    "total_negative_samples": 30606,
+    "total_samples": 30606,
+    "positive_ratio": 0.0,
+    "sample_stocks": [
+      {
+        "code": "SZ301216",
+        "name": "万凯新材",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH603150",
+        "name": "万朗磁塑",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH601208",
+        "name": "东材科技",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ301565",
+        "name": "中仑新材",
+        "positive": 0,
+        "negative": 460
+      },
+      {
+        "code": "SH600135",
+        "name": "乐凯胶片",
+        "positive": 0,
+        "negative": 501
+      }
+    ]
+  },
+  "工业金属 (BK1287)": {
+    "industry_name": "工业金属",
+    "industry_code": "BK1287",
+    "stock_count": 57,
+    "total_positive_samples": 0,
+    "total_negative_samples": 28341,
+    "total_samples": 28341,
+    "positive_ratio": 0.0,
+    "sample_stocks": [
+      {
+        "code": "SZ300057",
+        "name": "万顺新材",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH601600",
+        "name": "中国铝业",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH600595",
+        "name": "中孚实业",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ000758",
+        "name": "中色股份",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ000060",
+        "name": "中金岭南",
+        "positive": 0,
+        "negative": 500
+      }
+    ]
+  },
+  "农化制品 (BK0731)": {
+    "industry_name": "农化制品",
+    "industry_code": "BK0731",
+    "stock_count": 57,
+    "total_positive_samples": 0,
+    "total_negative_samples": 28169,
+    "total_samples": 28169,
+    "positive_ratio": 0.0,
+    "sample_stocks": [
+      {
+        "code": "SZ002545",
+        "name": "东方铁塔",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH603970",
+        "name": "中农立华",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ003042",
+        "name": "中农联合",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ300575",
+        "name": "中旗股份",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH603810",
+        "name": "丰山集团",
+        "positive": 0,
+        "negative": 501
+      }
+    ]
+  },
+  "化学原料 (BK1019)": {
+    "industry_name": "化学原料",
+    "industry_code": "BK1019",
+    "stock_count": 55,
+    "total_positive_samples": 0,
+    "total_negative_samples": 27553,
+    "total_samples": 27553,
+    "positive_ratio": 0.0,
+    "sample_stocks": [
+      {
+        "code": "SH600409",
+        "name": "三友化工",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH603938",
+        "name": "三孚股份",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH603663",
+        "name": "三祥新材",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ002469",
+        "name": "三维化学",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ002748",
+        "name": "世龙实业",
+        "positive": 0,
+        "negative": 501
+      }
+    ]
+  },
+  "半导体 (BK1036)": {
+    "industry_name": "半导体",
+    "industry_code": "BK1036",
+    "stock_count": 55,
+    "total_positive_samples": 0,
+    "total_negative_samples": 26966,
+    "total_samples": 26966,
+    "positive_ratio": 0.0,
+    "sample_stocks": [
+      {
+        "code": "SH600171",
+        "name": "上海贝岭",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ003026",
+        "name": "中晶科技",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ300327",
+        "name": "中颖电子",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH603986",
+        "name": "兆易创新",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH600641",
+        "name": "先导基电",
+        "positive": 0,
+        "negative": 501
+      }
+    ]
+  },
+  "元件 (BK0459)": {
+    "industry_name": "元件",
+    "industry_code": "BK0459",
+    "stock_count": 51,
+    "total_positive_samples": 0,
+    "total_negative_samples": 24876,
+    "total_samples": 24876,
+    "positive_ratio": 0.0,
+    "sample_stocks": [
+      {
+        "code": "SH603186",
+        "name": "XD华正新",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ301366",
+        "name": "一博科技",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ300408",
+        "name": "三环集团",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH603920",
+        "name": "世运电路",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ002384",
+        "name": "东山精密",
+        "positive": 0,
+        "negative": 501
+      }
+    ]
+  },
+  "自动化设备 (BK1237)": {
+    "industry_name": "自动化设备",
+    "industry_code": "BK1237",
+    "stock_count": 51,
+    "total_positive_samples": 0,
+    "total_negative_samples": 25417,
+    "total_samples": 25417,
+    "positive_ratio": 0.0,
+    "sample_stocks": [
+      {
+        "code": "SH603025",
+        "name": "XD大豪科",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ300276",
+        "name": "三丰智能",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ300486",
+        "name": "东杰智能",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH603666",
+        "name": "亿嘉和",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH603275",
+        "name": "众辰科技",
+        "positive": 0,
+        "negative": 501
+      }
+    ]
+  },
+  "光伏设备 (BK1031)": {
+    "industry_name": "光伏设备",
+    "industry_code": "BK1031",
+    "stock_count": 42,
+    "total_positive_samples": 0,
+    "total_negative_samples": 20507,
+    "total_samples": 20507,
+    "positive_ratio": 0.0,
+    "sample_stocks": [
+      {
+        "code": "SZ002129",
+        "name": "TCL中环",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ300827",
+        "name": "上能电气",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ300118",
+        "name": "东方日升",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ002309",
+        "name": "中利集团",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ300393",
+        "name": "中来股份",
+        "positive": 0,
+        "negative": 501
+      }
+    ]
+  },
+  "工程咨询服务Ⅱ (BK0726)": {
+    "industry_name": "工程咨询服务Ⅱ",
+    "industry_code": "BK0726",
+    "stock_count": 40,
+    "total_positive_samples": 0,
+    "total_negative_samples": 19806,
+    "total_samples": 19806,
+    "positive_ratio": 0.0,
+    "sample_stocks": [
+      {
+        "code": "SH603153",
+        "name": "上海建科",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH600720",
+        "name": "中交设计",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH603860",
+        "name": "中公高科",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH603257",
+        "name": "中国瑞林",
+        "positive": 0,
+        "negative": 267
+      },
+      {
+        "code": "SZ301058",
+        "name": "中粮科工",
+        "positive": 0,
+        "negative": 501
+      }
+    ]
+  },
+  "包装印刷 (BK1265)": {
+    "industry_name": "包装印刷",
+    "industry_code": "BK1265",
+    "stock_count": 40,
+    "total_positive_samples": 0,
+    "total_negative_samples": 19820,
+    "total_samples": 19820,
+    "positive_ratio": 0.0,
+    "sample_stocks": [
+      {
+        "code": "SZ301062",
+        "name": "上海艾录",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ002117",
+        "name": "东港股份",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ301223",
+        "name": "中荣股份",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ002374",
+        "name": "中锐股份",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH603607",
+        "name": "京华激光",
+        "positive": 0,
+        "negative": 501
+      }
+    ]
+  },
+  "军工电子Ⅱ (BK1233)": {
+    "industry_name": "军工电子Ⅱ",
+    "industry_code": "BK1233",
+    "stock_count": 38,
+    "total_positive_samples": 0,
+    "total_negative_samples": 18828,
+    "total_samples": 18828,
+    "positive_ratio": 0.0,
+    "sample_stocks": [
+      {
+        "code": "SH603712",
+        "name": "七一二",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ300762",
+        "name": "上海瀚讯",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ002189",
+        "name": "中光学",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ300177",
+        "name": "中海达",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ002179",
+        "name": "中航光电",
+        "positive": 0,
+        "negative": 501
+      }
+    ]
+  },
+  "通信服务 (BK0736)": {
+    "industry_name": "通信服务",
+    "industry_code": "BK0736",
+    "stock_count": 34,
+    "total_positive_samples": 0,
+    "total_negative_samples": 17034,
+    "total_samples": 17034,
+    "positive_ratio": 0.0,
+    "sample_stocks": [
+      {
+        "code": "SZ002115",
+        "name": "三维通信",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ301428",
+        "name": "世纪恒通",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ300050",
+        "name": "世纪鼎利",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ000889",
+        "name": "中嘉博创",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH601728",
+        "name": "中国电信",
+        "positive": 0,
+        "negative": 501
+      }
+    ]
+  },
+  "专业工程 (BK1248)": {
+    "industry_name": "专业工程",
+    "industry_code": "BK1248",
+    "stock_count": 34,
+    "total_positive_samples": 0,
+    "total_negative_samples": 17032,
+    "total_samples": 17032,
+    "positive_ratio": 0.0,
+    "sample_stocks": [
+      {
+        "code": "SZ300384",
+        "name": "三联虹普",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH605598",
+        "name": "上海港湾",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ002140",
+        "name": "东华科技",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ002135",
+        "name": "东南网架",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH601618",
+        "name": "中国中冶",
+        "positive": 0,
+        "negative": 501
+      }
+    ]
+  },
+  "航空装备Ⅱ (BK1231)": {
+    "industry_name": "航空装备Ⅱ",
+    "industry_code": "BK1231",
+    "stock_count": 32,
+    "total_positive_samples": 0,
+    "total_negative_samples": 15941,
+    "total_samples": 15941,
+    "positive_ratio": 0.0,
+    "sample_stocks": [
+      {
+        "code": "SZ300775",
+        "name": "三角防务",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH600038",
+        "name": "中直股份",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ300777",
+        "name": "中简科技",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH600372",
+        "name": "中航机载",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH600760",
+        "name": "中航沈飞",
+        "positive": 0,
+        "negative": 501
+      }
+    ]
+  },
+  "家电零部件Ⅱ (BK1242)": {
+    "industry_name": "家电零部件Ⅱ",
+    "industry_code": "BK1242",
+    "stock_count": 31,
+    "total_positive_samples": 0,
+    "total_negative_samples": 15529,
+    "total_samples": 15529,
+    "positive_ratio": 0.0,
+    "sample_stocks": [
+      {
+        "code": "SH603578",
+        "name": "三星新材",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ002050",
+        "name": "三花智控",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ300217",
+        "name": "东方电热",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH601956",
+        "name": "东贝集团",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH603112",
+        "name": "华翔股份",
+        "positive": 0,
+        "negative": 501
+      }
+    ]
+  },
+  "纺织制造 (BK1224)": {
+    "industry_name": "纺织制造",
+    "industry_code": "BK1224",
+    "stock_count": 30,
+    "total_positive_samples": 0,
+    "total_negative_samples": 14762,
+    "total_samples": 14762,
+    "positive_ratio": 0.0,
+    "sample_stocks": [
+      {
+        "code": "SZ301066",
+        "name": "万事利",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH603130",
+        "name": "云中马",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ002003",
+        "name": "伟星股份",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH603558",
+        "name": "健盛集团",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ002674",
+        "name": "兴业科技",
+        "positive": 0,
+        "negative": 501
+      }
+    ]
+  },
+  "装修建材 (BK0476)": {
+    "industry_name": "装修建材",
+    "industry_code": "BK0476",
+    "stock_count": 29,
+    "total_positive_samples": 0,
+    "total_negative_samples": 14528,
+    "total_samples": 14528,
+    "positive_ratio": 0.0,
+    "sample_stocks": [
+      {
+        "code": "SZ002785",
+        "name": "万里石",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH603737",
+        "name": "三棵树",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH603856",
+        "name": "东宏股份",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ002271",
+        "name": "东方雨虹",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ001212",
+        "name": "中旗新材",
+        "positive": 0,
+        "negative": 501
+      }
+    ]
+  },
+  "其他电子Ⅱ (BK1223)": {
+    "industry_name": "其他电子Ⅱ",
+    "industry_code": "BK1223",
+    "stock_count": 29,
+    "total_positive_samples": 0,
+    "total_negative_samples": 13958,
+    "total_samples": 13958,
+    "positive_ratio": 0.0,
+    "sample_stocks": [
+      {
+        "code": "SZ301359",
+        "name": "东南电子",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ301031",
+        "name": "中熔电气",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ001287",
+        "name": "中电港",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ300516",
+        "name": "久之洋",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ301563",
+        "name": "云汉芯城",
+        "positive": 0,
+        "negative": 146
+      }
+    ]
+  },
+  "广告营销 (BK1220)": {
+    "industry_name": "广告营销",
+    "industry_code": "BK1220",
+    "stock_count": 28,
+    "total_positive_samples": 0,
+    "total_negative_samples": 14028,
+    "total_samples": 14028,
+    "positive_ratio": 0.0,
+    "sample_stocks": [
+      {
+        "code": "SH605168",
+        "name": "三人行",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ300242",
+        "name": "佳云科技",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ002878",
+        "name": "元隆雅图",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ301102",
+        "name": "兆讯传媒",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ002027",
+        "name": "分众传媒",
+        "positive": 0,
+        "negative": 501
+      }
+    ]
+  },
+  "专业服务 (BK1043)": {
+    "industry_name": "专业服务",
+    "industry_code": "BK1043",
+    "stock_count": 28,
+    "total_positive_samples": 0,
+    "total_negative_samples": 13299,
+    "total_samples": 13299,
+    "positive_ratio": 0.0,
+    "sample_stocks": [
+      {
+        "code": "SH601965",
+        "name": "中国汽研",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ301508",
+        "name": "中机认检",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ300962",
+        "name": "中金辐照",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ002057",
+        "name": "中钢天源",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ300938",
+        "name": "信测标准",
+        "positive": 0,
+        "negative": 501
+      }
+    ]
+  },
+  "风电设备 (BK1032)": {
+    "industry_name": "风电设备",
+    "industry_code": "BK1032",
+    "stock_count": 28,
+    "total_positive_samples": 0,
+    "total_negative_samples": 12670,
+    "total_samples": 12670,
+    "positive_ratio": 0.0,
+    "sample_stocks": [
+      {
+        "code": "SZ301040",
+        "name": "中环海陆",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH600072",
+        "name": "中船科技",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ300690",
+        "name": "双一科技",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH601218",
+        "name": "吉鑫科技",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ000809",
+        "name": "和展能源",
+        "positive": 0,
+        "negative": 501
+      }
+    ]
+  },
+  "工程机械 (BK0739)": {
+    "industry_name": "工程机械",
+    "industry_code": "BK0739",
+    "stock_count": 27,
+    "total_positive_samples": 0,
+    "total_negative_samples": 13357,
+    "total_samples": 13357,
+    "positive_ratio": 0.0,
+    "sample_stocks": [
+      {
+        "code": "SH600031",
+        "name": "三一重工",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH603194",
+        "name": "中力股份",
+        "positive": 0,
+        "negative": 334
+      },
+      {
+        "code": "SZ000157",
+        "name": "中联重科",
+        "positive": 0,
+        "negative": 500
+      },
+      {
+        "code": "SH605305",
+        "name": "中际联合",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ002685",
+        "name": "华东重机",
+        "positive": 0,
+        "negative": 501
+      }
+    ]
+  },
+  "出版 (BK1218)": {
+    "industry_name": "出版",
+    "industry_code": "BK1218",
+    "stock_count": 27,
+    "total_positive_samples": 0,
+    "total_negative_samples": 13527,
+    "total_samples": 13527,
+    "positive_ratio": 0.0,
+    "sample_stocks": [
+      {
+        "code": "SZ300654",
+        "name": "世纪天鸿",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ300788",
+        "name": "中信出版",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH601098",
+        "name": "中南传媒",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ000719",
+        "name": "中原传媒",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH601949",
+        "name": "中国出版",
+        "positive": 0,
+        "negative": 501
+      }
+    ]
+  },
+  "金属新材料 (BK1288)": {
+    "industry_name": "金属新材料",
+    "industry_code": "BK1288",
+    "stock_count": 25,
+    "total_positive_samples": 0,
+    "total_negative_samples": 11858,
+    "total_samples": 11858,
+    "positive_ratio": 0.0,
+    "sample_stocks": [
+      {
+        "code": "SZ301522",
+        "name": "上大股份",
+        "positive": 0,
+        "negative": 383
+      },
+      {
+        "code": "SZ300963",
+        "name": "中洲特材",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ000970",
+        "name": "中科三环",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ301141",
+        "name": "中科磁业",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH605158",
+        "name": "华达新材",
+        "positive": 0,
+        "negative": 501
+      }
+    ]
+  },
+  "其他电源设备Ⅱ (BK1034)": {
+    "industry_name": "其他电源设备Ⅱ",
+    "industry_code": "BK1034",
+    "stock_count": 25,
+    "total_positive_samples": 0,
+    "total_negative_samples": 12253,
+    "total_samples": 12253,
+    "positive_ratio": 0.0,
+    "sample_stocks": [
+      {
+        "code": "SH601727",
+        "name": "上海电气",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH600875",
+        "name": "东方电气",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH600482",
+        "name": "中国动力",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ002364",
+        "name": "中恒电气",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ301516",
+        "name": "中远通",
+        "positive": 0,
+        "negative": 501
+      }
+    ]
+  },
+  "电机Ⅱ (BK1030)": {
+    "industry_name": "电机Ⅱ",
+    "industry_code": "BK1030",
+    "stock_count": 25,
+    "total_positive_samples": 0,
+    "total_negative_samples": 12137,
+    "total_samples": 12137,
+    "positive_ratio": 0.0,
+    "sample_stocks": [
+      {
+        "code": "SH603988",
+        "name": "中电电机",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ000922",
+        "name": "佳电股份",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ003021",
+        "name": "兆威机电",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH603489",
+        "name": "八方股份",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ002823",
+        "name": "凯中精密",
+        "positive": 0,
+        "negative": 501
+      }
+    ]
+  },
+  "游戏Ⅱ (BK1046)": {
+    "industry_name": "游戏Ⅱ",
+    "industry_code": "BK1046",
+    "stock_count": 24,
+    "total_positive_samples": 0,
+    "total_negative_samples": 12024,
+    "total_samples": 12024,
+    "positive_ratio": 0.0,
+    "sample_stocks": [
+      {
+        "code": "SZ002555",
+        "name": "三七互娱",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ002602",
+        "name": "世纪华通",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ300052",
+        "name": "中青宝",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ300533",
+        "name": "冰川网络",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ002425",
+        "name": "凯撒文化",
+        "positive": 0,
+        "negative": 501
+      }
+    ]
+  },
+  "多元金融 (BK0738)": {
+    "industry_name": "多元金融",
+    "industry_code": "BK0738",
+    "stock_count": 24,
+    "total_positive_samples": 0,
+    "total_negative_samples": 12021,
+    "total_samples": 12021,
+    "positive_ratio": 0.0,
+    "sample_stocks": [
+      {
+        "code": "SZ000617",
+        "name": "中油资本",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ002423",
+        "name": "中粮资本",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH600390",
+        "name": "五矿资本",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ002647",
+        "name": "仁东控股",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ000532",
+        "name": "华金资本",
+        "positive": 0,
+        "negative": 500
+      }
+    ]
+  },
+  "文娱用品 (BK1266)": {
+    "industry_name": "文娱用品",
+    "industry_code": "BK1266",
+    "stock_count": 23,
+    "total_positive_samples": 0,
+    "total_negative_samples": 11523,
+    "total_samples": 11523,
+    "positive_ratio": 0.0,
+    "sample_stocks": [
+      {
+        "code": "SZ001300",
+        "name": "三柏硕",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ300703",
+        "name": "创源股份",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ301011",
+        "name": "华立科技",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ301335",
+        "name": "天元宠物",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ002292",
+        "name": "奥飞娱乐",
+        "positive": 0,
+        "negative": 501
+      }
+    ]
+  },
+  "化学纤维 (BK0471)": {
+    "industry_name": "化学纤维",
+    "industry_code": "BK0471",
+    "stock_count": 22,
+    "total_positive_samples": 0,
+    "total_negative_samples": 10012,
+    "total_samples": 10012,
+    "positive_ratio": 0.0,
+    "sample_stocks": [
+      {
+        "code": "SZ002998",
+        "name": "优彩资源",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ002064",
+        "name": "华峰化学",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ000936",
+        "name": "华西股份",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH601113",
+        "name": "华鼎股份",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ001369",
+        "name": "双欣材料",
+        "positive": 0,
+        "negative": 87
+      }
+    ]
+  },
+  "电子化学品Ⅱ (BK1039)": {
+    "industry_name": "电子化学品Ⅱ",
+    "industry_code": "BK1039",
+    "stock_count": 20,
+    "total_positive_samples": 0,
+    "total_negative_samples": 10020,
+    "total_samples": 10020,
+    "positive_ratio": 0.0,
+    "sample_stocks": [
+      {
+        "code": "SZ002643",
+        "name": "万润股份",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ300236",
+        "name": "上海新阳",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ300684",
+        "name": "中石科技",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ002741",
+        "name": "光华科技",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ300346",
+        "name": "南大光电",
+        "positive": 0,
+        "negative": 501
+      }
+    ]
+  },
+  "轨交设备Ⅱ (BK1236)": {
+    "industry_name": "轨交设备Ⅱ",
+    "industry_code": "BK1236",
+    "stock_count": 20,
+    "total_positive_samples": 0,
+    "total_negative_samples": 10018,
+    "total_samples": 10018,
+    "positive_ratio": 0.0,
+    "sample_stocks": [
+      {
+        "code": "SH601766",
+        "name": "中国中车",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ000927",
+        "name": "中国铁物",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ300851",
+        "name": "交大思诺",
+        "positive": 0,
+        "negative": 500
+      },
+      {
+        "code": "SH603680",
+        "name": "今创集团",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ000925",
+        "name": "众合科技",
+        "positive": 0,
+        "negative": 501
+      }
+    ]
+  },
+  "环保设备Ⅱ (BK1234)": {
+    "industry_name": "环保设备Ⅱ",
+    "industry_code": "BK1234",
+    "stock_count": 18,
+    "total_positive_samples": 0,
+    "total_negative_samples": 9017,
+    "total_samples": 9017,
+    "positive_ratio": 0.0,
+    "sample_stocks": [
+      {
+        "code": "SZ301081",
+        "name": "严牌股份",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH603126",
+        "name": "中材节能",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ300631",
+        "name": "久吾高科",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH603282",
+        "name": "亚光股份",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ300137",
+        "name": "先河环保",
+        "positive": 0,
+        "negative": 501
+      }
+    ]
+  },
+  "橡胶 (BK1018)": {
+    "industry_name": "橡胶",
+    "industry_code": "BK1018",
+    "stock_count": 17,
+    "total_positive_samples": 0,
+    "total_negative_samples": 8111,
+    "total_samples": 8111,
+    "positive_ratio": 0.0,
+    "sample_stocks": [
+      {
+        "code": "SZ002224",
+        "name": "三 力 士",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH603033",
+        "name": "三维股份",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ301459",
+        "name": "丰茂股份",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ001325",
+        "name": "元创股份",
+        "positive": 0,
+        "negative": 95
+      },
+      {
+        "code": "SZ002381",
+        "name": "双箭股份",
+        "positive": 0,
+        "negative": 501
+      }
+    ]
+  },
+  "互联网电商 (BK1268)": {
+    "industry_name": "互联网电商",
+    "industry_code": "BK1268",
+    "stock_count": 16,
+    "total_positive_samples": 0,
+    "total_negative_samples": 8016,
+    "total_samples": 8016,
+    "positive_ratio": 0.0,
+    "sample_stocks": [
+      {
+        "code": "SZ301558",
+        "name": "三态股份",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH605136",
+        "name": "丽人丽妆",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ301001",
+        "name": "凯淳股份",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ300592",
+        "name": "华凯易佰",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ002127",
+        "name": "南极电商",
+        "positive": 0,
+        "negative": 501
+      }
+    ]
+  },
+  "综合Ⅱ (BK0539)": {
+    "industry_name": "综合Ⅱ",
+    "industry_code": "BK0539",
+    "stock_count": 16,
+    "total_positive_samples": 0,
+    "total_negative_samples": 8012,
+    "total_samples": 8012,
+    "positive_ratio": 0.0,
+    "sample_stocks": [
+      {
+        "code": "SH600689",
+        "name": "上海三毛",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH600673",
+        "name": "东阳光",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ000009",
+        "name": "中国宝安",
+        "positive": 0,
+        "negative": 500
+      },
+      {
+        "code": "SH600881",
+        "name": "亚泰集团",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ000421",
+        "name": "南京公用",
+        "positive": 0,
+        "negative": 500
+      }
+    ]
+  },
+  "贸易Ⅱ (BK0484)": {
+    "industry_name": "贸易Ⅱ",
+    "industry_code": "BK0484",
+    "stock_count": 15,
+    "total_positive_samples": 0,
+    "total_negative_samples": 7514,
+    "total_samples": 7514,
+    "positive_ratio": 0.0,
+    "sample_stocks": [
+      {
+        "code": "SH600278",
+        "name": "东方创业",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH601061",
+        "name": "中信金属",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ000151",
+        "name": "中成股份",
+        "positive": 0,
+        "negative": 500
+      },
+      {
+        "code": "SH600725",
+        "name": "云维股份",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH600058",
+        "name": "五矿发展",
+        "positive": 0,
+        "negative": 501
+      }
+    ]
+  },
+  "玻璃玻纤 (BK0546)": {
+    "industry_name": "玻璃玻纤",
+    "industry_code": "BK0546",
+    "stock_count": 14,
+    "total_positive_samples": 0,
+    "total_negative_samples": 7013,
+    "total_samples": 7013,
+    "positive_ratio": 0.0,
+    "sample_stocks": [
+      {
+        "code": "SH600293",
+        "name": "三峡新材",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH600176",
+        "name": "中国巨石",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ002080",
+        "name": "中材科技",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ002201",
+        "name": "九鼎新材",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH600876",
+        "name": "凯盛新能",
+        "positive": 0,
+        "negative": 501
+      }
+    ]
+  },
+  "摩托车及其他 (BK1263)": {
+    "industry_name": "摩托车及其他",
+    "industry_code": "BK1263",
+    "stock_count": 14,
+    "total_positive_samples": 0,
+    "total_negative_samples": 7014,
+    "total_samples": 7014,
+    "positive_ratio": 0.0,
+    "sample_stocks": [
+      {
+        "code": "SH600679",
+        "name": "上海凤凰",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ300994",
+        "name": "久祺股份",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ002105",
+        "name": "信隆健康",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH601777",
+        "name": "千里科技",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ003033",
+        "name": "征和工业",
+        "positive": 0,
+        "negative": 501
+      }
+    ]
+  },
+  "装修装饰Ⅱ (BK0725)": {
+    "industry_name": "装修装饰Ⅱ",
+    "industry_code": "BK0725",
+    "stock_count": 14,
+    "total_positive_samples": 0,
+    "total_negative_samples": 7014,
+    "total_samples": 7014,
+    "positive_ratio": 0.0,
+    "sample_stocks": [
+      {
+        "code": "SZ002989",
+        "name": "中天精装",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ002375",
+        "name": "亚厦股份",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH603030",
+        "name": "全筑股份",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ002830",
+        "name": "名雕股份",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ002482",
+        "name": "广田集团",
+        "positive": 0,
+        "negative": 501
+      }
+    ]
+  },
+  "商用车 (BK1264)": {
+    "industry_name": "商用车",
+    "industry_code": "BK1264",
+    "stock_count": 13,
+    "total_positive_samples": 0,
+    "total_negative_samples": 6512,
+    "total_samples": 6512,
+    "positive_ratio": 0.0,
+    "sample_stocks": [
+      {
+        "code": "SH600066",
+        "name": "XD宇通客",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ000800",
+        "name": "一汽解放",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH600006",
+        "name": "东风股份",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ000951",
+        "name": "中国重汽",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ000957",
+        "name": "中通客车",
+        "positive": 0,
+        "negative": 501
+      }
+    ]
+  },
+  "航空机场 (BK0420)": {
+    "industry_name": "航空机场",
+    "industry_code": "BK0420",
+    "stock_count": 13,
+    "total_positive_samples": 0,
+    "total_negative_samples": 6511,
+    "total_samples": 6511,
+    "positive_ratio": 0.0,
+    "sample_stocks": [
+      {
+        "code": "SH600009",
+        "name": "上海机场",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ000099",
+        "name": "中信海直",
+        "positive": 0,
+        "negative": 500
+      },
+      {
+        "code": "SH600115",
+        "name": "中国东航",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH601111",
+        "name": "中国国航",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ002928",
+        "name": "华夏航空",
+        "positive": 0,
+        "negative": 501
+      }
+    ]
+  },
+  "电视广播Ⅱ (BK1219)": {
+    "industry_name": "电视广播Ⅱ",
+    "industry_code": "BK1219",
+    "stock_count": 13,
+    "total_positive_samples": 0,
+    "total_negative_samples": 6403,
+    "total_samples": 6403,
+    "positive_ratio": 0.0,
+    "sample_stocks": [
+      {
+        "code": "SH600637",
+        "name": "东方明珠",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH600936",
+        "name": "北投科技",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ000156",
+        "name": "华数传媒",
+        "positive": 0,
+        "negative": 500
+      },
+      {
+        "code": "SH601929",
+        "name": "吉视传媒",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ002238",
+        "name": "天威视讯",
+        "positive": 0,
+        "negative": 501
+      }
+    ]
+  },
+  "数字媒体 (BK1221)": {
+    "industry_name": "数字媒体",
+    "industry_code": "BK1221",
+    "stock_count": 13,
+    "total_positive_samples": 0,
+    "total_negative_samples": 6513,
+    "total_samples": 6513,
+    "positive_ratio": 0.0,
+    "sample_stocks": [
+      {
+        "code": "SZ300364",
+        "name": "中文在线",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH603000",
+        "name": "人民网",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ300785",
+        "name": "值得买",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ301313",
+        "name": "凡拓数创",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ301299",
+        "name": "卓创资讯",
+        "positive": 0,
+        "negative": 501
+      }
+    ]
+  },
+  "调味发酵品Ⅱ (BK1278)": {
+    "industry_name": "调味发酵品Ⅱ",
+    "industry_code": "BK1278",
+    "stock_count": 13,
+    "total_positive_samples": 0,
+    "total_negative_samples": 6513,
+    "total_samples": 6513,
+    "positive_ratio": 0.0,
+    "sample_stocks": [
+      {
+        "code": "SH600872",
+        "name": "中炬高新",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ300908",
+        "name": "仲景食品",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ002495",
+        "name": "佳隆股份",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH603027",
+        "name": "千禾味业",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH603317",
+        "name": "天味食品",
+        "positive": 0,
+        "negative": 501
+      }
+    ]
+  },
+  "能源金属 (BK1015)": {
+    "industry_name": "能源金属",
+    "industry_code": "BK1015",
+    "stock_count": 11,
+    "total_positive_samples": 0,
+    "total_negative_samples": 5511,
+    "total_samples": 5511,
+    "positive_ratio": 0.0,
+    "sample_stocks": [
+      {
+        "code": "SZ002738",
+        "name": "中矿资源",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH603799",
+        "name": "华友钴业",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ002466",
+        "name": "天齐锂业",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ300618",
+        "name": "寒锐钴业",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ002756",
+        "name": "永兴材料",
+        "positive": 0,
+        "negative": 501
+      }
+    ]
+  },
+  "航海装备Ⅱ (BK1230)": {
+    "industry_name": "航海装备Ⅱ",
+    "industry_code": "BK1230",
+    "stock_count": 10,
+    "total_positive_samples": 0,
+    "total_negative_samples": 5010,
+    "total_samples": 5010,
+    "positive_ratio": 0.0,
+    "sample_stocks": [
+      {
+        "code": "SH600764",
+        "name": "中国海防",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH600150",
+        "name": "中国船舶",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ300810",
+        "name": "中科海讯",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH600685",
+        "name": "中船防务",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH601890",
+        "name": "亚星锚链",
+        "positive": 0,
+        "negative": 501
+      }
+    ]
+  },
+  "地面兵装Ⅱ (BK1229)": {
+    "industry_name": "地面兵装Ⅱ",
+    "industry_code": "BK1229",
+    "stock_count": 9,
+    "total_positive_samples": 0,
+    "total_negative_samples": 4508,
+    "total_samples": 4508,
+    "positive_ratio": 0.0,
+    "sample_stocks": [
+      {
+        "code": "SZ000519",
+        "name": "中兵红箭",
+        "positive": 0,
+        "negative": 500
+      },
+      {
+        "code": "SH600184",
+        "name": "光电股份",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH600967",
+        "name": "内蒙一机",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH600435",
+        "name": "北方导航",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ301357",
+        "name": "北方长龙",
+        "positive": 0,
+        "negative": 501
+      }
+    ]
+  },
+  "汽车服务 (BK1016)": {
+    "industry_name": "汽车服务",
+    "industry_code": "BK1016",
+    "stock_count": 8,
+    "total_positive_samples": 0,
+    "total_negative_samples": 4008,
+    "total_samples": 4008,
+    "positive_ratio": 0.0,
+    "sample_stocks": [
+      {
+        "code": "SH600822",
+        "name": "上海物贸",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ301215",
+        "name": "中汽股份",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH600676",
+        "name": "交运股份",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH600386",
+        "name": "北巴传媒",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH600335",
+        "name": "国机汽车",
+        "positive": 0,
+        "negative": 501
+      }
+    ]
+  },
+  "乘用车 (BK1262)": {
+    "industry_name": "乘用车",
+    "industry_code": "BK1262",
+    "stock_count": 7,
+    "total_positive_samples": 0,
+    "total_negative_samples": 3507,
+    "total_samples": 3507,
+    "positive_ratio": 0.0,
+    "sample_stocks": [
+      {
+        "code": "SH600104",
+        "name": "上汽集团",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH600733",
+        "name": "北汽蓝谷",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH601238",
+        "name": "广汽集团",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ002594",
+        "name": "比亚迪",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH601127",
+        "name": "赛力斯",
+        "positive": 0,
+        "negative": 501
+      }
+    ]
+  },
+  "房屋建设Ⅱ (BK1246)": {
+    "industry_name": "房屋建设Ⅱ",
+    "industry_code": "BK1246",
+    "stock_count": 7,
+    "total_positive_samples": 0,
+    "total_negative_samples": 3507,
+    "total_samples": 3507,
+    "positive_ratio": 0.0,
+    "sample_stocks": [
+      {
+        "code": "SH600170",
+        "name": "上海建工",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH601668",
+        "name": "中国建筑",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH601789",
+        "name": "宁波建工",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ002761",
+        "name": "浙江建投",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH600939",
+        "name": "重庆建工",
+        "positive": 0,
+        "negative": 501
+      }
+    ]
+  },
+  "航天装备Ⅱ (BK1232)": {
+    "industry_name": "航天装备Ⅱ",
+    "industry_code": "BK1232",
+    "stock_count": 6,
+    "total_positive_samples": 0,
+    "total_negative_samples": 3006,
+    "total_samples": 3006,
+    "positive_ratio": 0.0,
+    "sample_stocks": [
+      {
+        "code": "SH600118",
+        "name": "中国卫星",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SH601698",
+        "name": "中国卫通",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ003009",
+        "name": "中天火箭",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ300722",
+        "name": "新余国科",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ002829",
+        "name": "星网宇达",
+        "positive": 0,
+        "negative": 501
+      }
+    ]
+  },
+  "林业Ⅱ (BK1255)": {
+    "industry_name": "林业Ⅱ",
+    "industry_code": "BK1255",
+    "stock_count": 3,
+    "total_positive_samples": 0,
+    "total_negative_samples": 1503,
+    "total_samples": 1503,
+    "positive_ratio": 0.0,
+    "sample_stocks": [
+      {
+        "code": "SZ000592",
+        "name": "平潭发展",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ000663",
+        "name": "永安林业",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ002679",
+        "name": "福建金森",
+        "positive": 0,
+        "negative": 501
+      }
+    ]
+  },
+  "体育Ⅱ (BK1273)": {
+    "industry_name": "体育Ⅱ",
+    "industry_code": "BK1273",
+    "stock_count": 2,
+    "total_positive_samples": 0,
+    "total_negative_samples": 1002,
+    "total_samples": 1002,
+    "positive_ratio": 0.0,
+    "sample_stocks": [
+      {
+        "code": "SH600158",
+        "name": "中体产业",
+        "positive": 0,
+        "negative": 501
+      },
+      {
+        "code": "SZ002858",
+        "name": "力盛体育",
+        "positive": 0,
+        "negative": 501
+      }
+    ]
+  }
+}

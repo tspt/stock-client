@@ -5,12 +5,14 @@
 
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import React from 'react';
-import { Layout, Card, Button, Space, Table, Progress, Select, DatePicker, Tag, Row, Col, Input, Typography, App, Drawer, Modal, Checkbox, InputNumber, Dropdown, type MenuProps } from 'antd';
+import { Layout, Card, Button, Space, Table, Progress, Select, DatePicker, Tag, Row, Col, Input, Typography, App, Drawer, Modal, Checkbox, InputNumber, Dropdown, Alert, type MenuProps } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { ExperimentOutlined, ReloadOutlined, SearchOutlined, FilterOutlined, ClearOutlined, ExportOutlined, CopyOutlined, DownOutlined } from '@ant-design/icons';
 import VirtualList from 'rc-virtual-list';
 import { getStocksHistory, getSignalBacktestsByCode, clearAllSignalBacktests, batchSaveSignalBacktests, getAllSignalBacktests, getStockHistory } from '@/utils/storage/opportunityIndexedDB';
-import { getModelMetadata } from '@/utils/analysis/mlBuypointModel';
+import { getModelMetadata, setIndustryModels, clearIndustryModels } from '@/utils/analysis/mlBuypointModel';
+import { IndustryModelManager } from '@/utils/analysis/industryModelManager';
+import type { SkippedStock } from '@/types/industryModel';
 import { DEFAULT_EXPORT_STOCKS, getEnabledExportStocks, updateStocksFromScan, type ExportStockConfig } from '@/config/exportStocksConfig';
 import { exportLatestSignalsToPng } from '@/utils/export/backtestExportUtils';
 import { OPPORTUNITY_DEFAULT_INDUSTRY_SECTORS, OPPORTUNITY_DEFAULT_BASIC_FILTERS } from '@/utils/config/opportunityAnalysisDefaults';
@@ -78,6 +80,10 @@ export function BacktestPage() {
   const [results, setResults] = useState<any[]>([]);
   const [groupedResults, setGroupedResults] = useState<any[]>([]);
   const [selectedStockCode, setSelectedStockCode] = useState<string | null>(null);
+  // 行业模型加载状态
+  const [loadingModels, setLoadingModels] = useState(false);
+  const [modelLoadProgress, setModelLoadProgress] = useState(0);
+  const [skippedStocks, setSkippedStocks] = useState<SkippedStock[]>([]);
   const [searchText, setSearchText] = useState('');
   // 市场筛选（多选）
   const [selectedMarket, setSelectedMarket] = useState<string[]>([...OPPORTUNITY_DEFAULT_BASIC_FILTERS.selectedMarket]);
@@ -285,9 +291,71 @@ export function BacktestPage() {
     setBacktesting(true);
     setProgress(0);
     setResults([]);
+    setSkippedStocks([]); // 清空跳过的股票列表
     message.info('正在清除旧的回测数据...');
 
     try {
+      // 步骤1: 加载所有行业模型
+      setLoadingModels(true);
+      setModelLoadProgress(0);
+      
+      try {
+        const modelManager = new IndustryModelManager({
+          baseUrl: '/models/industry',
+          failFast: true, // 加载失败时中断
+        });
+        
+        await modelManager.loadAllModels((progress) => {
+          setModelLoadProgress(progress);
+        });
+        
+        // 将加载的模型传递给预测函数（主线程）
+        const loadedModels: any[] = [];
+        const industries = modelManager.getLoadedIndustries();
+        console.log('📊 getLoadedIndustries 返回:', industries.length, '个行业');
+        console.log('📊 前5个行业名称:', industries.slice(0, 5));
+        
+        industries.forEach(industryName => {
+          const model = modelManager.getModel(industryName);
+          console.log(`🔍 获取模型 [${industryName}]:`, model ? '✅ 找到' : '❌ 未找到');
+          if (model) {
+            loadedModels.push(model);
+          }
+        });
+        
+        console.log('📦 最终收集的模型数量:', loadedModels.length);
+        setIndustryModels(loadedModels); // 设置主线程的模型缓存
+        
+        // 同时传递模型给Worker线程
+        if (workerRef.current && loadedModels.length > 0) {
+          console.log('🔄 正在将模型传递给Worker线程...');
+          workerRef.current.postMessage({
+            type: 'init_models',
+            models: loadedModels,
+          });
+          
+          // 等待Worker确认接收
+          await new Promise<void>((resolve) => {
+            const onModelsReady = (e: MessageEvent) => {
+              if (e.data.type === 'models_ready') {
+                console.log('✅ Worker线程模型初始化完成');
+                workerRef.current?.removeEventListener('message', onModelsReady);
+                resolve();
+              }
+            };
+            workerRef.current?.addEventListener('message', onModelsReady);
+          });
+        }
+        
+        setLoadingModels(false);
+        message.success(`✅ 已加载 ${loadedModels.length} 个行业模型`);
+      } catch (error) {
+        setLoadingModels(false);
+        message.error('行业模型加载失败，将使用默认模型');
+        logger.error('模型加载失败:', error);
+        // 继续执行，使用默认模型
+      }
+
       // 清除之前的回测结果
       await clearAllSignalBacktests();
 
@@ -303,6 +371,7 @@ export function BacktestPage() {
       message.info(`开始回测 ${histories.length} 只股票的历史表现...`);
       let processedCount = 0;
       const allSignals: any[] = [];
+      const skippedStocksList: SkippedStock[] = []; // 记录跳过的股票
       const totalTasks = histories.length;
 
       // 统一的消息监听器
@@ -332,6 +401,8 @@ export function BacktestPage() {
             // 按股票分组
             const grouped = groupSignalsByStock(allSignals);
             setGroupedResults(grouped);
+            // 设置跳过的股票列表
+            setSkippedStocks(skippedStocksList);
             // 不在这里设置 selectedStockCode，让 useEffect 统一处理
             setBacktesting(false);
             workerRef.current?.removeEventListener('message', onMessage);
@@ -339,27 +410,49 @@ export function BacktestPage() {
             // 保存回测结果到 IndexedDB
             saveBacktestResultsToIndexedDB(allSignals);
 
-            message.success(`回测完成！共发现 ${allSignals.length} 个信号`);
+            // 清空行业模型缓存
+            clearIndustryModels();
+
+            const skippedMsg = skippedStocksList.length > 0 
+              ? `回测完成！共发现 ${allSignals.length} 个信号，${skippedStocksList.length} 只股票因缺少行业信息被跳过`
+              : `回测完成！共发现 ${allSignals.length} 个信号`;
+            message.success(skippedMsg);
           }
         }
       };
 
       workerRef.current.addEventListener('message', onMessage);
 
-      // 批量发送任务
+      // 批量发送任务（包含行业信息）
       for (const history of histories) {
+        // 获取股票的行业信息
+        const sectorInfo = stockSectorMapping.get(history.code);
+        const industryName = sectorInfo?.industry?.name;
+        
+        // 如果没有行业信息，记录到跳过列表
+        if (!industryName) {
+          skippedStocksList.push({
+            code: history.code,
+            name: history.name,
+            reason: '缺少行业信息'
+          });
+          // 仍然发送任务，但 Worker 会使用默认模型
+        }
+        
         const currentTaskId = `bt_${taskIdCounter.current++}_${history.code}`;
         workerRef.current.postMessage({
           requestId: currentTaskId,
           code: history.code,
           name: history.name,
           klineData: history.dailyLines,
+          industryName: industryName, // 传递行业名称
         });
       }
     } catch (error) {
       message.error('回测执行失败');
       logger.error(error);
       setBacktesting(false);
+      setLoadingModels(false);
     }
   };
 
@@ -1548,15 +1641,32 @@ export function BacktestPage() {
               type="primary"
               icon={<ExperimentOutlined />}
               onClick={handleStartBacktest}
-              disabled={backtesting}
+              disabled={backtesting || loadingModels}
             >
-              {backtesting ? '回测中...' : '执行全量回测'}
+              {loadingModels ? '加载模型中...' : backtesting ? '回测中...' : '执行全量回测'}
             </Button>
           </Space>
         </div>
       </Header>
 
       <Content className={styles.content}>
+        {/* 模型加载进度 */}
+        {loadingModels && (
+          <Card style={{ marginBottom: 16 }}>
+            <Space direction="vertical" style={{ width: '100%' }}>
+              <Text strong>🔄 正在加载行业模型...</Text>
+              <Progress
+                percent={modelLoadProgress}
+                status="active"
+                showInfo={true}
+                strokeColor="#1890ff"
+              />
+              <Text type="secondary" style={{ fontSize: 12 }}>
+                正在从服务器加载53个行业的机器学习模型，请稍候...
+              </Text>
+            </Space>
+          </Card>
+        )}
         {/* 模型信息卡片 */}
         <Card className={styles.modelInfoCard} style={{ marginBottom: 16 }}>
           <Space size="large" wrap>
@@ -1675,6 +1785,34 @@ export function BacktestPage() {
             </Card>
           </Col>
           <Col span={18}>
+            {/* 跳过股票提示 */}
+            {skippedStocks.length > 0 && (
+              <Alert
+                message={`${skippedStocks.length} 只股票未进行分析`}
+                description={
+                  <div>
+                    <p style={{ marginBottom: 8 }}>以下股票因缺少行业信息而被跳过（使用默认模型）：</p>
+                    <ul style={{ marginBottom: 0, paddingLeft: 20 }}>
+                      {skippedStocks.slice(0, 10).map(stock => (
+                        <li key={stock.code} style={{ fontSize: 12 }}>
+                          {stock.code} - {stock.name}: {stock.reason}
+                        </li>
+                      ))}
+                      {skippedStocks.length > 10 && (
+                        <li style={{ fontSize: 12, color: '#999' }}>
+                          ...还有 {skippedStocks.length - 10} 只
+                        </li>
+                      )}
+                    </ul>
+                  </div>
+                }
+                type="warning"
+                showIcon
+                closable
+                style={{ marginBottom: 16 }}
+              />
+            )}
+            
             <Card title="信号详情" className={styles.signalDetailCard}>
               {/* 胜率统计汇总 */}
               {selectedStockCode && (

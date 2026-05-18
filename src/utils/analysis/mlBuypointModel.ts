@@ -12,6 +12,7 @@
  */
 
 import type { KLineData } from '@/types/stock';
+import type { LoadedIndustryModel } from '@/types/industryModel';
 
 // ==================== 模型元数据 ====================
 
@@ -217,17 +218,69 @@ function predictWithTree(features: number[], node: DecisionTreeNode): number {
   }
 }
 
+// ==================== 行业模型管理器 ====================
+
+// 行业模型缓存（行业名称 -> 决策树数组）
+let industryModelsCache: Map<string, DecisionTreeNode[]> = new Map();
+
+/**
+ * 设置行业模型（由前端调用）
+ */
+export function setIndustryModels(models: LoadedIndustryModel[]): void {
+  console.log('📥 setIndustryModels 被调用，接收到的模型数量:', models.length);
+  if (models.length > 0) {
+    console.log('📥 前3个模型的 industryName:', models.slice(0, 3).map(m => m.industryName));
+  }
+  
+  industryModelsCache.clear();
+  let loadedCount = 0;
+  
+  models.forEach(model => {
+    // 从JSON模型中提取决策树数组（注意：字段名是 trees 而不是 tree）
+    const trees = model.modelData?.trees;
+    if (trees && Array.isArray(trees) && trees.length > 0) {
+      industryModelsCache.set(model.industryName, trees);
+      loadedCount++;
+    } else {
+      console.warn(`⚠️ 模型 [${model.industryName}] 没有有效的 trees 字段`);
+    }
+  });
+  
+  console.log(`✅ 成功加载 ${loadedCount}/${models.length} 个行业模型`);
+  console.log(`📊 当前缓存中的模型数量:`, industryModelsCache.size);
+}
+
+/**
+ * 清空行业模型缓存
+ */
+export function clearIndustryModels(): void {
+  industryModelsCache.clear();
+}
+
+/**
+ * 获取行业模型
+ */
+function getIndustryModel(industryName?: string): DecisionTreeNode[] | null {
+  if (!industryName || industryModelsCache.size === 0) {
+    return null; // 没有行业信息或未加载行业模型时返回null
+  }
+  return industryModelsCache.get(industryName) || null;
+}
+
 // ==================== 主预测函数（集成学习）====================
 
 /**
- * 预测指定位置是否为买点（双模型集成）
+ * 预测指定位置是否为买点（支持行业模型）
  * @param klineData K线数据数组
  * @param index 当前要预测的索引位置
+ * @param industryName 可选的行业名称
  * @returns true表示是买点，false表示不是买点
  *
- * 集成策略: OR逻辑 - 任一模型识别即标记为买点
+ * 优先级：
+ * 1. 如果有行业模型且该行业有训练好的模型，使用行业模型
+ * 2. 否则使用默认的全局模型（v4.0）
  */
-export function predictBuyPoint(klineData: KLineData[], index: number): boolean {
+export function predictBuyPoint(klineData: KLineData[], index: number, industryName?: string): boolean {
   // 计算特征
   const features = calculateFeatures(klineData, index);
 
@@ -236,10 +289,28 @@ export function predictBuyPoint(klineData: KLineData[], index: number): boolean 
     return false;
   }
 
-  // 使用 v4.0 模型预测
-  const prediction = predictWithTree(features, MODEL_TREE_V4);
+  // 尝试使用行业模型（随机森林多树投票）
+  const industryTrees = getIndustryModel(industryName);
+  if (industryTrees && industryTrees.length > 0) {
+    // 对每棵树进行预测，然后投票
+    let positiveVotes = 0;
+    let negativeVotes = 0;
+    
+    for (const tree of industryTrees) {
+      const prediction = predictWithTree(features, tree);
+      if (prediction === 1) {
+        positiveVotes++;
+      } else {
+        negativeVotes++;
+      }
+    }
+    
+    // 多数投票决定结果
+    return positiveVotes > negativeVotes;
+  }
 
-  // 返回预测结果（1=买点，0=非买点）
+  // 降级到默认全局模型
+  const prediction = predictWithTree(features, MODEL_TREE_V4);
   return prediction === 1;
 }
 
