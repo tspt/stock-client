@@ -3,6 +3,7 @@
  */
 
 import { create } from 'zustand';
+import { Modal, message } from 'antd';
 import type { StockInfo, StockQuote, SortType, Group, StockWatchListData } from '@/types/stock';
 import { getStorage, setStorage } from '@/utils/storage/storage';
 import {
@@ -117,7 +118,7 @@ export const useStockStore = create<StockState>((set, get) => ({
     if (!watchList.find((s) => s.code === stock.code)) {
       // 必须选择至少一个分组才能加入自选列表
       if (!groupIds || groupIds.length === 0) {
-        getApp().message.warning('请至少选择一个分组');
+        message.warning('请至少选择一个分组');
         return;
       }
 
@@ -281,25 +282,25 @@ export const useStockStore = create<StockState>((set, get) => ({
 
     // 检查分组数量限制
     if (groups.length >= MAX_GROUP_COUNT) {
-      getApp().message.warning(`最多只能创建 ${MAX_GROUP_COUNT} 个分组`);
+      message.warning(`最多只能创建 ${MAX_GROUP_COUNT} 个分组`);
       return;
     }
 
     // 验证分组名称
     if (!validateGroupName(group.name)) {
-      getApp().message.error('分组名称只能包含中文、英文、数字，且长度不超过10个字符');
+      message.error('分组名称只能包含中文、英文、数字，且长度不超过10个字符');
       return;
     }
 
     // 内置分组名称保留
     if (group.name === BUILTIN_GROUP_SELF_NAME) {
-      getApp().message.error(`"${BUILTIN_GROUP_SELF_NAME}"是内置分组名称，请换一个名称`);
+      message.error(`"${BUILTIN_GROUP_SELF_NAME}"是内置分组名称，请换一个名称`);
       return;
     }
 
     // 检查名称重复
     if (groups.some((g) => g.name === group.name)) {
-      getApp().message.error('分组名称已存在');
+      message.error('分组名称已存在');
       return;
     }
 
@@ -312,7 +313,7 @@ export const useStockStore = create<StockState>((set, get) => ({
     const newGroups = [...groups, newGroup].sort((a, b) => a.order - b.order);
     set({ groups: newGroups });
     get().saveWatchList();
-    getApp().message.success('分组创建成功');
+    message.success('分组创建成功');
   },
 
   updateGroup: (id, updates) => {
@@ -321,15 +322,15 @@ export const useStockStore = create<StockState>((set, get) => ({
     // 如果更新名称，验证并检查重复
     if (updates.name) {
       if (!validateGroupName(updates.name)) {
-        getApp().message.error('分组名称只能包含中文、英文、数字，且长度不超过10个字符');
+        message.error('分组名称只能包含中文、英文、数字，且长度不超过10个字符');
         return;
       }
       if (updates.name === BUILTIN_GROUP_SELF_NAME) {
-        getApp().message.error(`"${BUILTIN_GROUP_SELF_NAME}"是内置分组名称，请换一个名称`);
+        message.error(`"${BUILTIN_GROUP_SELF_NAME}"是内置分组名称，请换一个名称`);
         return;
       }
       if (groups.some((g) => g.id !== id && g.name === updates.name)) {
-        getApp().message.error('分组名称已存在');
+        message.error('分组名称已存在');
         return;
       }
     }
@@ -337,7 +338,7 @@ export const useStockStore = create<StockState>((set, get) => ({
     const newGroups = groups.map((g) => (g.id === id ? { ...g, ...updates } : g));
     set({ groups: newGroups });
     get().saveWatchList();
-    getApp().message.success('分组更新成功');
+    message.success('分组更新成功');
   },
 
   deleteGroup: async (id) => {
@@ -353,7 +354,7 @@ export const useStockStore = create<StockState>((set, get) => ({
     );
 
     // 确认删除
-    getApp().modal.confirm({
+    Modal.confirm({
       title: '确认删除分组',
       content: `确定要删除分组"${group.name}"吗？该分组下的 ${stocksInGroup.length} 只股票将一起被删除。`,
       okText: '删除',
@@ -362,7 +363,7 @@ export const useStockStore = create<StockState>((set, get) => ({
       onOk: async () => {
         // 如果股票数量较多，显示进度
         if (stocksInGroup.length > 10) {
-          const hide = getApp().message.loading('正在删除分组和股票...', 0);
+          const hide = message.loading('正在删除分组和股票...', 0);
 
           // 模拟进度（实际删除很快，这里主要是用户体验）
           await new Promise((resolve) => setTimeout(resolve, 500));
@@ -392,7 +393,7 @@ export const useStockStore = create<StockState>((set, get) => ({
           get().saveWatchList();
 
           hide();
-          getApp().message.success(`已删除分组"${group.name}"及 ${stocksInGroup.length} 只股票`);
+          message.success(`已删除分组"${group.name}"及 ${stocksInGroup.length} 只股票`);
         } else {
           // 直接删除
           const stockCodesToRemove = stocksInGroup.map((s) => s.code);
@@ -417,7 +418,7 @@ export const useStockStore = create<StockState>((set, get) => ({
               : ensureSelectedGroupIdForWatchList(newWatchList, reorderedGroups, curTab);
           set({ groups: reorderedGroups, watchList: newWatchList, selectedGroupId: nextTab });
           get().saveWatchList();
-          getApp().message.success(`已删除分组"${group.name}"及 ${stocksInGroup.length} 只股票`);
+          message.success(`已删除分组"${group.name}"及 ${stocksInGroup.length} 只股票`);
         }
       },
     });
@@ -433,7 +434,7 @@ export const useStockStore = create<StockState>((set, get) => ({
 
   addStockToGroups: (stockCode, groupIds) => {
     if (!groupIds || groupIds.length === 0) {
-      getApp().message.warning('请至少选择一个分组');
+      message.warning('请至少选择一个分组');
       return;
     }
     const { watchList } = get();
