@@ -18,6 +18,7 @@ import {
   DatabaseOutlined,
 } from '@ant-design/icons';
 import { useOpportunityStore } from '@/stores/opportunityStore';
+import { apiCache } from '@/utils/storage/apiCache';
 import {
   CONSOLIDATION_TYPE_LABELS,
 } from '@/utils/analysis/consolidationAnalysis';
@@ -1184,6 +1185,10 @@ export function OpportunityPage() {
 
     // 清空 AI 缓存，防止跨周期数据污染
     clearAICache();
+
+    // 清空内存缓存，强制从 API 获取最新数据，确保不同电脑结果一致
+    apiCache.clear();
+    logger.info('[机会分析] 已清空内存缓存，将获取最新数据');
 
     // 直接开始分析，不需要保存筛选条件（已通过useEffect自动保存）
     await startAnalysis(currentPeriod, filteredStocks, currentCount);

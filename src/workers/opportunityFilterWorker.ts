@@ -30,7 +30,7 @@ interface AICacheEntry {
   timestamp: number;
 }
 const aiCacheMap = new Map<string, AICacheEntry>();
-const AI_CACHE_TTL = 5 * 60 * 1000; // 5分钟缓存过期时间
+const AI_CACHE_TTL = 30 * 60 * 1000; // 30分钟缓存过期时间
 
 function sharpMoveFilterActive(filters: OpportunityFilterSnapshot): boolean {
   return (

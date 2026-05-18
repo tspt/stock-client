@@ -469,7 +469,13 @@ export function analyzeAllStocksOpportunity(
       }
     });
 
-    logger.info(`[AI分析] 有效股票池大小: ${allStockDataForAI.size}`);
+    // 按股票代码排序，确保遍历顺序一致，保证相似形态识别的确定性
+    const sortedEntries = Array.from(allStockDataForAI.entries()).sort((a, b) =>
+      a[0].localeCompare(b[0])
+    );
+    const sortedStockDataForAI = new Map(sortedEntries);
+
+    logger.info(`[AI分析] 有效股票池大小: ${sortedStockDataForAI.size}`);
 
     // 批量更新AI分析
     results.forEach((result) => {
@@ -477,8 +483,8 @@ export function analyzeAllStocksOpportunity(
         const klineData = klineDataMap.get(result.code)!;
         if (klineData && klineData.length >= 30) {
           try {
-            // 重新计算AI分析，传入完整股票池
-            const aiAnalysis = performAIAnalysis(klineData, result, allStockDataForAI);
+            // 重新计算AI分析，传入排序后的完整股票池
+            const aiAnalysis = performAIAnalysis(klineData, result, sortedStockDataForAI);
             result.aiAnalysis = aiAnalysis;
             aiUpdatedCount++;
 
