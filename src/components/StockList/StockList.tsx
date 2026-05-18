@@ -66,27 +66,36 @@ export const StockList = memo(function StockList() {
   const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>([]);
   const contextMenuRef = useRef<HTMLDivElement>(null);
   const listContainerRef = useRef<HTMLDivElement>(null);
-  const [listHeight, setListHeight] = useState(0);
+  const [containerHeight, setContainerHeight] = useState<number>(400); // 默认高度
 
   useEffect(() => {
-    const el = listContainerRef.current;
-    if (!el) return;
-    const ro = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        const h = Math.floor(entry.contentRect.height);
+    const updateHeight = () => {
+      const el = listContainerRef.current;
+      if (el) {
+        const h = el.clientHeight;
         if (h > 0) {
-          setListHeight(h);
-          break;
+          setContainerHeight(h);
         }
       }
+    };
+
+    // 延迟执行，确保 DOM 已经渲染完成
+    const timer = setTimeout(updateHeight, 0);
+
+    // 使用 ResizeObserver 监听容器大小变化
+    const ro = new ResizeObserver(() => {
+      requestAnimationFrame(updateHeight);
     });
-    ro.observe(el);
-    // 初始化时立即获取高度
-    const initialHeight = Math.floor(el.getBoundingClientRect().height);
-    if (initialHeight > 0) {
-      setListHeight(initialHeight);
+
+    const el = listContainerRef.current;
+    if (el) {
+      ro.observe(el);
     }
-    return () => ro.disconnect();
+
+    return () => {
+      clearTimeout(timer);
+      ro.disconnect();
+    };
   }, []);
 
   const handleItemClick = (code: string) => {
@@ -214,14 +223,15 @@ export const StockList = memo(function StockList() {
     );
   }
 
-  const virtualListHeight = listHeight > 0 ? listHeight : 320;
+  // 直接使用容器高度
+  const finalHeight = containerHeight;
 
   return (
     <div className={styles.stockList}>
       <div ref={listContainerRef} className={styles.listContainer} role="list">
         <VirtualList
           data={watchList}
-          height={virtualListHeight}
+          height={finalHeight}
           itemHeight={LIST_ROW_HEIGHT}
           itemKey="code"
         >

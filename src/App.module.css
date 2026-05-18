@@ -84,6 +84,7 @@
   width: 360px;
   min-width: 300px;
   max-width: 500px;
+  height: 100%;
   border-right: 1px solid var(--ant-color-border);
   display: flex;
   flex-direction: column;

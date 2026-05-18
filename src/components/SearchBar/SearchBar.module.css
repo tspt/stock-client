@@ -2,6 +2,7 @@
   padding: 10px 12px;
   background: var(--ant-color-bg-container);
   border-bottom: 1px solid var(--ant-color-border);
+  flex-shrink: 0;
 }
 
 .searchBarContent {
