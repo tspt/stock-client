@@ -28,7 +28,7 @@ interface BacktestSignal {
 // Worker初始化时加载行业模型
 let modelsLoaded = false;
 let isLoadingModels = false;
-let isFirstTask = true;  // 标记是否是第一个任务
+let isFirstTask = true; // 标记是否是第一个任务
 const taskQueue: BacktestRequest[] = [];
 
 async function loadIndustryModelsInWorker() {
@@ -226,7 +226,7 @@ self.onmessage = (e: MessageEvent<BacktestRequest>) => {
   if (isFirstTask && !modelsLoaded) {
     isFirstTask = false;
     console.log('[Worker] 收到第一个任务，开始加载模型...');
-    loadIndustryModelsInWorker();  // 注意：不要await，让它异步执行
+    loadIndustryModelsInWorker(); // 注意：不要await，让它异步执行
   }
 
   // 如果模型还没加载完成，将任务加入队列

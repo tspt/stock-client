@@ -616,7 +616,9 @@ export function predictBuyPoint(
 
     // 调试日志：每100个预测点打印一次
     if (index % 100 === 0) {
-      console.log(`[predictBuyPoint] industry=${industryName}, positiveVotes=${positiveVotes}, negativeVotes=${negativeVotes}, total=${industryTrees.length}`);
+      console.log(
+        `[predictBuyPoint] industry=${industryName}, positiveVotes=${positiveVotes}, negativeVotes=${negativeVotes}, total=${industryTrees.length}`
+      );
     }
 
     // 多数投票决定结果

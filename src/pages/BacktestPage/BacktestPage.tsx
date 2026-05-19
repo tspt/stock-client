@@ -402,7 +402,7 @@ export function BacktestPage() {
           const sectorInfo = stockSectorMapping.get(history.code);
           const industryName = sectorInfo?.industry?.name;
           const industryCode = sectorInfo?.industry?.code;
-          
+
           // 如果股票有行业信息，检查是否在排除列表中
           if (industryCode) {
             // industrySectors 存储的是行业代码（如 BK1020）
