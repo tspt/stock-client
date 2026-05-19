@@ -10,7 +10,6 @@ import { calcAllIndicators, formatKDJValues } from '@/utils/analysis/indicators'
 import { calculateConsolidationInLookback } from '@/utils/analysis/consolidationAnalysis';
 import { analyzeSharpMovePatterns } from '@/utils/analysis/sharpMovePatterns';
 import { calculateTrendLineInLookback } from '@/utils/analysis/trendLineAnalysis';
-import { performAIAnalysis } from './ai';
 import { ConcurrencyManager } from '@/utils/business/concurrencyManager';
 import {
   OPPORTUNITY_BATCH_DELAY,
@@ -27,6 +26,21 @@ import {
   OPPORTUNITY_DEFAULT_TREND_LINE,
 } from '@/utils/config/opportunityAnalysisDefaults';
 import { logger } from '@/utils/business/logger';
+
+type OpportunityAiVersion = 'v1' | 'v2' | 'v3' | 'v4';
+
+async function loadPerformAIAnalysis(aiVersion: OpportunityAiVersion) {
+  if (aiVersion === 'v3') {
+    return (await import('./ai-v3.0')).performAIAnalysis;
+  }
+  if (aiVersion === 'v2') {
+    return (await import('./ai-v2.0')).performAIAnalysis;
+  }
+  if (aiVersion === 'v4') {
+    return (await import('./ai-v4.0')).performAIAnalysis;
+  }
+  return (await import('./ai')).performAIAnalysis;
+}
 
 async function analyzeOneStock(
   stock: StockInfo,
@@ -192,12 +206,15 @@ export function analyzeAllStocksOpportunity(
   stocks: StockInfo[],
   period: KLinePeriod,
   count: number,
-  onProgress?: (progress: {
-    total: number;
-    completed: number;
-    failed: number;
-    percent: number;
-  }) => void
+  options?: {
+    onProgress?: (progress: {
+      total: number;
+      completed: number;
+      failed: number;
+      percent: number;
+    }) => void;
+    aiVersion?: OpportunityAiVersion;
+  }
 ): {
   promise: Promise<{
     results: StockOpportunityData[];
@@ -222,6 +239,9 @@ export function analyzeAllStocksOpportunity(
   };
 
   const promise = (async () => {
+    const onProgress = options?.onProgress;
+    const aiVersion: OpportunityAiVersion = options?.aiVersion ?? 'v1';
+    const performAIAnalysis = await loadPerformAIAnalysis(aiVersion);
     const errors: Array<{ stock: StockInfo; error: Error }> = [];
     const results: StockOpportunityData[] = [];
     const klineDataMap = new Map<string, KLineData[]>();

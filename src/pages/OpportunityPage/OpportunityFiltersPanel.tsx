@@ -284,7 +284,7 @@ export interface OpportunityFiltersPanelProps {
   aiRiskScoreRange: { min?: number; max?: number };
   setAiRiskScoreRange: SetRange;
   // v3.0 新增
-  aiVersion?: 'v1' | 'v2' | 'v3'; // 当前 AI 版本，用于控制 v3.0 筛选条件的显示
+  aiVersion?: 'v1' | 'v2' | 'v3' | 'v4'; // 当前 AI 版本，用于控制 v3/v4 增强筛选条件的显示
   aiSignalConfluence?: boolean;
   setAiSignalConfluence?: (v: boolean) => void;
   aiMinSignalCount?: number;
@@ -1243,8 +1243,8 @@ export function OpportunityFiltersPanel({
                       </span>
                     </div>
 
-                    {/* v3.0 新增：信号共识筛选 */}
-                    {aiVersion === 'v3' && (
+                    {/* v3/v4：信号共识筛选（v4 基于 v1 结果，字段兼容） */}
+                    {(aiVersion === 'v3' || aiVersion === 'v4') && (
                       <div className={styles.filterItem} style={{ minWidth: 320 }}>
                         <Checkbox
                           checked={aiSignalConfluence}
@@ -1283,8 +1283,8 @@ export function OpportunityFiltersPanel({
                       </div>
                     )}
 
-                    {/* v3.0 新增：相似形态胜率筛选 */}
-                    {aiVersion === 'v3' && (
+                    {/* v3/v4：相似形态胜率筛选 */}
+                    {(aiVersion === 'v3' || aiVersion === 'v4') && (
                       <div className={styles.filterItem} style={{ minWidth: 320 }}>
                         <Checkbox
                           checked={aiPatternWinRateRange.min !== undefined || aiPatternWinRateRange.max !== undefined}
@@ -1351,8 +1351,8 @@ export function OpportunityFiltersPanel({
                       </div>
                     )}
 
-                    {/* v3.0 新增：风险收益比筛选 */}
-                    {aiVersion === 'v3' && (
+                    {/* v3/v4：风险收益比筛选 */}
+                    {(aiVersion === 'v3' || aiVersion === 'v4') && (
                       <div className={styles.filterItem} style={{ minWidth: 320 }}>
                         <Checkbox
                           checked={aiMinRiskRewardRatio !== undefined}

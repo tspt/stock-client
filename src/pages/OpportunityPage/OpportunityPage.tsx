@@ -305,21 +305,28 @@ export function OpportunityPage() {
   const [filterDiagnosticsDrawerOpen, setFilterDiagnosticsDrawerOpen] = useState(false); // 筛选诊断抽屉状态
   const [errorExpanded, setErrorExpanded] = useState(false); // 失败详情展开状态
 
-  // AI分析版本选择（切换时自动刷新）
-  const [aiVersion, setAiVersion] = useState<'v1' | 'v2' | 'v3'>('v1'); // 默认使用v1.0原始版
+  // AI分析版本选择（切换时自动刷新）；与 store.analysisAiVersion 对齐供一键分析使用
+  const [aiVersion, setAiVersion] = useState<'v1' | 'v2' | 'v3' | 'v4'>(() =>
+    useOpportunityStore.getState().analysisAiVersion
+  );
   const [showAddToWatchListModal, setShowAddToWatchListModal] = useState(false);
   const [aiRefreshLoading, setAiRefreshLoading] = useState(false);
 
-  // AI版本切换时自动执行刷新
-  const handleAiVersionChange = async (version: 'v1' | 'v2' | 'v3') => {
+  const aiVersionLabel = (version: 'v1' | 'v2' | 'v3' | 'v4') =>
+    version === 'v3' ? 'v3.0增强版' : version === 'v2' ? 'v2.0优化版' : version === 'v4' ? 'v4.0结构增强' : 'v1.0原始版';
+
+  // AI版本切换时自动执行刷新（无分析数据时仅写入 store，供下次一键分析使用）
+  const handleAiVersionChange = async (version: 'v1' | 'v2' | 'v3' | 'v4') => {
+    useOpportunityStore.setState({ analysisAiVersion: version });
     if (analysisData.length === 0) {
-      message.warning('请先执行一键分析');
+      setAiVersion(version);
+      message.info(`已选择 ${aiVersionLabel(version)}，请执行一键分析生效`);
       return;
     }
 
     try {
       setAiRefreshLoading(true);
-      message.loading({ content: `正在切换到${version === 'v3' ? 'v3.0增强版' : version === 'v2' ? 'v2.0优化版' : 'v1.0原始版'}...`, key: 'aiVersionChange' });
+      message.loading({ content: `正在切换到${aiVersionLabel(version)}...`, key: 'aiVersionChange' });
 
       logger.info(`切换AI版本到${version}，总股票数: ${analysisData.length}`);
 
@@ -333,6 +340,9 @@ export function OpportunityPage() {
         performAIAnalysis = module.performAIAnalysis;
       } else if (version === 'v2') {
         const module = await import('../../services/opportunity/ai-v2.0');
+        performAIAnalysis = module.performAIAnalysis;
+      } else if (version === 'v4') {
+        const module = await import('../../services/opportunity/ai-v4.0');
         performAIAnalysis = module.performAIAnalysis;
       } else {
         const module = await import('../../services/opportunity/ai');
@@ -396,7 +406,7 @@ export function OpportunityPage() {
       setAiVersion(version);
 
       message.success({
-        content: `已切换到${version === 'v3' ? 'v3.0增强版' : version === 'v2' ? 'v2.0优化版' : 'v1.0原始版'}，共更新 ${updatedCount} 只股票`,
+        content: `已切换到${aiVersionLabel(version)}，共更新 ${updatedCount} 只股票`,
         key: 'aiVersionChange'
       });
     } catch (error) {
@@ -1241,7 +1251,7 @@ export function OpportunityPage() {
     logger.info('[机会分析] 已清空内存缓存，将获取最新数据');
 
     // 直接开始分析，不需要保存筛选条件（已通过useEffect自动保存）
-    await startAnalysis(currentPeriod, filteredStocks, currentCount);
+    await startAnalysis(currentPeriod, filteredStocks, currentCount, aiVersion);
   };
 
   const handleCancel = () => {
@@ -1544,8 +1554,9 @@ export function OpportunityPage() {
               { label: 'v1.0 原始版', value: 'v1' },
               { label: 'v2.0 优化版', value: 'v2' },
               { label: 'v3.0 增强版', value: 'v3' },
+              { label: 'v4.0 结构增强', value: 'v4' },
             ]}
-            disabled={loading || aiRefreshLoading || analysisData.length === 0}
+            disabled={loading || aiRefreshLoading}
             title="切换AI分析算法版本（自动刷新）"
           />
           <Dropdown

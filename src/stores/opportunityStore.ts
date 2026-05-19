@@ -51,7 +51,15 @@ interface OpportunityState {
   // 分析时间戳
   analysisTimestamp: number | null;
 
-  startAnalysis: (period: KLinePeriod, stocks: StockInfo[], count: number) => Promise<void>;
+  // 一键分析时使用的 AI 版本（与失败重试共用）
+  analysisAiVersion: 'v1' | 'v2' | 'v3' | 'v4';
+
+  startAnalysis: (
+    period: KLinePeriod,
+    stocks: StockInfo[],
+    count: number,
+    aiVersion?: 'v1' | 'v2' | 'v3' | 'v4'
+  ) => Promise<void>;
   cancelAnalysis: () => void;
   retryFailedStocks: () => Promise<void>;
   loadCachedData: () => Promise<void>;
@@ -111,11 +119,14 @@ export const useOpportunityStore = create<OpportunityState>((set, get) => ({
   cancelFn: null,
   klineDataCache: new Map(),
   analysisTimestamp: null,
+  analysisAiVersion: 'v1',
 
-  startAnalysis: async (period, stocks, count) => {
+  startAnalysis: async (period, stocks, count, aiVersion) => {
     if (stocks.length === 0) {
       return;
     }
+
+    const ver = aiVersion ?? get().analysisAiVersion;
 
     set({
       loading: true,
@@ -123,15 +134,19 @@ export const useOpportunityStore = create<OpportunityState>((set, get) => ({
       errors: [],
       currentPeriod: period,
       currentCount: count,
+      analysisAiVersion: ver,
     });
 
     let cancelled = false;
 
     try {
-      const { promise, cancel } = analyzeAllStocksOpportunity(stocks, period, count, (p) => {
-        if (!cancelled) {
-          set({ progress: p });
-        }
+      const { promise, cancel } = analyzeAllStocksOpportunity(stocks, period, count, {
+        onProgress: (p) => {
+          if (!cancelled) {
+            set({ progress: p });
+          }
+        },
+        aiVersion: ver,
       });
 
       // 包装一层：既调用service取消，也能阻止后续进度回调更新UI
@@ -202,7 +217,8 @@ export const useOpportunityStore = create<OpportunityState>((set, get) => ({
 
   retryFailedStocks: async () => {
     const state = get();
-    const { errors, currentPeriod, currentCount, analysisData, klineDataCache } = state;
+    const { errors, currentPeriod, currentCount, analysisData, klineDataCache, analysisAiVersion } =
+      state;
 
     if (errors.length === 0) {
       return;
@@ -223,16 +239,14 @@ export const useOpportunityStore = create<OpportunityState>((set, get) => ({
     let cancelled = false;
 
     try {
-      const { promise, cancel } = analyzeAllStocksOpportunity(
-        failedStocks,
-        currentPeriod,
-        currentCount,
-        (p) => {
+      const { promise, cancel } = analyzeAllStocksOpportunity(failedStocks, currentPeriod, currentCount, {
+        onProgress: (p) => {
           if (!cancelled) {
             set({ progress: p });
           }
-        }
-      );
+        },
+        aiVersion: analysisAiVersion,
+      });
 
       // 包装取消函数
       set({
