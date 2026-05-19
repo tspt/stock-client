@@ -1,19 +1,12 @@
 import type { KLineData } from '@/types/stock';
-import type { LoadedIndustryModel } from '@/types/industryModel';
 import { runBacktestScreening } from '@/utils/analysis/backtestUtils';
-import { setIndustryModels } from '@/utils/analysis/mlBuypointModel';
 
 interface BacktestRequest {
   requestId: string;
   code: string;
   name: string;
   klineData: KLineData[];
-  industryName?: string; // 可选的行业名称
-}
-
-interface InitModelsMessage {
-  type: 'init_models';
-  models: LoadedIndustryModel[];
+  industryName?: string; // 可选的行业名称（v4.0版本不使用行业模型）
 }
 
 interface BacktestSignal {
@@ -31,25 +24,8 @@ interface BacktestSignal {
   };
 }
 
-type WorkerMessage = BacktestRequest | InitModelsMessage;
-
-// 类型守卫函数
-function isBacktestRequest(msg: WorkerMessage): msg is BacktestRequest {
-  return !('type' in msg && msg.type === 'init_models');
-}
-
-self.onmessage = (e: MessageEvent<WorkerMessage>) => {
+self.onmessage = (e: MessageEvent<BacktestRequest>) => {
   const msg = e.data;
-
-  // 处理模型初始化消息
-  if (!isBacktestRequest(msg)) {
-    // 这是 init_models 消息
-    setIndustryModels(msg.models);
-    self.postMessage({ type: 'models_ready' });
-    return;
-  }
-
-  // 这是 backtest 请求
   const { requestId, code, name, klineData, industryName } = msg;
   const signals: BacktestSignal[] = [];
   const len = klineData.length;
@@ -69,7 +45,7 @@ self.onmessage = (e: MessageEvent<WorkerMessage>) => {
     const historicalData = klineData.slice(0, i + 1);
     const lastK = historicalData[historicalData.length - 1];
 
-    // 调用真实的筛选逻辑（传入行业信息）
+    // 调用真实的筛选逻辑（v4.0版本使用单一全局决策树模型）
     const isMatched = runBacktestScreening(klineData, i, industryName);
 
     if (isMatched) {

@@ -2,7 +2,7 @@
  * 回测工具函数
  * 用于在 Worker 环境中执行筛选逻辑
  *
- * 使用 ML 买点识别模型 v3.0 进行信号生成
+ * 使用 ML 买点识别模型 v4.0 进行信号生成
  */
 
 import type { KLineData } from '@/types/stock';

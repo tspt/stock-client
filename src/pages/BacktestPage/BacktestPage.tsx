@@ -10,8 +10,7 @@ import type { ColumnsType } from 'antd/es/table';
 import { ExperimentOutlined, ReloadOutlined, SearchOutlined, FilterOutlined, ClearOutlined, ExportOutlined, CopyOutlined, DownOutlined } from '@ant-design/icons';
 import VirtualList from 'rc-virtual-list';
 import { getStocksHistory, getSignalBacktestsByCode, clearAllSignalBacktests, batchSaveSignalBacktests, getAllSignalBacktests, getStockHistory } from '@/utils/storage/opportunityIndexedDB';
-import { getModelMetadata, setIndustryModels, clearIndustryModels } from '@/utils/analysis/mlBuypointModel';
-import { IndustryModelManager } from '@/utils/analysis/industryModelManager';
+import { getModelMetadata } from '@/utils/analysis/mlBuypointModel';
 import type { SkippedStock } from '@/types/industryModel';
 import { DEFAULT_EXPORT_STOCKS, getEnabledExportStocks, updateStocksFromScan, type ExportStockConfig } from '@/config/exportStocksConfig';
 import { exportLatestSignalsToPng } from '@/utils/export/backtestExportUtils';
@@ -80,9 +79,6 @@ export function BacktestPage() {
   const [results, setResults] = useState<any[]>([]);
   const [groupedResults, setGroupedResults] = useState<any[]>([]);
   const [selectedStockCode, setSelectedStockCode] = useState<string | null>(null);
-  // 行业模型加载状态
-  const [loadingModels, setLoadingModels] = useState(false);
-  const [modelLoadProgress, setModelLoadProgress] = useState(0);
   const [skippedStocks, setSkippedStocks] = useState<SkippedStock[]>([]);
   const [searchText, setSearchText] = useState('');
   // 市场筛选（多选）
@@ -295,67 +291,6 @@ export function BacktestPage() {
     message.info('正在清除旧的回测数据...');
 
     try {
-      // 步骤1: 加载所有行业模型
-      setLoadingModels(true);
-      setModelLoadProgress(0);
-
-      try {
-        const modelManager = new IndustryModelManager({
-          baseUrl: '/models/industry',
-          failFast: true, // 加载失败时中断
-        });
-
-        await modelManager.loadAllModels((progress) => {
-          setModelLoadProgress(progress);
-        });
-
-        // 将加载的模型传递给预测函数（主线程）
-        const loadedModels: any[] = [];
-        const industries = modelManager.getLoadedIndustries();
-        console.log('📊 getLoadedIndustries 返回:', industries.length, '个行业');
-        console.log('📊 前5个行业名称:', industries.slice(0, 5));
-
-        industries.forEach(industryName => {
-          const model = modelManager.getModel(industryName);
-          console.log(`🔍 获取模型 [${industryName}]:`, model ? '✅ 找到' : '❌ 未找到');
-          if (model) {
-            loadedModels.push(model);
-          }
-        });
-
-        console.log('📦 最终收集的模型数量:', loadedModels.length);
-        setIndustryModels(loadedModels); // 设置主线程的模型缓存
-
-        // 同时传递模型给Worker线程
-        if (workerRef.current && loadedModels.length > 0) {
-          console.log('🔄 正在将模型传递给Worker线程...');
-          workerRef.current.postMessage({
-            type: 'init_models',
-            models: loadedModels,
-          });
-
-          // 等待Worker确认接收
-          await new Promise<void>((resolve) => {
-            const onModelsReady = (e: MessageEvent) => {
-              if (e.data.type === 'models_ready') {
-                console.log('✅ Worker线程模型初始化完成');
-                workerRef.current?.removeEventListener('message', onModelsReady);
-                resolve();
-              }
-            };
-            workerRef.current?.addEventListener('message', onModelsReady);
-          });
-        }
-
-        setLoadingModels(false);
-        message.success(`✅ 已加载 ${loadedModels.length} 个行业模型`);
-      } catch (error) {
-        setLoadingModels(false);
-        message.error('行业模型加载失败，将使用默认模型');
-        logger.error('模型加载失败:', error);
-        // 继续执行，使用默认模型
-      }
-
       // 清除之前的回测结果
       await clearAllSignalBacktests();
 
@@ -410,8 +345,7 @@ export function BacktestPage() {
             // 保存回测结果到 IndexedDB
             saveBacktestResultsToIndexedDB(allSignals);
 
-            // 清空行业模型缓存
-            clearIndustryModels();
+
 
             const skippedMsg = skippedStocksList.length > 0
               ? `回测完成！共发现 ${allSignals.length} 个信号，${skippedStocksList.length} 只股票因缺少行业信息被跳过`
@@ -452,7 +386,6 @@ export function BacktestPage() {
       message.error('回测执行失败');
       logger.error(error);
       setBacktesting(false);
-      setLoadingModels(false);
     }
   };
 
@@ -1641,32 +1574,16 @@ export function BacktestPage() {
               type="primary"
               icon={<ExperimentOutlined />}
               onClick={handleStartBacktest}
-              disabled={backtesting || loadingModels}
+              disabled={backtesting}
             >
-              {loadingModels ? '加载模型中...' : backtesting ? '回测中...' : '执行全量回测'}
+              {backtesting ? '回测中...' : '执行全量回测'}
             </Button>
           </Space>
         </div>
       </Header>
 
       <Content className={styles.content}>
-        {/* 模型加载进度 */}
-        {loadingModels && (
-          <Card style={{ marginBottom: 16 }}>
-            <Space direction="vertical" style={{ width: '100%' }}>
-              <Text strong>🔄 正在加载行业模型...</Text>
-              <Progress
-                percent={modelLoadProgress}
-                status="active"
-                showInfo={true}
-                strokeColor="#1890ff"
-              />
-              <Text type="secondary" style={{ fontSize: 12 }}>
-                正在从服务器加载53个行业的机器学习模型，请稍候...
-              </Text>
-            </Space>
-          </Card>
-        )}
+
         {/* 模型信息卡片 */}
         <Card className={styles.modelInfoCard} style={{ marginBottom: 16 }}>
           <Space size="large" wrap>
