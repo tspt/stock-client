@@ -1,0 +1,1595 @@
+{
+  "generatedAt": "2026-05-19T08:45:42.728Z",
+  "totalIndustries": 69,
+  "successful": 69,
+  "failed": 0,
+  "results": [
+    {
+      "industryName": "汽车零部件",
+      "success": true,
+      "metrics": {
+        "accuracy": 0.5844234032072684,
+        "precision": 0.5844234032072684,
+        "recall": 1,
+        "f1": 0.7377111471898857,
+        "auc": 0.5
+      },
+      "sampleStats": {
+        "train": 73081,
+        "test": 18271,
+        "total": 91352
+      },
+      "bestConfig": {
+        "nTrees": 50,
+        "maxDepth": 5,
+        "minSamplesLeaf": 10,
+        "maxFeatures": 0.5,
+        "id": "Config_Shallow_1"
+      }
+    },
+    {
+      "industryName": "光伏设备",
+      "success": true,
+      "metrics": {
+        "accuracy": 0.5661656351311524,
+        "precision": 0.5661656351311524,
+        "recall": 1,
+        "f1": 0.7229958599924727,
+        "auc": 0.5
+      },
+      "sampleStats": {
+        "train": 13572,
+        "test": 3393,
+        "total": 16965
+      },
+      "bestConfig": {
+        "nTrees": 50,
+        "maxDepth": 5,
+        "minSamplesLeaf": 10,
+        "maxFeatures": 0.5,
+        "id": "Config_Shallow_1"
+      }
+    },
+    {
+      "industryName": "光学光电子",
+      "success": true,
+      "metrics": {
+        "accuracy": 0.5958620689655172,
+        "precision": 0.5958620689655172,
+        "recall": 1,
+        "f1": 0.7467588591184097,
+        "auc": 0.5
+      },
+      "sampleStats": {
+        "train": 26100,
+        "test": 6525,
+        "total": 32625
+      },
+      "bestConfig": {
+        "nTrees": 50,
+        "maxDepth": 5,
+        "minSamplesLeaf": 10,
+        "maxFeatures": 0.5,
+        "id": "Config_Shallow_1"
+      }
+    },
+    {
+      "industryName": "专业工程",
+      "success": true,
+      "metrics": {
+        "accuracy": 0.5814182534471438,
+        "precision": 0.5814182534471438,
+        "recall": 1,
+        "f1": 0.7353124351255969,
+        "auc": 0.5
+      },
+      "sampleStats": {
+        "train": 12180,
+        "test": 3046,
+        "total": 15226
+      },
+      "bestConfig": {
+        "nTrees": 50,
+        "maxDepth": 5,
+        "minSamplesLeaf": 10,
+        "maxFeatures": 0.5,
+        "id": "Config_Shallow_1"
+      }
+    },
+    {
+      "industryName": "元件",
+      "success": true,
+      "metrics": {
+        "accuracy": 0.6021604228912893,
+        "precision": 0.6021604228912893,
+        "recall": 1,
+        "f1": 0.7516855544398221,
+        "auc": 0.5
+      },
+      "sampleStats": {
+        "train": 17401,
+        "test": 4351,
+        "total": 21752
+      },
+      "bestConfig": {
+        "nTrees": 50,
+        "maxDepth": 5,
+        "minSamplesLeaf": 10,
+        "maxFeatures": 0.5,
+        "id": "Config_Shallow_1"
+      }
+    },
+    {
+      "industryName": "自动化设备",
+      "success": true,
+      "metrics": {
+        "accuracy": 0.5919333032897701,
+        "precision": 0.5919333032897701,
+        "recall": 1,
+        "f1": 0.743665958952583,
+        "auc": 0.5
+      },
+      "sampleStats": {
+        "train": 17748,
+        "test": 4438,
+        "total": 22186
+      },
+      "bestConfig": {
+        "nTrees": 50,
+        "maxDepth": 5,
+        "minSamplesLeaf": 10,
+        "maxFeatures": 0.5,
+        "id": "Config_Shallow_1"
+      }
+    },
+    {
+      "industryName": "商用车",
+      "success": true,
+      "metrics": {
+        "accuracy": 0.5676784249384742,
+        "precision": 0.5676784249384742,
+        "recall": 1,
+        "f1": 0.7242281527995814,
+        "auc": 0.5
+      },
+      "sampleStats": {
+        "train": 4872,
+        "test": 1219,
+        "total": 6091
+      },
+      "bestConfig": {
+        "nTrees": 50,
+        "maxDepth": 5,
+        "minSamplesLeaf": 10,
+        "maxFeatures": 0.5,
+        "id": "Config_Shallow_1"
+      }
+    },
+    {
+      "industryName": "IT服务Ⅱ",
+      "success": true,
+      "metrics": {
+        "accuracy": 0.5728091942013843,
+        "precision": 0.5728091942013843,
+        "recall": 1,
+        "f1": 0.728389936062443,
+        "auc": 0.5
+      },
+      "sampleStats": {
+        "train": 30624,
+        "test": 7657,
+        "total": 38281
+      },
+      "bestConfig": {
+        "nTrees": 50,
+        "maxDepth": 5,
+        "minSamplesLeaf": 10,
+        "maxFeatures": 0.5,
+        "id": "Config_Shallow_1"
+      }
+    },
+    {
+      "industryName": "半导体",
+      "success": true,
+      "metrics": {
+        "accuracy": 0.5869333900829964,
+        "precision": 0.5869333900829964,
+        "recall": 1,
+        "f1": 0.739707657234813,
+        "auc": 0.5
+      },
+      "sampleStats": {
+        "train": 18793,
+        "test": 4699,
+        "total": 23492
+      },
+      "bestConfig": {
+        "nTrees": 50,
+        "maxDepth": 5,
+        "minSamplesLeaf": 10,
+        "maxFeatures": 0.5,
+        "id": "Config_Shallow_1"
+      }
+    },
+    {
+      "industryName": "化学制品",
+      "success": true,
+      "metrics": {
+        "accuracy": 0.5875739152161239,
+        "precision": 0.5875739152161239,
+        "recall": 1,
+        "f1": 0.7402161368167034,
+        "auc": 0.5
+      },
+      "sampleStats": {
+        "train": 48024,
+        "test": 12007,
+        "total": 60031
+      },
+      "bestConfig": {
+        "nTrees": 50,
+        "maxDepth": 5,
+        "minSamplesLeaf": 10,
+        "maxFeatures": 0.5,
+        "id": "Config_Shallow_1"
+      }
+    },
+    {
+      "industryName": "化学制药",
+      "success": true,
+      "metrics": {
+        "accuracy": 0.5803044423734078,
+        "precision": 0.5803044423734078,
+        "recall": 1,
+        "f1": 0.7344210733241596,
+        "auc": 0.5
+      },
+      "sampleStats": {
+        "train": 38628,
+        "test": 9657,
+        "total": 48285
+      },
+      "bestConfig": {
+        "nTrees": 50,
+        "maxDepth": 5,
+        "minSamplesLeaf": 10,
+        "maxFeatures": 0.5,
+        "id": "Config_Shallow_1"
+      }
+    },
+    {
+      "industryName": "专用设备",
+      "success": true,
+      "metrics": {
+        "accuracy": 0.5992723062928967,
+        "precision": 0.5992723062928967,
+        "recall": 1,
+        "f1": 0.7494312306101344,
+        "auc": 0.5
+      },
+      "sampleStats": {
+        "train": 48372,
+        "test": 12093,
+        "total": 60465
+      },
+      "bestConfig": {
+        "nTrees": 50,
+        "maxDepth": 5,
+        "minSamplesLeaf": 10,
+        "maxFeatures": 0.5,
+        "id": "Config_Shallow_1"
+      }
+    },
+    {
+      "industryName": "军工电子Ⅱ",
+      "success": true,
+      "metrics": {
+        "accuracy": 0.5967432950191571,
+        "precision": 0.5967432950191571,
+        "recall": 1,
+        "f1": 0.7474505098980204,
+        "auc": 0.5
+      },
+      "sampleStats": {
+        "train": 12528,
+        "test": 3132,
+        "total": 15660
+      },
+      "bestConfig": {
+        "nTrees": 50,
+        "maxDepth": 5,
+        "minSamplesLeaf": 10,
+        "maxFeatures": 0.5,
+        "id": "Config_Shallow_1"
+      }
+    },
+    {
+      "industryName": "纺织制造",
+      "success": true,
+      "metrics": {
+        "accuracy": 0.6000792707094729,
+        "precision": 0.6000792707094729,
+        "recall": 1,
+        "f1": 0.7500619271736438,
+        "auc": 0.5
+      },
+      "sampleStats": {
+        "train": 10092,
+        "test": 2523,
+        "total": 12615
+      },
+      "bestConfig": {
+        "nTrees": 50,
+        "maxDepth": 5,
+        "minSamplesLeaf": 10,
+        "maxFeatures": 0.5,
+        "id": "Config_Shallow_1"
+      }
+    },
+    {
+      "industryName": "软件开发",
+      "success": true,
+      "metrics": {
+        "accuracy": 0.5659551176792557,
+        "precision": 0.5659551176792557,
+        "recall": 1,
+        "f1": 0.7228241873470814,
+        "auc": 0.5
+      },
+      "sampleStats": {
+        "train": 29232,
+        "test": 7308,
+        "total": 36540
+      },
+      "bestConfig": {
+        "nTrees": 50,
+        "maxDepth": 5,
+        "minSamplesLeaf": 10,
+        "maxFeatures": 0.5,
+        "id": "Config_Shallow_1"
+      }
+    },
+    {
+      "industryName": "塑料",
+      "success": true,
+      "metrics": {
+        "accuracy": 0.5959770114942529,
+        "precision": 0.5959770114942529,
+        "recall": 1,
+        "f1": 0.7468491177529708,
+        "auc": 0.5
+      },
+      "sampleStats": {
+        "train": 20880,
+        "test": 5220,
+        "total": 26100
+      },
+      "bestConfig": {
+        "nTrees": 50,
+        "maxDepth": 5,
+        "minSamplesLeaf": 10,
+        "maxFeatures": 0.5,
+        "id": "Config_Shallow_1"
+      }
+    },
+    {
+      "industryName": "通用设备",
+      "success": true,
+      "metrics": {
+        "accuracy": 0.5943051201671892,
+        "precision": 0.5943051201671892,
+        "recall": 1,
+        "f1": 0.7455349827953466,
+        "auc": 0.5
+      },
+      "sampleStats": {
+        "train": 61248,
+        "test": 15312,
+        "total": 76560
+      },
+      "bestConfig": {
+        "nTrees": 50,
+        "maxDepth": 5,
+        "minSamplesLeaf": 10,
+        "maxFeatures": 0.5,
+        "id": "Config_Shallow_1"
+      }
+    },
+    {
+      "industryName": "电网设备",
+      "success": true,
+      "metrics": {
+        "accuracy": 0.6014974164294,
+        "precision": 0.6014974164294,
+        "recall": 1,
+        "f1": 0.7511687627576217,
+        "auc": 0.5
+      },
+      "sampleStats": {
+        "train": 37932,
+        "test": 9483,
+        "total": 47415
+      },
+      "bestConfig": {
+        "nTrees": 50,
+        "maxDepth": 5,
+        "minSamplesLeaf": 10,
+        "maxFeatures": 0.5,
+        "id": "Config_Shallow_1"
+      }
+    },
+    {
+      "industryName": "电子化学品Ⅱ",
+      "success": true,
+      "metrics": {
+        "accuracy": 0.6028735632183908,
+        "precision": 0.6028735632183908,
+        "recall": 1,
+        "f1": 0.7522409465758336,
+        "auc": 0.5
+      },
+      "sampleStats": {
+        "train": 6960,
+        "test": 1740,
+        "total": 8700
+      },
+      "bestConfig": {
+        "nTrees": 50,
+        "maxDepth": 5,
+        "minSamplesLeaf": 10,
+        "maxFeatures": 0.5,
+        "id": "Config_Shallow_1"
+      }
+    },
+    {
+      "industryName": "消费电子",
+      "success": true,
+      "metrics": {
+        "accuracy": 0.5933151845130067,
+        "precision": 0.5933151845130067,
+        "recall": 1,
+        "f1": 0.7447555766492644,
+        "auc": 0.5
+      },
+      "sampleStats": {
+        "train": 26448,
+        "test": 6612,
+        "total": 33060
+      },
+      "bestConfig": {
+        "nTrees": 50,
+        "maxDepth": 5,
+        "minSamplesLeaf": 10,
+        "maxFeatures": 0.5,
+        "id": "Config_Shallow_1"
+      }
+    },
+    {
+      "industryName": "装修建材",
+      "success": true,
+      "metrics": {
+        "accuracy": 0.5877923107411811,
+        "precision": 0.5877923107411811,
+        "recall": 1,
+        "f1": 0.7403894158761857,
+        "auc": 0.5
+      },
+      "sampleStats": {
+        "train": 10092,
+        "test": 2523,
+        "total": 12615
+      },
+      "bestConfig": {
+        "nTrees": 50,
+        "maxDepth": 5,
+        "minSamplesLeaf": 10,
+        "maxFeatures": 0.5,
+        "id": "Config_Shallow_1"
+      }
+    },
+    {
+      "industryName": "电池",
+      "success": true,
+      "metrics": {
+        "accuracy": 0.5924764890282131,
+        "precision": 0.5924764890282131,
+        "recall": 1,
+        "f1": 0.7440944881889764,
+        "auc": 0.5
+      },
+      "sampleStats": {
+        "train": 22968,
+        "test": 5742,
+        "total": 28710
+      },
+      "bestConfig": {
+        "nTrees": 50,
+        "maxDepth": 5,
+        "minSamplesLeaf": 10,
+        "maxFeatures": 0.5,
+        "id": "Config_Shallow_1"
+      }
+    },
+    {
+      "industryName": "通信设备",
+      "success": true,
+      "metrics": {
+        "accuracy": 0.6076741041244084,
+        "precision": 0.6076741041244084,
+        "recall": 1,
+        "f1": 0.7559667753127957,
+        "auc": 0.5
+      },
+      "sampleStats": {
+        "train": 23664,
+        "test": 5916,
+        "total": 29580
+      },
+      "bestConfig": {
+        "nTrees": 50,
+        "maxDepth": 5,
+        "minSamplesLeaf": 10,
+        "maxFeatures": 0.5,
+        "id": "Config_Shallow_1"
+      }
+    },
+    {
+      "industryName": "计算机设备",
+      "success": true,
+      "metrics": {
+        "accuracy": 0.5800433116774946,
+        "precision": 0.5800433116774946,
+        "recall": 1,
+        "f1": 0.7342119135477069,
+        "auc": 0.5
+      },
+      "sampleStats": {
+        "train": 24012,
+        "test": 6003,
+        "total": 30015
+      },
+      "bestConfig": {
+        "nTrees": 50,
+        "maxDepth": 5,
+        "minSamplesLeaf": 10,
+        "maxFeatures": 0.5,
+        "id": "Config_Shallow_1"
+      }
+    },
+    {
+      "industryName": "工业金属",
+      "success": true,
+      "metrics": {
+        "accuracy": 0.5874384236453202,
+        "precision": 0.5874384236453202,
+        "recall": 1,
+        "f1": 0.7401086113266097,
+        "auc": 0.5
+      },
+      "sampleStats": {
+        "train": 19488,
+        "test": 4872,
+        "total": 24360
+      },
+      "bestConfig": {
+        "nTrees": 50,
+        "maxDepth": 5,
+        "minSamplesLeaf": 10,
+        "maxFeatures": 0.5,
+        "id": "Config_Shallow_1"
+      }
+    },
+    {
+      "industryName": "橡胶",
+      "success": true,
+      "metrics": {
+        "accuracy": 0.5524425287356322,
+        "precision": 0.5524425287356322,
+        "recall": 1,
+        "f1": 0.7117075428042572,
+        "auc": 0.5
+      },
+      "sampleStats": {
+        "train": 5568,
+        "test": 1392,
+        "total": 6960
+      },
+      "bestConfig": {
+        "nTrees": 50,
+        "maxDepth": 5,
+        "minSamplesLeaf": 10,
+        "maxFeatures": 0.5,
+        "id": "Config_Shallow_1"
+      }
+    },
+    {
+      "industryName": "工程机械",
+      "success": true,
+      "metrics": {
+        "accuracy": 0.5999115826702034,
+        "precision": 0.5999115826702034,
+        "recall": 1,
+        "f1": 0.7499309201436862,
+        "auc": 0.5
+      },
+      "sampleStats": {
+        "train": 9048,
+        "test": 2262,
+        "total": 11310
+      },
+      "bestConfig": {
+        "nTrees": 50,
+        "maxDepth": 5,
+        "minSamplesLeaf": 10,
+        "maxFeatures": 0.5,
+        "id": "Config_Shallow_1"
+      }
+    },
+    {
+      "industryName": "游戏Ⅱ",
+      "success": true,
+      "metrics": {
+        "accuracy": 0.5900383141762452,
+        "precision": 0.5900383141762452,
+        "recall": 1,
+        "f1": 0.7421686746987951,
+        "auc": 0.5
+      },
+      "sampleStats": {
+        "train": 8352,
+        "test": 2088,
+        "total": 10440
+      },
+      "bestConfig": {
+        "nTrees": 50,
+        "maxDepth": 5,
+        "minSamplesLeaf": 10,
+        "maxFeatures": 0.5,
+        "id": "Config_Shallow_1"
+      }
+    },
+    {
+      "industryName": "广告营销",
+      "success": true,
+      "metrics": {
+        "accuracy": 0.5738916256157636,
+        "precision": 0.5738916256157636,
+        "recall": 1,
+        "f1": 0.729264475743349,
+        "auc": 0.5
+      },
+      "sampleStats": {
+        "train": 9744,
+        "test": 2436,
+        "total": 12180
+      },
+      "bestConfig": {
+        "nTrees": 50,
+        "maxDepth": 5,
+        "minSamplesLeaf": 10,
+        "maxFeatures": 0.5,
+        "id": "Config_Shallow_1"
+      }
+    },
+    {
+      "industryName": "化学原料",
+      "success": true,
+      "metrics": {
+        "accuracy": 0.5774294670846395,
+        "precision": 0.5774294670846395,
+        "recall": 1,
+        "f1": 0.7321144674085851,
+        "auc": 0.5
+      },
+      "sampleStats": {
+        "train": 19140,
+        "test": 4785,
+        "total": 23925
+      },
+      "bestConfig": {
+        "nTrees": 50,
+        "maxDepth": 5,
+        "minSamplesLeaf": 10,
+        "maxFeatures": 0.5,
+        "id": "Config_Shallow_1"
+      }
+    },
+    {
+      "industryName": "玻璃玻纤",
+      "success": true,
+      "metrics": {
+        "accuracy": 0.5574712643678161,
+        "precision": 0.5574712643678161,
+        "recall": 1,
+        "f1": 0.7158671586715868,
+        "auc": 0.5
+      },
+      "sampleStats": {
+        "train": 4872,
+        "test": 1218,
+        "total": 6090
+      },
+      "bestConfig": {
+        "nTrees": 50,
+        "maxDepth": 5,
+        "minSamplesLeaf": 10,
+        "maxFeatures": 0.5,
+        "id": "Config_Shallow_1"
+      }
+    },
+    {
+      "industryName": "电力",
+      "success": true,
+      "metrics": {
+        "accuracy": 0.5837985769020252,
+        "precision": 0.5837985769020252,
+        "recall": 1,
+        "f1": 0.7372131600774123,
+        "auc": 0.5
+      },
+      "sampleStats": {
+        "train": 36540,
+        "test": 9135,
+        "total": 45675
+      },
+      "bestConfig": {
+        "nTrees": 50,
+        "maxDepth": 5,
+        "minSamplesLeaf": 10,
+        "maxFeatures": 0.5,
+        "id": "Config_Shallow_1"
+      }
+    },
+    {
+      "industryName": "环境治理",
+      "success": true,
+      "metrics": {
+        "accuracy": 0.5834001603849238,
+        "precision": 0.5834001603849238,
+        "recall": 1,
+        "f1": 0.7368954165611548,
+        "auc": 0.5
+      },
+      "sampleStats": {
+        "train": 29928,
+        "test": 7482,
+        "total": 37410
+      },
+      "bestConfig": {
+        "nTrees": 50,
+        "maxDepth": 5,
+        "minSamplesLeaf": 10,
+        "maxFeatures": 0.5,
+        "id": "Config_Shallow_1"
+      }
+    },
+    {
+      "industryName": "互联网电商",
+      "success": true,
+      "metrics": {
+        "accuracy": 0.5531609195402298,
+        "precision": 0.5531609195402298,
+        "recall": 1,
+        "f1": 0.7123034227567067,
+        "auc": 0.5
+      },
+      "sampleStats": {
+        "train": 5568,
+        "test": 1392,
+        "total": 6960
+      },
+      "bestConfig": {
+        "nTrees": 50,
+        "maxDepth": 5,
+        "minSamplesLeaf": 10,
+        "maxFeatures": 0.5,
+        "id": "Config_Shallow_1"
+      }
+    },
+    {
+      "industryName": "家电零部件Ⅱ",
+      "success": true,
+      "metrics": {
+        "accuracy": 0.6084538375973304,
+        "precision": 0.6084538375973304,
+        "recall": 1,
+        "f1": 0.7565698478561549,
+        "auc": 0.5
+      },
+      "sampleStats": {
+        "train": 10788,
+        "test": 2697,
+        "total": 13485
+      },
+      "bestConfig": {
+        "nTrees": 50,
+        "maxDepth": 5,
+        "minSamplesLeaf": 10,
+        "maxFeatures": 0.5,
+        "id": "Config_Shallow_1"
+      }
+    },
+    {
+      "industryName": "文娱用品",
+      "success": true,
+      "metrics": {
+        "accuracy": 0.5922038980509745,
+        "precision": 0.5922038980509745,
+        "recall": 1,
+        "f1": 0.743879472693032,
+        "auc": 0.5
+      },
+      "sampleStats": {
+        "train": 8004,
+        "test": 2001,
+        "total": 10005
+      },
+      "bestConfig": {
+        "nTrees": 50,
+        "maxDepth": 5,
+        "minSamplesLeaf": 10,
+        "maxFeatures": 0.5,
+        "id": "Config_Shallow_1"
+      }
+    },
+    {
+      "industryName": "通信服务",
+      "success": true,
+      "metrics": {
+        "accuracy": 0.5818120351588911,
+        "precision": 0.5818120351588911,
+        "recall": 1,
+        "f1": 0.7356272707843556,
+        "auc": 0.5
+      },
+      "sampleStats": {
+        "train": 11832,
+        "test": 2958,
+        "total": 14790
+      },
+      "bestConfig": {
+        "nTrees": 50,
+        "maxDepth": 5,
+        "minSamplesLeaf": 10,
+        "maxFeatures": 0.5,
+        "id": "Config_Shallow_1"
+      }
+    },
+    {
+      "industryName": "航空装备Ⅱ",
+      "success": true,
+      "metrics": {
+        "accuracy": 0.582128290693363,
+        "precision": 0.582128290693363,
+        "recall": 1,
+        "f1": 0.7358800093742676,
+        "auc": 0.5
+      },
+      "sampleStats": {
+        "train": 10788,
+        "test": 2697,
+        "total": 13485
+      },
+      "bestConfig": {
+        "nTrees": 50,
+        "maxDepth": 5,
+        "minSamplesLeaf": 10,
+        "maxFeatures": 0.5,
+        "id": "Config_Shallow_1"
+      }
+    },
+    {
+      "industryName": "乘用车",
+      "success": true,
+      "metrics": {
+        "accuracy": 0.47413793103448276,
+        "precision": 0.47413793103448276,
+        "recall": 1,
+        "f1": 0.6432748538011697,
+        "auc": 0.5
+      },
+      "sampleStats": {
+        "train": 2784,
+        "test": 696,
+        "total": 3480
+      },
+      "bestConfig": {
+        "nTrees": 50,
+        "maxDepth": 5,
+        "minSamplesLeaf": 10,
+        "maxFeatures": 0.5,
+        "id": "Config_Shallow_1"
+      }
+    },
+    {
+      "industryName": "综合Ⅱ",
+      "success": true,
+      "metrics": {
+        "accuracy": 0.5761494252873564,
+        "precision": 0.5761494252873564,
+        "recall": 1,
+        "f1": 0.731084776663628,
+        "auc": 0.5
+      },
+      "sampleStats": {
+        "train": 5568,
+        "test": 1392,
+        "total": 6960
+      },
+      "bestConfig": {
+        "nTrees": 50,
+        "maxDepth": 5,
+        "minSamplesLeaf": 10,
+        "maxFeatures": 0.5,
+        "id": "Config_Shallow_1"
+      }
+    },
+    {
+      "industryName": "摩托车及其他",
+      "success": true,
+      "metrics": {
+        "accuracy": 0.5755336617405583,
+        "precision": 0.5755336617405583,
+        "recall": 1,
+        "f1": 0.73058884835852,
+        "auc": 0.5
+      },
+      "sampleStats": {
+        "train": 4872,
+        "test": 1218,
+        "total": 6090
+      },
+      "bestConfig": {
+        "nTrees": 50,
+        "maxDepth": 5,
+        "minSamplesLeaf": 10,
+        "maxFeatures": 0.5,
+        "id": "Config_Shallow_1"
+      }
+    },
+    {
+      "industryName": "房屋建设Ⅱ",
+      "success": true,
+      "metrics": {
+        "accuracy": 0.5402298850574713,
+        "precision": 0.5402298850574713,
+        "recall": 1,
+        "f1": 0.7014925373134328,
+        "auc": 0.5
+      },
+      "sampleStats": {
+        "train": 2436,
+        "test": 609,
+        "total": 3045
+      },
+      "bestConfig": {
+        "nTrees": 50,
+        "maxDepth": 5,
+        "minSamplesLeaf": 10,
+        "maxFeatures": 0.5,
+        "id": "Config_Shallow_1"
+      }
+    },
+    {
+      "industryName": "工程咨询服务Ⅱ",
+      "success": true,
+      "metrics": {
+        "accuracy": 0.5711759504862953,
+        "precision": 0.5711759504862953,
+        "recall": 1,
+        "f1": 0.727068092290377,
+        "auc": 0.5
+      },
+      "sampleStats": {
+        "train": 13572,
+        "test": 3393,
+        "total": 16965
+      },
+      "bestConfig": {
+        "nTrees": 50,
+        "maxDepth": 5,
+        "minSamplesLeaf": 10,
+        "maxFeatures": 0.5,
+        "id": "Config_Shallow_1"
+      }
+    },
+    {
+      "industryName": "航空机场",
+      "success": true,
+      "metrics": {
+        "accuracy": 0.5207780725022104,
+        "precision": 0.5207780725022104,
+        "recall": 1,
+        "f1": 0.6848837209302325,
+        "auc": 0.5
+      },
+      "sampleStats": {
+        "train": 4524,
+        "test": 1131,
+        "total": 5655
+      },
+      "bestConfig": {
+        "nTrees": 50,
+        "maxDepth": 5,
+        "minSamplesLeaf": 10,
+        "maxFeatures": 0.5,
+        "id": "Config_Shallow_1"
+      }
+    },
+    {
+      "industryName": "汽车服务",
+      "success": true,
+      "metrics": {
+        "accuracy": 0.5545977011494253,
+        "precision": 0.5545977011494253,
+        "recall": 1,
+        "f1": 0.7134935304990757,
+        "auc": 0.5
+      },
+      "sampleStats": {
+        "train": 2784,
+        "test": 696,
+        "total": 3480
+      },
+      "bestConfig": {
+        "nTrees": 50,
+        "maxDepth": 5,
+        "minSamplesLeaf": 10,
+        "maxFeatures": 0.5,
+        "id": "Config_Shallow_1"
+      }
+    },
+    {
+      "industryName": "其他电源设备Ⅱ",
+      "success": true,
+      "metrics": {
+        "accuracy": 0.5886015325670498,
+        "precision": 0.5886015325670498,
+        "recall": 1,
+        "f1": 0.7410310521555623,
+        "auc": 0.5
+      },
+      "sampleStats": {
+        "train": 8352,
+        "test": 2088,
+        "total": 10440
+      },
+      "bestConfig": {
+        "nTrees": 50,
+        "maxDepth": 5,
+        "minSamplesLeaf": 10,
+        "maxFeatures": 0.5,
+        "id": "Config_Shallow_1"
+      }
+    },
+    {
+      "industryName": "包装印刷",
+      "success": true,
+      "metrics": {
+        "accuracy": 0.5925589836660617,
+        "precision": 0.5925589836660617,
+        "recall": 1,
+        "f1": 0.7441595441595441,
+        "auc": 0.5
+      },
+      "sampleStats": {
+        "train": 13224,
+        "test": 3306,
+        "total": 16530
+      },
+      "bestConfig": {
+        "nTrees": 50,
+        "maxDepth": 5,
+        "minSamplesLeaf": 10,
+        "maxFeatures": 0.5,
+        "id": "Config_Shallow_1"
+      }
+    },
+    {
+      "industryName": "出版",
+      "success": true,
+      "metrics": {
+        "accuracy": 0.5823754789272031,
+        "precision": 0.5823754789272031,
+        "recall": 1,
+        "f1": 0.7360774818401937,
+        "auc": 0.5
+      },
+      "sampleStats": {
+        "train": 9396,
+        "test": 2349,
+        "total": 11745
+      },
+      "bestConfig": {
+        "nTrees": 50,
+        "maxDepth": 5,
+        "minSamplesLeaf": 10,
+        "maxFeatures": 0.5,
+        "id": "Config_Shallow_1"
+      }
+    },
+    {
+      "industryName": "其他电子Ⅱ",
+      "success": true,
+      "metrics": {
+        "accuracy": 0.5930183056619838,
+        "precision": 0.5930183056619838,
+        "recall": 1,
+        "f1": 0.7445216461785141,
+        "auc": 0.5
+      },
+      "sampleStats": {
+        "train": 9396,
+        "test": 2349,
+        "total": 11745
+      },
+      "bestConfig": {
+        "nTrees": 50,
+        "maxDepth": 5,
+        "minSamplesLeaf": 10,
+        "maxFeatures": 0.5,
+        "id": "Config_Shallow_1"
+      }
+    },
+    {
+      "industryName": "贸易Ⅱ",
+      "success": true,
+      "metrics": {
+        "accuracy": 0.5915708812260536,
+        "precision": 0.5915708812260536,
+        "recall": 1,
+        "f1": 0.7433798748194511,
+        "auc": 0.5
+      },
+      "sampleStats": {
+        "train": 5220,
+        "test": 1305,
+        "total": 6525
+      },
+      "bestConfig": {
+        "nTrees": 50,
+        "maxDepth": 5,
+        "minSamplesLeaf": 10,
+        "maxFeatures": 0.5,
+        "id": "Config_Shallow_1"
+      }
+    },
+    {
+      "industryName": "电视广播Ⅱ",
+      "success": true,
+      "metrics": {
+        "accuracy": 0.5651340996168582,
+        "precision": 0.5651340996168582,
+        "recall": 1,
+        "f1": 0.7221542227662178,
+        "auc": 0.5
+      },
+      "sampleStats": {
+        "train": 4176,
+        "test": 1044,
+        "total": 5220
+      },
+      "bestConfig": {
+        "nTrees": 50,
+        "maxDepth": 5,
+        "minSamplesLeaf": 10,
+        "maxFeatures": 0.5,
+        "id": "Config_Shallow_1"
+      }
+    },
+    {
+      "industryName": "农化制品",
+      "success": true,
+      "metrics": {
+        "accuracy": 0.5834900731452456,
+        "precision": 0.5834900731452456,
+        "recall": 1,
+        "f1": 0.7369671373894681,
+        "auc": 0.5
+      },
+      "sampleStats": {
+        "train": 19140,
+        "test": 4785,
+        "total": 23925
+      },
+      "bestConfig": {
+        "nTrees": 50,
+        "maxDepth": 5,
+        "minSamplesLeaf": 10,
+        "maxFeatures": 0.5,
+        "id": "Config_Shallow_1"
+      }
+    },
+    {
+      "industryName": "环保设备Ⅱ",
+      "success": true,
+      "metrics": {
+        "accuracy": 0.5932311621966795,
+        "precision": 0.5932311621966795,
+        "recall": 1,
+        "f1": 0.7446893787575151,
+        "auc": 0.5
+      },
+      "sampleStats": {
+        "train": 6264,
+        "test": 1566,
+        "total": 7830
+      },
+      "bestConfig": {
+        "nTrees": 50,
+        "maxDepth": 5,
+        "minSamplesLeaf": 10,
+        "maxFeatures": 0.5,
+        "id": "Config_Shallow_1"
+      }
+    },
+    {
+      "industryName": "体育Ⅱ",
+      "success": true,
+      "metrics": {
+        "accuracy": 0.5977011494252874,
+        "precision": 0.5977011494252874,
+        "recall": 1,
+        "f1": 0.7482014388489209,
+        "auc": 0.5
+      },
+      "sampleStats": {
+        "train": 696,
+        "test": 174,
+        "total": 870
+      },
+      "bestConfig": {
+        "nTrees": 50,
+        "maxDepth": 5,
+        "minSamplesLeaf": 10,
+        "maxFeatures": 0.5,
+        "id": "Config_Shallow_1"
+      }
+    },
+    {
+      "industryName": "地面兵装Ⅱ",
+      "success": true,
+      "metrics": {
+        "accuracy": 0.5701149425287356,
+        "precision": 0.5701149425287356,
+        "recall": 1,
+        "f1": 0.7262079062957539,
+        "auc": 0.5
+      },
+      "sampleStats": {
+        "train": 3480,
+        "test": 870,
+        "total": 4350
+      },
+      "bestConfig": {
+        "nTrees": 50,
+        "maxDepth": 5,
+        "minSamplesLeaf": 10,
+        "maxFeatures": 0.5,
+        "id": "Config_Shallow_1"
+      }
+    },
+    {
+      "industryName": "轨交设备Ⅱ",
+      "success": true,
+      "metrics": {
+        "accuracy": 0.5913793103448276,
+        "precision": 0.5913793103448276,
+        "recall": 1,
+        "f1": 0.743228602383532,
+        "auc": 0.5
+      },
+      "sampleStats": {
+        "train": 6960,
+        "test": 1740,
+        "total": 8700
+      },
+      "bestConfig": {
+        "nTrees": 50,
+        "maxDepth": 5,
+        "minSamplesLeaf": 10,
+        "maxFeatures": 0.5,
+        "id": "Config_Shallow_1"
+      }
+    },
+    {
+      "industryName": "航天装备Ⅱ",
+      "success": true,
+      "metrics": {
+        "accuracy": 0.5842911877394636,
+        "precision": 0.5842911877394636,
+        "recall": 1,
+        "f1": 0.7376058041112455,
+        "auc": 0.5
+      },
+      "sampleStats": {
+        "train": 2088,
+        "test": 522,
+        "total": 2610
+      },
+      "bestConfig": {
+        "nTrees": 50,
+        "maxDepth": 5,
+        "minSamplesLeaf": 10,
+        "maxFeatures": 0.5,
+        "id": "Config_Shallow_1"
+      }
+    },
+    {
+      "industryName": "专业服务",
+      "success": true,
+      "metrics": {
+        "accuracy": 0.5897435897435898,
+        "precision": 0.5897435897435898,
+        "recall": 1,
+        "f1": 0.7419354838709677,
+        "auc": 0.5
+      },
+      "sampleStats": {
+        "train": 9048,
+        "test": 2262,
+        "total": 11310
+      },
+      "bestConfig": {
+        "nTrees": 50,
+        "maxDepth": 5,
+        "minSamplesLeaf": 10,
+        "maxFeatures": 0.5,
+        "id": "Config_Shallow_1"
+      }
+    },
+    {
+      "industryName": "航海装备Ⅱ",
+      "success": true,
+      "metrics": {
+        "accuracy": 0.5701149425287356,
+        "precision": 0.5701149425287356,
+        "recall": 1,
+        "f1": 0.7262079062957539,
+        "auc": 0.5
+      },
+      "sampleStats": {
+        "train": 3480,
+        "test": 870,
+        "total": 4350
+      },
+      "bestConfig": {
+        "nTrees": 50,
+        "maxDepth": 5,
+        "minSamplesLeaf": 10,
+        "maxFeatures": 0.5,
+        "id": "Config_Shallow_1"
+      }
+    },
+    {
+      "industryName": "装修装饰Ⅱ",
+      "success": true,
+      "metrics": {
+        "accuracy": 0.5985221674876847,
+        "precision": 0.5985221674876847,
+        "recall": 1,
+        "f1": 0.7488443759630201,
+        "auc": 0.5
+      },
+      "sampleStats": {
+        "train": 4872,
+        "test": 1218,
+        "total": 6090
+      },
+      "bestConfig": {
+        "nTrees": 50,
+        "maxDepth": 5,
+        "minSamplesLeaf": 10,
+        "maxFeatures": 0.5,
+        "id": "Config_Shallow_1"
+      }
+    },
+    {
+      "industryName": "数字媒体",
+      "success": true,
+      "metrics": {
+        "accuracy": 0.5570291777188329,
+        "precision": 0.5570291777188329,
+        "recall": 1,
+        "f1": 0.715502555366269,
+        "auc": 0.5
+      },
+      "sampleStats": {
+        "train": 4524,
+        "test": 1131,
+        "total": 5655
+      },
+      "bestConfig": {
+        "nTrees": 50,
+        "maxDepth": 5,
+        "minSamplesLeaf": 10,
+        "maxFeatures": 0.5,
+        "id": "Config_Shallow_1"
+      }
+    },
+    {
+      "industryName": "多元金融",
+      "success": true,
+      "metrics": {
+        "accuracy": 0.5783908045977012,
+        "precision": 0.5783908045977012,
+        "recall": 1,
+        "f1": 0.732886688027964,
+        "auc": 0.5
+      },
+      "sampleStats": {
+        "train": 8700,
+        "test": 2175,
+        "total": 10875
+      },
+      "bestConfig": {
+        "nTrees": 50,
+        "maxDepth": 5,
+        "minSamplesLeaf": 10,
+        "maxFeatures": 0.5,
+        "id": "Config_Shallow_1"
+      }
+    },
+    {
+      "industryName": "金属新材料",
+      "success": true,
+      "metrics": {
+        "accuracy": 0.5922276956759716,
+        "precision": 0.5922276956759716,
+        "recall": 1,
+        "f1": 0.7438982468202131,
+        "auc": 0.5
+      },
+      "sampleStats": {
+        "train": 7308,
+        "test": 1827,
+        "total": 9135
+      },
+      "bestConfig": {
+        "nTrees": 50,
+        "maxDepth": 5,
+        "minSamplesLeaf": 10,
+        "maxFeatures": 0.5,
+        "id": "Config_Shallow_1"
+      }
+    },
+    {
+      "industryName": "调味发酵品Ⅱ",
+      "success": true,
+      "metrics": {
+        "accuracy": 0.5349248452696729,
+        "precision": 0.5349248452696729,
+        "recall": 1,
+        "f1": 0.6970046082949309,
+        "auc": 0.5
+      },
+      "sampleStats": {
+        "train": 4524,
+        "test": 1131,
+        "total": 5655
+      },
+      "bestConfig": {
+        "nTrees": 50,
+        "maxDepth": 5,
+        "minSamplesLeaf": 10,
+        "maxFeatures": 0.5,
+        "id": "Config_Shallow_1"
+      }
+    },
+    {
+      "industryName": "风电设备",
+      "success": true,
+      "metrics": {
+        "accuracy": 0.5909961685823755,
+        "precision": 0.5909961685823755,
+        "recall": 1,
+        "f1": 0.7429259482239614,
+        "auc": 0.5
+      },
+      "sampleStats": {
+        "train": 8352,
+        "test": 2088,
+        "total": 10440
+      },
+      "bestConfig": {
+        "nTrees": 50,
+        "maxDepth": 5,
+        "minSamplesLeaf": 10,
+        "maxFeatures": 0.5,
+        "id": "Config_Shallow_1"
+      }
+    },
+    {
+      "industryName": "电机Ⅱ",
+      "success": true,
+      "metrics": {
+        "accuracy": 0.584207896051974,
+        "precision": 0.584207896051974,
+        "recall": 1,
+        "f1": 0.7375394321766561,
+        "auc": 0.5
+      },
+      "sampleStats": {
+        "train": 8004,
+        "test": 2001,
+        "total": 10005
+      },
+      "bestConfig": {
+        "nTrees": 50,
+        "maxDepth": 5,
+        "minSamplesLeaf": 10,
+        "maxFeatures": 0.5,
+        "id": "Config_Shallow_1"
+      }
+    },
+    {
+      "industryName": "能源金属",
+      "success": true,
+      "metrics": {
+        "accuracy": 0.6123301985370951,
+        "precision": 0.6123301985370951,
+        "recall": 1,
+        "f1": 0.7595593000648088,
+        "auc": 0.5
+      },
+      "sampleStats": {
+        "train": 3828,
+        "test": 957,
+        "total": 4785
+      },
+      "bestConfig": {
+        "nTrees": 50,
+        "maxDepth": 5,
+        "minSamplesLeaf": 10,
+        "maxFeatures": 0.5,
+        "id": "Config_Shallow_1"
+      }
+    },
+    {
+      "industryName": "化学纤维",
+      "success": true,
+      "metrics": {
+        "accuracy": 0.5765275257108288,
+        "precision": 0.5765275257108288,
+        "recall": 1,
+        "f1": 0.7313891020721413,
+        "auc": 0.5
+      },
+      "sampleStats": {
+        "train": 6612,
+        "test": 1653,
+        "total": 8265
+      },
+      "bestConfig": {
+        "nTrees": 50,
+        "maxDepth": 5,
+        "minSamplesLeaf": 10,
+        "maxFeatures": 0.5,
+        "id": "Config_Shallow_1"
+      }
+    },
+    {
+      "industryName": "林业Ⅱ",
+      "success": true,
+      "metrics": {
+        "accuracy": 0.6130268199233716,
+        "precision": 0.6130268199233716,
+        "recall": 1,
+        "f1": 0.7600950118764845,
+        "auc": 0.5
+      },
+      "sampleStats": {
+        "train": 1044,
+        "test": 261,
+        "total": 1305
+      },
+      "bestConfig": {
+        "nTrees": 50,
+        "maxDepth": 5,
+        "minSamplesLeaf": 10,
+        "maxFeatures": 0.5,
+        "id": "Config_Shallow_1"
+      }
+    }
+  ]
+}

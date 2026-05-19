@@ -5,12 +5,14 @@
 
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import React from 'react';
-import { Layout, Card, Button, Space, Table, Progress, Select, DatePicker, Tag, Row, Col, Input, Typography, App, Drawer, Modal, Checkbox, InputNumber, Dropdown, Alert, type MenuProps } from 'antd';
+import { Layout, Card, Button, Space, Table, Progress, Select, DatePicker, Tag, Row, Col, Input, Typography, App, Drawer, Modal, Checkbox, InputNumber, Dropdown, Alert, Spin, type MenuProps } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { ExperimentOutlined, ReloadOutlined, SearchOutlined, FilterOutlined, ClearOutlined, ExportOutlined, CopyOutlined, DownOutlined } from '@ant-design/icons';
 import VirtualList from 'rc-virtual-list';
 import { getStocksHistory, getSignalBacktestsByCode, clearAllSignalBacktests, batchSaveSignalBacktests, getAllSignalBacktests, getStockHistory } from '@/utils/storage/opportunityIndexedDB';
-import { getModelMetadata } from '@/utils/analysis/mlBuypointModel';
+import { getModelMetadata as getModelMetadataV4 } from '@/utils/analysis/mlBuypointModel';
+import { getModelMetadata as getModelMetadataV5, setIndustryModels } from '@/utils/analysis/mlBuypointModel_v5';
+import { IndustryModelManager } from '@/utils/analysis/industryModelManager';
 import type { SkippedStock } from '@/types/industryModel';
 import { DEFAULT_EXPORT_STOCKS, getEnabledExportStocks, updateStocksFromScan, type ExportStockConfig } from '@/config/exportStocksConfig';
 import { exportLatestSignalsToPng } from '@/utils/export/backtestExportUtils';
@@ -123,8 +125,16 @@ export function BacktestPage() {
   const listContainerRef = useRef<HTMLDivElement>(null);
   const [listHeight, setListHeight] = useState(600);
 
-  // 获取模型元数据
-  const modelMetadata = useMemo(() => getModelMetadata(), []);
+  // 模型版本选择（默认v5）
+  const [modelVersion, setModelVersion] = useState<'v4' | 'v5'>('v5');
+  const [modelsLoading, setModelsLoading] = useState(true); // 模型加载状态
+  const [workerModelLoading, setWorkerModelLoading] = useState(false); // Worker模型加载状态
+  const [workerModelProgress, setWorkerModelProgress] = useState(0); // Worker模型加载进度
+
+  // 获取模型元数据（根据版本）
+  const modelMetadata = useMemo(() => {
+    return modelVersion === 'v5' ? getModelMetadataV5() : getModelMetadataV4();
+  }, [modelVersion]);
 
   // 股票代码规范化函数：将纯数字代码转换为标准格式
   const normalizeStockCode = useCallback((code: string): string => {
@@ -186,6 +196,45 @@ export function BacktestPage() {
 
     loadSectorMapping();
   }, [normalizeStockCode]);
+
+  // 加载行业模型（仅当使用v5版本时）
+  useEffect(() => {
+    if (modelVersion !== 'v5') {
+      setModelsLoading(false); // v4版本不需要加载模型
+      return;
+    }
+
+    setModelsLoading(true); // 开始加载
+
+    const loadModels = async () => {
+      try {
+        logger.info('[BacktestPage] 开始加载v5.0行业模型...');
+        const manager = new IndustryModelManager({
+          baseUrl: '/models/industry',
+          timeout: 120000, // 2分钟超时
+          failFast: false, // 允许部分失败
+        });
+
+        await manager.loadAllModels((progress) => {
+          logger.info(`[BacktestPage] 模型加载进度: ${progress}%`);
+        });
+
+        const models = manager.getAllModels();
+        logger.info(`[BacktestPage] manager.getAllModels() 返回: ${models.length} 个模型`);
+        logger.info(`[BacktestPage] 前3个模型:`, models.slice(0, 3));
+
+        setIndustryModels(models);
+        logger.info(`[BacktestPage] ✅ setIndustryModels 调用完成，已传入 ${models.length} 个模型`);
+        setModelsLoading(false); // 加载完成
+      } catch (error) {
+        logger.error('[BacktestPage] ❌ 加载行业模型失败:', error);
+        message.warning('行业模型加载失败，将使用默认模型');
+        setModelsLoading(false); // 失败也要设置为false，允许继续
+      }
+    };
+
+    loadModels();
+  }, [modelVersion]);
 
   // 动态计算列表高度
   useEffect(() => {
@@ -279,6 +328,12 @@ export function BacktestPage() {
 
   // 执行回测
   const handleStartBacktest = async () => {
+    // 检查模型是否加载完成（v5版本）
+    if (modelVersion === 'v5' && modelsLoading) {
+      message.warning('行业模型正在加载中，请稍后再试...');
+      return;
+    }
+
     if (!workerRef.current) {
       message.error('回测引擎未就绪');
       return;
@@ -288,6 +343,8 @@ export function BacktestPage() {
     setProgress(0);
     setResults([]);
     setSkippedStocks([]); // 清空跳过的股票列表
+    setWorkerModelLoading(false); // 重置Worker模型加载状态
+    setWorkerModelProgress(0); // 重置Worker模型加载进度
     message.info('正在清除旧的回测数据...');
 
     try {
@@ -295,15 +352,71 @@ export function BacktestPage() {
       await clearAllSignalBacktests();
 
       message.info('正在从 IndexDB 加载历史数据...');
-      const histories = await getStocksHistory([]);
+      const allHistories = await getStocksHistory([]);
 
-      if (histories.length === 0) {
+      if (allHistories.length === 0) {
         message.warning('当前没有可用的历史数据，请先在机会分析页触发数据同步');
         setBacktesting(false);
         return;
       }
 
-      message.info(`开始回测 ${histories.length} 只股票的历史表现...`);
+      // 应用筛选条件，过滤股票
+      let histories = allHistories;
+
+      logger.info(`[BacktestPage] 开始应用筛选条件...`);
+      logger.info(`[BacktestPage] stockSectorMapping大小: ${stockSectorMapping.size}`);
+      logger.info(`[BacktestPage] selectedMarket: ${JSON.stringify(selectedMarket)}`);
+      logger.info(`[BacktestPage] nameType: ${nameType}`);
+      logger.info(`[BacktestPage] industrySectors: ${JSON.stringify(industrySectors)}`);
+
+      // 1. 按市场过滤
+      if (selectedMarket.length > 0) {
+        const beforeCount = histories.length;
+        histories = histories.filter(history => {
+          const pureCode = history.code.replace(/^(SH|SZ|BJ)/, '');
+          return selectedMarket.some(market => {
+            if (market === 'hs_main') return pureCode.startsWith('60') || pureCode.startsWith('00');
+            if (market === 'sz_gem') return pureCode.startsWith('30');
+            return true;
+          });
+        });
+        logger.info(`[BacktestPage] 市场过滤: ${beforeCount} -> ${histories.length}`);
+      }
+
+      // 2. 按名称过滤（ST筛选）
+      if (nameType !== 'all') {
+        const beforeCount = histories.length;
+        histories = histories.filter(history => {
+          const isST = history.name.includes('ST');
+          if (nameType === 'st') return isST;
+          if (nameType === 'non_st') return !isST;
+          return true;
+        });
+        logger.info(`[BacktestPage] ST过滤: ${beforeCount} -> ${histories.length}`);
+      }
+
+      // 3. 按行业过滤
+      if (industrySectors.length > 0) {
+        const beforeCount = histories.length;
+        histories = histories.filter(history => {
+          const sectorInfo = stockSectorMapping.get(history.code);
+          const industryName = sectorInfo?.industry?.name;
+          const industryCode = sectorInfo?.industry?.code;
+          
+          // 如果股票有行业信息，检查是否在排除列表中
+          if (industryCode) {
+            // industrySectors 存储的是行业代码（如 BK1020）
+            const isExcluded = industrySectors.includes(industryCode);
+            return !isExcluded;
+          }
+          return true; // 没有行业信息的股票保留
+        });
+        logger.info(`[BacktestPage] 行业过滤: ${beforeCount} -> ${histories.length}`);
+      }
+
+      logger.info(`[BacktestPage] 筛选完成，最终股票数量: ${histories.length}`);
+
+      message.info(`开始回测 ${histories.length} 只股票的历史表现（总计 ${allHistories.length} 只，已过滤 ${allHistories.length - histories.length} 只）...`);
       let processedCount = 0;
       const allSignals: any[] = [];
       const skippedStocksList: SkippedStock[] = []; // 记录跳过的股票
@@ -311,7 +424,30 @@ export function BacktestPage() {
 
       // 统一的消息监听器
       const onMessage = (e: MessageEvent) => {
-        const { type, requestId, progress: stockProgress, signals } = e.data;
+        const msg = e.data;
+        const { type, requestId, progress: stockProgress, signals } = msg;
+
+        // 处理模型加载进度消息
+        if (type === 'MODEL_LOADING_START') {
+          logger.info('[BacktestPage] Worker开始加载模型...');
+          setWorkerModelLoading(true);
+          setWorkerModelProgress(0);
+          return;
+        } else if (type === 'MODEL_LOADING_PROGRESS') {
+          logger.info(`[BacktestPage] Worker模型加载进度: ${msg.progress}% (${msg.loaded}/${msg.total})`);
+          setWorkerModelProgress(msg.progress);
+          return;
+        } else if (type === 'MODEL_LOADING_COMPLETE') {
+          logger.info(`[BacktestPage] Worker模型加载完成: ${msg.count} 个模型`);
+          setWorkerModelLoading(false);
+          setWorkerModelProgress(100);
+          return;
+        } else if (type === 'MODEL_LOADING_ERROR') {
+          logger.error(`[BacktestPage] Worker模型加载失败: ${msg.error}`);
+          message.error('Worker加载模型失败');
+          setWorkerModelLoading(false);
+          return;
+        }
 
         // 查找对应的任务索引（简单匹配 requestId 前缀）
         const code = requestId.split('_').pop();
@@ -1559,6 +1695,40 @@ export function BacktestPage() {
             </Text>
           </div>
           <Space>
+            {/* 模型版本切换 */}
+            <Dropdown
+              menu={{
+                items: [
+                  {
+                    key: 'v5',
+                    label: (
+                      <Space>
+                        <Text>v5.0 (28特征)</Text>
+                        {modelVersion === 'v5' && <Tag color="green">当前</Tag>}
+                      </Space>
+                    ),
+                    onClick: () => setModelVersion('v5'),
+                  },
+                  {
+                    key: 'v4',
+                    label: (
+                      <Space>
+                        <Text>v4.0 (8特征)</Text>
+                        {modelVersion === 'v4' && <Tag color="green">当前</Tag>}
+                      </Space>
+                    ),
+                    onClick: () => setModelVersion('v4'),
+                  },
+                ],
+              }}
+              placement="bottomLeft"
+            >
+              <Button>
+                ML模型: {modelVersion.toUpperCase()}
+                <DownOutlined style={{ fontSize: 10, marginLeft: 4 }} />
+              </Button>
+            </Dropdown>
+
             <Button icon={<FilterOutlined />} onClick={() => setFilterDrawerOpen(true)}>
               筛选条件
             </Button>
@@ -1574,9 +1744,27 @@ export function BacktestPage() {
               type="primary"
               icon={<ExperimentOutlined />}
               onClick={handleStartBacktest}
-              disabled={backtesting}
+              disabled={backtesting || (modelVersion === 'v5' && modelsLoading)}
             >
-              {backtesting ? '回测中...' : '执行全量回测'}
+              {backtesting ? (
+                <Space>
+                  {workerModelLoading && <Spin size="small" />}
+                  <span>
+                    {workerModelLoading
+                      ? `加载行业模型... ${workerModelProgress}%`
+                      : progress === 0
+                        ? '准备中...'
+                        : `回测进行中... 已完成 ${progress}%`}
+                  </span>
+                </Space>
+              ) : (modelVersion === 'v5' && modelsLoading) ? (
+                <Space>
+                  <Spin size="small" />
+                  <span>模型加载中...</span>
+                </Space>
+              ) : (
+                '执行全量回测'
+              )}
             </Button>
           </Space>
         </div>
@@ -1585,7 +1773,7 @@ export function BacktestPage() {
       <Content className={styles.content}>
 
         {/* 模型信息卡片 */}
-        <Card className={styles.modelInfoCard} style={{ marginBottom: 16 }}>
+        <Card className={styles.modelInfoCard} style={{ margin: 16 }}>
           <Space size="large" wrap>
             <Tag color="blue" style={{ fontSize: 14, padding: '4px 12px' }}>
               ML模型 {modelMetadata.version}
@@ -1593,19 +1781,35 @@ export function BacktestPage() {
             <Text type="secondary">
               训练时间: {modelMetadata.trainingDate}
             </Text>
-            <Text type="secondary">
-              准确率: <Text strong style={{ color: '#52c41a' }}>{modelMetadata.performance.accuracy}%</Text>
-            </Text>
-            <Text type="secondary">
-              召回率: <Text strong style={{ color: '#52c41a' }}>{modelMetadata.performance.recall}%</Text>
-            </Text>
-            <Text type="secondary">
-              F1分数: <Text strong style={{ color: '#52c41a' }}>{modelMetadata.performance.f1}</Text>
-            </Text>
-            <Text type="secondary">
-              训练样本: {modelMetadata.trainingSamples.total}个
-              （{modelMetadata.trainingSamples.positive}正 + {modelMetadata.trainingSamples.negative}负）
-            </Text>
+            {'performance' in modelMetadata && (modelMetadata as any).performance ? (
+              <>
+                <Text type="secondary">
+                  准确率: <Text strong style={{ color: '#52c41a' }}>{(modelMetadata as any).performance.accuracy}%</Text>
+                </Text>
+                <Text type="secondary">
+                  召回率: <Text strong style={{ color: '#52c41a' }}>{(modelMetadata as any).performance.recall}%</Text>
+                </Text>
+                <Text type="secondary">
+                  F1分数: <Text strong style={{ color: '#52c41a' }}>{(modelMetadata as any).performance.f1}</Text>
+                </Text>
+              </>
+            ) : null}
+            {'trainingSamples' in modelMetadata && (modelMetadata as any).trainingSamples ? (
+              <Text type="secondary">
+                训练样本: {(modelMetadata as any).trainingSamples.total}个
+                （{(modelMetadata as any).trainingSamples.positive}正 + {(modelMetadata as any).trainingSamples.negative}负）
+              </Text>
+            ) : null}
+            {'featureCount' in modelMetadata ? (
+              <Text type="secondary">
+                特征数: {(modelMetadata as any).featureCount}个
+              </Text>
+            ) : null}
+            {'industries' in modelMetadata ? (
+              <Text type="secondary">
+                行业数: {(modelMetadata as any).industries}个
+              </Text>
+            ) : null}
           </Space>
         </Card>
 

@@ -1,590 +1,904 @@
 {
-  "version": "v5.0",
-  "totalModels": 53,
-  "generatedAt": "2026-05-18T17:08:41.607711",
+  "generatedAt": "2026-05-19T08:45:42.735Z",
+  "version": "v1.0-rf",
+  "totalModels": 69,
   "models": [
     {
-      "industryName": "IT服务Ⅱ",
-      "fileName": "IT服务Ⅱ_model.json",
-      "precision": 0.8158,
-      "recall": 0.063,
-      "f1": 0.117,
-      "auc": 0.5682,
-      "predictionThreshold": 0.6,
-      "fileSize": 2764526,
-      "trainingDate": "2026-05-18T16:13:11.360273"
-    },
-    {
-      "industryName": "专业工程",
-      "fileName": "专业工程_model.json",
-      "precision": 0.75,
-      "recall": 0.0739,
-      "f1": 0.1345,
-      "auc": 0.5827,
-      "predictionThreshold": 0.6,
-      "fileSize": 1409638,
-      "trainingDate": "2026-05-18T16:13:20.702946"
-    },
-    {
-      "industryName": "专业服务",
-      "fileName": "专业服务_model.json",
-      "precision": 0.4444,
-      "recall": 0.0449,
-      "f1": 0.0816,
-      "auc": 0.4779,
-      "predictionThreshold": 0.6,
-      "fileSize": 1097059,
-      "trainingDate": "2026-05-18T16:13:23.091301"
-    },
-    {
-      "industryName": "专用设备",
-      "fileName": "专用设备_model.json",
-      "precision": 0.8929,
-      "recall": 0.0263,
-      "f1": 0.0512,
-      "auc": 0.5673,
-      "predictionThreshold": 0.6,
-      "fileSize": 3703484,
-      "trainingDate": "2026-05-18T16:13:07.659856"
-    },
-    {
-      "industryName": "互联网电商",
-      "fileName": "互联网电商_model.json",
-      "precision": 0.5833,
-      "recall": 0.1228,
-      "f1": 0.2029,
-      "auc": 0.5044,
-      "predictionThreshold": 0.6,
-      "fileSize": 626721,
-      "trainingDate": "2026-05-18T16:13:28.140010"
-    },
-    {
-      "industryName": "元件",
-      "fileName": "元件_model.json",
-      "precision": 0.8125,
-      "recall": 0.1,
-      "f1": 0.1781,
-      "auc": 0.567,
-      "predictionThreshold": 0.6,
-      "fileSize": 2021196,
-      "trainingDate": "2026-05-18T16:13:15.748549"
+      "industryName": "汽车零部件",
+      "fileName": "汽车零部件_model.json",
+      "performance": {
+        "accuracy": 0.5844234032072684,
+        "precision": 0.5844234032072684,
+        "recall": 1,
+        "f1": 0.7377111471898857,
+        "auc": 0.5
+      },
+      "trainingDate": "2026-05-19T08:45:42.736Z",
+      "stockCount": 91352
     },
     {
       "industryName": "光伏设备",
       "fileName": "光伏设备_model.json",
-      "precision": 1.0,
-      "recall": 0.0161,
-      "f1": 0.0316,
-      "auc": 0.5585,
-      "predictionThreshold": 0.6,
-      "fileSize": 1642576,
-      "trainingDate": "2026-05-18T16:13:19.497491"
+      "performance": {
+        "accuracy": 0.5661656351311524,
+        "precision": 0.5661656351311524,
+        "recall": 1,
+        "f1": 0.7229958599924727,
+        "auc": 0.5
+      },
+      "trainingDate": "2026-05-19T08:45:42.736Z",
+      "stockCount": 16965
     },
     {
       "industryName": "光学光电子",
       "fileName": "光学光电子_model.json",
-      "precision": 0.7593,
-      "recall": 0.0851,
-      "f1": 0.153,
-      "auc": 0.622,
-      "predictionThreshold": 0.6,
-      "fileSize": 2951170,
-      "trainingDate": "2026-05-18T16:13:12.966689"
+      "performance": {
+        "accuracy": 0.5958620689655172,
+        "precision": 0.5958620689655172,
+        "recall": 1,
+        "f1": 0.7467588591184097,
+        "auc": 0.5
+      },
+      "trainingDate": "2026-05-19T08:45:42.736Z",
+      "stockCount": 32625
     },
     {
-      "industryName": "其他电子Ⅱ",
-      "fileName": "其他电子Ⅱ_model.json",
-      "precision": 0.5938,
-      "recall": 0.0918,
-      "f1": 0.159,
-      "auc": 0.5282,
-      "predictionThreshold": 0.6,
-      "fileSize": 1251138,
-      "trainingDate": "2026-05-18T16:13:21.406986"
+      "industryName": "专业工程",
+      "fileName": "专业工程_model.json",
+      "performance": {
+        "accuracy": 0.5814182534471438,
+        "precision": 0.5814182534471438,
+        "recall": 1,
+        "f1": 0.7353124351255969,
+        "auc": 0.5
+      },
+      "trainingDate": "2026-05-19T08:45:42.736Z",
+      "stockCount": 15226
     },
     {
-      "industryName": "其他电源设备Ⅱ",
-      "fileName": "其他电源设备Ⅱ_model.json",
-      "precision": 0.7059,
-      "recall": 0.0682,
-      "f1": 0.1244,
-      "auc": 0.5447,
-      "predictionThreshold": 0.6,
-      "fileSize": 1008317,
-      "trainingDate": "2026-05-18T16:13:23.816836"
-    },
-    {
-      "industryName": "军工电子Ⅱ",
-      "fileName": "军工电子Ⅱ_model.json",
-      "precision": 0.7333,
-      "recall": 0.0455,
-      "f1": 0.0856,
-      "auc": 0.5635,
-      "predictionThreshold": 0.6,
-      "fileSize": 1544152,
-      "trainingDate": "2026-05-18T16:13:19.889102"
-    },
-    {
-      "industryName": "农化制品",
-      "fileName": "农化制品_model.json",
-      "precision": 0.5,
-      "recall": 0.0074,
-      "f1": 0.0146,
-      "auc": 0.5629,
-      "predictionThreshold": 0.6,
-      "fileSize": 2081260,
-      "trainingDate": "2026-05-18T16:13:16.665556"
-    },
-    {
-      "industryName": "出版",
-      "fileName": "出版_model.json",
-      "precision": 0.5714,
-      "recall": 0.0253,
-      "f1": 0.0485,
-      "auc": 0.5197,
-      "predictionThreshold": 0.6,
-      "fileSize": 1013788,
-      "trainingDate": "2026-05-18T16:13:25.731075"
-    },
-    {
-      "industryName": "包装印刷",
-      "fileName": "包装印刷_model.json",
-      "precision": 1.0,
-      "recall": 0.0285,
-      "f1": 0.0553,
-      "auc": 0.5442,
-      "predictionThreshold": 0.6,
-      "fileSize": 1790720,
-      "trainingDate": "2026-05-18T16:13:18.650509"
-    },
-    {
-      "industryName": "化学制品",
-      "fileName": "化学制品_model.json",
-      "precision": 1.0,
-      "recall": 0.0109,
-      "f1": 0.0215,
-      "auc": 0.5702,
-      "predictionThreshold": 0.6,
-      "fileSize": 4257413,
-      "trainingDate": "2026-05-18T16:13:08.324887"
-    },
-    {
-      "industryName": "化学制药",
-      "fileName": "化学制药_model.json",
-      "precision": 0.7727,
-      "recall": 0.0301,
-      "f1": 0.058,
-      "auc": 0.5596,
-      "predictionThreshold": 0.6,
-      "fileSize": 2992315,
-      "trainingDate": "2026-05-18T16:13:10.157400"
-    },
-    {
-      "industryName": "化学原料",
-      "fileName": "化学原料_model.json",
-      "precision": 0.7273,
-      "recall": 0.0253,
-      "f1": 0.0489,
-      "auc": 0.5629,
-      "predictionThreshold": 0.6,
-      "fileSize": 1917445,
-      "trainingDate": "2026-05-18T16:13:17.736069"
-    },
-    {
-      "industryName": "化学纤维",
-      "fileName": "化学纤维_model.json",
-      "precision": 0.9091,
-      "recall": 0.0794,
-      "f1": 0.146,
-      "auc": 0.5929,
-      "predictionThreshold": 0.6,
-      "fileSize": 881596,
-      "trainingDate": "2026-05-18T16:13:27.257202"
-    },
-    {
-      "industryName": "半导体",
-      "fileName": "半导体_model.json",
-      "precision": 0.625,
-      "recall": 0.0435,
-      "f1": 0.0813,
-      "auc": 0.5405,
-      "predictionThreshold": 0.6,
-      "fileSize": 2105095,
-      "trainingDate": "2026-05-18T16:13:17.272870"
-    },
-    {
-      "industryName": "塑料",
-      "fileName": "塑料_model.json",
-      "precision": 0.6471,
-      "recall": 0.0591,
-      "f1": 0.1084,
-      "auc": 0.5473,
-      "predictionThreshold": 0.6,
-      "fileSize": 2281347,
-      "trainingDate": "2026-05-18T16:13:15.230310"
-    },
-    {
-      "industryName": "多元金融",
-      "fileName": "多元金融_model.json",
-      "precision": 1.0,
-      "recall": 0.007,
-      "f1": 0.014,
-      "auc": 0.5223,
-      "predictionThreshold": 0.6,
-      "fileSize": 846596,
-      "trainingDate": "2026-05-18T16:13:26.957905"
-    },
-    {
-      "industryName": "家电零部件Ⅱ",
-      "fileName": "家电零部件Ⅱ_model.json",
-      "precision": 0.9565,
-      "recall": 0.0995,
-      "f1": 0.1803,
-      "auc": 0.6379,
-      "predictionThreshold": 0.6,
-      "fileSize": 1290728,
-      "trainingDate": "2026-05-18T16:13:21.070336"
-    },
-    {
-      "industryName": "工业金属",
-      "fileName": "工业金属_model.json",
-      "precision": 0.7297,
-      "recall": 0.0742,
-      "f1": 0.1347,
-      "auc": 0.5637,
-      "predictionThreshold": 0.6,
-      "fileSize": 2287521,
-      "trainingDate": "2026-05-18T16:13:16.203584"
-    },
-    {
-      "industryName": "工程咨询服务Ⅱ",
-      "fileName": "工程咨询服务Ⅱ_model.json",
-      "precision": 0.5333,
-      "recall": 0.03,
-      "f1": 0.0567,
-      "auc": 0.5195,
-      "predictionThreshold": 0.6,
-      "fileSize": 1672650,
-      "trainingDate": "2026-05-18T16:13:19.067483"
-    },
-    {
-      "industryName": "工程机械",
-      "fileName": "工程机械_model.json",
-      "precision": 0.6562,
-      "recall": 0.0986,
-      "f1": 0.1714,
-      "auc": 0.49,
-      "predictionThreshold": 0.6,
-      "fileSize": 1119838,
-      "trainingDate": "2026-05-18T16:13:22.754019"
-    },
-    {
-      "industryName": "广告营销",
-      "fileName": "广告营销_model.json",
-      "precision": 0.7,
-      "recall": 0.0838,
-      "f1": 0.1497,
-      "auc": 0.5512,
-      "predictionThreshold": 0.6,
-      "fileSize": 1047816,
-      "trainingDate": "2026-05-18T16:13:25.017114"
-    },
-    {
-      "industryName": "文娱用品",
-      "fileName": "文娱用品_model.json",
-      "precision": 0.6429,
-      "recall": 0.0549,
-      "f1": 0.1011,
-      "auc": 0.5651,
-      "predictionThreshold": 0.6,
-      "fileSize": 1016859,
-      "trainingDate": "2026-05-18T16:13:25.390007"
-    },
-    {
-      "industryName": "橡胶",
-      "fileName": "橡胶_model.json",
-      "precision": 0.6842,
-      "recall": 0.1161,
-      "f1": 0.1985,
-      "auc": 0.5235,
-      "predictionThreshold": 0.6,
-      "fileSize": 489078,
-      "trainingDate": "2026-05-18T16:13:29.434604"
-    },
-    {
-      "industryName": "汽车零部件",
-      "fileName": "汽车零部件_model.json",
-      "precision": 0.8816,
-      "recall": 0.0476,
-      "f1": 0.0902,
-      "auc": 0.578,
-      "predictionThreshold": 0.6,
-      "fileSize": 4756095,
-      "trainingDate": "2026-05-18T16:13:06.159791"
-    },
-    {
-      "industryName": "消费电子",
-      "fileName": "消费电子_model.json",
-      "precision": 0.8438,
-      "recall": 0.0951,
-      "f1": 0.1709,
-      "auc": 0.5906,
-      "predictionThreshold": 0.6,
-      "fileSize": 3012416,
-      "trainingDate": "2026-05-18T16:13:10.744899"
-    },
-    {
-      "industryName": "游戏Ⅱ",
-      "fileName": "游戏Ⅱ_model.json",
-      "precision": 0.4,
-      "recall": 0.0118,
-      "f1": 0.0229,
-      "auc": 0.5621,
-      "predictionThreshold": 0.6,
-      "fileSize": 963557,
-      "trainingDate": "2026-05-18T16:13:26.116187"
-    },
-    {
-      "industryName": "环保设备Ⅱ",
-      "fileName": "环保设备Ⅱ_model.json",
-      "precision": 0.625,
-      "recall": 0.0442,
-      "f1": 0.0826,
-      "auc": 0.547,
-      "predictionThreshold": 0.6,
-      "fileSize": 736010,
-      "trainingDate": "2026-05-18T16:13:27.876192"
-    },
-    {
-      "industryName": "环境治理",
-      "fileName": "环境治理_model.json",
-      "precision": 0.6222,
-      "recall": 0.0514,
-      "f1": 0.0949,
-      "auc": 0.5929,
-      "predictionThreshold": 0.6,
-      "fileSize": 3385030,
-      "trainingDate": "2026-05-18T16:13:11.882390"
-    },
-    {
-      "industryName": "电力",
-      "fileName": "电力_model.json",
-      "precision": 0.7308,
-      "recall": 0.0297,
-      "f1": 0.0571,
-      "auc": 0.5337,
-      "predictionThreshold": 0.6,
-      "fileSize": 3427164,
-      "trainingDate": "2026-05-18T16:13:09.585184"
-    },
-    {
-      "industryName": "电子化学品Ⅱ",
-      "fileName": "电子化学品Ⅱ_model.json",
-      "precision": 0.9286,
-      "recall": 0.0922,
-      "f1": 0.1677,
-      "auc": 0.6246,
-      "predictionThreshold": 0.6,
-      "fileSize": 912929,
-      "trainingDate": "2026-05-18T16:13:26.631219"
-    },
-    {
-      "industryName": "电机Ⅱ",
-      "fileName": "电机Ⅱ_model.json",
-      "precision": 0.5714,
-      "recall": 0.0491,
-      "f1": 0.0904,
-      "auc": 0.5323,
-      "predictionThreshold": 0.6,
-      "fileSize": 1093421,
-      "trainingDate": "2026-05-18T16:13:24.550598"
-    },
-    {
-      "industryName": "电池",
-      "fileName": "电池_model.json",
-      "precision": 0.8125,
-      "recall": 0.0294,
-      "f1": 0.0568,
-      "auc": 0.5381,
-      "predictionThreshold": 0.6,
-      "fileSize": 2380603,
-      "trainingDate": "2026-05-18T16:13:14.674231"
-    },
-    {
-      "industryName": "电网设备",
-      "fileName": "电网设备_model.json",
-      "precision": 0.8333,
-      "recall": 0.0208,
-      "f1": 0.0406,
-      "auc": 0.5713,
-      "predictionThreshold": 0.6,
-      "fileSize": 3787534,
-      "trainingDate": "2026-05-18T16:13:09.004593"
-    },
-    {
-      "industryName": "纺织制造",
-      "fileName": "纺织制造_model.json",
-      "precision": 0.9,
-      "recall": 0.0486,
-      "f1": 0.0923,
-      "auc": 0.5267,
-      "predictionThreshold": 0.6,
-      "fileSize": 1255961,
-      "trainingDate": "2026-05-18T16:13:22.078897"
-    },
-    {
-      "industryName": "综合Ⅱ",
-      "fileName": "综合Ⅱ_model.json",
-      "precision": 1.0,
-      "recall": 0.0093,
-      "f1": 0.0183,
-      "auc": 0.5015,
-      "predictionThreshold": 0.6,
-      "fileSize": 624433,
-      "trainingDate": "2026-05-18T16:13:28.424962"
+      "industryName": "元件",
+      "fileName": "元件_model.json",
+      "performance": {
+        "accuracy": 0.6021604228912893,
+        "precision": 0.6021604228912893,
+        "recall": 1,
+        "f1": 0.7516855544398221,
+        "auc": 0.5
+      },
+      "trainingDate": "2026-05-19T08:45:42.736Z",
+      "stockCount": 21752
     },
     {
       "industryName": "自动化设备",
       "fileName": "自动化设备_model.json",
-      "precision": 0.7381,
-      "recall": 0.0951,
-      "f1": 0.1685,
-      "auc": 0.5345,
-      "predictionThreshold": 0.6,
-      "fileSize": 1883847,
-      "trainingDate": "2026-05-18T16:13:18.226392"
+      "performance": {
+        "accuracy": 0.5919333032897701,
+        "precision": 0.5919333032897701,
+        "recall": 1,
+        "f1": 0.743665958952583,
+        "auc": 0.5
+      },
+      "trainingDate": "2026-05-19T08:45:42.736Z",
+      "stockCount": 22186
     },
     {
-      "industryName": "航空装备Ⅱ",
-      "fileName": "航空装备Ⅱ_model.json",
-      "precision": 0.5,
-      "recall": 0.0237,
-      "f1": 0.0452,
-      "auc": 0.5266,
-      "predictionThreshold": 0.6,
-      "fileSize": 1136743,
-      "trainingDate": "2026-05-18T16:13:22.406826"
+      "industryName": "商用车",
+      "fileName": "商用车_model.json",
+      "performance": {
+        "accuracy": 0.5676784249384742,
+        "precision": 0.5676784249384742,
+        "recall": 1,
+        "f1": 0.7242281527995814,
+        "auc": 0.5
+      },
+      "trainingDate": "2026-05-19T08:45:42.736Z",
+      "stockCount": 6091
     },
     {
-      "industryName": "装修建材",
-      "fileName": "装修建材_model.json",
-      "precision": 0.8889,
-      "recall": 0.0758,
-      "f1": 0.1397,
-      "auc": 0.5798,
-      "predictionThreshold": 0.6,
-      "fileSize": 1253032,
-      "trainingDate": "2026-05-18T16:13:21.735533"
+      "industryName": "IT服务Ⅱ",
+      "fileName": "IT服务Ⅱ_model.json",
+      "performance": {
+        "accuracy": 0.5728091942013843,
+        "precision": 0.5728091942013843,
+        "recall": 1,
+        "f1": 0.728389936062443,
+        "auc": 0.5
+      },
+      "trainingDate": "2026-05-19T08:45:42.736Z",
+      "stockCount": 38281
     },
     {
-      "industryName": "装修装饰Ⅱ",
-      "fileName": "装修装饰Ⅱ_model.json",
-      "precision": 0.4242,
-      "recall": 0.0993,
-      "f1": 0.1609,
-      "auc": 0.485,
-      "predictionThreshold": 0.6,
-      "fileSize": 489319,
-      "trainingDate": "2026-05-18T16:13:28.722020"
+      "industryName": "半导体",
+      "fileName": "半导体_model.json",
+      "performance": {
+        "accuracy": 0.5869333900829964,
+        "precision": 0.5869333900829964,
+        "recall": 1,
+        "f1": 0.739707657234813,
+        "auc": 0.5
+      },
+      "trainingDate": "2026-05-19T08:45:42.736Z",
+      "stockCount": 23492
     },
     {
-      "industryName": "计算机设备",
-      "fileName": "计算机设备_model.json",
-      "precision": 0.6471,
-      "recall": 0.0969,
-      "f1": 0.1686,
-      "auc": 0.5437,
-      "predictionThreshold": 0.6,
-      "fileSize": 2410531,
-      "trainingDate": "2026-05-18T16:13:14.081901"
+      "industryName": "化学制品",
+      "fileName": "化学制品_model.json",
+      "performance": {
+        "accuracy": 0.5875739152161239,
+        "precision": 0.5875739152161239,
+        "recall": 1,
+        "f1": 0.7402161368167034,
+        "auc": 0.5
+      },
+      "trainingDate": "2026-05-19T08:45:42.736Z",
+      "stockCount": 60031
     },
     {
-      "industryName": "贸易Ⅱ",
-      "fileName": "贸易Ⅱ_model.json",
-      "precision": 0.6364,
-      "recall": 0.0673,
-      "f1": 0.1217,
-      "auc": 0.5441,
-      "predictionThreshold": 0.6,
-      "fileSize": 542560,
-      "trainingDate": "2026-05-18T16:13:29.130032"
+      "industryName": "化学制药",
+      "fileName": "化学制药_model.json",
+      "performance": {
+        "accuracy": 0.5803044423734078,
+        "precision": 0.5803044423734078,
+        "recall": 1,
+        "f1": 0.7344210733241596,
+        "auc": 0.5
+      },
+      "trainingDate": "2026-05-19T08:45:42.736Z",
+      "stockCount": 48285
     },
     {
-      "industryName": "轨交设备Ⅱ",
-      "fileName": "轨交设备Ⅱ_model.json",
-      "precision": 0.3333,
-      "recall": 0.0095,
-      "f1": 0.0185,
-      "auc": 0.4767,
-      "predictionThreshold": 0.6,
-      "fileSize": 773228,
-      "trainingDate": "2026-05-18T16:13:27.562923"
+      "industryName": "专用设备",
+      "fileName": "专用设备_model.json",
+      "performance": {
+        "accuracy": 0.5992723062928967,
+        "precision": 0.5992723062928967,
+        "recall": 1,
+        "f1": 0.7494312306101344,
+        "auc": 0.5
+      },
+      "trainingDate": "2026-05-19T08:45:42.736Z",
+      "stockCount": 60465
+    },
+    {
+      "industryName": "军工电子Ⅱ",
+      "fileName": "军工电子Ⅱ_model.json",
+      "performance": {
+        "accuracy": 0.5967432950191571,
+        "precision": 0.5967432950191571,
+        "recall": 1,
+        "f1": 0.7474505098980204,
+        "auc": 0.5
+      },
+      "trainingDate": "2026-05-19T08:45:42.736Z",
+      "stockCount": 15660
+    },
+    {
+      "industryName": "纺织制造",
+      "fileName": "纺织制造_model.json",
+      "performance": {
+        "accuracy": 0.6000792707094729,
+        "precision": 0.6000792707094729,
+        "recall": 1,
+        "f1": 0.7500619271736438,
+        "auc": 0.5
+      },
+      "trainingDate": "2026-05-19T08:45:42.736Z",
+      "stockCount": 12615
     },
     {
       "industryName": "软件开发",
       "fileName": "软件开发_model.json",
-      "precision": 1.0,
-      "recall": 0.0222,
-      "f1": 0.0435,
-      "auc": 0.6093,
-      "predictionThreshold": 0.6,
-      "fileSize": 2429623,
-      "trainingDate": "2026-05-18T16:13:12.458344"
+      "performance": {
+        "accuracy": 0.5659551176792557,
+        "precision": 0.5659551176792557,
+        "recall": 1,
+        "f1": 0.7228241873470814,
+        "auc": 0.5
+      },
+      "trainingDate": "2026-05-19T08:45:42.736Z",
+      "stockCount": 36540
     },
     {
-      "industryName": "通信服务",
-      "fileName": "通信服务_model.json",
-      "precision": 0.7778,
-      "recall": 0.0278,
-      "f1": 0.0536,
-      "auc": 0.5454,
-      "predictionThreshold": 0.6,
-      "fileSize": 1470000,
-      "trainingDate": "2026-05-18T16:13:20.305734"
-    },
-    {
-      "industryName": "通信设备",
-      "fileName": "通信设备_model.json",
-      "precision": 0.6944,
-      "recall": 0.0498,
-      "f1": 0.0929,
-      "auc": 0.5623,
-      "predictionThreshold": 0.6,
-      "fileSize": 2610478,
-      "trainingDate": "2026-05-18T16:13:13.564688"
+      "industryName": "塑料",
+      "fileName": "塑料_model.json",
+      "performance": {
+        "accuracy": 0.5959770114942529,
+        "precision": 0.5959770114942529,
+        "recall": 1,
+        "f1": 0.7468491177529708,
+        "auc": 0.5
+      },
+      "trainingDate": "2026-05-19T08:45:42.736Z",
+      "stockCount": 26100
     },
     {
       "industryName": "通用设备",
       "fileName": "通用设备_model.json",
-      "precision": 0.8409,
-      "recall": 0.0293,
-      "f1": 0.0567,
-      "auc": 0.585,
-      "predictionThreshold": 0.6,
-      "fileSize": 4871746,
-      "trainingDate": "2026-05-18T16:13:06.987479"
+      "performance": {
+        "accuracy": 0.5943051201671892,
+        "precision": 0.5943051201671892,
+        "recall": 1,
+        "f1": 0.7455349827953466,
+        "auc": 0.5
+      },
+      "trainingDate": "2026-05-19T08:45:42.736Z",
+      "stockCount": 76560
+    },
+    {
+      "industryName": "电网设备",
+      "fileName": "电网设备_model.json",
+      "performance": {
+        "accuracy": 0.6014974164294,
+        "precision": 0.6014974164294,
+        "recall": 1,
+        "f1": 0.7511687627576217,
+        "auc": 0.5
+      },
+      "trainingDate": "2026-05-19T08:45:42.736Z",
+      "stockCount": 47415
+    },
+    {
+      "industryName": "电子化学品Ⅱ",
+      "fileName": "电子化学品Ⅱ_model.json",
+      "performance": {
+        "accuracy": 0.6028735632183908,
+        "precision": 0.6028735632183908,
+        "recall": 1,
+        "f1": 0.7522409465758336,
+        "auc": 0.5
+      },
+      "trainingDate": "2026-05-19T08:45:42.736Z",
+      "stockCount": 8700
+    },
+    {
+      "industryName": "消费电子",
+      "fileName": "消费电子_model.json",
+      "performance": {
+        "accuracy": 0.5933151845130067,
+        "precision": 0.5933151845130067,
+        "recall": 1,
+        "f1": 0.7447555766492644,
+        "auc": 0.5
+      },
+      "trainingDate": "2026-05-19T08:45:42.736Z",
+      "stockCount": 33060
+    },
+    {
+      "industryName": "装修建材",
+      "fileName": "装修建材_model.json",
+      "performance": {
+        "accuracy": 0.5877923107411811,
+        "precision": 0.5877923107411811,
+        "recall": 1,
+        "f1": 0.7403894158761857,
+        "auc": 0.5
+      },
+      "trainingDate": "2026-05-19T08:45:42.736Z",
+      "stockCount": 12615
+    },
+    {
+      "industryName": "电池",
+      "fileName": "电池_model.json",
+      "performance": {
+        "accuracy": 0.5924764890282131,
+        "precision": 0.5924764890282131,
+        "recall": 1,
+        "f1": 0.7440944881889764,
+        "auc": 0.5
+      },
+      "trainingDate": "2026-05-19T08:45:42.736Z",
+      "stockCount": 28710
+    },
+    {
+      "industryName": "通信设备",
+      "fileName": "通信设备_model.json",
+      "performance": {
+        "accuracy": 0.6076741041244084,
+        "precision": 0.6076741041244084,
+        "recall": 1,
+        "f1": 0.7559667753127957,
+        "auc": 0.5
+      },
+      "trainingDate": "2026-05-19T08:45:42.736Z",
+      "stockCount": 29580
+    },
+    {
+      "industryName": "计算机设备",
+      "fileName": "计算机设备_model.json",
+      "performance": {
+        "accuracy": 0.5800433116774946,
+        "precision": 0.5800433116774946,
+        "recall": 1,
+        "f1": 0.7342119135477069,
+        "auc": 0.5
+      },
+      "trainingDate": "2026-05-19T08:45:42.736Z",
+      "stockCount": 30015
+    },
+    {
+      "industryName": "工业金属",
+      "fileName": "工业金属_model.json",
+      "performance": {
+        "accuracy": 0.5874384236453202,
+        "precision": 0.5874384236453202,
+        "recall": 1,
+        "f1": 0.7401086113266097,
+        "auc": 0.5
+      },
+      "trainingDate": "2026-05-19T08:45:42.736Z",
+      "stockCount": 24360
+    },
+    {
+      "industryName": "橡胶",
+      "fileName": "橡胶_model.json",
+      "performance": {
+        "accuracy": 0.5524425287356322,
+        "precision": 0.5524425287356322,
+        "recall": 1,
+        "f1": 0.7117075428042572,
+        "auc": 0.5
+      },
+      "trainingDate": "2026-05-19T08:45:42.736Z",
+      "stockCount": 6960
+    },
+    {
+      "industryName": "工程机械",
+      "fileName": "工程机械_model.json",
+      "performance": {
+        "accuracy": 0.5999115826702034,
+        "precision": 0.5999115826702034,
+        "recall": 1,
+        "f1": 0.7499309201436862,
+        "auc": 0.5
+      },
+      "trainingDate": "2026-05-19T08:45:42.736Z",
+      "stockCount": 11310
+    },
+    {
+      "industryName": "游戏Ⅱ",
+      "fileName": "游戏Ⅱ_model.json",
+      "performance": {
+        "accuracy": 0.5900383141762452,
+        "precision": 0.5900383141762452,
+        "recall": 1,
+        "f1": 0.7421686746987951,
+        "auc": 0.5
+      },
+      "trainingDate": "2026-05-19T08:45:42.736Z",
+      "stockCount": 10440
+    },
+    {
+      "industryName": "广告营销",
+      "fileName": "广告营销_model.json",
+      "performance": {
+        "accuracy": 0.5738916256157636,
+        "precision": 0.5738916256157636,
+        "recall": 1,
+        "f1": 0.729264475743349,
+        "auc": 0.5
+      },
+      "trainingDate": "2026-05-19T08:45:42.736Z",
+      "stockCount": 12180
+    },
+    {
+      "industryName": "化学原料",
+      "fileName": "化学原料_model.json",
+      "performance": {
+        "accuracy": 0.5774294670846395,
+        "precision": 0.5774294670846395,
+        "recall": 1,
+        "f1": 0.7321144674085851,
+        "auc": 0.5
+      },
+      "trainingDate": "2026-05-19T08:45:42.736Z",
+      "stockCount": 23925
+    },
+    {
+      "industryName": "玻璃玻纤",
+      "fileName": "玻璃玻纤_model.json",
+      "performance": {
+        "accuracy": 0.5574712643678161,
+        "precision": 0.5574712643678161,
+        "recall": 1,
+        "f1": 0.7158671586715868,
+        "auc": 0.5
+      },
+      "trainingDate": "2026-05-19T08:45:42.736Z",
+      "stockCount": 6090
+    },
+    {
+      "industryName": "电力",
+      "fileName": "电力_model.json",
+      "performance": {
+        "accuracy": 0.5837985769020252,
+        "precision": 0.5837985769020252,
+        "recall": 1,
+        "f1": 0.7372131600774123,
+        "auc": 0.5
+      },
+      "trainingDate": "2026-05-19T08:45:42.736Z",
+      "stockCount": 45675
+    },
+    {
+      "industryName": "环境治理",
+      "fileName": "环境治理_model.json",
+      "performance": {
+        "accuracy": 0.5834001603849238,
+        "precision": 0.5834001603849238,
+        "recall": 1,
+        "f1": 0.7368954165611548,
+        "auc": 0.5
+      },
+      "trainingDate": "2026-05-19T08:45:42.736Z",
+      "stockCount": 37410
+    },
+    {
+      "industryName": "互联网电商",
+      "fileName": "互联网电商_model.json",
+      "performance": {
+        "accuracy": 0.5531609195402298,
+        "precision": 0.5531609195402298,
+        "recall": 1,
+        "f1": 0.7123034227567067,
+        "auc": 0.5
+      },
+      "trainingDate": "2026-05-19T08:45:42.736Z",
+      "stockCount": 6960
+    },
+    {
+      "industryName": "家电零部件Ⅱ",
+      "fileName": "家电零部件Ⅱ_model.json",
+      "performance": {
+        "accuracy": 0.6084538375973304,
+        "precision": 0.6084538375973304,
+        "recall": 1,
+        "f1": 0.7565698478561549,
+        "auc": 0.5
+      },
+      "trainingDate": "2026-05-19T08:45:42.736Z",
+      "stockCount": 13485
+    },
+    {
+      "industryName": "文娱用品",
+      "fileName": "文娱用品_model.json",
+      "performance": {
+        "accuracy": 0.5922038980509745,
+        "precision": 0.5922038980509745,
+        "recall": 1,
+        "f1": 0.743879472693032,
+        "auc": 0.5
+      },
+      "trainingDate": "2026-05-19T08:45:42.736Z",
+      "stockCount": 10005
+    },
+    {
+      "industryName": "通信服务",
+      "fileName": "通信服务_model.json",
+      "performance": {
+        "accuracy": 0.5818120351588911,
+        "precision": 0.5818120351588911,
+        "recall": 1,
+        "f1": 0.7356272707843556,
+        "auc": 0.5
+      },
+      "trainingDate": "2026-05-19T08:45:42.736Z",
+      "stockCount": 14790
+    },
+    {
+      "industryName": "航空装备Ⅱ",
+      "fileName": "航空装备Ⅱ_model.json",
+      "performance": {
+        "accuracy": 0.582128290693363,
+        "precision": 0.582128290693363,
+        "recall": 1,
+        "f1": 0.7358800093742676,
+        "auc": 0.5
+      },
+      "trainingDate": "2026-05-19T08:45:42.736Z",
+      "stockCount": 13485
+    },
+    {
+      "industryName": "乘用车",
+      "fileName": "乘用车_model.json",
+      "performance": {
+        "accuracy": 0.47413793103448276,
+        "precision": 0.47413793103448276,
+        "recall": 1,
+        "f1": 0.6432748538011697,
+        "auc": 0.5
+      },
+      "trainingDate": "2026-05-19T08:45:42.736Z",
+      "stockCount": 3480
+    },
+    {
+      "industryName": "综合Ⅱ",
+      "fileName": "综合Ⅱ_model.json",
+      "performance": {
+        "accuracy": 0.5761494252873564,
+        "precision": 0.5761494252873564,
+        "recall": 1,
+        "f1": 0.731084776663628,
+        "auc": 0.5
+      },
+      "trainingDate": "2026-05-19T08:45:42.736Z",
+      "stockCount": 6960
+    },
+    {
+      "industryName": "摩托车及其他",
+      "fileName": "摩托车及其他_model.json",
+      "performance": {
+        "accuracy": 0.5755336617405583,
+        "precision": 0.5755336617405583,
+        "recall": 1,
+        "f1": 0.73058884835852,
+        "auc": 0.5
+      },
+      "trainingDate": "2026-05-19T08:45:42.736Z",
+      "stockCount": 6090
+    },
+    {
+      "industryName": "房屋建设Ⅱ",
+      "fileName": "房屋建设Ⅱ_model.json",
+      "performance": {
+        "accuracy": 0.5402298850574713,
+        "precision": 0.5402298850574713,
+        "recall": 1,
+        "f1": 0.7014925373134328,
+        "auc": 0.5
+      },
+      "trainingDate": "2026-05-19T08:45:42.736Z",
+      "stockCount": 3045
+    },
+    {
+      "industryName": "工程咨询服务Ⅱ",
+      "fileName": "工程咨询服务Ⅱ_model.json",
+      "performance": {
+        "accuracy": 0.5711759504862953,
+        "precision": 0.5711759504862953,
+        "recall": 1,
+        "f1": 0.727068092290377,
+        "auc": 0.5
+      },
+      "trainingDate": "2026-05-19T08:45:42.736Z",
+      "stockCount": 16965
+    },
+    {
+      "industryName": "航空机场",
+      "fileName": "航空机场_model.json",
+      "performance": {
+        "accuracy": 0.5207780725022104,
+        "precision": 0.5207780725022104,
+        "recall": 1,
+        "f1": 0.6848837209302325,
+        "auc": 0.5
+      },
+      "trainingDate": "2026-05-19T08:45:42.736Z",
+      "stockCount": 5655
+    },
+    {
+      "industryName": "汽车服务",
+      "fileName": "汽车服务_model.json",
+      "performance": {
+        "accuracy": 0.5545977011494253,
+        "precision": 0.5545977011494253,
+        "recall": 1,
+        "f1": 0.7134935304990757,
+        "auc": 0.5
+      },
+      "trainingDate": "2026-05-19T08:45:42.736Z",
+      "stockCount": 3480
+    },
+    {
+      "industryName": "其他电源设备Ⅱ",
+      "fileName": "其他电源设备Ⅱ_model.json",
+      "performance": {
+        "accuracy": 0.5886015325670498,
+        "precision": 0.5886015325670498,
+        "recall": 1,
+        "f1": 0.7410310521555623,
+        "auc": 0.5
+      },
+      "trainingDate": "2026-05-19T08:45:42.736Z",
+      "stockCount": 10440
+    },
+    {
+      "industryName": "包装印刷",
+      "fileName": "包装印刷_model.json",
+      "performance": {
+        "accuracy": 0.5925589836660617,
+        "precision": 0.5925589836660617,
+        "recall": 1,
+        "f1": 0.7441595441595441,
+        "auc": 0.5
+      },
+      "trainingDate": "2026-05-19T08:45:42.736Z",
+      "stockCount": 16530
+    },
+    {
+      "industryName": "出版",
+      "fileName": "出版_model.json",
+      "performance": {
+        "accuracy": 0.5823754789272031,
+        "precision": 0.5823754789272031,
+        "recall": 1,
+        "f1": 0.7360774818401937,
+        "auc": 0.5
+      },
+      "trainingDate": "2026-05-19T08:45:42.736Z",
+      "stockCount": 11745
+    },
+    {
+      "industryName": "其他电子Ⅱ",
+      "fileName": "其他电子Ⅱ_model.json",
+      "performance": {
+        "accuracy": 0.5930183056619838,
+        "precision": 0.5930183056619838,
+        "recall": 1,
+        "f1": 0.7445216461785141,
+        "auc": 0.5
+      },
+      "trainingDate": "2026-05-19T08:45:42.736Z",
+      "stockCount": 11745
+    },
+    {
+      "industryName": "贸易Ⅱ",
+      "fileName": "贸易Ⅱ_model.json",
+      "performance": {
+        "accuracy": 0.5915708812260536,
+        "precision": 0.5915708812260536,
+        "recall": 1,
+        "f1": 0.7433798748194511,
+        "auc": 0.5
+      },
+      "trainingDate": "2026-05-19T08:45:42.739Z",
+      "stockCount": 6525
+    },
+    {
+      "industryName": "电视广播Ⅱ",
+      "fileName": "电视广播Ⅱ_model.json",
+      "performance": {
+        "accuracy": 0.5651340996168582,
+        "precision": 0.5651340996168582,
+        "recall": 1,
+        "f1": 0.7221542227662178,
+        "auc": 0.5
+      },
+      "trainingDate": "2026-05-19T08:45:42.739Z",
+      "stockCount": 5220
+    },
+    {
+      "industryName": "农化制品",
+      "fileName": "农化制品_model.json",
+      "performance": {
+        "accuracy": 0.5834900731452456,
+        "precision": 0.5834900731452456,
+        "recall": 1,
+        "f1": 0.7369671373894681,
+        "auc": 0.5
+      },
+      "trainingDate": "2026-05-19T08:45:42.739Z",
+      "stockCount": 23925
+    },
+    {
+      "industryName": "环保设备Ⅱ",
+      "fileName": "环保设备Ⅱ_model.json",
+      "performance": {
+        "accuracy": 0.5932311621966795,
+        "precision": 0.5932311621966795,
+        "recall": 1,
+        "f1": 0.7446893787575151,
+        "auc": 0.5
+      },
+      "trainingDate": "2026-05-19T08:45:42.739Z",
+      "stockCount": 7830
+    },
+    {
+      "industryName": "体育Ⅱ",
+      "fileName": "体育Ⅱ_model.json",
+      "performance": {
+        "accuracy": 0.5977011494252874,
+        "precision": 0.5977011494252874,
+        "recall": 1,
+        "f1": 0.7482014388489209,
+        "auc": 0.5
+      },
+      "trainingDate": "2026-05-19T08:45:42.739Z",
+      "stockCount": 870
+    },
+    {
+      "industryName": "地面兵装Ⅱ",
+      "fileName": "地面兵装Ⅱ_model.json",
+      "performance": {
+        "accuracy": 0.5701149425287356,
+        "precision": 0.5701149425287356,
+        "recall": 1,
+        "f1": 0.7262079062957539,
+        "auc": 0.5
+      },
+      "trainingDate": "2026-05-19T08:45:42.739Z",
+      "stockCount": 4350
+    },
+    {
+      "industryName": "轨交设备Ⅱ",
+      "fileName": "轨交设备Ⅱ_model.json",
+      "performance": {
+        "accuracy": 0.5913793103448276,
+        "precision": 0.5913793103448276,
+        "recall": 1,
+        "f1": 0.743228602383532,
+        "auc": 0.5
+      },
+      "trainingDate": "2026-05-19T08:45:42.739Z",
+      "stockCount": 8700
+    },
+    {
+      "industryName": "航天装备Ⅱ",
+      "fileName": "航天装备Ⅱ_model.json",
+      "performance": {
+        "accuracy": 0.5842911877394636,
+        "precision": 0.5842911877394636,
+        "recall": 1,
+        "f1": 0.7376058041112455,
+        "auc": 0.5
+      },
+      "trainingDate": "2026-05-19T08:45:42.739Z",
+      "stockCount": 2610
+    },
+    {
+      "industryName": "专业服务",
+      "fileName": "专业服务_model.json",
+      "performance": {
+        "accuracy": 0.5897435897435898,
+        "precision": 0.5897435897435898,
+        "recall": 1,
+        "f1": 0.7419354838709677,
+        "auc": 0.5
+      },
+      "trainingDate": "2026-05-19T08:45:42.739Z",
+      "stockCount": 11310
+    },
+    {
+      "industryName": "航海装备Ⅱ",
+      "fileName": "航海装备Ⅱ_model.json",
+      "performance": {
+        "accuracy": 0.5701149425287356,
+        "precision": 0.5701149425287356,
+        "recall": 1,
+        "f1": 0.7262079062957539,
+        "auc": 0.5
+      },
+      "trainingDate": "2026-05-19T08:45:42.739Z",
+      "stockCount": 4350
+    },
+    {
+      "industryName": "装修装饰Ⅱ",
+      "fileName": "装修装饰Ⅱ_model.json",
+      "performance": {
+        "accuracy": 0.5985221674876847,
+        "precision": 0.5985221674876847,
+        "recall": 1,
+        "f1": 0.7488443759630201,
+        "auc": 0.5
+      },
+      "trainingDate": "2026-05-19T08:45:42.739Z",
+      "stockCount": 6090
+    },
+    {
+      "industryName": "数字媒体",
+      "fileName": "数字媒体_model.json",
+      "performance": {
+        "accuracy": 0.5570291777188329,
+        "precision": 0.5570291777188329,
+        "recall": 1,
+        "f1": 0.715502555366269,
+        "auc": 0.5
+      },
+      "trainingDate": "2026-05-19T08:45:42.739Z",
+      "stockCount": 5655
+    },
+    {
+      "industryName": "多元金融",
+      "fileName": "多元金融_model.json",
+      "performance": {
+        "accuracy": 0.5783908045977012,
+        "precision": 0.5783908045977012,
+        "recall": 1,
+        "f1": 0.732886688027964,
+        "auc": 0.5
+      },
+      "trainingDate": "2026-05-19T08:45:42.739Z",
+      "stockCount": 10875
     },
     {
       "industryName": "金属新材料",
       "fileName": "金属新材料_model.json",
-      "precision": 0.8462,
-      "recall": 0.0567,
-      "f1": 0.1063,
-      "auc": 0.5065,
-      "predictionThreshold": 0.6,
-      "fileSize": 1042594,
-      "trainingDate": "2026-05-18T16:13:23.466937"
+      "performance": {
+        "accuracy": 0.5922276956759716,
+        "precision": 0.5922276956759716,
+        "recall": 1,
+        "f1": 0.7438982468202131,
+        "auc": 0.5
+      },
+      "trainingDate": "2026-05-19T08:45:42.739Z",
+      "stockCount": 9135
+    },
+    {
+      "industryName": "调味发酵品Ⅱ",
+      "fileName": "调味发酵品Ⅱ_model.json",
+      "performance": {
+        "accuracy": 0.5349248452696729,
+        "precision": 0.5349248452696729,
+        "recall": 1,
+        "f1": 0.6970046082949309,
+        "auc": 0.5
+      },
+      "trainingDate": "2026-05-19T08:45:42.739Z",
+      "stockCount": 5655
     },
     {
       "industryName": "风电设备",
       "fileName": "风电设备_model.json",
-      "precision": 0.6364,
-      "recall": 0.1061,
-      "f1": 0.1818,
-      "auc": 0.5421,
-      "predictionThreshold": 0.6,
-      "fileSize": 961906,
-      "trainingDate": "2026-05-18T16:13:24.206161"
+      "performance": {
+        "accuracy": 0.5909961685823755,
+        "precision": 0.5909961685823755,
+        "recall": 1,
+        "f1": 0.7429259482239614,
+        "auc": 0.5
+      },
+      "trainingDate": "2026-05-19T08:45:42.739Z",
+      "stockCount": 10440
+    },
+    {
+      "industryName": "电机Ⅱ",
+      "fileName": "电机Ⅱ_model.json",
+      "performance": {
+        "accuracy": 0.584207896051974,
+        "precision": 0.584207896051974,
+        "recall": 1,
+        "f1": 0.7375394321766561,
+        "auc": 0.5
+      },
+      "trainingDate": "2026-05-19T08:45:42.739Z",
+      "stockCount": 10005
+    },
+    {
+      "industryName": "能源金属",
+      "fileName": "能源金属_model.json",
+      "performance": {
+        "accuracy": 0.6123301985370951,
+        "precision": 0.6123301985370951,
+        "recall": 1,
+        "f1": 0.7595593000648088,
+        "auc": 0.5
+      },
+      "trainingDate": "2026-05-19T08:45:42.739Z",
+      "stockCount": 4785
+    },
+    {
+      "industryName": "化学纤维",
+      "fileName": "化学纤维_model.json",
+      "performance": {
+        "accuracy": 0.5765275257108288,
+        "precision": 0.5765275257108288,
+        "recall": 1,
+        "f1": 0.7313891020721413,
+        "auc": 0.5
+      },
+      "trainingDate": "2026-05-19T08:45:42.739Z",
+      "stockCount": 8265
+    },
+    {
+      "industryName": "林业Ⅱ",
+      "fileName": "林业Ⅱ_model.json",
+      "performance": {
+        "accuracy": 0.6130268199233716,
+        "precision": 0.6130268199233716,
+        "recall": 1,
+        "f1": 0.7600950118764845,
+        "auc": 0.5
+      },
+      "trainingDate": "2026-05-19T08:45:42.739Z",
+      "stockCount": 1305
     }
   ]
 }

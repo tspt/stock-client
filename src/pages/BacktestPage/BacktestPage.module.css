@@ -59,6 +59,10 @@
   position: relative; /* 为悬浮进度条提供定位上下文 */
 }
 
+.modelInfoCard :global(.ant-card-body) {
+  padding: 16px !important;
+}
+
 /* 进度条悬浮层 */
 .progressOverlay {
   position: absolute;

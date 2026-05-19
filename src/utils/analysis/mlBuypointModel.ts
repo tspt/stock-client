@@ -6,9 +6,6 @@
  *
  * 模型配置 (Config_22_Recall_Opt):
  *   - 树深度: 20
- *   - 负样本数: 1725 (25/股票)
- *   - 训练数据: 69只股票, 188个买点
- *   - 训练集召回率: 87.2%
  */
 
 import type { KLineData } from '@/types/stock';
