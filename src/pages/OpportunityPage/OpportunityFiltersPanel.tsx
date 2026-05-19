@@ -10,7 +10,7 @@ import type { ConsolidationType } from '@/types/stock';
 import { PatternTooltip } from '@/components/PatternTooltip/PatternTooltip';
 import styles from './OpportunityPage.module.css';
 
-const ALL_FILTER_PANEL_KEYS = ['data', 'aiAnalysis', 'consolidation', 'trendLine', 'sharpMove'] as const;
+const ALL_FILTER_PANEL_KEYS = ['data', 'aiAnalysis', 'consolidation', 'trendLine', 'sharpMove', 'nameFilter'] as const;
 
 /** 筛选抽屉宽度：加宽以减少表单项折行与纵向滚动 */
 const FILTER_DRAWER_WIDTH = 'min(1000px, calc(100vw - 48px))' as const;
@@ -76,6 +76,9 @@ export function buildOpportunityFilterSummary(p: {
   conceptSectors?: string[];
   industrySectorOptions?: { label: string; value: string }[];
   conceptSectorOptions?: { label: string; value: string }[];
+  // 名称过滤
+  excludedNameKeywords?: string[];
+  excludedExactNames?: string[];
 }): string {
   const parts: string[] = [];
   pushRange(parts, '价', p.priceRange);
@@ -178,6 +181,14 @@ export function buildOpportunityFilterSummary(p: {
       return opt ? opt.label : code;
     });
     parts.push(`概念${labels.join('、')}`);
+  }
+
+  // 名称过滤汇总
+  if (p.excludedNameKeywords && p.excludedNameKeywords.length > 0) {
+    parts.push(`排除名称包含[${p.excludedNameKeywords.join('、')}]`);
+  }
+  if (p.excludedExactNames && p.excludedExactNames.length > 0) {
+    parts.push(`排除股票[${p.excludedExactNames.join('、')}]`);
   }
 
   return parts.join(' · ');
@@ -299,6 +310,15 @@ export interface OpportunityFiltersPanelProps {
   conceptSectorOptions?: { label: string; value: string }[];
   conceptSectorInvert?: boolean;
   setConceptSectorInvert?: (v: boolean) => void;
+  // 名称筛选
+  enableNameKeywordFilter?: boolean;
+  setEnableNameKeywordFilter?: (v: boolean) => void;
+  excludedNameKeywords?: string[];
+  setExcludedNameKeywords?: (v: string[]) => void;
+  enableExactNameFilter?: boolean;
+  setEnableExactNameFilter?: (v: boolean) => void;
+  excludedExactNames?: string[];
+  setExcludedExactNames?: (v: string[]) => void;
   // 重置筛选按钮
   resetFilterButton?: React.ReactNode;
   // 外部控制的抽屉状态
@@ -421,6 +441,15 @@ export function OpportunityFiltersPanel({
   conceptSectorOptions = [],
   conceptSectorInvert = false,
   setConceptSectorInvert,
+  // 名称筛选
+  enableNameKeywordFilter = true,
+  setEnableNameKeywordFilter = () => { },
+  excludedNameKeywords = [],
+  setExcludedNameKeywords = () => { },
+  enableExactNameFilter = true,
+  setEnableExactNameFilter = () => { },
+  excludedExactNames = [],
+  setExcludedExactNames = () => { },
   // 重置筛选按钮
   resetFilterButton,
   // 外部控制的抽屉状态
@@ -477,6 +506,8 @@ export function OpportunityFiltersPanel({
         aiPatternScoreRange,
         aiTrendScoreRange,
         aiRiskScoreRange,
+        excludedNameKeywords,
+        excludedExactNames,
       }),
     [
       priceRange,
@@ -520,6 +551,8 @@ export function OpportunityFiltersPanel({
       aiPatternScoreRange,
       aiTrendScoreRange,
       aiRiskScoreRange,
+      excludedNameKeywords,
+      excludedExactNames,
     ]
   );
 
@@ -883,6 +916,68 @@ export function OpportunityFiltersPanel({
                           }}
                         />
                         <span style={{ marginLeft: 4 }}>天</span>
+                      </div>
+                    </div>
+                  </div>
+                ),
+              },
+              {
+                key: 'nameFilter',
+                label: '名称筛选',
+                children: (
+                  <div className={styles.filterContent}>
+                    <div className={styles.filterRow} style={{ marginBottom: 16, alignItems: 'flex-start' }}>
+                      <div className={styles.filterItem} style={{ flex: '0 0 100px', justifyContent: 'flex-start' }}>
+                        <Checkbox
+                          checked={enableNameKeywordFilter}
+                          onChange={(e) => setEnableNameKeywordFilter(e.target.checked)}
+                        >
+                          <span className={styles.filterLabel} style={{ whiteSpace: 'nowrap' }}>排除名称包含：</span>
+                        </Checkbox>
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <Select
+                          mode="tags"
+                          value={excludedNameKeywords}
+                          onChange={(values) => setExcludedNameKeywords(values as string[])}
+                          style={{ width: '100%' }}
+                          placeholder="输入关键词，按回车添加"
+                          options={[]}
+                          allowClear
+                          maxTagCount="responsive"
+                          disabled={!enableNameKeywordFilter}
+                        />
+                        <div style={{ marginTop: 6, fontSize: 12, color: 'var(--ant-color-text-secondary)', lineHeight: 1.6 }}>
+                          <span style={{ color: 'var(--ant-color-text-tertiary)' }}>默认值：</span>
+                          <span style={{ color: 'var(--ant-color-text-secondary)' }}>药业、中国、矿业、水务、纸业、环保、期货</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className={styles.filterRow} style={{ alignItems: 'flex-start' }}>
+                      <div className={styles.filterItem} style={{ flex: '0 0 100px', justifyContent: 'flex-start' }}>
+                        <Checkbox
+                          checked={enableExactNameFilter}
+                          onChange={(e) => setEnableExactNameFilter(e.target.checked)}
+                        >
+                          <span className={styles.filterLabel} style={{ whiteSpace: 'nowrap' }}>排除股票名称：</span>
+                        </Checkbox>
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <Select
+                          mode="tags"
+                          value={excludedExactNames}
+                          onChange={(values) => setExcludedExactNames(values as string[])}
+                          style={{ width: '100%' }}
+                          placeholder="输入完整股票名称，按回车添加"
+                          options={[]}
+                          allowClear
+                          maxTagCount="responsive"
+                          disabled={!enableExactNameFilter}
+                        />
+                        <div style={{ marginTop: 6, fontSize: 12, color: 'var(--ant-color-text-secondary)', lineHeight: 1.6 }}>
+                          <span style={{ color: 'var(--ant-color-text-tertiary)' }}>默认值：</span>
+                          <span style={{ color: 'var(--ant-color-text-secondary)' }}>晋亿实业、鲁银投资、骆驼股份、爱普股份、翠微股份、杉杉股份、安徽合力、麦加芯彩</span>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -1292,6 +1387,103 @@ export function OpportunityFiltersPanel({
                 ),
               },
               {
+                key: 'sharpMove',
+                label: '单日异动筛选',
+                children: (
+                  <div className={styles.filterContent}>
+                    <div className={styles.filterRow}>
+                      <div className={styles.filterItem}>
+                        <Checkbox
+                          checked={sharpMoveFilterEnabled}
+                          onChange={(e) => setSharpMoveFilterEnabled(e.target.checked)}
+                        >
+                          启用单日异动筛选
+                        </Checkbox>
+                      </div>
+                    </div>
+                    <div className={styles.filterRow}>
+                      <div className={styles.filterItem}>
+                        <span className={styles.filterLabel}>检索根数：</span>
+                        <InputNumber
+                          value={sharpMoveWindowBars}
+                          min={5}
+                          max={500}
+                          step={1}
+                          style={{ width: 100 }}
+                          onChange={(v) => {
+                            const next = typeof v === 'number' && isFinite(v) ? Math.max(1, Math.floor(v)) : 20;
+                            setSharpMoveWindowBars(next);
+                          }}
+                        />
+                        <span style={{ marginLeft: 4 }}>根</span>
+                        <span className={styles.filterLabel} style={{ marginLeft: 16 }}>
+                          阈值M(%)：
+                        </span>
+                        <InputNumber
+                          value={sharpMoveMagnitude}
+                          min={0.5}
+                          max={30}
+                          step={0.5}
+                          style={{ width: 100 }}
+                          onChange={(v) => {
+                            const next = typeof v === 'number' && isFinite(v) && v > 0 ? v : 6;
+                            setSharpMoveMagnitude(next);
+                          }}
+                        />
+                        <span className={styles.filterLabel} style={{ marginLeft: 16 }}>横盘幅度(%)：</span>
+                        <InputNumber
+                          value={sharpMoveFlatThreshold}
+                          min={0.1}
+                          max={10}
+                          step={0.1}
+                          precision={1}
+                          style={{ width: 100 }}
+                          onChange={(v) => {
+                            const next = typeof v === 'number' && isFinite(v) && v > 0 ? v : 3;
+                            setSharpMoveFlatThreshold(next);
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <div className={styles.filterRow}>
+                      <div className={styles.filterItem} style={{ flexWrap: 'wrap', gap: 8 }}>
+                        <span className={styles.filterLabel}>异动类型：</span>
+                        <Checkbox checked={sharpMoveOnlyDrop} onChange={(e) => setSharpMoveOnlyDrop(e.target.checked)}>
+                          仅急跌
+                        </Checkbox>
+                        <Checkbox checked={sharpMoveOnlyRise} onChange={(e) => setSharpMoveOnlyRise(e.target.checked)}>
+                          仅急涨
+                        </Checkbox>
+                        <Checkbox
+                          checked={sharpMoveDropThenRiseLoose}
+                          onChange={(e) => setSharpMoveDropThenRiseLoose(e.target.checked)}
+                        >
+                          急跌→急涨
+                        </Checkbox>
+                        <Checkbox
+                          checked={sharpMoveRiseThenDropLoose}
+                          onChange={(e) => setSharpMoveRiseThenDropLoose(e.target.checked)}
+                        >
+                          急涨→急跌
+                        </Checkbox>
+                        <Checkbox
+                          checked={sharpMoveDropFlatRise}
+                          onChange={(e) => setSharpMoveDropFlatRise(e.target.checked)}
+                        >
+                          急跌横盘急涨
+                        </Checkbox>
+                        <Checkbox
+                          checked={sharpMoveRiseFlatDrop}
+                          onChange={(e) => setSharpMoveRiseFlatDrop(e.target.checked)}
+                        >
+                          急涨横盘急跌
+                        </Checkbox>
+                      </div>
+                    </div>
+                  </div>
+                ),
+              },
+              {
                 key: 'consolidation',
                 label: '横盘筛选',
                 children: (
@@ -1444,103 +1636,6 @@ export function OpportunityFiltersPanel({
                         <span style={{ lineHeight: '1.8' }}>
                           1️⃣ 每日收盘价 ≥ 前一日收盘价（不跌）；2️⃣ 每日收盘价 ≥ 当日MA5均线；✅ 若找到，取最靠近最新K线的一段
                         </span>
-                      </div>
-                    </div>
-                  </div>
-                ),
-              },
-              {
-                key: 'sharpMove',
-                label: '单日异动筛选',
-                children: (
-                  <div className={styles.filterContent}>
-                    <div className={styles.filterRow}>
-                      <div className={styles.filterItem}>
-                        <Checkbox
-                          checked={sharpMoveFilterEnabled}
-                          onChange={(e) => setSharpMoveFilterEnabled(e.target.checked)}
-                        >
-                          启用单日异动筛选
-                        </Checkbox>
-                      </div>
-                    </div>
-                    <div className={styles.filterRow}>
-                      <div className={styles.filterItem}>
-                        <span className={styles.filterLabel}>检索根数：</span>
-                        <InputNumber
-                          value={sharpMoveWindowBars}
-                          min={5}
-                          max={500}
-                          step={1}
-                          style={{ width: 100 }}
-                          onChange={(v) => {
-                            const next = typeof v === 'number' && isFinite(v) ? Math.max(1, Math.floor(v)) : 20;
-                            setSharpMoveWindowBars(next);
-                          }}
-                        />
-                        <span style={{ marginLeft: 4 }}>根</span>
-                        <span className={styles.filterLabel} style={{ marginLeft: 16 }}>
-                          阈值M(%)：
-                        </span>
-                        <InputNumber
-                          value={sharpMoveMagnitude}
-                          min={0.5}
-                          max={30}
-                          step={0.5}
-                          style={{ width: 100 }}
-                          onChange={(v) => {
-                            const next = typeof v === 'number' && isFinite(v) && v > 0 ? v : 6;
-                            setSharpMoveMagnitude(next);
-                          }}
-                        />
-                        <span className={styles.filterLabel} style={{ marginLeft: 16 }}>横盘幅度(%)：</span>
-                        <InputNumber
-                          value={sharpMoveFlatThreshold}
-                          min={0.1}
-                          max={10}
-                          step={0.1}
-                          precision={1}
-                          style={{ width: 100 }}
-                          onChange={(v) => {
-                            const next = typeof v === 'number' && isFinite(v) && v > 0 ? v : 3;
-                            setSharpMoveFlatThreshold(next);
-                          }}
-                        />
-                      </div>
-                    </div>
-                    <div className={styles.filterRow}>
-                      <div className={styles.filterItem} style={{ flexWrap: 'wrap', gap: 8 }}>
-                        <span className={styles.filterLabel}>异动类型：</span>
-                        <Checkbox checked={sharpMoveOnlyDrop} onChange={(e) => setSharpMoveOnlyDrop(e.target.checked)}>
-                          仅急跌
-                        </Checkbox>
-                        <Checkbox checked={sharpMoveOnlyRise} onChange={(e) => setSharpMoveOnlyRise(e.target.checked)}>
-                          仅急涨
-                        </Checkbox>
-                        <Checkbox
-                          checked={sharpMoveDropThenRiseLoose}
-                          onChange={(e) => setSharpMoveDropThenRiseLoose(e.target.checked)}
-                        >
-                          急跌→急涨
-                        </Checkbox>
-                        <Checkbox
-                          checked={sharpMoveRiseThenDropLoose}
-                          onChange={(e) => setSharpMoveRiseThenDropLoose(e.target.checked)}
-                        >
-                          急涨→急跌
-                        </Checkbox>
-                        <Checkbox
-                          checked={sharpMoveDropFlatRise}
-                          onChange={(e) => setSharpMoveDropFlatRise(e.target.checked)}
-                        >
-                          急跌横盘急涨
-                        </Checkbox>
-                        <Checkbox
-                          checked={sharpMoveRiseFlatDrop}
-                          onChange={(e) => setSharpMoveRiseFlatDrop(e.target.checked)}
-                        >
-                          急涨横盘急跌
-                        </Checkbox>
                       </div>
                     </div>
                   </div>

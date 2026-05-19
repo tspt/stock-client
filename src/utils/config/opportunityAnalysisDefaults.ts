@@ -166,3 +166,22 @@ export const OPPORTUNITY_DEFAULT_INDICATORS = {
   /** 布林带阈值（0-1之间，即百分比） */
   bollingerThreshold: 0.02,
 } as const;
+
+// ==================== 7. 名称过滤 ====================
+
+/** 名称过滤默认配置 */
+export const OPPORTUNITY_DEFAULT_NAME_FILTERS = {
+  /** 排除名称包含这些关键词的股票 */
+  excludedNameKeywords: ['药业', '中国', '矿业', '水务', '纸业', '环保', '期货'],
+  /** 排除这些完整名称的股票 */
+  excludedExactNames: [
+    '晋亿实业',
+    '鲁银投资',
+    '骆驼股份',
+    '爱普股份',
+    '翠微股份',
+    '杉杉股份',
+    '安徽合力',
+    '麦加芯彩',
+  ],
+} as const;

@@ -746,6 +746,31 @@ async function runFilterTask(
         }
       }
 
+      // 名称包含过滤
+      if (
+        filters.enableNameKeywordFilter !== false &&
+        filters.excludedNameKeywords &&
+        filters.excludedNameKeywords.length > 0
+      ) {
+        const hasExcludedKeyword = filters.excludedNameKeywords.some((keyword) =>
+          nextItem.name.includes(keyword)
+        );
+        if (hasExcludedKeyword) {
+          continue;
+        }
+      }
+
+      // 名称完全匹配过滤
+      if (
+        filters.enableExactNameFilter !== false &&
+        filters.excludedExactNames &&
+        filters.excludedExactNames.length > 0
+      ) {
+        if (filters.excludedExactNames.includes(nextItem.name)) {
+          continue;
+        }
+      }
+
       result.push(nextItem);
     } catch {
       mergeSkippedReason(skippedMap, item.code, item.name, '筛选计算异常，已跳过该股');

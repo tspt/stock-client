@@ -93,6 +93,14 @@ export interface OpportunityFilterSnapshot {
   industrySectorInvert?: boolean;
   /** 概念板块反选 */
   conceptSectorInvert?: boolean;
+  /** 名称筛选 - 是否启用名称包含过滤 */
+  enableNameKeywordFilter?: boolean;
+  /** 名称包含过滤 - 排除包含这些关键词的股票名称 */
+  excludedNameKeywords?: string[];
+  /** 名称筛选 - 是否启用完全匹配过滤 */
+  enableExactNameFilter?: boolean;
+  /** 名称完全匹配过滤 - 排除这些完整名称的股票 */
+  excludedExactNames?: string[];
 }
 
 export interface FilterSkippedItem {

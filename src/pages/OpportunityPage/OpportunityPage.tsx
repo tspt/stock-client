@@ -57,6 +57,7 @@ import {
   OPPORTUNITY_DEFAULT_BASIC_FILTERS,
   OPPORTUNITY_DEFAULT_SHARP_MOVE_FULL,
   OPPORTUNITY_DEFAULT_INDUSTRY_SECTORS,
+  OPPORTUNITY_DEFAULT_NAME_FILTERS,
 } from '@/utils/config/opportunityAnalysisDefaults';
 import { getUnifiedSectorBasics } from '@/services/hot/unified-sectors';
 import type { IndustrySectorBasicInfo, ConceptSectorBasicInfo } from '@/types/stock';
@@ -170,6 +171,10 @@ const INITIAL_FILTER_STATE = {
   aiPatternWinRateRange: {} as { min?: number; max?: number },
   aiMinSimilarPatterns: 3,
   aiMinRiskRewardRatio: undefined as number | undefined,
+
+  // 名称过滤
+  excludedNameKeywords: [...OPPORTUNITY_DEFAULT_NAME_FILTERS.excludedNameKeywords],
+  excludedExactNames: [...OPPORTUNITY_DEFAULT_NAME_FILTERS.excludedExactNames],
 };
 
 /** 与 opportunityStore 初始值一致，用于「重置」恢复周期与 K 线数量 */
@@ -253,7 +258,7 @@ export function OpportunityPage() {
   const [peRatioRange, setPeRatioRange] = useState<{ min?: number; max?: number }>(INITIAL_FILTER_STATE.peRatioRange);
   const [kdjJRange, setKdjJRange] = useState<{ min?: number; max?: number }>(INITIAL_FILTER_STATE.kdjJRange);
   /** 筛选 Collapse 当前展开的面板 key 列表；[] 表示各组均收起。默认展开所有筛选项 */
-  const [filterPanelActiveKey, setFilterPanelActiveKey] = useState<string[]>(['data', 'consolidation', 'trendLine', 'sharpMove', 'aiAnalysis']);
+  const [filterPanelActiveKey, setFilterPanelActiveKey] = useState<string[]>(['data', 'nameFilter', 'aiAnalysis', 'sharpMove', 'consolidation', 'trendLine']);
 
   // 涨停/跌停筛选状态
   const [recentLimitUpCount, setRecentLimitUpCount] = useState<number | undefined>(
@@ -470,6 +475,16 @@ export function OpportunityPage() {
     INITIAL_FILTER_STATE.aiMinRiskRewardRatio
   );
 
+  // 名称筛选状态
+  const [enableNameKeywordFilter, setEnableNameKeywordFilter] = useState<boolean>(true);
+  const [excludedNameKeywords, setExcludedNameKeywords] = useState<string[]>(
+    [...INITIAL_FILTER_STATE.excludedNameKeywords]
+  );
+  const [enableExactNameFilter, setEnableExactNameFilter] = useState<boolean>(true);
+  const [excludedExactNames, setExcludedExactNames] = useState<string[]>(
+    [...INITIAL_FILTER_STATE.excludedExactNames]
+  );
+
   // 行业板块筛选状态
   const [industrySectors, setIndustrySectors] = useState<string[]>([...OPPORTUNITY_DEFAULT_INDUSTRY_SECTORS.excludedIndustries]);
   const [industrySectorInvert, setIndustrySectorInvert] = useState<boolean>(OPPORTUNITY_DEFAULT_INDUSTRY_SECTORS.invertEnabled);
@@ -539,6 +554,11 @@ export function OpportunityPage() {
           setAiPatternScoreRange,
           setAiTrendScoreRange,
           setAiRiskScoreRange,
+          // 名称筛选 actions
+          setEnableNameKeywordFilter,
+          setExcludedNameKeywords,
+          setEnableExactNameFilter,
+          setExcludedExactNames,
         });
       }
       const st = useOpportunityStore.getState();
@@ -633,6 +653,10 @@ export function OpportunityPage() {
         aiPatternScoreRange: { ...aiPatternScoreRange },
         aiTrendScoreRange: { ...aiTrendScoreRange },
         aiRiskScoreRange: { ...aiRiskScoreRange },
+        enableNameKeywordFilter,
+        excludedNameKeywords: [...excludedNameKeywords],
+        enableExactNameFilter,
+        excludedExactNames: [...excludedExactNames],
       };
       saveOpportunityFilterPrefs(prefs);
     };
@@ -682,6 +706,10 @@ export function OpportunityPage() {
     aiPatternScoreRange,
     aiTrendScoreRange,
     aiRiskScoreRange,
+    enableNameKeywordFilter,
+    excludedNameKeywords,
+    enableExactNameFilter,
+    excludedExactNames,
   ]);
 
   // 筛选条件变化时自动保存（防抖300ms）
@@ -740,6 +768,10 @@ export function OpportunityPage() {
         aiPatternScoreRange: { ...aiPatternScoreRange },
         aiTrendScoreRange: { ...aiTrendScoreRange },
         aiRiskScoreRange: { ...aiRiskScoreRange },
+        enableNameKeywordFilter,
+        excludedNameKeywords: [...excludedNameKeywords],
+        enableExactNameFilter,
+        excludedExactNames: [...excludedExactNames],
       };
       saveOpportunityFilterPrefs(prefs);
     }, FILTER_SAVE_DEBOUNCE_DELAY); // 防抖300ms
@@ -791,6 +823,10 @@ export function OpportunityPage() {
     aiPatternScoreRange,
     aiTrendScoreRange,
     aiRiskScoreRange,
+    enableNameKeywordFilter,
+    excludedNameKeywords,
+    enableExactNameFilter,
+    excludedExactNames,
   ]);
 
   // 计算表格高度
@@ -1003,6 +1039,10 @@ export function OpportunityPage() {
       conceptSectors,
       industrySectorInvert,
       conceptSectorInvert,
+      enableNameKeywordFilter,
+      excludedNameKeywords,
+      enableExactNameFilter,
+      excludedExactNames,
     }),
     [
       priceRange,
@@ -1056,6 +1096,10 @@ export function OpportunityPage() {
       conceptSectors,
       industrySectorInvert,
       conceptSectorInvert,
+      enableNameKeywordFilter,
+      excludedNameKeywords,
+      enableExactNameFilter,
+      excludedExactNames,
     ]
   );
 
@@ -1173,6 +1217,12 @@ export function OpportunityPage() {
     setConceptSectors([]);
     setIndustrySectorInvert(OPPORTUNITY_DEFAULT_INDUSTRY_SECTORS.invertEnabled);
     setConceptSectorInvert(false);
+    // 重置名称过滤
+    // 名称筛选重置
+    setEnableNameKeywordFilter(true);
+    setExcludedNameKeywords([...OPPORTUNITY_DEFAULT_NAME_FILTERS.excludedNameKeywords]);
+    setEnableExactNameFilter(true);
+    setExcludedExactNames([...OPPORTUNITY_DEFAULT_NAME_FILTERS.excludedExactNames]);
     patchSavedPrefsFiltersToDefaults();
     message.info('已恢复默认筛选条件');
   };
@@ -1738,6 +1788,16 @@ export function OpportunityPage() {
             conceptSectorOptions={conceptSectorOptions}
             conceptSectorInvert={conceptSectorInvert}
             setConceptSectorInvert={setConceptSectorInvert}
+            // 名称过滤
+            // 名称筛选
+            enableNameKeywordFilter={enableNameKeywordFilter}
+            setEnableNameKeywordFilter={setEnableNameKeywordFilter}
+            excludedNameKeywords={excludedNameKeywords}
+            setExcludedNameKeywords={setExcludedNameKeywords}
+            enableExactNameFilter={enableExactNameFilter}
+            setEnableExactNameFilter={setEnableExactNameFilter}
+            excludedExactNames={excludedExactNames}
+            setExcludedExactNames={setExcludedExactNames}
             // 重置筛选按钮
             resetFilterButton={
               <Button icon={<ClearOutlined />} onClick={handleResetFilterForms} disabled={loading}>

@@ -10,6 +10,7 @@ import {
   OPPORTUNITY_DEFAULT_TREND_LINE,
   OPPORTUNITY_DEFAULT_INDUSTRY_SECTORS,
   OPPORTUNITY_DEFAULT_BASIC_FILTERS,
+  OPPORTUNITY_DEFAULT_NAME_FILTERS,
 } from '@/utils/config/opportunityAnalysisDefaults';
 import { logger } from '../business/logger';
 
@@ -24,6 +25,7 @@ export const OPPORTUNITY_FILTER_PANEL_KEYS = {
   trendLine: 'trendLine',
   sharpMove: 'sharpMove',
   aiAnalysis: 'aiAnalysis',
+  nameFilter: 'nameFilter',
 } as const;
 
 /** 由 localStorage 中四个「展开」布尔字段推导当前应展开的面板（可多组同时展开） */
@@ -34,6 +36,7 @@ export function activeFilterPanelKeyFromPrefs(
     | 'consolidationFilterVisible'
     | 'trendLineFilterVisible'
     | 'sharpMoveFilterVisible'
+    | 'nameFilterVisible'
   >
 ): string[] {
   const keys: string[] = [];
@@ -41,11 +44,16 @@ export function activeFilterPanelKeyFromPrefs(
   if (prefs.consolidationFilterVisible) keys.push(OPPORTUNITY_FILTER_PANEL_KEYS.consolidation);
   if (prefs.trendLineFilterVisible) keys.push(OPPORTUNITY_FILTER_PANEL_KEYS.trendLine);
   if (prefs.sharpMoveFilterVisible) keys.push(OPPORTUNITY_FILTER_PANEL_KEYS.sharpMove);
+  if (prefs.nameFilterVisible) keys.push(OPPORTUNITY_FILTER_PANEL_KEYS.nameFilter);
   // 默认展开AI分析筛选
   keys.push(OPPORTUNITY_FILTER_PANEL_KEYS.aiAnalysis);
   return keys.length > 0
     ? keys
-    : [OPPORTUNITY_FILTER_PANEL_KEYS.data, OPPORTUNITY_FILTER_PANEL_KEYS.aiAnalysis];
+    : [
+        OPPORTUNITY_FILTER_PANEL_KEYS.data,
+        OPPORTUNITY_FILTER_PANEL_KEYS.nameFilter,
+        OPPORTUNITY_FILTER_PANEL_KEYS.aiAnalysis,
+      ];
 }
 
 /** 将当前展开的 key（单个或多个）写回偏好里的四个布尔字段（供「一键分析」保存） */
@@ -57,6 +65,7 @@ export function visibilityFromActiveFilterPanelKey(
   | 'consolidationFilterVisible'
   | 'trendLineFilterVisible'
   | 'sharpMoveFilterVisible'
+  | 'nameFilterVisible'
 > {
   const keys = new Set(Array.isArray(activeKey) ? activeKey : activeKey ? [activeKey] : []);
   return {
@@ -64,6 +73,7 @@ export function visibilityFromActiveFilterPanelKey(
     consolidationFilterVisible: keys.has(OPPORTUNITY_FILTER_PANEL_KEYS.consolidation),
     trendLineFilterVisible: keys.has(OPPORTUNITY_FILTER_PANEL_KEYS.trendLine),
     sharpMoveFilterVisible: keys.has(OPPORTUNITY_FILTER_PANEL_KEYS.sharpMove),
+    nameFilterVisible: keys.has(OPPORTUNITY_FILTER_PANEL_KEYS.nameFilter),
   };
 }
 
@@ -127,6 +137,13 @@ export interface OpportunityFilterPrefs {
   aiPatternScoreRange: { min?: number; max?: number };
   aiTrendScoreRange: { min?: number; max?: number };
   aiRiskScoreRange: { min?: number; max?: number };
+  /** 名称筛选 */
+  enableNameKeywordFilter: boolean;
+  excludedNameKeywords: string[];
+  enableExactNameFilter: boolean;
+  excludedExactNames: string[];
+  /** 名称筛选面板可见性 */
+  nameFilterVisible: boolean;
 }
 
 function isRecord(v: unknown): v is Record<string, unknown> {
@@ -251,6 +268,15 @@ export function loadOpportunityFilterPrefs(): OpportunityFilterPrefs | null {
       aiPatternScoreRange: parseRange(p.aiPatternScoreRange),
       aiTrendScoreRange: parseRange(p.aiTrendScoreRange),
       aiRiskScoreRange: parseRange(p.aiRiskScoreRange),
+      enableNameKeywordFilter: p.enableNameKeywordFilter === false ? false : true,
+      excludedNameKeywords: Array.isArray(p.excludedNameKeywords)
+        ? p.excludedNameKeywords.filter((item: any) => typeof item === 'string')
+        : [...OPPORTUNITY_DEFAULT_NAME_FILTERS.excludedNameKeywords],
+      enableExactNameFilter: p.enableExactNameFilter === false ? false : true,
+      excludedExactNames: Array.isArray(p.excludedExactNames)
+        ? p.excludedExactNames.filter((item: any) => typeof item === 'string')
+        : [...OPPORTUNITY_DEFAULT_NAME_FILTERS.excludedExactNames],
+      nameFilterVisible: p.nameFilterVisible === false ? false : true,
     };
 
     return prefs;
@@ -328,6 +354,11 @@ export function getDefaultFilterPrefsFields(): Omit<
     aiPatternScoreRange: {},
     aiTrendScoreRange: {},
     aiRiskScoreRange: {},
+    enableNameKeywordFilter: true,
+    excludedNameKeywords: [...OPPORTUNITY_DEFAULT_NAME_FILTERS.excludedNameKeywords],
+    enableExactNameFilter: true,
+    excludedExactNames: [...OPPORTUNITY_DEFAULT_NAME_FILTERS.excludedExactNames],
+    nameFilterVisible: true,
   };
 }
 
@@ -409,6 +440,11 @@ export interface OpportunityFilterPrefsApplyActions {
   setAiPatternScoreRange: (v: { min?: number; max?: number }) => void;
   setAiTrendScoreRange: (v: { min?: number; max?: number }) => void;
   setAiRiskScoreRange: (v: { min?: number; max?: number }) => void;
+  /** 名称筛选 actions */
+  setEnableNameKeywordFilter: (v: boolean) => void;
+  setExcludedNameKeywords: (v: string[]) => void;
+  setEnableExactNameFilter: (v: boolean) => void;
+  setExcludedExactNames: (v: string[]) => void;
 }
 
 export function applyOpportunityFilterPrefsToState(
@@ -461,4 +497,9 @@ export function applyOpportunityFilterPrefsToState(
   actions.setAiPatternScoreRange({ ...prefs.aiPatternScoreRange });
   actions.setAiTrendScoreRange({ ...prefs.aiTrendScoreRange });
   actions.setAiRiskScoreRange({ ...prefs.aiRiskScoreRange });
+  // 应用名称筛选
+  actions.setEnableNameKeywordFilter(prefs.enableNameKeywordFilter);
+  actions.setExcludedNameKeywords([...prefs.excludedNameKeywords]);
+  actions.setEnableExactNameFilter(prefs.enableExactNameFilter);
+  actions.setExcludedExactNames([...prefs.excludedExactNames]);
 }
