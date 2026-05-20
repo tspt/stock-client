@@ -494,6 +494,10 @@ export function OpportunityPage() {
   const [excludedExactNames, setExcludedExactNames] = useState<string[]>(
     [...INITIAL_FILTER_STATE.excludedExactNames]
   );
+  const [enableShortTermNameFilter, setEnableShortTermNameFilter] = useState<boolean>(true);
+  const [excludedShortTermNames, setExcludedShortTermNames] = useState<string[]>(
+    [...OPPORTUNITY_DEFAULT_NAME_FILTERS.excludedShortTermNames]
+  );
 
   // 行业板块筛选状态
   const [industrySectors, setIndustrySectors] = useState<string[]>([...OPPORTUNITY_DEFAULT_INDUSTRY_SECTORS.excludedIndustries]);
@@ -569,6 +573,8 @@ export function OpportunityPage() {
           setExcludedNameKeywords,
           setEnableExactNameFilter,
           setExcludedExactNames,
+          setEnableShortTermNameFilter,
+          setExcludedShortTermNames,
         });
       }
       const st = useOpportunityStore.getState();
@@ -667,6 +673,8 @@ export function OpportunityPage() {
         excludedNameKeywords: [...excludedNameKeywords],
         enableExactNameFilter,
         excludedExactNames: [...excludedExactNames],
+        enableShortTermNameFilter,
+        excludedShortTermNames: [...excludedShortTermNames],
       };
       saveOpportunityFilterPrefs(prefs);
     };
@@ -720,6 +728,8 @@ export function OpportunityPage() {
     excludedNameKeywords,
     enableExactNameFilter,
     excludedExactNames,
+    enableShortTermNameFilter,
+    excludedShortTermNames,
   ]);
 
   // 筛选条件变化时自动保存（防抖300ms）
@@ -782,6 +792,8 @@ export function OpportunityPage() {
         excludedNameKeywords: [...excludedNameKeywords],
         enableExactNameFilter,
         excludedExactNames: [...excludedExactNames],
+        enableShortTermNameFilter,
+        excludedShortTermNames: [...excludedShortTermNames],
       };
       saveOpportunityFilterPrefs(prefs);
     }, FILTER_SAVE_DEBOUNCE_DELAY); // 防抖300ms
@@ -837,6 +849,8 @@ export function OpportunityPage() {
     excludedNameKeywords,
     enableExactNameFilter,
     excludedExactNames,
+    enableShortTermNameFilter,
+    excludedShortTermNames,
   ]);
 
   // 计算表格高度
@@ -1053,6 +1067,8 @@ export function OpportunityPage() {
       excludedNameKeywords,
       enableExactNameFilter,
       excludedExactNames,
+      enableShortTermNameFilter,
+      excludedShortTermNames,
     }),
     [
       priceRange,
@@ -1110,6 +1126,8 @@ export function OpportunityPage() {
       excludedNameKeywords,
       enableExactNameFilter,
       excludedExactNames,
+      enableShortTermNameFilter,
+      excludedShortTermNames,
     ]
   );
 
@@ -1233,6 +1251,8 @@ export function OpportunityPage() {
     setExcludedNameKeywords([...OPPORTUNITY_DEFAULT_NAME_FILTERS.excludedNameKeywords]);
     setEnableExactNameFilter(true);
     setExcludedExactNames([...OPPORTUNITY_DEFAULT_NAME_FILTERS.excludedExactNames]);
+    setEnableShortTermNameFilter(true);
+    setExcludedShortTermNames([...OPPORTUNITY_DEFAULT_NAME_FILTERS.excludedShortTermNames]);
     patchSavedPrefsFiltersToDefaults();
     message.info('已恢复默认筛选条件');
   };
@@ -1362,6 +1382,9 @@ export function OpportunityPage() {
           aiPatternScoreRange,
           aiTrendScoreRange,
           aiRiskScoreRange,
+          excludedNameKeywords,
+          excludedExactNames,
+          excludedShortTermNames,
         });
 
         // 构建包含两行时间的完整文案
@@ -1809,6 +1832,11 @@ export function OpportunityPage() {
             setEnableExactNameFilter={setEnableExactNameFilter}
             excludedExactNames={excludedExactNames}
             setExcludedExactNames={setExcludedExactNames}
+            // 短期排除股票名称
+            enableShortTermNameFilter={enableShortTermNameFilter}
+            setEnableShortTermNameFilter={setEnableShortTermNameFilter}
+            excludedShortTermNames={excludedShortTermNames}
+            setExcludedShortTermNames={setExcludedShortTermNames}
             // 重置筛选按钮
             resetFilterButton={
               <Button icon={<ClearOutlined />} onClick={handleResetFilterForms} disabled={loading}>
@@ -1889,6 +1917,9 @@ export function OpportunityPage() {
                   conceptSectors,
                   industrySectorOptions,
                   conceptSectorOptions,
+                  excludedNameKeywords,
+                  excludedExactNames,
+                  excludedShortTermNames,
                 });
                 return summary ? (
                   <span

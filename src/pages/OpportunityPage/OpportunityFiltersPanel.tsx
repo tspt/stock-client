@@ -79,6 +79,7 @@ export function buildOpportunityFilterSummary(p: {
   // 名称过滤
   excludedNameKeywords?: string[];
   excludedExactNames?: string[];
+  excludedShortTermNames?: string[];
 }): string {
   const parts: string[] = [];
   pushRange(parts, '价', p.priceRange);
@@ -189,6 +190,9 @@ export function buildOpportunityFilterSummary(p: {
   }
   if (p.excludedExactNames && p.excludedExactNames.length > 0) {
     parts.push(`排除股票[${p.excludedExactNames.join('、')}]`);
+  }
+  if (p.excludedShortTermNames && p.excludedShortTermNames.length > 0) {
+    parts.push(`短期排除[${p.excludedShortTermNames.join('、')}]`);
   }
 
   return parts.join(' · ');
@@ -319,6 +323,11 @@ export interface OpportunityFiltersPanelProps {
   setEnableExactNameFilter?: (v: boolean) => void;
   excludedExactNames?: string[];
   setExcludedExactNames?: (v: string[]) => void;
+  // 短期排除股票名称
+  enableShortTermNameFilter?: boolean;
+  setEnableShortTermNameFilter?: (v: boolean) => void;
+  excludedShortTermNames?: string[];
+  setExcludedShortTermNames?: (v: string[]) => void;
   // 重置筛选按钮
   resetFilterButton?: React.ReactNode;
   // 外部控制的抽屉状态
@@ -450,6 +459,11 @@ export function OpportunityFiltersPanel({
   setEnableExactNameFilter = () => { },
   excludedExactNames = [],
   setExcludedExactNames = () => { },
+  // 短期排除股票名称
+  enableShortTermNameFilter = true,
+  setEnableShortTermNameFilter = () => { },
+  excludedShortTermNames = [],
+  setExcludedShortTermNames = () => { },
   // 重置筛选按钮
   resetFilterButton,
   // 外部控制的抽屉状态
@@ -508,6 +522,7 @@ export function OpportunityFiltersPanel({
         aiRiskScoreRange,
         excludedNameKeywords,
         excludedExactNames,
+        excludedShortTermNames,
       }),
     [
       priceRange,
@@ -553,6 +568,7 @@ export function OpportunityFiltersPanel({
       aiRiskScoreRange,
       excludedNameKeywords,
       excludedExactNames,
+      excludedShortTermNames,
     ]
   );
 
@@ -927,7 +943,7 @@ export function OpportunityFiltersPanel({
                 children: (
                   <div className={styles.filterContent}>
                     <div className={styles.filterRow} style={{ marginBottom: 16, alignItems: 'flex-start' }}>
-                      <div className={styles.filterItem} style={{ flex: '0 0 100px', justifyContent: 'flex-start' }}>
+                      <div className={styles.filterItem} style={{ flex: '0 0 160px', justifyContent: 'flex-start' }}>
                         <Checkbox
                           checked={enableNameKeywordFilter}
                           onChange={(e) => setEnableNameKeywordFilter(e.target.checked)}
@@ -954,7 +970,7 @@ export function OpportunityFiltersPanel({
                       </div>
                     </div>
                     <div className={styles.filterRow} style={{ alignItems: 'flex-start' }}>
-                      <div className={styles.filterItem} style={{ flex: '0 0 100px', justifyContent: 'flex-start' }}>
+                      <div className={styles.filterItem} style={{ flex: '0 0 160px', justifyContent: 'flex-start' }}>
                         <Checkbox
                           checked={enableExactNameFilter}
                           onChange={(e) => setEnableExactNameFilter(e.target.checked)}
@@ -977,6 +993,33 @@ export function OpportunityFiltersPanel({
                         <div style={{ marginTop: 6, fontSize: 12, color: 'var(--ant-color-text-secondary)', lineHeight: 1.6 }}>
                           <span style={{ color: 'var(--ant-color-text-tertiary)' }}>默认值：</span>
                           <span style={{ color: 'var(--ant-color-text-secondary)' }}>晋亿实业、鲁银投资、骆驼股份、爱普股份、翠微股份、杉杉股份、安徽合力、麦加芯彩</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className={styles.filterRow} style={{ marginTop: 16, alignItems: 'flex-start' }}>
+                      <div className={styles.filterItem} style={{ flex: '0 0 160px', justifyContent: 'flex-start' }}>
+                        <Checkbox
+                          checked={enableShortTermNameFilter}
+                          onChange={(e) => setEnableShortTermNameFilter(e.target.checked)}
+                        >
+                          <span className={styles.filterLabel} style={{ whiteSpace: 'nowrap' }}>短期排除股票名称：</span>
+                        </Checkbox>
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <Select
+                          mode="tags"
+                          value={excludedShortTermNames}
+                          onChange={(values) => setExcludedShortTermNames(values as string[])}
+                          style={{ width: '100%' }}
+                          placeholder="输入完整股票名称，按回车添加"
+                          options={[]}
+                          allowClear
+                          maxTagCount="responsive"
+                          disabled={!enableShortTermNameFilter}
+                        />
+                        <div style={{ marginTop: 6, fontSize: 12, color: 'var(--ant-color-text-secondary)', lineHeight: 1.6 }}>
+                          <span style={{ color: 'var(--ant-color-text-tertiary)' }}>默认值：</span>
+                          <span style={{ color: 'var(--ant-color-text-secondary)' }}>中立股份、福斯特、展鹏科技、洛凯股份、立霸股份、多伦科技、威派格、海兴电力、广信股份、巍华新材、迪生力、联德股份、璞泰来、亿嘉禾、华康股份</span>
                         </div>
                       </div>
                     </div>

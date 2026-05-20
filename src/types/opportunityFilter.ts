@@ -101,6 +101,10 @@ export interface OpportunityFilterSnapshot {
   enableExactNameFilter?: boolean;
   /** 名称完全匹配过滤 - 排除这些完整名称的股票 */
   excludedExactNames?: string[];
+  /** 短期排除股票名称 - 是否启用 */
+  enableShortTermNameFilter?: boolean;
+  /** 短期排除股票名称列表 */
+  excludedShortTermNames?: string[];
 }
 
 export interface FilterSkippedItem {

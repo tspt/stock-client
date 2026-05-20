@@ -142,6 +142,9 @@ export interface OpportunityFilterPrefs {
   excludedNameKeywords: string[];
   enableExactNameFilter: boolean;
   excludedExactNames: string[];
+  /** 短期排除股票名称 */
+  enableShortTermNameFilter: boolean;
+  excludedShortTermNames: string[];
   /** 名称筛选面板可见性 */
   nameFilterVisible: boolean;
 }
@@ -276,6 +279,10 @@ export function loadOpportunityFilterPrefs(): OpportunityFilterPrefs | null {
       excludedExactNames: Array.isArray(p.excludedExactNames)
         ? p.excludedExactNames.filter((item: any) => typeof item === 'string')
         : [...OPPORTUNITY_DEFAULT_NAME_FILTERS.excludedExactNames],
+      enableShortTermNameFilter: p.enableShortTermNameFilter === false ? false : true,
+      excludedShortTermNames: Array.isArray(p.excludedShortTermNames)
+        ? p.excludedShortTermNames.filter((item: any) => typeof item === 'string')
+        : [...OPPORTUNITY_DEFAULT_NAME_FILTERS.excludedShortTermNames],
       nameFilterVisible: p.nameFilterVisible === false ? false : true,
     };
 
@@ -358,6 +365,8 @@ export function getDefaultFilterPrefsFields(): Omit<
     excludedNameKeywords: [...OPPORTUNITY_DEFAULT_NAME_FILTERS.excludedNameKeywords],
     enableExactNameFilter: true,
     excludedExactNames: [...OPPORTUNITY_DEFAULT_NAME_FILTERS.excludedExactNames],
+    enableShortTermNameFilter: true,
+    excludedShortTermNames: [...OPPORTUNITY_DEFAULT_NAME_FILTERS.excludedShortTermNames],
     nameFilterVisible: true,
   };
 }
@@ -445,6 +454,9 @@ export interface OpportunityFilterPrefsApplyActions {
   setExcludedNameKeywords: (v: string[]) => void;
   setEnableExactNameFilter: (v: boolean) => void;
   setExcludedExactNames: (v: string[]) => void;
+  /** 短期排除股票名称 actions */
+  setEnableShortTermNameFilter: (v: boolean) => void;
+  setExcludedShortTermNames: (v: string[]) => void;
 }
 
 export function applyOpportunityFilterPrefsToState(
@@ -502,4 +514,7 @@ export function applyOpportunityFilterPrefsToState(
   actions.setExcludedNameKeywords([...prefs.excludedNameKeywords]);
   actions.setEnableExactNameFilter(prefs.enableExactNameFilter);
   actions.setExcludedExactNames([...prefs.excludedExactNames]);
+  // 应用短期排除股票名称
+  actions.setEnableShortTermNameFilter(prefs.enableShortTermNameFilter);
+  actions.setExcludedShortTermNames([...prefs.excludedShortTermNames]);
 }

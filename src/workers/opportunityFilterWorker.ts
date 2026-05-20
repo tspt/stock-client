@@ -771,6 +771,17 @@ async function runFilterTask(
         }
       }
 
+      // 短期排除股票名称过滤
+      if (
+        filters.enableShortTermNameFilter !== false &&
+        filters.excludedShortTermNames &&
+        filters.excludedShortTermNames.length > 0
+      ) {
+        if (filters.excludedShortTermNames.includes(nextItem.name)) {
+          continue;
+        }
+      }
+
       result.push(nextItem);
     } catch {
       mergeSkippedReason(skippedMap, item.code, item.name, '筛选计算异常，已跳过该股');
