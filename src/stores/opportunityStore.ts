@@ -52,13 +52,13 @@ interface OpportunityState {
   analysisTimestamp: number | null;
 
   // 一键分析时使用的 AI 版本（与失败重试共用）
-  analysisAiVersion: 'v1' | 'v2' | 'v3' | 'v4';
+  analysisAiVersion: 'v1' | 'v2' | 'v3' | 'v4' | 'v5';
 
   startAnalysis: (
     period: KLinePeriod,
     stocks: StockInfo[],
     count: number,
-    aiVersion?: 'v1' | 'v2' | 'v3' | 'v4'
+    aiVersion?: 'v1' | 'v2' | 'v3' | 'v4' | 'v5'
   ) => Promise<void>;
   cancelAnalysis: () => void;
   retryFailedStocks: () => Promise<void>;
@@ -239,14 +239,19 @@ export const useOpportunityStore = create<OpportunityState>((set, get) => ({
     let cancelled = false;
 
     try {
-      const { promise, cancel } = analyzeAllStocksOpportunity(failedStocks, currentPeriod, currentCount, {
-        onProgress: (p) => {
-          if (!cancelled) {
-            set({ progress: p });
-          }
-        },
-        aiVersion: analysisAiVersion,
-      });
+      const { promise, cancel } = analyzeAllStocksOpportunity(
+        failedStocks,
+        currentPeriod,
+        currentCount,
+        {
+          onProgress: (p) => {
+            if (!cancelled) {
+              set({ progress: p });
+            }
+          },
+          aiVersion: analysisAiVersion,
+        }
+      );
 
       // 包装取消函数
       set({

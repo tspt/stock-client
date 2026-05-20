@@ -27,9 +27,12 @@ import {
 } from '@/utils/config/opportunityAnalysisDefaults';
 import { logger } from '@/utils/business/logger';
 
-type OpportunityAiVersion = 'v1' | 'v2' | 'v3' | 'v4';
+type OpportunityAiVersion = 'v1' | 'v2' | 'v3' | 'v4' | 'v5';
 
 async function loadPerformAIAnalysis(aiVersion: OpportunityAiVersion) {
+  if (aiVersion === 'v5') {
+    return (await import('./ai-v5.0')).performAIAnalysis;
+  }
   if (aiVersion === 'v3') {
     return (await import('./ai-v3.0')).performAIAnalysis;
   }
@@ -479,7 +482,8 @@ export function analyzeAllStocksOpportunity(
     results.forEach((result) => {
       if (result.code && !result.error && klineDataMap.has(result.code)) {
         const klineData = klineDataMap.get(result.code)!;
-        if (klineData && klineData.length >= 20) {
+        if (klineData && klineData.length >= 100) {
+          // 要求至少100条K线数据，确保形态识别准确性
           allStockDataForAI.set(result.code, {
             code: result.code,
             name: result.name,
@@ -501,7 +505,8 @@ export function analyzeAllStocksOpportunity(
     results.forEach((result) => {
       if (result.code && !result.error && klineDataMap.has(result.code)) {
         const klineData = klineDataMap.get(result.code)!;
-        if (klineData && klineData.length >= 30) {
+        if (klineData && klineData.length >= 100) {
+          // 要求至少100条K线数据，确保AI分析准确度
           try {
             // 重新计算AI分析，传入排序后的完整股票池
             const aiAnalysis = performAIAnalysis(klineData, result, sortedStockDataForAI);

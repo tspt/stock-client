@@ -306,17 +306,17 @@ export function OpportunityPage() {
   const [errorExpanded, setErrorExpanded] = useState(false); // 失败详情展开状态
 
   // AI分析版本选择（切换时自动刷新）；与 store.analysisAiVersion 对齐供一键分析使用
-  const [aiVersion, setAiVersion] = useState<'v1' | 'v2' | 'v3' | 'v4'>(() =>
+  const [aiVersion, setAiVersion] = useState<'v1' | 'v2' | 'v3' | 'v4' | 'v5'>(() =>
     useOpportunityStore.getState().analysisAiVersion
   );
   const [showAddToWatchListModal, setShowAddToWatchListModal] = useState(false);
   const [aiRefreshLoading, setAiRefreshLoading] = useState(false);
 
-  const aiVersionLabel = (version: 'v1' | 'v2' | 'v3' | 'v4') =>
-    version === 'v3' ? 'v3.0增强版' : version === 'v2' ? 'v2.0优化版' : version === 'v4' ? 'v4.0结构增强' : 'v1.0原始版';
+  const aiVersionLabel = (version: 'v1' | 'v2' | 'v3' | 'v4' | 'v5') =>
+    version === 'v5' ? 'v5.0智能增强' : version === 'v3' ? 'v3.0增强版' : version === 'v2' ? 'v2.0优化版' : version === 'v4' ? 'v4.0结构增强' : 'v1.0原始版';
 
   // AI版本切换时自动执行刷新（无分析数据时仅写入 store，供下次一键分析使用）
-  const handleAiVersionChange = async (version: 'v1' | 'v2' | 'v3' | 'v4') => {
+  const handleAiVersionChange = async (version: 'v1' | 'v2' | 'v3' | 'v4' | 'v5') => {
     useOpportunityStore.setState({ analysisAiVersion: version });
     if (analysisData.length === 0) {
       setAiVersion(version);
@@ -335,7 +335,10 @@ export function OpportunityPage() {
 
       // 根据版本选择导入对应的AI分析模块（使用相对路径）
       let performAIAnalysis: any;
-      if (version === 'v3') {
+      if (version === 'v5') {
+        const module = await import('../../services/opportunity/ai-v5.0');
+        performAIAnalysis = module.performAIAnalysis;
+      } else if (version === 'v3') {
         const module = await import('../../services/opportunity/ai-v3.0');
         performAIAnalysis = module.performAIAnalysis;
       } else if (version === 'v2') {
@@ -357,7 +360,7 @@ export function OpportunityPage() {
       const allStockDataForAI = new Map<string, { code: string; name: string; klineData: KLineData[] }>();
       analysisData.forEach(s => {
         const kd = klineDataCache.get(s.code);
-        if (kd && kd.length >= 20) {
+        if (kd && kd.length >= 100) {
           allStockDataForAI.set(s.code, {
             code: s.code,
             name: s.name,
@@ -370,7 +373,7 @@ export function OpportunityPage() {
 
       const updatedData = analysisData.map(stock => {
         const klineData = klineDataCache.get(stock.code);
-        if (klineData && klineData.length >= 30) {
+        if (klineData && klineData.length >= 100) {  // 要求至少100条K线数据，确保AI分析准确度
           try {
             // 重新计算AI分析，传入完整股票池
             const aiAnalysis = performAIAnalysis(klineData, stock, allStockDataForAI);

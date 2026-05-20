@@ -288,7 +288,7 @@ export interface OpportunityFiltersPanelProps {
   aiRiskScoreRange: { min?: number; max?: number };
   setAiRiskScoreRange: SetRange;
   // v3.0 新增
-  aiVersion?: 'v1' | 'v2' | 'v3' | 'v4'; // 当前 AI 版本，用于控制 v3/v4 增强筛选条件的显示
+  aiVersion?: 'v1' | 'v2' | 'v3' | 'v4' | 'v5'; // 当前 AI 版本，用于控制 v3/v4/v5 增强筛选条件的显示
   aiSignalConfluence?: boolean;
   setAiSignalConfluence?: (v: boolean) => void;
   aiMinSignalCount?: number;
