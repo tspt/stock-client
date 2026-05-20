@@ -16,6 +16,7 @@ release
 # Data directories
 docs/回测优化/股票数据/
 docs/回测优化/历史回测数据/
+public/models/industry/
 
 # Editor directories and files
 .vscode/*
