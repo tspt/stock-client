@@ -110,7 +110,7 @@ export const OPPORTUNITY_DEFAULT_AI_ANALYSIS = {
   /** AI趋势判断 - 横盘 */
   trendSideways: false,
   /** AI趋势评分最小值 */
-  trendScoreMin: 50,
+  trendScoreMin: 55,
   /** AI风险评分最小值 */
   riskScoreMin: 50,
 } as const;
@@ -201,5 +201,29 @@ export const OPPORTUNITY_DEFAULT_NAME_FILTERS = {
     '璞泰来',
     '亿嘉禾',
     '华康股份',
+    '湖南天雁',
+    '华荣股份',
+    '道升天合',
+    '永杰新材',
+    '川仪股份',
+    '永茂泰',
+    '中际联合',
+    '福莱蒽特',
+    '振石股份',
+    '上海沿浦',
+    '建业股份',
+    '凯众股份',
+    '百达精工',
+    '立中集团',
+    '德力佳',
+    '秦安股份',
+    '百利电气',
+    '华新精科',
+    '海阳科技',
+    '众辰科技',
+    '杰克科技',
+    '力鼎光电',
+    '星德胜',
+    '明新旭腾',
   ],
 } as const;
