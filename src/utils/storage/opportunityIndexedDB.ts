@@ -140,6 +140,23 @@ export async function clearOpportunityData(): Promise<void> {
 }
 
 /**
+ * 清空所有股票历史数据（K线数据）
+ */
+export async function clearStockHistory(): Promise<void> {
+  const db = await initOpportunityDB();
+  const transaction = db.transaction([STOCK_HISTORY_STORE_NAME], 'readwrite');
+
+  return new Promise((resolve, reject) => {
+    transaction.onerror = () => reject(new Error('清空股票历史数据失败'));
+    transaction.oncomplete = () => resolve();
+
+    const historyStore = transaction.objectStore(STOCK_HISTORY_STORE_NAME);
+    const historyRequest = historyStore.clear();
+    historyRequest.onerror = () => reject(new Error('清空股票历史数据失败'));
+  });
+}
+
+/**
  * 保存股票记录（按日期）
  */
 export async function saveStockRecord(record: StockRecord): Promise<void> {

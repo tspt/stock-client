@@ -20,7 +20,7 @@ export const SECTOR_POLLING_INTERVAL = 60000; // 60秒
 export const KLINE_POLLING_INTERVAL_MS = 20000;
 
 /** 机会分析 K 线缓存 Map 最大条数（超出则删除最旧条目，控制内存） */
-export const MAX_OPPORTUNITY_KLINE_CACHE_ENTRIES = 400;
+export const MAX_OPPORTUNITY_KLINE_CACHE_ENTRIES = 3500;
 
 /** API超时时间（毫秒） */
 export const API_TIMEOUT = 10000; // 10秒

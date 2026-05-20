@@ -19,6 +19,7 @@ import {
 } from '@ant-design/icons';
 import { useOpportunityStore } from '@/stores/opportunityStore';
 import { apiCache } from '@/utils/storage/apiCache';
+import { clearStockHistory, clearOpportunityData } from '@/utils/storage/opportunityIndexedDB';
 import {
   CONSOLIDATION_TYPE_LABELS,
 } from '@/utils/analysis/consolidationAnalysis';
@@ -1273,6 +1274,22 @@ export function OpportunityPage() {
     apiCache.clear();
     logger.info('[机会分析] 已清空内存缓存，将获取最新数据');
 
+    // 清空 store 中的 K 线数据缓存和分析结果
+    useOpportunityStore.getState().clearData();
+    logger.info('[机会分析] 已清空 store 中的缓存数据');
+
+    // 清空 IndexedDB 中的旧数据，确保使用最新数据
+    try {
+      await Promise.all([
+        clearStockHistory(),
+        clearOpportunityData(),
+      ]);
+      logger.info('[机会分析] 已清空 IndexedDB 中的股票历史数据和分析结果');
+    } catch (error) {
+      logger.warn('[机会分析] 清空 IndexedDB 失败:', error);
+      // 继续执行分析，不阻断流程
+    }
+
     // 直接开始分析，不需要保存筛选条件（已通过useEffect自动保存）
     await startAnalysis(currentPeriod, filteredStocks, currentCount, aiVersion);
   };
@@ -1581,6 +1598,7 @@ export function OpportunityPage() {
               { label: 'v2.0 优化版', value: 'v2' },
               { label: 'v3.0 增强版', value: 'v3' },
               { label: 'v4.0 结构增强', value: 'v4' },
+              { label: 'v5.0 智能增强', value: 'v5' },
             ]}
             disabled={loading || aiRefreshLoading}
             title="切换AI分析算法版本（自动刷新）"
