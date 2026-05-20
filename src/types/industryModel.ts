@@ -38,6 +38,8 @@ export interface IndustryModelIndex {
   generatedAt: string;
   /** 模型列表 */
   models: IndustryModelMetadata[];
+  /** 行业到模型的映射关系（用于聚类回退） */
+  industryToModelMap?: Record<string, string>;
 }
 
 /**

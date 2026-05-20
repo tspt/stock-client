@@ -268,46 +268,42 @@ function calculateFeaturesAt(klineData, index) {
   features.push(volume_ratio);
 
   // 17. 成交量5日变化率
-  const vol_change_5d =
-    index >= 5 && volumes[index - 5] > 0 ? (volume - volumes[index - 5]) / volumes[index - 5] : 0;
+  const avgVolPrev5 =
+    index >= 10 ? slice.slice(-10, -5).reduce((s, k) => s + k.volume, 0) / 5 : avgVol5;
+  const vol_change_5d = avgVolPrev5 > 0 ? (avgVol5 - avgVolPrev5) / avgVolPrev5 : 0;
   features.push(vol_change_5d);
 
   // 18. 成交量趋势斜率（简单线性回归）
-  const vol_trend = calculateTrendSlope(volumes.slice(-10));
+  const volTrend = slice.slice(-10).map((k) => k.volume);
+  const vol_trend = calculateTrendSlope(volTrend);
   features.push(vol_trend);
 
-  // 19. 价量相关系数(5日)
-  const price_returns = [];
-  const vol_changes = [];
-  for (let i = Math.max(1, index - 4); i <= index; i++) {
-    const ret = (klineData[i].close - klineData[i - 1].close) / klineData[i - 1].close;
-    const vol_chg =
-      klineData[i].volume > 0
-        ? (klineData[i].volume - klineData[i - 1].volume) / klineData[i - 1].volume
-        : 0;
-    price_returns.push(ret);
-    vol_changes.push(vol_chg);
-  }
-  const price_volume_corr = calculateCorrelation(price_returns, vol_changes);
+  // 19. 价量相关系数(10日)
+  const prices10 = slice.slice(-10).map((k) => k.close);
+  const volumes10 = slice.slice(-10).map((k) => k.volume);
+  const price_volume_corr = calculateCorrelation(prices10, volumes10);
   features.push(price_volume_corr);
 
   // 20. 上涨日成交量占比
-  let upVolSum = 0;
-  let totalVolSum = 0;
-  for (let i = Math.max(0, index - 9); i <= index; i++) {
-    totalVolSum += klineData[i].volume;
-    if (i > 0 && klineData[i].close > klineData[i - 1].close) {
-      upVolSum += klineData[i].volume;
-    }
-  }
-  const up_vol_ratio = totalVolSum > 0 ? upVolSum / totalVolSum : 0.5;
+  const last10Days = slice.slice(-10);
+  const upDays = last10Days.filter((k, i) => i > 0 && k.close > last10Days[i - 1].close);
+  const up_vol_ratio =
+    upDays.length > 0
+      ? upDays.reduce((s, k) => s + k.volume, 0) / last10Days.reduce((s, k) => s + k.volume, 0)
+      : 0.5;
   features.push(up_vol_ratio);
 
-  // 21. 资金流向代理
+  // 21. 资金流向代理（价格上涨且放量视为流入）
   const money_flow_proxy =
-    current.high - current.low > 0
-      ? ((close - current.low - (current.high - close)) / (current.high - current.low)) * volume
-      : 0;
+    last10Days.reduce((flow, k, i) => {
+      if (i === 0) return flow;
+      const prev = last10Days[i - 1];
+      const priceChange = k.close - prev.close;
+      const volRatio = prev.volume > 0 ? k.volume / prev.volume : 1;
+      return (
+        flow + (priceChange > 0 && volRatio > 1 ? 1 : priceChange < 0 && volRatio > 1 ? -1 : 0)
+      );
+    }, 0) / 10;
   features.push(money_flow_proxy);
 
   // ==================== D. 技术形态特征（7个）====================
@@ -352,7 +348,7 @@ function calculateFeaturesAt(klineData, index) {
 
   // 28. MACD柱状图值
   const macd_histogram = calculateMACDHistogram(prices) || 0;
-  features.push(macd_histogram);
+  features.push(macd_histogram / close); // 归一化
 
   return features;
 }

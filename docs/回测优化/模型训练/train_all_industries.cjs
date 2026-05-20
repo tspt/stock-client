@@ -87,8 +87,9 @@ else {
   /**
    * 生成模型索引文件
    * @param {Array} results - 训练结果数组
+   * @param {Map} industryToModelMap - 行业到模型的映射
    */
-  function generateModelIndex(results) {
+  function generateModelIndex(results, industryToModelMap) {
     const indexPath = path.join(
       __dirname,
       '..',
@@ -104,7 +105,7 @@ else {
 
     const index = {
       generatedAt: new Date().toISOString(),
-      version: 'v1.0-rf',
+      version: 'v5.0-rf-clustered',
       totalModels: successResults.length,
       models: successResults.map((r) => ({
         industryName: r.industryName,
@@ -121,6 +122,7 @@ else {
         trainingDate: new Date().toISOString(),
         stockCount: r.sampleStats ? r.sampleStats.total : 0,
       })),
+      industryToModelMap: Object.fromEntries(industryToModelMap), // 导出映射关系
     };
 
     fs.writeFileSync(indexPath, JSON.stringify(index, null, 2), 'utf-8');
@@ -132,7 +134,7 @@ else {
    */
   async function main() {
     console.log('\n' + '='.repeat(60));
-    console.log('🚀 分行业随机森林模型训练系统');
+    console.log('🚀 分行业/聚类随机森林模型训练系统');
     console.log('='.repeat(60) + '\n');
 
     // 确保输出目录存在
@@ -140,10 +142,10 @@ else {
 
     // 步骤1: 加载数据
     console.log('📦 步骤1: 加载数据...\n');
-    const { industryMap } = loadData(500);
+    const { industryMap, industryToModelMap } = loadData(500);
 
     const industries = Array.from(industryMap.entries());
-    console.log(`📋 共发现 ${industries.length} 个行业需要训练\n`);
+    console.log(`📋 共发现 ${industries.length} 个模型组需要训练\n`);
 
     // 步骤2: 配置并行训练
     const maxWorkers = Math.min(os.cpus().length, 8); // 最多8个并行
@@ -249,7 +251,7 @@ else {
 
     // 保存报告和索引
     saveTrainingReport(results);
-    generateModelIndex(results);
+    generateModelIndex(results, industryToModelMap);
 
     console.log('\n✨ 所有任务完成！\n');
   }

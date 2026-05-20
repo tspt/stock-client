@@ -10,8 +10,16 @@
 
 const fs = require('fs');
 const path = require('path');
+const { getGroupName } = require('./industry_groups.cjs');
 
 const STOCK_DATA_DIR = path.join(__dirname, '..', '股票数据');
+
+/**
+ * 行业分组策略配置
+ */
+const GROUPING_CONFIG = {
+  MIN_STOCKS_FOR_SPECIFIC_MODEL: 50, // 至少50只股票才建立独立行业模型
+};
 
 /**
  * 加载单个股票数据文件
@@ -107,54 +115,6 @@ function loadAllStocks() {
 }
 
 /**
- * 按行业分组股票数据
- * @param {Array} stocks - 股票数据数组
- * @returns {Map} 行业名称 -> 股票数组的映射
- */
-function groupByIndustry(stocks) {
-  console.log('📊 按行业分组股票...\n');
-
-  const industryMap = new Map();
-  let noIndustryCount = 0;
-
-  for (const stock of stocks) {
-    if (!stock.industry) {
-      noIndustryCount++;
-      continue;
-    }
-
-    if (!industryMap.has(stock.industry)) {
-      industryMap.set(stock.industry, []);
-    }
-
-    industryMap.get(stock.industry).push(stock);
-  }
-
-  console.log(`📋 共发现 ${industryMap.size} 个行业`);
-  if (noIndustryCount > 0) {
-    console.log(`⚠️  ${noIndustryCount} 只股票没有行业信息，已跳过\n`);
-  }
-
-  // 打印各行业股票数量
-  const industryStats = Array.from(industryMap.entries())
-    .map(([name, stocks]) => ({ name, count: stocks.length }))
-    .sort((a, b) => b.count - a.count);
-
-  console.log('📈 各行业股票数量分布（前20）:');
-  industryStats.slice(0, 20).forEach((stat, idx) => {
-    console.log(`  ${idx + 1}. ${stat.name}: ${stat.count} 只`);
-  });
-
-  if (industryStats.length > 20) {
-    console.log(`  ... 还有 ${industryStats.length - 20} 个行业\n`);
-  } else {
-    console.log('');
-  }
-
-  return industryMap;
-}
-
-/**
  * 验证股票数据质量
  * @param {Object} stock - 股票数据对象
  * @param {number} minDays - 最小天数要求
@@ -239,13 +199,69 @@ function filterAndCleanStocks(stocks, minDays = 500) {
 }
 
 /**
+ * 按行业或聚类分组股票数据
+ * @param {Array} stocks - 股票数据数组
+ * @returns {Map} 模型名称 -> 股票数组的映射
+ */
+function groupByModelGroup(stocks) {
+  console.log('📊 正在根据样本量进行行业聚类分组...\n');
+
+  // 1. 先按原始行业统计
+  const rawIndustryMap = new Map();
+  for (const stock of stocks) {
+    if (!stock.industry) continue;
+    if (!rawIndustryMap.has(stock.industry)) {
+      rawIndustryMap.set(stock.industry, []);
+    }
+    rawIndustryMap.get(stock.industry).push(stock);
+  }
+
+  const finalGroupMap = new Map();
+  const industryToModelMap = new Map(); // 记录每个行业最终指向哪个模型
+
+  for (const [industryName, industryStocks] of rawIndustryMap.entries()) {
+    let targetGroupName;
+
+    if (industryStocks.length >= GROUPING_CONFIG.MIN_STOCKS_FOR_SPECIFIC_MODEL) {
+      // 样本充足，使用独立行业模型
+      targetGroupName = industryName;
+    } else {
+      // 样本不足，归类到大类模型
+      targetGroupName = getGroupName(industryName);
+    }
+
+    if (!finalGroupMap.has(targetGroupName)) {
+      finalGroupMap.set(targetGroupName, []);
+    }
+    finalGroupMap.get(targetGroupName).push(...industryStocks);
+    industryToModelMap.set(industryName, targetGroupName);
+  }
+
+  console.log(`📋 原始行业数: ${rawIndustryMap.size}`);
+  console.log(`🎯 最终训练模型数: ${finalGroupMap.size}\n`);
+
+  // 打印分组详情
+  const groupStats = Array.from(finalGroupMap.entries())
+    .map(([name, stocks]) => ({ name, count: stocks.length }))
+    .sort((a, b) => b.count - a.count);
+
+  console.log('📈 训练分组分布:');
+  groupStats.forEach((stat, idx) => {
+    console.log(`  ${idx + 1}. ${stat.name}: ${stat.count} 只股票`);
+  });
+  console.log('');
+
+  return { groupMap: finalGroupMap, industryToModelMap };
+}
+
+/**
  * 主函数：加载、分组和清洗数据
  * @param {number} minDays - 最小天数要求
  * @returns {Object} 包含行业映射和所有股票的對象
  */
 function loadData(minDays = 500) {
   console.log('='.repeat(60));
-  console.log('📦 数据加载模块');
+  console.log('📦 数据加载模块 (支持行业聚类)');
   console.log('='.repeat(60) + '\n');
 
   // 1. 加载所有股票
@@ -254,8 +270,8 @@ function loadData(minDays = 500) {
   // 2. 清洗数据
   const cleanedStocks = filterAndCleanStocks(allStocks, minDays);
 
-  // 3. 按行业分组
-  const industryMap = groupByIndustry(cleanedStocks);
+  // 3. 按模型分组
+  const { groupMap, industryToModelMap } = groupByModelGroup(cleanedStocks);
 
   console.log('='.repeat(60));
   console.log('✅ 数据加载完成');
@@ -263,14 +279,14 @@ function loadData(minDays = 500) {
 
   return {
     allStocks: cleanedStocks,
-    industryMap: industryMap,
+    industryMap: groupMap, // 为了兼容性，变量名保持 industryMap
+    industryToModelMap: industryToModelMap,
   };
 }
 
 module.exports = {
   loadData,
   loadAllStocks,
-  groupByIndustry,
   filterAndCleanStocks,
   validateStockData,
   loadStockFile,

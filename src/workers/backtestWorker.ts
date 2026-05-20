@@ -89,7 +89,7 @@ async function loadIndustryModelsInWorker() {
     }
 
     // 设置到全局缓存
-    setIndustryModels(models);
+    setIndustryModels(models, index.industryToModelMap);
     modelsLoaded = true;
     isLoadingModels = false;
 

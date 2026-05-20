@@ -220,10 +220,11 @@ export function BacktestPage() {
         });
 
         const models = manager.getAllModels();
+        const index = manager.getIndex();
         logger.info(`[BacktestPage] manager.getAllModels() 返回: ${models.length} 个模型`);
         logger.info(`[BacktestPage] 前3个模型:`, models.slice(0, 3));
 
-        setIndustryModels(models);
+        setIndustryModels(models, index?.industryToModelMap);
         logger.info(`[BacktestPage] ✅ setIndustryModels 调用完成，已传入 ${models.length} 个模型`);
         setModelsLoading(false); // 加载完成
       } catch (error) {

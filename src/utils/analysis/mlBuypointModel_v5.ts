@@ -396,7 +396,7 @@ function calculateFeatures(klineData: KLineData[], index: number): number[] | nu
   const volume_ratio = avgVol5 > 0 ? volume / avgVol5 : 1;
   features.push(volume_ratio);
 
-  // 16: 成交量5日变化率
+  // 17: 成交量5日变化率
   const avgVolPrev5 =
     slice.length >= 10 ? slice.slice(-10, -5).reduce((s, k) => s + k.volume, 0) / 5 : avgVol5;
   const vol_change_5d = avgVolPrev5 > 0 ? (avgVol5 - avgVolPrev5) / avgVolPrev5 : 0;
@@ -408,9 +408,9 @@ function calculateFeatures(klineData: KLineData[], index: number): number[] | nu
   features.push(vol_trend);
 
   // 18: 价量相关系数
-  const prices = slice.slice(-10).map((k) => k.close);
-  const volumes = slice.slice(-10).map((k) => k.volume);
-  const price_volume_corr = calculateCorrelation(prices, volumes);
+  const prices10 = slice.slice(-10).map((k) => k.close);
+  const volumes10 = slice.slice(-10).map((k) => k.volume);
+  const price_volume_corr = calculateCorrelation(prices10, volumes10);
   features.push(price_volume_corr);
 
   // 19: 上涨日成交量占比
@@ -514,35 +514,35 @@ function predictWithTree(features: number[], node: DecisionTreeNode): number {
 
 // 行业模型缓存（行业名称 -> 决策树数组）
 let industryModelsCache: Map<string, DecisionTreeNode[]> = new Map();
+// 行业到模型的映射缓存（用于聚类回退）
+let industryToModelMapCache: Record<string, string> = {};
 
 /**
  * 设置行业模型（由前端调用）
  */
-export function setIndustryModels(models: LoadedIndustryModel[]): void {
+export function setIndustryModels(
+  models: LoadedIndustryModel[],
+  industryToModelMap?: Record<string, string>
+): void {
   console.log('📥 setIndustryModels 被调用，接收到的模型数量:', models.length);
-  if (models.length > 0) {
-    console.log(
-      '📥 前3个模型的 industryName:',
-      models.slice(0, 3).map((m) => m.industryName)
-    );
-  }
 
   industryModelsCache.clear();
   let loadedCount = 0;
 
   models.forEach((model) => {
-    // 从JSON模型中提取决策树数组（注意：字段名是 trees 而不是 tree）
     const trees = model.modelData?.trees;
     if (trees && Array.isArray(trees) && trees.length > 0) {
       industryModelsCache.set(model.industryName, trees);
       loadedCount++;
-    } else {
-      console.warn(`⚠️ 模型 [${model.industryName}] 没有有效的 trees 字段`);
     }
   });
 
+  if (industryToModelMap) {
+    industryToModelMapCache = industryToModelMap;
+    console.log('📥 已加载行业到模型的映射关系');
+  }
+
   console.log(`✅ 成功加载 ${loadedCount}/${models.length} 个行业模型`);
-  console.log(`📊 当前缓存中的模型数量:`, industryModelsCache.size);
 }
 
 /**
@@ -550,6 +550,7 @@ export function setIndustryModels(models: LoadedIndustryModel[]): void {
  */
 export function clearIndustryModels(): void {
   industryModelsCache.clear();
+  industryToModelMapCache = {};
 }
 
 /**
@@ -557,18 +558,21 @@ export function clearIndustryModels(): void {
  */
 function getIndustryModel(industryName?: string): DecisionTreeNode[] | null {
   if (!industryName || industryModelsCache.size === 0) {
-    console.log(
-      `[getIndustryModel] 未找到行业模型: industryName=${industryName}, cacheSize=${industryModelsCache.size}`
-    );
-    return null; // 没有行业信息或未加载行业模型时返回null
+    return null;
   }
-  const model = industryModelsCache.get(industryName);
-  if (!model) {
-    console.log(
-      `[getIndustryModel] 行业名称不匹配: ${industryName}, 可用行业:`,
-      Array.from(industryModelsCache.keys()).slice(0, 5)
-    );
+
+  // 1. 尝试直接匹配行业名称
+  let model = industryModelsCache.get(industryName);
+
+  // 2. 如果没找到，尝试通过映射表查找聚类模型
+  if (!model && industryToModelMapCache[industryName]) {
+    const targetModelName = industryToModelMapCache[industryName];
+    model = industryModelsCache.get(targetModelName);
+    if (model) {
+      console.log(`[getIndustryModel] 行业 [${industryName}] 回退到聚类模型 [${targetModelName}]`);
+    }
   }
+
   return model || null;
 }
 

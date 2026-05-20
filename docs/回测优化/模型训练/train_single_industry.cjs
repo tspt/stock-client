@@ -93,14 +93,19 @@ async function trainIndustryModel(industryName, stocks, options = {}) {
       const searchResult = quickGridSearch(trainSamples);
       bestConfig = searchResult.bestConfig;
     } else {
+      // 优化搜索范围
       const searchResult = gridSearch(trainSamples, 3);
       bestConfig = searchResult.bestConfig;
     }
 
+    // 强制优化超参数，防止哑火
+    bestConfig.maxDepth = Math.max(bestConfig.maxDepth, 10);
+    bestConfig.minSamplesLeaf = Math.min(bestConfig.minSamplesLeaf, 5);
+
     // 步骤4: 使用最佳配置训练最终模型
     console.log('📝 步骤4: 训练最终模型...\n');
     const finalModel = new RandomForest({
-      nTrees: bestConfig.nTrees,
+      nTrees: Math.max(bestConfig.nTrees, 100), // 增加树的数量
       maxDepth: bestConfig.maxDepth,
       minSamplesSplit: 2,
       minSamplesLeaf: bestConfig.minSamplesLeaf,

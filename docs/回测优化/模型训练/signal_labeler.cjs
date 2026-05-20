@@ -40,15 +40,15 @@ function calculateFutureReturns(klineData, buyIndex) {
 function isGoodSignal(returns) {
   if (!returns) return false;
 
-  // 统计正收益的天数
+  // 至少两种收益为正且涨幅 > 1%
   let positiveCount = 0;
 
-  if (returns.day1 > 0) positiveCount++;
-  if (returns.day2 > 0) positiveCount++;
-  if (returns.day3 > 0) positiveCount++;
-  if (returns.day5 > 0) positiveCount++;
+  if (returns.day1 > 0.01) positiveCount++;
+  if (returns.day2 > 0.01) positiveCount++;
+  if (returns.day3 > 0.01) positiveCount++;
+  if (returns.day5 > 0.01) positiveCount++;
 
-  // 至少两种收益为正
+  // 至少两种收益满足标准
   return positiveCount >= 2;
 }
 
