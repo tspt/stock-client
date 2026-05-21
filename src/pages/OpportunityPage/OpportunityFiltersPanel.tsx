@@ -184,15 +184,16 @@ export function buildOpportunityFilterSummary(p: {
     parts.push(`概念${labels.join('、')}`);
   }
 
-  // 名称过滤汇总
+  // 名称过滤汇总（导出PNG时不显示排除列表，避免文本过长）
+  // 仅显示排除的数量，不显示具体名称
   if (p.excludedNameKeywords && p.excludedNameKeywords.length > 0) {
-    parts.push(`排除名称包含[${p.excludedNameKeywords.join('、')}]`);
+    parts.push(`排除名称包含[${p.excludedNameKeywords.length}个]`);
   }
   if (p.excludedExactNames && p.excludedExactNames.length > 0) {
-    parts.push(`排除股票[${p.excludedExactNames.join('、')}]`);
+    parts.push(`排除股票[${p.excludedExactNames.length}个]`);
   }
   if (p.excludedShortTermNames && p.excludedShortTermNames.length > 0) {
-    parts.push(`短期排除[${p.excludedShortTermNames.join('、')}]`);
+    parts.push(`短期排除[${p.excludedShortTermNames.length}个]`);
   }
 
   return parts.join(' · ');

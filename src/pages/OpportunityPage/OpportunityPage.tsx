@@ -318,7 +318,14 @@ export function OpportunityPage() {
 
   // AI版本切换时自动执行刷新（无分析数据时仅写入 store，供下次一键分析使用）
   const handleAiVersionChange = async (version: 'v1' | 'v2' | 'v3' | 'v4' | 'v5') => {
+    // 更新 store 并保存到 localStorage
     useOpportunityStore.setState({ analysisAiVersion: version });
+    try {
+      localStorage.setItem('opportunity_ai_version', version);
+    } catch (error) {
+      logger.error('保存AI版本失败:', error);
+    }
+
     if (analysisData.length === 0) {
       setAiVersion(version);
       message.info(`已选择 ${aiVersionLabel(version)}，请执行一键分析生效`);

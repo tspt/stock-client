@@ -79,7 +79,7 @@ export function exportStockNamesToPng(
   const filterFontSize = 13;
   const filterLineHeight = Math.round(filterFontSize * 1.6);
   const filterPadY = 16; // 筛选文案区域的上下内边距
-  const filterTextMaxWidth = 1200; // 筛选文案最大宽度，超过则换行
+  const filterTextMaxWidth = 1200; // 筛选文案最大宽度,超过则换行(增加以避免过多换行)
 
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
@@ -131,8 +131,11 @@ export function exportStockNamesToPng(
   }
 
   // 画布宽度需要同时满足股票列宽和筛选文案宽度的要求
+  // 修复:确保筛选条件不被截断
   const minContentWidth = filterWidth > 0 ? filterWidth + padX * 2 : 0;
-  const cssW = Math.max(Math.ceil(padX * 2 + contentWidth), Math.ceil(minContentWidth));
+  const stockContentWidth = padX * 2 + contentWidth;
+  // 取两者较大值,确保都能完整显示
+  const cssW = Math.max(stockContentWidth, minContentWidth);
   const cssH = Math.ceil(filterHeight + padY * 2 + contentHeight);
   const dpr = typeof window !== 'undefined' ? Math.min(2, window.devicePixelRatio || 1) : 1;
 

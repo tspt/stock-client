@@ -9,7 +9,8 @@
 /** 基础筛选默认配置 */
 export const OPPORTUNITY_DEFAULT_BASIC_FILTERS = {
   /** 选择市场（多选） */
-  selectedMarket: ['hs_main', 'sz_gem'] as const,
+  // selectedMarket: ['hs_main', 'sz_gem'] as const,
+  selectedMarket: ['hs_main'] as const,
   /** 股票名称类型 */
   nameType: 'non_st' as const,
   /** 价格 */
@@ -225,5 +226,23 @@ export const OPPORTUNITY_DEFAULT_NAME_FILTERS = {
     '力鼎光电',
     '星德胜',
     '明新旭腾',
+    '南矿集团',
+    '威星智能',
+    '国网信通',
+    '华立股份',
+    '新凤鸣',
+    '奥赛康',
+    '龙佰集团',
+    '新乡化纤',
+    '皇马科技',
+    '新华制药',
+    '珠海中富',
+    '建投能源',
+    '滨化股份',
+    '木林森',
+    '华金资本',
+    '青龙管业',
+    '东方明珠',
+    '维信诺',
   ],
 } as const;

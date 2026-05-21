@@ -602,6 +602,8 @@ export interface OpportunityAnalysisResult {
   failed: number;
   /** K线数据缓存（序列化后的数组格式：Array<[code, klineData]>） */
   klineDataCache?: Array<[string, KLineData[]]>;
+  /** AI分析版本 */
+  aiVersion?: 'v1' | 'v2' | 'v3' | 'v4' | 'v5';
 }
 
 /**

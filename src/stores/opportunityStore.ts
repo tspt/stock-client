@@ -30,6 +30,7 @@ function trimKlineDataCache(map: Map<string, KLineData[]>) {
 }
 
 const OPPORTUNITY_COLUMN_CONFIG_KEY = 'opportunity_column_config';
+const OPPORTUNITY_AI_VERSION_KEY = 'opportunity_ai_version';
 
 interface OpportunityState {
   analysisData: StockOpportunityData[];
@@ -119,7 +120,18 @@ export const useOpportunityStore = create<OpportunityState>((set, get) => ({
   cancelFn: null,
   klineDataCache: new Map(),
   analysisTimestamp: null,
-  analysisAiVersion: 'v1',
+  // 从 localStorage 读取保存的 AI 版本，默认为 v1
+  analysisAiVersion: (() => {
+    try {
+      const saved = localStorage.getItem(OPPORTUNITY_AI_VERSION_KEY);
+      if (saved && ['v1', 'v2', 'v3', 'v4', 'v5'].includes(saved)) {
+        return saved as 'v1' | 'v2' | 'v3' | 'v4' | 'v5';
+      }
+    } catch (error) {
+      logger.error('加载AI版本失败:', error);
+    }
+    return 'v1';
+  })(),
 
   startAnalysis: async (period, stocks, count, aiVersion) => {
     if (stocks.length === 0) {
@@ -184,6 +196,7 @@ export const useOpportunityStore = create<OpportunityState>((set, get) => ({
         success: results.filter((r) => !r.error).length,
         failed: results.filter((r) => r.error).length,
         klineDataCache: klineDataCacheArray,
+        aiVersion: ver, // 保存当前使用的AI版本
       };
 
       await saveOpportunityData(result);
@@ -319,6 +332,7 @@ export const useOpportunityStore = create<OpportunityState>((set, get) => ({
         success: results.filter((r) => !r.error).length,
         failed: mergedErrors.length,
         klineDataCache: klineDataCacheArray,
+        aiVersion: analysisAiVersion, // 保存当前使用的AI版本
       };
 
       await saveOpportunityData(result);
@@ -356,6 +370,7 @@ export const useOpportunityStore = create<OpportunityState>((set, get) => ({
           currentCount: cached.count,
           klineDataCache,
           analysisTimestamp: cached.timestamp || null,
+          analysisAiVersion: cached.aiVersion || 'v1', // 恢复AI版本
         });
       }
     } catch (error) {
