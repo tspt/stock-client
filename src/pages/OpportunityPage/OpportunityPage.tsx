@@ -3,7 +3,7 @@
  */
 
 import { useEffect, useState, useMemo, useRef, useCallback, useLayoutEffect } from 'react';
-import { Layout, Card, Button, Space, Progress, Select, Collapse, App, InputNumber, Dropdown, Alert, Tag, Tooltip, Badge, Popover, Checkbox } from 'antd';
+import { Layout, Card, Button, Space, Progress, Select, Collapse, App, InputNumber, Dropdown, Alert, Tag, Tooltip, Badge, Popover, Checkbox, Spin } from 'antd';
 import {
   RocketOutlined,
   StopOutlined,
@@ -312,16 +312,19 @@ export function OpportunityPage() {
   );
   const [showAddToWatchListModal, setShowAddToWatchListModal] = useState(false);
   const [aiRefreshLoading, setAiRefreshLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(false); // 初始数据加载状态
 
   const aiVersionLabel = (version: 'v1' | 'v2' | 'v3' | 'v4' | 'v5') =>
     version === 'v5' ? 'v5.0智能增强' : version === 'v3' ? 'v3.0增强版' : version === 'v2' ? 'v2.0优化版' : version === 'v4' ? 'v4.0结构增强' : 'v1.0原始版';
 
   // AI版本切换时自动执行刷新（无分析数据时仅写入 store，供下次一键分析使用）
   const handleAiVersionChange = async (version: 'v1' | 'v2' | 'v3' | 'v4' | 'v5') => {
+    logger.info(`[AI版本切换] 切换到 ${version}`);
     // 更新 store 并保存到 localStorage
     useOpportunityStore.setState({ analysisAiVersion: version });
     try {
       localStorage.setItem('opportunity_ai_version', version);
+      logger.info(`[AI版本切换] 已保存到 localStorage: ${version}`);
     } catch (error) {
       logger.error('保存AI版本失败:', error);
     }
@@ -410,8 +413,11 @@ export function OpportunityPage() {
 
       logger.info(`AI分析刷新完成：更新${updatedCount}只，跳过${skippedCount}只`);
 
-      // 更新store中的分析数据
-      useOpportunityStore.setState({ analysisData: updatedData });
+      // 更新store中的分析数据和AI版本
+      useOpportunityStore.setState({
+        analysisData: updatedData,
+        analysisAiVersion: version // 同步更新store中的AI版本
+      });
 
       // 更新版本状态
       setAiVersion(version);
@@ -528,8 +534,18 @@ export function OpportunityPage() {
   useEffect(() => {
     let cancelled = false;
     const hydrate = async () => {
+      // 检查是否有缓存数据，如果有则显示 loading
+      const stBefore = useOpportunityStore.getState();
+      if (stBefore.analysisData.length > 0) {
+        setInitialLoading(true);
+      }
+
       await loadCachedData();
-      if (cancelled) return;
+      if (cancelled) {
+        setInitialLoading(false);
+        return;
+      }
+
       const prefs = loadOpportunityFilterPrefs();
       if (prefs) {
         applyOpportunityFilterPrefsToState(prefs, {
@@ -588,6 +604,22 @@ export function OpportunityPage() {
           setExcludedShortTermNames,
         });
       }
+      // 同步 AI 版本：直接从 localStorage 读取，确保获取最新值
+      try {
+        const savedVersion = localStorage.getItem('opportunity_ai_version');
+        logger.info(`[页面加载] localStorage中的AI版本: ${savedVersion}`);
+        if (savedVersion && ['v1', 'v2', 'v3', 'v4', 'v5'].includes(savedVersion)) {
+          logger.info(`[页面加载] 设置组件状态为: ${savedVersion}`);
+          setAiVersion(savedVersion as 'v1' | 'v2' | 'v3' | 'v4' | 'v5');
+          // 同时更新 store 保持一致
+          useOpportunityStore.setState({ analysisAiVersion: savedVersion as 'v1' | 'v2' | 'v3' | 'v4' | 'v5' });
+          logger.info(`[页面加载] 已更新store的analysisAiVersion为: ${savedVersion}`);
+        } else {
+          logger.warn(`[页面加载] localStorage中没有有效的AI版本，使用默认值`);
+        }
+      } catch (error) {
+        logger.error('加载AI版本失败:', error);
+      }
       const st = useOpportunityStore.getState();
       if (st.analysisData.length === 0) {
         useOpportunityStore.setState({
@@ -597,6 +629,7 @@ export function OpportunityPage() {
       }
       // 标记恢复完成
       isRestoredRef.current = true;
+      setInitialLoading(false);
     };
     void hydrate();
     return () => {
@@ -1986,7 +2019,26 @@ export function OpportunityPage() {
 
         {/* 表格区域 */}
         {analysisData.length > 0 ? (
-          <Card className={styles.tableCard} ref={tableCardRef}>
+          <Card className={styles.tableCard} ref={tableCardRef} style={{ position: 'relative' }}>
+            {initialLoading && (
+              <div
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  background: 'rgba(255, 255, 255, 0.8)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  zIndex: 10,
+                  borderRadius: 8,
+                }}
+              >
+                <Spin tip="正在加载历史分析数据..." size="large" />
+              </div>
+            )}
             <OpportunityTable
               data={filteredAnalysisData as StockOpportunityData[]}
               columns={columnConfig}
