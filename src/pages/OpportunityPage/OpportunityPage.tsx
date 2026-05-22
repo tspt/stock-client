@@ -18,6 +18,7 @@ import {
   DatabaseOutlined,
 } from '@ant-design/icons';
 import { useOpportunityStore } from '@/stores/opportunityStore';
+import { useStockStore } from '@/stores/stockStore';
 import { apiCache } from '@/utils/storage/apiCache';
 import { clearStockHistory, clearOpportunityData } from '@/utils/storage/opportunityIndexedDB';
 import {
@@ -206,6 +207,13 @@ export function OpportunityPage() {
     resetColumnConfig,
   } = useOpportunityStore();
 
+  // 确保分组数据已加载（用于添加到自选股功能）
+  const { loadWatchList } = useStockStore();
+
+  useEffect(() => {
+    loadWatchList();
+  }, [loadWatchList]);
+
   const { allStocks } = useAllStocks();
 
   // 为每只股票计算交易信号
@@ -307,9 +315,7 @@ export function OpportunityPage() {
   const [errorExpanded, setErrorExpanded] = useState(false); // 失败详情展开状态
 
   // AI分析版本选择（切换时自动刷新）；与 store.analysisAiVersion 对齐供一键分析使用
-  const [aiVersion, setAiVersion] = useState<'v1' | 'v2' | 'v3' | 'v4' | 'v5'>(() =>
-    useOpportunityStore.getState().analysisAiVersion
-  );
+  const [aiVersion, setAiVersion] = useState<'v1' | 'v2' | 'v3' | 'v4' | 'v5'>('v5');
   const [showAddToWatchListModal, setShowAddToWatchListModal] = useState(false);
   const [aiRefreshLoading, setAiRefreshLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(false); // 初始数据加载状态
@@ -320,14 +326,8 @@ export function OpportunityPage() {
   // AI版本切换时自动执行刷新（无分析数据时仅写入 store，供下次一键分析使用）
   const handleAiVersionChange = async (version: 'v1' | 'v2' | 'v3' | 'v4' | 'v5') => {
     logger.info(`[AI版本切换] 切换到 ${version}`);
-    // 更新 store 并保存到 localStorage
+    setAiVersion(version);
     useOpportunityStore.setState({ analysisAiVersion: version });
-    try {
-      localStorage.setItem('opportunity_ai_version', version);
-      logger.info(`[AI版本切换] 已保存到 localStorage: ${version}`);
-    } catch (error) {
-      logger.error('保存AI版本失败:', error);
-    }
 
     if (analysisData.length === 0) {
       setAiVersion(version);
@@ -604,22 +604,8 @@ export function OpportunityPage() {
           setExcludedShortTermNames,
         });
       }
-      // 同步 AI 版本：直接从 localStorage 读取，确保获取最新值
-      try {
-        const savedVersion = localStorage.getItem('opportunity_ai_version');
-        logger.info(`[页面加载] localStorage中的AI版本: ${savedVersion}`);
-        if (savedVersion && ['v1', 'v2', 'v3', 'v4', 'v5'].includes(savedVersion)) {
-          logger.info(`[页面加载] 设置组件状态为: ${savedVersion}`);
-          setAiVersion(savedVersion as 'v1' | 'v2' | 'v3' | 'v4' | 'v5');
-          // 同时更新 store 保持一致
-          useOpportunityStore.setState({ analysisAiVersion: savedVersion as 'v1' | 'v2' | 'v3' | 'v4' | 'v5' });
-          logger.info(`[页面加载] 已更新store的analysisAiVersion为: ${savedVersion}`);
-        } else {
-          logger.warn(`[页面加载] localStorage中没有有效的AI版本，使用默认值`);
-        }
-      } catch (error) {
-        logger.error('加载AI版本失败:', error);
-      }
+      // AI 版本使用系统默认值 v5
+      useOpportunityStore.setState({ analysisAiVersion: 'v5' });
       const st = useOpportunityStore.getState();
       if (st.analysisData.length === 0) {
         useOpportunityStore.setState({
@@ -1642,6 +1628,7 @@ export function OpportunityPage() {
             ]}
             disabled={loading || aiRefreshLoading}
             title="切换AI分析算法版本（自动刷新）"
+            data-testid="ai-version-select"
           />
           <Dropdown
             menu={{
@@ -2019,7 +2006,16 @@ export function OpportunityPage() {
 
         {/* 表格区域 */}
         {analysisData.length > 0 ? (
-          <Card className={styles.tableCard} ref={tableCardRef} style={{ position: 'relative' }}>
+          <Card
+            className={styles.tableCard}
+            ref={tableCardRef}
+            style={{ position: 'relative' }}
+            title={
+              <Space>
+                <span>分析结果</span>
+              </Space>
+            }
+          >
             {initialLoading && (
               <div
                 style={{

@@ -35,7 +35,7 @@ export function AddStocksToWatchListModal({
   stocks,
   onClose,
 }: AddStocksToWatchListModalProps) {
-  const { addStock, groups } = useStockStore();
+  const { addStock, addStockToGroups, groups } = useStockStore();
   const [selectedCodes, setSelectedCodes] = useState<Set<string>>(new Set());
   const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>([]);
 
@@ -84,6 +84,11 @@ export function AddStocksToWatchListModal({
 
     // 批量添加股票
     const selectedStocks = stocks.filter(s => selectedCodes.has(s.code));
+    const { watchList } = useStockStore.getState(); // 获取当前自选股列表
+
+    let addedCount = 0;
+    let updatedCount = 0;
+
     selectedStocks.forEach(stock => {
       // 根据代码前缀判断市场
       const market = stock.code.startsWith('SH') ? 'SH' : 'SZ';
@@ -92,10 +97,32 @@ export function AddStocksToWatchListModal({
         name: stock.name,
         market,
       };
-      addStock(stockInfo, selectedGroupIds);
+
+      // 检查股票是否已存在
+      const existingStock = watchList.find(s => s.code === stock.code);
+
+      if (existingStock) {
+        // 股票已存在，更新分组（合并现有分组和新选择的分组）
+        const currentGroupIds = existingStock.groupIds || [];
+        const mergedGroupIds = [...new Set([...currentGroupIds, ...selectedGroupIds])];
+        addStockToGroups(stock.code, mergedGroupIds);
+        updatedCount++;
+      } else {
+        // 股票不存在，添加新股票
+        addStock(stockInfo, selectedGroupIds);
+        addedCount++;
+      }
     });
 
-    message.success(`成功添加 ${selectedStocks.length} 只股票到自选股`);
+    // 显示成功消息
+    const messages = [];
+    if (addedCount > 0) {
+      messages.push(`新增 ${addedCount} 只股票`);
+    }
+    if (updatedCount > 0) {
+      messages.push(`更新 ${updatedCount} 只股票的分组`);
+    }
+    message.success(messages.join('，'));
 
     // 重置状态并关闭弹窗
     setSelectedCodes(new Set());

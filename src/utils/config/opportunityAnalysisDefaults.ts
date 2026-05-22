@@ -9,8 +9,7 @@
 /** 基础筛选默认配置 */
 export const OPPORTUNITY_DEFAULT_BASIC_FILTERS = {
   /** 选择市场（多选） */
-  // selectedMarket: ['hs_main', 'sz_gem'] as const,
-  selectedMarket: ['hs_main'] as const,
+  selectedMarket: ['hs_main', 'sz_gem'] as const,
   /** 股票名称类型 */
   nameType: 'non_st' as const,
   /** 价格 */
