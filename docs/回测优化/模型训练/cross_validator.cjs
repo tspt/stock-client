@@ -193,6 +193,43 @@ function evaluateModel(model, X, y) {
 }
 
 /**
+ * 平衡采样：对负样本进行欠采样，使正负样本比例更平衡 (1:1)
+ * @param {Array} X - 特征矩阵
+ * @param {Array} y - 标签数组
+ * @returns {Object} 包含平衡后的X和y
+ */
+function balanceData(X, y) {
+  const posIndices = y.map((label, i) => (label === 1 ? i : -1)).filter((i) => i !== -1);
+  const negIndices = y.map((label, i) => (label === 0 ? i : -1)).filter((i) => i !== -1);
+
+  if (posIndices.length === 0 || negIndices.length <= posIndices.length) {
+    return { X, y };
+  }
+
+  // 随机打乱负样本索引
+  const shuffledNeg = [...negIndices];
+  for (let i = shuffledNeg.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffledNeg[i], shuffledNeg[j]] = [shuffledNeg[j], shuffledNeg[i]];
+  }
+
+  // 选取 1 倍于正样本数量的负样本
+  const selectedNegIndices = shuffledNeg.slice(0, posIndices.length);
+  const combinedIndices = [...posIndices, ...selectedNegIndices];
+
+  // 再次打乱组合后的索引
+  for (let i = combinedIndices.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [combinedIndices[i], combinedIndices[j]] = [combinedIndices[j], combinedIndices[i]];
+  }
+
+  return {
+    X: combinedIndices.map((i) => X[i]),
+    y: combinedIndices.map((i) => y[i]),
+  };
+}
+
+/**
  * 执行时间序列交叉验证
  * @param {Object} modelClass - 模型类
  * @param {Array} samples - 样本数组（已按时间排序）
@@ -217,12 +254,17 @@ function crossValidate(modelClass, samples, modelParams = {}, nSplits = 5) {
     console.log(`  Fold ${i + 1}/${splits.length}:`);
 
     // 准备训练和测试数据
-    const trainX = split.trainIndices.map((idx) => X[idx]);
-    const trainY = split.trainIndices.map((idx) => y[idx]);
+    let trainX = split.trainIndices.map((idx) => X[idx]);
+    let trainY = split.trainIndices.map((idx) => y[idx]);
     const testX = split.testIndices.map((idx) => X[idx]);
     const testY = split.testIndices.map((idx) => y[idx]);
 
-    console.log(`    训练集: ${trainX.length} 样本, 测试集: ${testX.length} 样本`);
+    // 对训练集进行平衡采样，确保模型能学到正样本特征
+    const balanced = balanceData(trainX, trainY);
+    trainX = balanced.X;
+    trainY = balanced.y;
+
+    console.log(`    训练集: ${trainX.length} 样本 (平衡后), 测试集: ${testX.length} 样本`);
 
     // 训练模型
     const model = new modelClass(modelParams);

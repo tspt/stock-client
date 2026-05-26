@@ -1,17 +1,17 @@
 /**
- * ML买点识别模型 - v5.0 完整版（28个特征）
+ * ML买点识别模型 - v5.0 完整版（32个特征）
  *
  * 基于随机森林的买点识别模型（分行业）
- * 训练时间: 2026-05-19
+ * 训练时间: 2026-05-23
  *
  * 模型特点:
  *   - 69个行业独立模型
  *   - 随机森林算法（多树投票）
- *   - 28个技术特征（完整版本）
- *   - 信号定义：买入后1/2/3/5日至少两种收益为正
+ *   - 32个技术特征（完整版本，包含当日形态特征）
+ *   - 信号定义：买入后1/2/3/5日至少两种涨幅大于2%
  *
  * 使用说明:
- *   - 此文件为v5.0完整版本，包含所有28个特征的计算
+ *   - 此文件为v5.0完整版本，包含所有32个特征的计算
  *   - 如需切换版本，修改导入路径即可
  */
 
@@ -23,10 +23,10 @@ import type { LoadedIndustryModel } from '@/types/industryModel';
 export const MODEL_METADATA = {
   version: 'v5.0-rf-full',
   algorithm: 'RandomForest',
-  trainingDate: '2026-05-19',
-  featureCount: 28,
+  trainingDate: '2026-05-23',
+  featureCount: 32,
   industries: 69,
-  signalDefinition: '买入后1/2/3/5日至少两种收益为正',
+  signalDefinition: '买入后1/2/3/5日至少两种涨幅大于2%',
 };
 
 // ==================== 决策树类型定义 ====================
@@ -63,7 +63,7 @@ interface RandomForestModel {
   };
 }
 
-// ==================== 特征名称映射（28个特征）====================
+// ==================== 特征名称映射（32个特征）====================
 
 const FEATURE_NAMES = [
   // A. 价格动量特征（8个）
@@ -93,7 +93,7 @@ const FEATURE_NAMES = [
   'up_vol_ratio', // 19: 上涨日成交量占比
   'money_flow_proxy', // 20: 资金流向代理
 
-  // D. 技术形态特征（7个）
+  // D. 技术形态特征（11个）
   'body_size', // 21: K线实体大小
   'upper_shadow', // 22: 上影线比例
   'lower_shadow', // 23: 下影线比例
@@ -101,6 +101,16 @@ const FEATURE_NAMES = [
   'consecutive_down', // 25: 连续下跌天数
   'rsi_14', // 26: RSI(14)
   'macd_histogram', // 27: MACD柱状图值
+  'day0_return', // 28: 当日涨跌幅 (特征化过滤)
+  'day0_lower_shadow_ratio', // 29: 当日下影线占比 (特征化过滤)
+  'day0_upper_shadow_ratio', // 30: 当日上影线占比
+  'day0_body_ratio', // 31: 当日实体占比
+
+  // E. 强逻辑特征（4个）
+  'vol_breakout', // 32: 放量突破
+  'bullish_alignment', // 33: 均线多头排列
+  'low_vol_pullback', // 34: 缩量回踩
+  'relative_strength_proxy', // 35: 相对强度代理
 ];
 
 // ==================== 辅助函数 ====================
@@ -479,6 +489,57 @@ function calculateFeatures(klineData: KLineData[], index: number): number[] | nu
   const macd_histogram = calculateMACDHistogram(slice) || 0;
   features.push(macd_histogram / close); // 归一化
 
+  // 28: 当日涨跌幅 (特征化过滤)
+  const day0_return = (close - open) / open;
+  features.push(day0_return);
+
+  // 29: 当日下影线占比 (特征化过滤)
+  const day0_lower_shadow = Math.min(open, close) - low;
+  const day0_range = high - low;
+  const day0_lower_shadow_ratio = day0_range > 0 ? day0_lower_shadow / day0_range : 0;
+  features.push(day0_lower_shadow_ratio);
+
+  // 30: 当日上影线占比
+  const day0_upper_shadow = high - Math.max(open, close);
+  const day0_upper_shadow_ratio = day0_range > 0 ? day0_upper_shadow / day0_range : 0;
+  features.push(day0_upper_shadow_ratio);
+
+  // 31: 当日实体占比
+  const day0_body = Math.abs(close - open);
+  const day0_body_ratio = day0_range > 0 ? day0_body / day0_range : 0;
+  features.push(day0_body_ratio);
+
+  // ==================== E. 强逻辑特征（4个）====================
+
+  // 32: 放量突破 (当日成交量 / 过去10日最大成交量)
+  const maxVol10 =
+    slice.length >= 11
+      ? Math.max(...slice.slice(-11, -1).map((k) => k.volume))
+      : volume;
+  const vol_breakout = maxVol10 > 0 ? volume / maxVol10 : 1;
+  features.push(vol_breakout);
+
+  // 33: 均线多头排列 (MA5 > MA10 > MA20)
+  const ma10 = calculateMA(slice, 10);
+  const bullish_alignment = ma5 && ma10 && ma20 && ma5 > ma10 && ma10 > ma20 ? 1 : 0;
+  features.push(bullish_alignment);
+
+  // 34: 缩量回踩 (当日成交量 / 5日均量 < 0.6 且涨跌幅在 [-1%, 1%] 之间)
+  const is_low_vol = avgVol5 > 0 && volume / avgVol5 < 0.6;
+  const is_flat_price = Math.abs(day0_return) < 0.01;
+  const low_vol_pullback = is_low_vol && is_flat_price ? 1 : 0;
+  features.push(low_vol_pullback);
+
+  // 35: 相对强度代理 (10日收益率 / 20日波动率)
+  const return_10d_val = features[3]; // return_10d
+  const returns_20d = slice
+    .slice(-21)
+    .slice(0, -1)
+    .map((k, i, arr) => (i > 0 ? (k.close - arr[i - 1].close) / arr[i - 1].close : 0));
+  const vol_20d = calculateStd(returns_20d) * Math.sqrt(252);
+  const relative_strength_proxy = vol_20d > 0 ? return_10d_val / vol_20d : 0;
+  features.push(relative_strength_proxy);
+
   return features;
 }
 
@@ -489,7 +550,7 @@ function calculateFeatures(klineData: KLineData[], index: number): number[] | nu
  */
 function predictWithTree(features: number[], node: DecisionTreeNode): number {
   // 如果是叶子节点，返回预测结果
-  if (node.prediction !== undefined) {
+  if (node.prediction !== undefined && node.prediction !== null) {
     return node.prediction;
   }
 
@@ -532,7 +593,8 @@ export function setIndustryModels(
   models.forEach((model) => {
     const trees = model.modelData?.trees;
     if (trees && Array.isArray(trees) && trees.length > 0) {
-      industryModelsCache.set(model.industryName, trees);
+      const actualTrees = trees.map((t: any) => t.tree || t);
+      industryModelsCache.set(model.industryName, actualTrees);
       loadedCount++;
     }
   });
@@ -625,8 +687,48 @@ export function predictBuyPoint(
       );
     }
 
-    // 多数投票决定结果
-    return positiveVotes > negativeVotes;
+    // 多数投票决定结果（引入 75% 置信度阈值）
+    const confidenceThreshold = 0.75;
+    const isModelBuy = positiveVotes / industryTrees.length >= confidenceThreshold;
+
+    if (isModelBuy) {
+      const current = klineData[index];
+      const open = current.open;
+      const close = current.close;
+      const low = current.low;
+      const high = current.high;
+
+      // --- 硬性物理过滤 (一票否决制) ---
+
+      // 1. 当日跌幅 > 3% (即 (close - open) / open < -0.03)，视为未企稳
+      const day_return = (close - open) / open;
+      if (day_return < -0.03) {
+        return false;
+      }
+
+      // 2. 处于 60 日高位向下回撤超过 15% 的过程中不买 (防止接飞刀)
+      const lookback60 = klineData.slice(Math.max(0, index - 60), index + 1);
+      const highest60 = Math.max(...lookback60.map((k) => k.high));
+      if (highest60 > 0 && (close - highest60) / highest60 < -0.15) {
+        // 如果没有明显的放量拐点（当日成交量未达到5日均量的1.5倍），则过滤
+        const avgVol5 =
+          klineData.slice(Math.max(0, index - 5), index).reduce((s, k) => s + k.volume, 0) / 5;
+        if (current.volume < avgVol5 * 1.5) {
+          return false;
+        }
+      }
+
+      // 3. 秃头阴线过滤 (下影线占比过低)
+      if (close < open) {
+        const entity = open - close;
+        const lowerShadow = close - low;
+        if (lowerShadow < entity * 0.15) {
+          return false;
+        }
+      }
+    }
+
+    return isModelBuy;
   }
 
   // 没有行业模型时返回false

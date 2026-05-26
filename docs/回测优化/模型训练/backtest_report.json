@@ -1,0 +1,426 @@
+{
+  "generatedAt": "2026-05-23T12:01:23.598Z",
+  "totalIndustries": 28,
+  "results": [
+    {
+      "industryName": "电力环保",
+      "stockCount": 105,
+      "totalSignals": 573,
+      "goodSignals": 553,
+      "overallWinRate": 0.9650959860383944,
+      "avgWinRate": 0.8725415721844292,
+      "avgReturns": {
+        "day1": 0.029676759204902755,
+        "day2": 0.056577285560271355,
+        "day3": 0.06478834722711099,
+        "day5": 0.078670182574111
+      },
+      "avgMaxDrawdown": -0.02910510909797391
+    },
+    {
+      "industryName": "光学光电子",
+      "stockCount": 74,
+      "totalSignals": 907,
+      "goodSignals": 861,
+      "overallWinRate": 0.9492833517089305,
+      "avgWinRate": 0.9470953204514247,
+      "avgReturns": {
+        "day1": 0.027535822839139742,
+        "day2": 0.05132767210777593,
+        "day3": 0.06109394440563524,
+        "day5": 0.07053326563960388
+      },
+      "avgMaxDrawdown": -0.042664532263904806
+    },
+    {
+      "industryName": "金融建筑",
+      "stockCount": 164,
+      "totalSignals": 870,
+      "goodSignals": 763,
+      "overallWinRate": 0.8770114942528736,
+      "avgWinRate": 0.8141560685050638,
+      "avgReturns": {
+        "day1": 0.028660142084623193,
+        "day2": 0.04995271151574859,
+        "day3": 0.055865151738480785,
+        "day5": 0.062203146984526905
+      },
+      "avgMaxDrawdown": -0.04963121503688913
+    },
+    {
+      "industryName": "汽车零部件",
+      "stockCount": 205,
+      "totalSignals": 1208,
+      "goodSignals": 1104,
+      "overallWinRate": 0.9139072847682119,
+      "avgWinRate": 0.9034590477273406,
+      "avgReturns": {
+        "day1": 0.027118239806758503,
+        "day2": 0.047271508124658995,
+        "day3": 0.05730331977476283,
+        "day5": 0.06431454897944162
+      },
+      "avgMaxDrawdown": -0.031136941187145096
+    },
+    {
+      "industryName": "其他行业",
+      "stockCount": 160,
+      "totalSignals": 1530,
+      "goodSignals": 1363,
+      "overallWinRate": 0.8908496732026144,
+      "avgWinRate": 0.875901327962328,
+      "avgReturns": {
+        "day1": 0.024740951862964954,
+        "day2": 0.04653259514175107,
+        "day3": 0.05435019579268816,
+        "day5": 0.06277404649317299
+      },
+      "avgMaxDrawdown": -0.04862610245313758
+    },
+    {
+      "industryName": "半导体",
+      "stockCount": 52,
+      "totalSignals": 795,
+      "goodSignals": 762,
+      "overallWinRate": 0.9584905660377359,
+      "avgWinRate": 0.9517197248651167,
+      "avgReturns": {
+        "day1": 0.04040685380725918,
+        "day2": 0.06556707691669846,
+        "day3": 0.07711131040624909,
+        "day5": 0.08775071523263472
+      },
+      "avgMaxDrawdown": -0.04842467206082101
+    },
+    {
+      "industryName": "化学制药",
+      "stockCount": 111,
+      "totalSignals": 455,
+      "goodSignals": 435,
+      "overallWinRate": 0.9560439560439561,
+      "avgWinRate": 0.8933290433290433,
+      "avgReturns": {
+        "day1": 0.027984479243290047,
+        "day2": 0.044628502475826136,
+        "day3": 0.05599480747994801,
+        "day5": 0.07955041237618253
+      },
+      "avgMaxDrawdown": -0.012476516225117204
+    },
+    {
+      "industryName": "专用设备",
+      "stockCount": 139,
+      "totalSignals": 804,
+      "goodSignals": 739,
+      "overallWinRate": 0.9191542288557214,
+      "avgWinRate": 0.8806253897980517,
+      "avgReturns": {
+        "day1": 0.031677742131365115,
+        "day2": 0.05490853576586714,
+        "day3": 0.06307806762034227,
+        "day5": 0.06534671922932127
+      },
+      "avgMaxDrawdown": -0.03735536524490629
+    },
+    {
+      "industryName": "中游制造",
+      "stockCount": 235,
+      "totalSignals": 1197,
+      "goodSignals": 1101,
+      "overallWinRate": 0.9197994987468672,
+      "avgWinRate": 0.9041309990246164,
+      "avgReturns": {
+        "day1": 0.029904347429211595,
+        "day2": 0.05581466184904804,
+        "day3": 0.06151149689665814,
+        "day5": 0.06972893996557247
+      },
+      "avgMaxDrawdown": -0.030183280161003405
+    },
+    {
+      "industryName": "化学制品",
+      "stockCount": 136,
+      "totalSignals": 574,
+      "goodSignals": 543,
+      "overallWinRate": 0.945993031358885,
+      "avgWinRate": 0.9076797385620914,
+      "avgReturns": {
+        "day1": 0.027664389144693494,
+        "day2": 0.04734565794596004,
+        "day3": 0.055492983096686876,
+        "day5": 0.06907655035266118
+      },
+      "avgMaxDrawdown": -0.016342696205595385
+    },
+    {
+      "industryName": "消费服务",
+      "stockCount": 161,
+      "totalSignals": 778,
+      "goodSignals": 730,
+      "overallWinRate": 0.9383033419023136,
+      "avgWinRate": 0.8139015918519025,
+      "avgReturns": {
+        "day1": 0.026320844351764808,
+        "day2": 0.04916799821348792,
+        "day3": 0.057014102158474037,
+        "day5": 0.06372993725260616
+      },
+      "avgMaxDrawdown": -0.03205663130624185
+    },
+    {
+      "industryName": "软件开发",
+      "stockCount": 84,
+      "totalSignals": 918,
+      "goodSignals": 873,
+      "overallWinRate": 0.9509803921568627,
+      "avgWinRate": 0.9487651328522889,
+      "avgReturns": {
+        "day1": 0.035174155888697156,
+        "day2": 0.06300225438885976,
+        "day3": 0.07184744040756573,
+        "day5": 0.07501535147625958
+      },
+      "avgMaxDrawdown": -0.045659068819609225
+    },
+    {
+      "industryName": "塑料",
+      "stockCount": 60,
+      "totalSignals": 555,
+      "goodSignals": 516,
+      "overallWinRate": 0.9297297297297298,
+      "avgWinRate": 0.9312795075295075,
+      "avgReturns": {
+        "day1": 0.0295574392141058,
+        "day2": 0.05218791055664437,
+        "day3": 0.06256323376446998,
+        "day5": 0.07169933878988825
+      },
+      "avgMaxDrawdown": -0.04743738852113458
+    },
+    {
+      "industryName": "通用设备",
+      "stockCount": 175,
+      "totalSignals": 1202,
+      "goodSignals": 1095,
+      "overallWinRate": 0.910981697171381,
+      "avgWinRate": 0.9088440454331651,
+      "avgReturns": {
+        "day1": 0.02963193130662395,
+        "day2": 0.05126059766958837,
+        "day3": 0.05817615145461245,
+        "day5": 0.06543845004654375
+      },
+      "avgMaxDrawdown": -0.04477561181367841
+    },
+    {
+      "industryName": "电网设备",
+      "stockCount": 108,
+      "totalSignals": 850,
+      "goodSignals": 797,
+      "overallWinRate": 0.9376470588235294,
+      "avgWinRate": 0.8905749358363735,
+      "avgReturns": {
+        "day1": 0.023740844495316746,
+        "day2": 0.04706451743786263,
+        "day3": 0.052037477712989506,
+        "day5": 0.056147722858009695
+      },
+      "avgMaxDrawdown": -0.03787690103861659
+    },
+    {
+      "industryName": "TMT科技",
+      "stockCount": 84,
+      "totalSignals": 605,
+      "goodSignals": 583,
+      "overallWinRate": 0.9636363636363636,
+      "avgWinRate": 0.9546811653954511,
+      "avgReturns": {
+        "day1": 0.0289703635340997,
+        "day2": 0.05688537445937716,
+        "day3": 0.0681283652633747,
+        "day5": 0.07867672485931972
+      },
+      "avgMaxDrawdown": -0.029791265222208804
+    },
+    {
+      "industryName": "消费电子",
+      "stockCount": 75,
+      "totalSignals": 934,
+      "goodSignals": 898,
+      "overallWinRate": 0.961456102783726,
+      "avgWinRate": 0.9598516478361677,
+      "avgReturns": {
+        "day1": 0.02909034959386395,
+        "day2": 0.05093189973850565,
+        "day3": 0.06232128371312675,
+        "day5": 0.07181125048152795
+      },
+      "avgMaxDrawdown": -0.046679728316271166
+    },
+    {
+      "industryName": "IT服务Ⅱ",
+      "stockCount": 87,
+      "totalSignals": 930,
+      "goodSignals": 881,
+      "overallWinRate": 0.9473118279569892,
+      "avgWinRate": 0.9379643734733409,
+      "avgReturns": {
+        "day1": 0.030684739445315773,
+        "day2": 0.0572047898098492,
+        "day3": 0.07037796808168646,
+        "day5": 0.0736060706410327
+      },
+      "avgMaxDrawdown": -0.05274792784268822
+    },
+    {
+      "industryName": "电池",
+      "stockCount": 66,
+      "totalSignals": 603,
+      "goodSignals": 576,
+      "overallWinRate": 0.9552238805970149,
+      "avgWinRate": 0.9590746399569928,
+      "avgReturns": {
+        "day1": 0.027645736775733527,
+        "day2": 0.05199803948577572,
+        "day3": 0.06554476637939072,
+        "day5": 0.07614737278569494
+      },
+      "avgMaxDrawdown": -0.03056337921235443
+    },
+    {
+      "industryName": "通信设备",
+      "stockCount": 68,
+      "totalSignals": 1287,
+      "goodSignals": 1193,
+      "overallWinRate": 0.9269619269619269,
+      "avgWinRate": 0.9108380060429009,
+      "avgReturns": {
+        "day1": 0.028179039993960035,
+        "day2": 0.052784645603211666,
+        "day3": 0.06267515673783237,
+        "day5": 0.07091518128907867
+      },
+      "avgMaxDrawdown": -0.0771515252183411
+    },
+    {
+      "industryName": "计算机设备",
+      "stockCount": 69,
+      "totalSignals": 810,
+      "goodSignals": 763,
+      "overallWinRate": 0.9419753086419753,
+      "avgWinRate": 0.9370086063012429,
+      "avgReturns": {
+        "day1": 0.030615857761879157,
+        "day2": 0.056567873561973694,
+        "day3": 0.06545505194110682,
+        "day5": 0.06743930051632571
+      },
+      "avgMaxDrawdown": -0.04164872329094954
+    },
+    {
+      "industryName": "工业金属",
+      "stockCount": 56,
+      "totalSignals": 345,
+      "goodSignals": 334,
+      "overallWinRate": 0.9681159420289855,
+      "avgWinRate": 0.949234693877551,
+      "avgReturns": {
+        "day1": 0.02924687263284667,
+        "day2": 0.049737889442137535,
+        "day3": 0.05634492673141124,
+        "day5": 0.07031542058024168
+      },
+      "avgMaxDrawdown": -0.026997249687397286
+    },
+    {
+      "industryName": "能源材料",
+      "stockCount": 84,
+      "totalSignals": 578,
+      "goodSignals": 531,
+      "overallWinRate": 0.9186851211072664,
+      "avgWinRate": 0.8829017212945783,
+      "avgReturns": {
+        "day1": 0.029068704271330043,
+        "day2": 0.04590060589978216,
+        "day3": 0.05162972456330164,
+        "day5": 0.06184246343866198
+      },
+      "avgMaxDrawdown": -0.034447009925750414
+    },
+    {
+      "industryName": "自动化设备",
+      "stockCount": 50,
+      "totalSignals": 569,
+      "goodSignals": 544,
+      "overallWinRate": 0.9560632688927944,
+      "avgWinRate": 0.9527280701754381,
+      "avgReturns": {
+        "day1": 0.02823150975780877,
+        "day2": 0.050295337537789225,
+        "day3": 0.06309378624444179,
+        "day5": 0.07282629758982118
+      },
+      "avgMaxDrawdown": -0.03810539953037483
+    },
+    {
+      "industryName": "化学原料",
+      "stockCount": 55,
+      "totalSignals": 273,
+      "goodSignals": 265,
+      "overallWinRate": 0.9706959706959707,
+      "avgWinRate": 0.9172077922077921,
+      "avgReturns": {
+        "day1": 0.031074934242483337,
+        "day2": 0.0491940146123391,
+        "day3": 0.06002472897174832,
+        "day5": 0.07345786115260826
+      },
+      "avgMaxDrawdown": -0.03294856240240196
+    },
+    {
+      "industryName": "电力",
+      "stockCount": 105,
+      "totalSignals": 189,
+      "goodSignals": 176,
+      "overallWinRate": 0.9312169312169312,
+      "avgWinRate": 0.5771164021164021,
+      "avgReturns": {
+        "day1": 0.02452188377873104,
+        "day2": 0.03600051433804209,
+        "day3": 0.039793140529220596,
+        "day5": 0.03520954150023438
+      },
+      "avgMaxDrawdown": -0.02731919895897257
+    },
+    {
+      "industryName": "环境治理",
+      "stockCount": 85,
+      "totalSignals": 377,
+      "goodSignals": 362,
+      "overallWinRate": 0.9602122015915119,
+      "avgWinRate": 0.8786335559864973,
+      "avgReturns": {
+        "day1": 0.03003716798412381,
+        "day2": 0.05261611525938239,
+        "day3": 0.05675957725510858,
+        "day5": 0.06076637323284328
+      },
+      "avgMaxDrawdown": -0.016791980388310215
+    },
+    {
+      "industryName": "农化制品",
+      "stockCount": 55,
+      "totalSignals": 262,
+      "goodSignals": 250,
+      "overallWinRate": 0.9541984732824428,
+      "avgWinRate": 0.9073593073593073,
+      "avgReturns": {
+        "day1": 0.030688760933199163,
+        "day2": 0.04654857927815568,
+        "day3": 0.049865241624178935,
+        "day5": 0.0674685948312288
+      },
+      "avgMaxDrawdown": -0.03145388008835459
+    }
+  ]
+}

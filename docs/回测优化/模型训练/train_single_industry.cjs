@@ -99,8 +99,8 @@ async function trainIndustryModel(industryName, stocks, options = {}) {
     }
 
     // 强制优化超参数，防止哑火
-    bestConfig.maxDepth = Math.max(bestConfig.maxDepth, 10);
-    bestConfig.minSamplesLeaf = Math.min(bestConfig.minSamplesLeaf, 5);
+    bestConfig.maxDepth = Math.max(bestConfig.maxDepth, 15);
+    bestConfig.minSamplesLeaf = Math.min(bestConfig.minSamplesLeaf, 2);
 
     // 步骤4: 使用最佳配置训练最终模型
     console.log('📝 步骤4: 训练最终模型...\n');
@@ -118,7 +118,40 @@ async function trainIndustryModel(industryName, stocks, options = {}) {
     const trainX = trainSamples.map((s) => s.features);
     const trainY = trainSamples.map((s) => s.label);
 
-    finalModel.fit(trainX, trainY);
+    // 平衡采样：对负样本进行欠采样，使正负样本比例更平衡 (1:1)
+    const posIndices = trainY.map((y, i) => y === 1 ? i : -1).filter(i => i !== -1);
+    const negIndices = trainY.map((y, i) => y === 0 ? i : -1).filter(i => i !== -1);
+    
+    console.log(`⚖️  平衡采样前: 正样本=${posIndices.length}, 负样本=${negIndices.length}`);
+    
+    let balancedX, balancedY;
+    if (posIndices.length > 0 && negIndices.length > posIndices.length) {
+      // 随机打乱负样本索引
+      for (let i = negIndices.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [negIndices[i], negIndices[j]] = [negIndices[j], negIndices[i]];
+      }
+      
+      // 选取 1 倍于正样本数量的负样本
+      const selectedNegIndices = negIndices.slice(0, posIndices.length);
+      const combinedIndices = [...posIndices, ...selectedNegIndices];
+      
+      // 再次打乱组合后的索引
+      for (let i = combinedIndices.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [combinedIndices[i], combinedIndices[j]] = [combinedIndices[j], combinedIndices[i]];
+      }
+      
+      balancedX = combinedIndices.map(i => trainX[i]);
+      balancedY = combinedIndices.map(i => trainY[i]);
+      console.log(`⚖️  平衡采样后: 正样本=${posIndices.length}, 负样本=${selectedNegIndices.length}`);
+    } else {
+      balancedX = trainX;
+      balancedY = trainY;
+      console.log(`⚖️  无需平衡采样或正样本为0`);
+    }
+
+    finalModel.fit(balancedX, balancedY);
 
     // 步骤5: 评估模型
     console.log('\n📝 步骤5: 评估模型性能...\n');

@@ -306,7 +306,7 @@ function calculateFeaturesAt(klineData, index) {
     }, 0) / 10;
   features.push(money_flow_proxy);
 
-  // ==================== D. 技术形态特征（7个）====================
+  // ==================== D. 技术形态特征（11个）====================
 
   // 22. K线实体大小 abs(close-open)/close
   const body_size = close > 0 ? Math.abs(close - current.open) / close : 0;
@@ -349,6 +349,50 @@ function calculateFeaturesAt(klineData, index) {
   // 28. MACD柱状图值
   const macd_histogram = calculateMACDHistogram(prices) || 0;
   features.push(macd_histogram / close); // 归一化
+
+  // 29. 当日涨跌幅 (特征化过滤)
+  const day0_return = (close - current.open) / current.open;
+  features.push(day0_return);
+
+  // 30. 当日下影线占比 (特征化过滤)
+  const day0_lower_shadow = Math.min(current.open, close) - current.low;
+  const day0_range = current.high - current.low;
+  const day0_lower_shadow_ratio = day0_range > 0 ? day0_lower_shadow / day0_range : 0;
+  features.push(day0_lower_shadow_ratio);
+
+  // 31. 当日上影线占比
+  const day0_upper_shadow = current.high - Math.max(current.open, close);
+  const day0_upper_shadow_ratio = day0_range > 0 ? day0_upper_shadow / day0_range : 0;
+  features.push(day0_upper_shadow_ratio);
+
+  // 32. 当日实体占比
+  const day0_body = Math.abs(close - current.open);
+  const day0_body_ratio = day0_range > 0 ? day0_body / day0_range : 0;
+  features.push(day0_body_ratio);
+
+  // ==================== E. 强逻辑特征（4个）====================
+
+  // 33. 放量突破 (当日成交量 / 过去10日最大成交量)
+  const maxVol10 = index >= 10 ? Math.max(...slice.slice(-11, -1).map((k) => k.volume)) : volume;
+  const vol_breakout = maxVol10 > 0 ? volume / maxVol10 : 1;
+  features.push(vol_breakout);
+
+  // 34. 均线多头排列 (MA5 > MA10 > MA20)
+  const ma10 = calculateMA(prices, 10);
+  const bullish_alignment = ma5 && ma10 && ma20 && ma5 > ma10 && ma10 > ma20 ? 1 : 0;
+  features.push(bullish_alignment);
+
+  // 35. 缩量回踩 (当日成交量 / 5日均量 < 0.6 且涨跌幅在 [-1%, 1%] 之间)
+  const is_low_vol = avgVol5 > 0 && volume / avgVol5 < 0.6;
+  const is_flat_price = Math.abs(day0_return) < 0.01;
+  const low_vol_pullback = is_low_vol && is_flat_price ? 1 : 0;
+  features.push(low_vol_pullback);
+
+  // 36. 相对强度代理 (10日收益率 / 行业平均暂不可得，改用 10日收益率 / 20日波动率)
+  const return_10d_val = features[3]; // return_10d
+  const vol_20d = calculateStd(prices.slice(-20).map((p, i, arr) => (i > 0 ? (p - arr[i - 1]) / arr[i - 1] : 0))) * Math.sqrt(252);
+  const relative_strength_proxy = vol_20d > 0 ? return_10d_val / vol_20d : 0;
+  features.push(relative_strength_proxy);
 
   return features;
 }
@@ -524,7 +568,7 @@ function getFeatureNames() {
     'up_vol_ratio',
     'money_flow_proxy',
 
-    // D. 技术形态特征（7个）
+    // D. 技术形态特征（11个）
     'body_size',
     'upper_shadow',
     'lower_shadow',
@@ -532,6 +576,16 @@ function getFeatureNames() {
     'consecutive_down',
     'rsi_14',
     'macd_histogram',
+    'day0_return',
+    'day0_lower_shadow_ratio',
+    'day0_upper_shadow_ratio',
+    'day0_body_ratio',
+
+    // E. 强逻辑特征（4个）
+    'vol_breakout',
+    'bullish_alignment',
+    'low_vol_pullback',
+    'relative_strength_proxy',
   ];
 }
 

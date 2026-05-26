@@ -78,14 +78,27 @@ function backtestStock(stock, modelWrapper, startIndex = 60) {
         day5: (klineData[i + 5].close - buyPrice) / buyPrice,
       };
 
-      // 判断是否为好信号（至少两种收益为正）
-      let positiveCount = 0;
-      if (returns.day1 > 0) positiveCount++;
-      if (returns.day2 > 0) positiveCount++;
-      if (returns.day3 > 0) positiveCount++;
-      if (returns.day5 > 0) positiveCount++;
+      // 计算5日内最大回撤
+      let minPrice5d = buyPrice;
+      for (let j = 1; j <= 5; j++) {
+        if (klineData[i + j].low < minPrice5d) {
+          minPrice5d = klineData[i + j].low;
+        }
+      }
+      returns.maxDrawdown = (minPrice5d - buyPrice) / buyPrice;
 
-      const isGoodSignal = positiveCount >= 2;
+      // 判断是否为好信号
+      // 1. 负向约束：5日内最大回撤不超过 5%
+      const notTooMuchDrawdown = returns.maxDrawdown >= -0.05;
+
+      // 2. 至少两种收益大于 5%
+      let positiveCount = 0;
+      if (returns.day1 > 0.05) positiveCount++;
+      if (returns.day2 > 0.05) positiveCount++;
+      if (returns.day3 > 0.05) positiveCount++;
+      if (returns.day5 > 0.05) positiveCount++;
+
+      const isGoodSignal = notTooMuchDrawdown && positiveCount >= 2;
 
       signals.push({
         index: i,
@@ -204,7 +217,7 @@ function backtestIndustry(industryName, stocks) {
     industryName,
     stockCount: stocks.length,
     totalSignals,
-    goodSignals,
+    goodSignals: totalGoodSignals,
     overallWinRate,
     avgWinRate,
     avgReturns,

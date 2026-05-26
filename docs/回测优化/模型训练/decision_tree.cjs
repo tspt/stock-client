@@ -49,7 +49,7 @@ class DecisionTree {
    * @param {Array} y - 标签数组
    * @returns {Object} 最佳分裂信息
    */
-  findBestSplit(X, y) {
+  findBestSplit(X, y, depth = 0) {
     const nSamples = X.length;
     const nFeatures = X[0].length;
 
@@ -69,28 +69,33 @@ class DecisionTree {
       featureIndices = featureIndices.slice(0, nFeaturesToConsider);
     }
 
-    let bestGini = Infinity;
+    const parentGini = this.giniImpurity(y);
+    let bestGini = parentGini; // 只有比父节点更好的分裂才接受
     let bestFeature = null;
     let bestThreshold = null;
     let bestLeftIndices = null;
     let bestRightIndices = null;
 
-    const parentGini = this.giniImpurity(y);
-
     // 遍历选定的特征
     for (const featureIdx of featureIndices) {
       // 获取该特征的所有唯一值作为候选阈值
-      const values = [...new Set(X.map((row) => row[featureIdx]))].sort((a, b) => a - b);
+      const rawValues = X.map((row) => row[featureIdx]);
+      const values = [...new Set(rawValues)].filter(v => v !== null && v !== undefined && !isNaN(v)).sort((a, b) => a - b);
+      
+      if (values.length <= 1) {
+        continue;
+      }
 
       // 如果唯一值太多，采样一些阈值
-      const thresholds = values.length > 20 ? this.sampleThresholds(values, 20) : values;
+      const thresholds = values.length > 50 ? this.sampleThresholds(values, 50) : values;
 
       for (const threshold of thresholds) {
         const leftIndices = [];
         const rightIndices = [];
 
         for (let i = 0; i < nSamples; i++) {
-          if (X[i][featureIdx] <= threshold) {
+          const val = X[i][featureIdx];
+          if (val <= threshold) {
             leftIndices.push(i);
           } else {
             rightIndices.push(i);
@@ -112,8 +117,8 @@ class DecisionTree {
         const weightedGini =
           (leftIndices.length / nSamples) * leftGini + (rightIndices.length / nSamples) * rightGini;
 
-        // 更新最佳分裂
-        if (weightedGini < bestGini) {
+        // 更新最佳分裂 (必须有提升)
+        if (weightedGini < bestGini - 1e-10) {
           bestGini = weightedGini;
           bestFeature = featureIdx;
           bestThreshold = threshold;
@@ -146,11 +151,10 @@ class DecisionTree {
   sampleThresholds(values, nSamples) {
     if (values.length <= nSamples) return values;
 
-    const step = Math.floor(values.length / nSamples);
     const sampled = [];
-
-    for (let i = 0; i < values.length; i += step) {
-      sampled.push(values[i]);
+    for (let i = 0; i < nSamples; i++) {
+      const idx = Math.floor((i * (values.length - 1)) / (nSamples - 1));
+      sampled.push(values[idx]);
     }
 
     return sampled;
@@ -183,7 +187,7 @@ class DecisionTree {
     }
 
     // 寻找最佳分裂
-    const split = this.findBestSplit(X, y);
+    const split = this.findBestSplit(X, y, depth);
 
     // 如果没有找到有效的分裂，创建叶子节点
     if (!split) {

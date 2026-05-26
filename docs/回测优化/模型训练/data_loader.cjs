@@ -18,7 +18,7 @@ const STOCK_DATA_DIR = path.join(__dirname, '..', '股票数据');
  * 行业分组策略配置
  */
 const GROUPING_CONFIG = {
-  MIN_STOCKS_FOR_SPECIFIC_MODEL: 50, // 至少50只股票才建立独立行业模型
+  MIN_STOCKS_FOR_SPECIFIC_MODEL: 30, // 降低门槛，让更多行业拥有独立模型
 };
 
 /**

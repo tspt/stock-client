@@ -194,7 +194,7 @@ function calculateFeatures(klineData: KLineData[], index: number): number[] | nu
  */
 function predictWithTree(features: number[], node: DecisionTreeNode): number {
   // 如果是叶子节点，返回预测结果
-  if (node.prediction !== undefined) {
+  if (node.prediction !== undefined && node.prediction !== null) {
     return node.prediction;
   }
 
@@ -239,7 +239,8 @@ export function setIndustryModels(models: LoadedIndustryModel[]): void {
     // 从JSON模型中提取决策树数组（注意：字段名是 trees 而不是 tree）
     const trees = model.modelData?.trees;
     if (trees && Array.isArray(trees) && trees.length > 0) {
-      industryModelsCache.set(model.industryName, trees);
+      const actualTrees = trees.map((t: any) => t.tree || t);
+      industryModelsCache.set(model.industryName, actualTrees);
       loadedCount++;
     } else {
       console.warn(`⚠️ 模型 [${model.industryName}] 没有有效的 trees 字段`);
@@ -310,7 +311,31 @@ export function predictBuyPoint(
     }
 
     // 多数投票决定结果
-    return positiveVotes > negativeVotes;
+    const isModelBuy = positiveVotes > negativeVotes;
+
+    if (isModelBuy) {
+      const current = klineData[index];
+      const open = current.open;
+      const close = current.close;
+      const low = current.low;
+
+      // 1. 最新一日仍处于深幅大跌过程中 (幅跌 > 2.0%)，视为未企稳，一律过滤
+      const return_1d = (close - open) / open;
+      if (return_1d < -0.02) {
+        return false;
+      }
+
+      // 2. 下跌阴线中收于最低点附近（秃头阴线，下影线占比过低，说明没有抄底盘承接，明天惯性大跌极高）
+      if (close < open) {
+        const entity = open - close;
+        const lowerShadow = close - low;
+        if (lowerShadow < entity * 0.15) {
+          return false;
+        }
+      }
+    }
+
+    return isModelBuy;
   }
 
   // 降级到默认全局模型
