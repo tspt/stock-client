@@ -1579,7 +1579,7 @@ export function BacktestPage() {
         return (
           <span>
             <span style={{ color: val.value > 0 ? '#ff4d4f' : '#52c41a' }}>
-              {val.value > 0 ? '+' : ''}{val.value}%
+              {val.value > 0 ? '+' : ''}{Number(val.value).toFixed(2)}%
             </span>
             {!isComplete && (
               <span className={styles.actualDaysTag}>({val.actualDays}天)</span>
@@ -1598,7 +1598,7 @@ export function BacktestPage() {
         return (
           <span>
             <span style={{ color: val.value > 0 ? '#ff4d4f' : '#52c41a' }}>
-              {val.value > 0 ? '+' : ''}{val.value}%
+              {val.value > 0 ? '+' : ''}{Number(val.value).toFixed(2)}%
             </span>
             {!isComplete && (
               <span className={styles.actualDaysTag}>({val.actualDays}天)</span>
@@ -1617,7 +1617,7 @@ export function BacktestPage() {
         return (
           <span>
             <span style={{ color: val.value > 0 ? '#ff4d4f' : '#52c41a' }}>
-              {val.value > 0 ? '+' : ''}{val.value}%
+              {val.value > 0 ? '+' : ''}{Number(val.value).toFixed(2)}%
             </span>
             {!isComplete && (
               <span className={styles.actualDaysTag}>({val.actualDays}天)</span>
@@ -1636,7 +1636,7 @@ export function BacktestPage() {
         return (
           <span>
             <span style={{ color: val.value > 0 ? '#ff4d4f' : '#52c41a' }}>
-              {val.value > 0 ? '+' : ''}{val.value}%
+              {val.value > 0 ? '+' : ''}{Number(val.value).toFixed(2)}%
             </span>
             {!isComplete && (
               <span className={styles.actualDaysTag}>({val.actualDays}天)</span>
@@ -1655,7 +1655,7 @@ export function BacktestPage() {
         return (
           <span>
             <span style={{ color: val.value > 0 ? '#ff4d4f' : '#52c41a' }}>
-              {val.value > 0 ? '+' : ''}{val.value}%
+              {val.value > 0 ? '+' : ''}{Number(val.value).toFixed(2)}%
             </span>
             {!isComplete && (
               <span className={styles.actualDaysTag}>({val.actualDays}天)</span>
@@ -1674,7 +1674,7 @@ export function BacktestPage() {
         return (
           <span>
             <span style={{ color: val.value > 0 ? '#ff4d4f' : '#52c41a' }}>
-              {val.value > 0 ? '+' : ''}{val.value}%
+              {val.value > 0 ? '+' : ''}{Number(val.value).toFixed(2)}%
             </span>
             {!isComplete && (
               <span className={styles.actualDaysTag}>({val.actualDays}天)</span>
@@ -2251,6 +2251,7 @@ export function BacktestPage() {
                 onChange={setTimeRange}
                 style={{ width: 120 }}
                 options={[
+                  { label: '近1日', value: 1 },
                   { label: '近7天', value: 7 },
                   { label: '近14天', value: 14 },
                   { label: '近30天', value: 30 },

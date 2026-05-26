@@ -141,7 +141,7 @@ async function processBacktestTask(request: BacktestRequest) {
       if (i + 1 < len) {
         const day1Close = klineData[i + 1].close;
         returns.day1 = {
-          value: ((day1Close - entryPrice) / entryPrice) * 100,
+          value: Number((((day1Close - entryPrice) / entryPrice) * 100).toFixed(2)),
           actualDays: 1,
         };
       }
@@ -150,7 +150,7 @@ async function processBacktestTask(request: BacktestRequest) {
       if (i + 2 < len) {
         const day2Close = klineData[i + 2].close;
         returns.day2 = {
-          value: ((day2Close - entryPrice) / entryPrice) * 100,
+          value: Number((((day2Close - entryPrice) / entryPrice) * 100).toFixed(2)),
           actualDays: 2,
         };
       }
@@ -159,7 +159,7 @@ async function processBacktestTask(request: BacktestRequest) {
       if (i + 3 < len) {
         const day3Close = klineData[i + 3].close;
         returns.day3 = {
-          value: ((day3Close - entryPrice) / entryPrice) * 100,
+          value: Number((((day3Close - entryPrice) / entryPrice) * 100).toFixed(2)),
           actualDays: 3,
         };
       }
@@ -168,7 +168,7 @@ async function processBacktestTask(request: BacktestRequest) {
       if (i + 5 < len) {
         const day5Close = klineData[i + 5].close;
         returns.day5 = {
-          value: ((day5Close - entryPrice) / entryPrice) * 100,
+          value: Number((((day5Close - entryPrice) / entryPrice) * 100).toFixed(2)),
           actualDays: 5,
         };
       }
@@ -177,7 +177,7 @@ async function processBacktestTask(request: BacktestRequest) {
       if (i + 10 < len) {
         const day10Close = klineData[i + 10].close;
         returns.day10 = {
-          value: ((day10Close - entryPrice) / entryPrice) * 100,
+          value: Number((((day10Close - entryPrice) / entryPrice) * 100).toFixed(2)),
           actualDays: 10,
         };
       }
@@ -186,7 +186,7 @@ async function processBacktestTask(request: BacktestRequest) {
       if (i + 20 < len) {
         const day20Close = klineData[i + 20].close;
         returns.day20 = {
-          value: ((day20Close - entryPrice) / entryPrice) * 100,
+          value: Number((((day20Close - entryPrice) / entryPrice) * 100).toFixed(2)),
           actualDays: 20,
         };
       }
