@@ -11,6 +11,7 @@ import {
   OPPORTUNITY_DEFAULT_INDUSTRY_SECTORS,
   OPPORTUNITY_DEFAULT_BASIC_FILTERS,
   OPPORTUNITY_DEFAULT_NAME_FILTERS,
+  OPPORTUNITY_DEFAULT_AI_ANALYSIS,
 } from '@/utils/config/opportunityAnalysisDefaults';
 import { logger } from '../business/logger';
 
@@ -355,12 +356,12 @@ export function getDefaultFilterPrefsFields(): Omit<
     aiTrendUp: false,
     aiTrendDown: false,
     aiTrendSideways: false,
-    aiConfidenceRange: {},
+    aiConfidenceRange: { min: OPPORTUNITY_DEFAULT_AI_ANALYSIS.confidenceMin },
     aiRecommendScoreRange: {},
     aiTechnicalScoreRange: {},
-    aiPatternScoreRange: {},
-    aiTrendScoreRange: {},
-    aiRiskScoreRange: {},
+    aiPatternScoreRange: { min: OPPORTUNITY_DEFAULT_AI_ANALYSIS.patternScoreMin },
+    aiTrendScoreRange: { min: OPPORTUNITY_DEFAULT_AI_ANALYSIS.trendScoreMin },
+    aiRiskScoreRange: { min: OPPORTUNITY_DEFAULT_AI_ANALYSIS.riskScoreMin },
     enableNameKeywordFilter: true,
     excludedNameKeywords: [...OPPORTUNITY_DEFAULT_NAME_FILTERS.excludedNameKeywords],
     enableExactNameFilter: true,
