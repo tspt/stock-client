@@ -85,6 +85,8 @@ export interface OpportunityFilterSnapshot {
   aiMinSimilarPatterns?: number; // 最少相似股票数量（默认3）
   /** v3.0 新增：风险收益比筛选 */
   aiMinRiskRewardRatio?: number; // 最小风险收益比（默认2.0）
+  /** 当前使用的 AI 版本 */
+  aiVersion?: 'v1' | 'v2' | 'v3' | 'v4' | 'v5' | 'v6';
   /** 行业板块筛选 */
   industrySectors?: string[];
   /** 概念板块筛选 */

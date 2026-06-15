@@ -11,7 +11,15 @@ import {
   isNearUpperBand,
   isNearMiddleBand,
   isNearLowerBand,
+  calculateADX,
 } from '@/utils/analysis/technicalIndicators';
+import { performAIAnalysisWithTimestamp as performAIV6Analysis } from '@/services/opportunity/ai-v6.0';
+import { performAIAnalysis as performAIV5Analysis } from '@/services/opportunity/ai-v5.0';
+import { performAIAnalysis as performAIV4Analysis } from '@/services/opportunity/ai-v4.0';
+import { performAIAnalysis as performAIV3Analysis } from '@/services/opportunity/ai-v3.0';
+import { performAIAnalysis as performAIV2Analysis } from '@/services/opportunity/ai-v2.0';
+import { performAIAnalysis as performAIV1Analysis } from '@/services/opportunity/ai';
+import type { AIComputationContext } from '@/services/opportunity/ai-v6.0';
 import type { KLineData, SharpMovePatternAnalysis, StockOpportunityData } from '@/types/stock';
 import type { OpportunityFilterSnapshot } from '@/types/opportunityFilter';
 import type {
@@ -674,6 +682,50 @@ async function runFilterTask(
           }
         }
 
+        // v6.0 优化：如果需要 AI 分析且没有缓存，或者强制重算，则进行分析
+        // 并且在分析前准备好计算上下文，避免重复计算
+        if (!aiAnalysis && klineData && klineData.length >= 30) {
+          try {
+            // 准备共享计算上下文
+            const rsiPeriod = filters.rsiPeriod || 6;
+            const rsi6 = calculateRSI(klineData, 6);
+            const rsi12 = calculateRSI(klineData, 12);
+            const macd = calculateMACD(klineData);
+            const bb = calculateBollingerBands(klineData, 20, 2);
+            const adx = calculateADX(klineData, 14);
+
+            const context: AIComputationContext = {
+              rsi6,
+              rsi12,
+              macd,
+              bollingerBands: bb,
+              adx,
+            };
+
+            // 使用对应版本的 AI 进行分析
+            let result: StockOpportunityData['aiAnalysis'];
+            if (filters.aiVersion === 'v6') {
+              result = performAIV6Analysis(klineData, nextItem, undefined, context).result;
+            } else if (filters.aiVersion === 'v5') {
+              result = performAIV5Analysis(klineData, nextItem);
+            } else if (filters.aiVersion === 'v4') {
+              result = performAIV4Analysis(klineData, nextItem);
+            } else if (filters.aiVersion === 'v3') {
+              result = performAIV3Analysis(klineData, nextItem);
+            } else if (filters.aiVersion === 'v2') {
+              result = performAIV2Analysis(klineData, nextItem);
+            } else {
+              result = performAIV1Analysis(klineData, nextItem);
+            }
+            aiAnalysis = result;
+            
+            // 存入缓存
+            aiCacheMap.set(nextItem.code, { aiAnalysis, timestamp: Date.now() });
+          } catch (e) {
+            console.error(`AI ${filters.aiVersion || 'v1'} analysis failed for ${nextItem.code}:`, e);
+          }
+        }
+
         if (!aiAnalysis) {
           mergeSkippedReason(skippedMap, item.code, item.name, 'AI筛选：缺少AI分析数据');
           continue;
@@ -689,11 +741,6 @@ async function runFilterTask(
             `AI筛选：${aiFilterResult.reason || '未通过'}`
           );
           continue;
-        }
-
-        // 将有AI分析结果的item写入缓存（用于后续筛选任务复用）
-        if (!nextItem.aiAnalysis && aiAnalysis) {
-          aiCacheMap.set(nextItem.code, { aiAnalysis, timestamp: Date.now() });
         }
 
         nextItem = itemForAIFilter;

@@ -414,6 +414,131 @@ export function isNearLowerBand(
     return false;
   }
 
-  // 价格在下轨的threshold范围内
+    // 价格在下轨的threshold范围内
   return close <= lower * (1 + threshold);
+}
+
+/**
+ * 计算ADX指标（平均趋向指数）
+ * @param klineData K线数据
+ * @param period 周期，默认14
+ * @returns ADX值数组
+ */
+export function calculateADX(klineData: KLineData[], period: number = 14): (number | null)[] {
+  const len = klineData.length;
+  const adx: (number | null)[] = new Array(len).fill(null);
+
+  if (len < period * 2 + 1) {
+    return adx;
+  }
+
+  const tr: number[] = [0];
+  const plusDM: number[] = [0];
+  const minusDM: number[] = [0];
+
+  for (let i = 1; i < len; i++) {
+    const high = klineData[i].high;
+    const low = klineData[i].low;
+    const prevHigh = klineData[i - 1].high;
+    const prevLow = klineData[i - 1].low;
+    const prevClose = klineData[i - 1].close;
+
+    // TR
+    tr.push(Math.max(high - low, Math.abs(high - prevClose), Math.abs(low - prevClose)));
+
+    // +DM, -DM
+    const upMove = high - prevHigh;
+    const downMove = prevLow - low;
+
+    if (upMove > downMove && upMove > 0) {
+      plusDM.push(upMove);
+    } else {
+      plusDM.push(0);
+    }
+
+    if (downMove > upMove && downMove > 0) {
+      minusDM.push(downMove);
+    } else {
+      minusDM.push(0);
+    }
+  }
+
+  // 计算 Smooth TR, +DM, -DM
+  const smoothTR: number[] = new Array(len).fill(0);
+  const smoothPlusDM: number[] = new Array(len).fill(0);
+  const smoothMinusDM: number[] = new Array(len).fill(0);
+
+  let sumTR = 0;
+  let sumPlusDM = 0;
+  let sumMinusDM = 0;
+
+  for (let i = 1; i <= period; i++) {
+    sumTR += tr[i];
+    sumPlusDM += plusDM[i];
+    sumMinusDM += minusDM[i];
+  }
+
+  smoothTR[period] = sumTR;
+  smoothPlusDM[period] = sumPlusDM;
+  smoothMinusDM[period] = sumMinusDM;
+
+  for (let i = period + 1; i < len; i++) {
+    smoothTR[i] = smoothTR[i - 1] - smoothTR[i - 1] / period + tr[i];
+    smoothPlusDM[i] = smoothPlusDM[i - 1] - smoothPlusDM[i - 1] / period + plusDM[i];
+    smoothMinusDM[i] = smoothMinusDM[i - 1] - smoothMinusDM[i - 1] / period + minusDM[i];
+  }
+
+  // 计算 +DI, -DI, DX
+  const dx: number[] = new Array(len).fill(0);
+  for (let i = period; i < len; i++) {
+    const plusDI = (smoothPlusDM[i] / smoothTR[i]) * 100;
+    const minusDI = (smoothMinusDM[i] / smoothTR[i]) * 100;
+    dx[i] = (Math.abs(plusDI - minusDI) / (plusDI + minusDI)) * 100;
+  }
+
+  // 计算 ADX (DX的移动平均)
+  let sumDX = 0;
+  for (let i = period; i < period * 2; i++) {
+    sumDX += dx[i];
+  }
+  adx[period * 2 - 1] = sumDX / period;
+
+  for (let i = period * 2; i < len; i++) {
+    adx[i] = ((adx[i - 1] as number) * (period - 1) + dx[i]) / period;
+  }
+
+  return adx;
+}
+
+/**
+ * 计算 Pivot Points (标准枢轴点)
+ * @param klineData K线数据
+ * @returns 枢轴点结果
+ */
+export function calculatePivotPoints(klineData: KLineData[]): {
+  pivot: number;
+  r1: number;
+  r2: number;
+  r3: number;
+  s1: number;
+  s2: number;
+  s3: number;
+} | null {
+  if (klineData.length < 2) return null;
+
+  // 使用前一天的最高、最低、收盘价计算当天的枢轴点
+  const prev = klineData[klineData.length - 2];
+  const high = prev.high;
+  const low = prev.low;
+  const close = prev.close;
+
+  const pivot = (high + low + close) / 3;
+  const r1 = 2 * pivot - low;
+  const s1 = 2 * pivot - high;
+  const r2 = pivot + (high - low);
+  const s2 = pivot - (high - low);
+  const r3 = high + 2 * (pivot - low);
+  const s3 = low - 2 * (high - pivot);
+
+  return { pivot, r1, r2, r3, s1, s2, s3 };
 }

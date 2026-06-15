@@ -112,11 +112,11 @@ export const OPPORTUNITY_DEFAULT_AI_ANALYSIS = {
   /** AI置信度最小值（%） */
   confidenceMin: 65,
   /** AI形态评分最小值 */
-  patternScoreMin: 60,
+  patternScoreMin: 65,
   /** AI趋势评分最小值 */
-  trendScoreMin: 65,
+  trendScoreMin: 55,
   /** AI风险评分最小值 */
-  riskScoreMin: 30,
+  riskScoreMin: 55,
 } as const;
 
 // ==================== 3. 横盘筛选 ====================
