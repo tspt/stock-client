@@ -25,7 +25,9 @@ export const OPPORTUNITY_DEFAULT_BASIC_FILTERS = {
 /** 涨跌停筛选默认配置 */
 export const OPPORTUNITY_DEFAULT_LIMIT_MOVES = {
   /** 涨停/跌停统计周期 */
-  period: 20,
+  period: 10,
+  /** 默认涨停次数 */
+  minLimitUpCount: 1,
 } as const;
 
 /** 行业板块筛选默认配置 */
@@ -116,7 +118,7 @@ export const OPPORTUNITY_DEFAULT_AI_ANALYSIS = {
   /** AI趋势评分最小值 */
   trendScoreMin: 55,
   /** AI安全评分最小值 */
-  riskScoreMin: 50,
+  riskScoreMin: 40,
 } as const;
 
 // ==================== 3. 横盘筛选 ====================
@@ -148,13 +150,13 @@ export const OPPORTUNITY_DEFAULT_SHARP_MOVE_FULL = {
   /** 横盘幅度阈值（%） */
   flatThreshold: 3,
   /** 仅急跌 */
-  onlyDrop: true,
+  onlyDrop: false,
   /** 仅急涨 */
-  onlyRise: true,
+  onlyRise: false,
   /** 急跌→急涨 */
-  dropThenRiseLoose: true,
+  dropThenRiseLoose: false,
   /** 急涨→急跌 */
-  riseThenDropLoose: true,
+  riseThenDropLoose: false,
   /** 急跌横盘急涨 */
   dropFlatRise: false,
   /** 急涨横盘急跌 */

@@ -12,6 +12,7 @@ import {
   OPPORTUNITY_DEFAULT_BASIC_FILTERS,
   OPPORTUNITY_DEFAULT_NAME_FILTERS,
   OPPORTUNITY_DEFAULT_AI_ANALYSIS,
+  OPPORTUNITY_DEFAULT_LIMIT_MOVES,
 } from '@/utils/config/opportunityAnalysisDefaults';
 import { logger } from '../business/logger';
 
@@ -322,10 +323,10 @@ export function getDefaultFilterPrefsFields(): Omit<
     peRatioRange: {},
     kdjJRange: {},
     filterVisible: true,
-    recentLimitUpCount: undefined,
+    recentLimitUpCount: OPPORTUNITY_DEFAULT_LIMIT_MOVES.minLimitUpCount,
     recentLimitDownCount: undefined,
-    limitUpPeriod: 20,
-    limitDownPeriod: 20,
+    limitUpPeriod: OPPORTUNITY_DEFAULT_LIMIT_MOVES.period,
+    limitDownPeriod: OPPORTUNITY_DEFAULT_LIMIT_MOVES.period,
     consolidationTypes: [],
     consolidationLookback: OPPORTUNITY_DEFAULT_CONSOLIDATION.lookback,
     consolidationConsecutive: OPPORTUNITY_DEFAULT_CONSOLIDATION.consecutive,

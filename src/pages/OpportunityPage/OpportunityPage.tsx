@@ -112,8 +112,8 @@ const INITIAL_FILTER_STATE = {
   peRatioRange: {} as { min?: number; max?: number },
   kdjJRange: {} as { min?: number; max?: number },
 
-  // 涨跌停筛选
-  recentLimitUpCount: undefined as number | undefined,
+  // 涨跌停筛选（默认近10天有1次涨停）
+  recentLimitUpCount: OPPORTUNITY_DEFAULT_LIMIT_MOVES.minLimitUpCount,
   recentLimitDownCount: undefined as number | undefined,
   limitUpPeriod: OPPORTUNITY_DEFAULT_LIMIT_MOVES.period,
   limitDownPeriod: OPPORTUNITY_DEFAULT_LIMIT_MOVES.period,
@@ -132,7 +132,7 @@ const INITIAL_FILTER_STATE = {
   trendLineFilterEnabled: false,
 
   // 异动筛选
-  sharpMoveFilterEnabled: true,
+  sharpMoveFilterEnabled: false,
   sharpMoveWindowBars: OPPORTUNITY_DEFAULT_SHARP_MOVE_FULL.windowBars,
   sharpMoveMagnitude: OPPORTUNITY_DEFAULT_SHARP_MOVE_FULL.magnitude,
   sharpMoveFlatThreshold: OPPORTUNITY_DEFAULT_SHARP_MOVE_FULL.flatThreshold,
