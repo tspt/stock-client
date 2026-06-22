@@ -74,7 +74,7 @@ export interface OpportunityFilterSnapshot {
   aiPatternScoreRange: NumberRange;
   /** AI趋势评分范围（0-100） */
   aiTrendScoreRange: NumberRange;
-  /** AI风险评分范围（0-100，分数越高风险越低） */
+  /** AI安全评分范围（0-100，分数越高越安全） */
   aiRiskScoreRange: NumberRange;
   /** v3.0 新增：信号共识筛选 */
   aiSignalConfluence?: boolean; // 是否要求信号共识

@@ -315,7 +315,7 @@ export function OpportunityPage() {
   const [errorExpanded, setErrorExpanded] = useState(false); // 失败详情展开状态
 
   // AI分析版本选择（切换时自动刷新）；与 store.analysisAiVersion 对齐供一键分析使用
-  const [aiVersion, setAiVersion] = useState<'v1' | 'v2' | 'v3' | 'v4' | 'v5' | 'v6'>('v6');
+  const [aiVersion, setAiVersion] = useState<'v1' | 'v2' | 'v3' | 'v4' | 'v5' | 'v6'>('v5');
   const [showAddToWatchListModal, setShowAddToWatchListModal] = useState(false);
   const [aiRefreshLoading, setAiRefreshLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(false); // 初始数据加载状态

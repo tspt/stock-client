@@ -554,7 +554,7 @@ export interface SmartRecommendationScore {
   patternScore: number;
   /** 趋势评分 */
   trendScore: number;
-  /** 风险评分 */
+  /** 安全评分 */
   riskScore: number;
   /** 推荐理由 */
   reasons: string[];

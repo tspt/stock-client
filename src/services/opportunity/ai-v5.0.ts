@@ -922,7 +922,7 @@ export function calculateRecommendationScore(
   // 趋势评分
   const trendScore = calculateTrendScore(klineData, opportunityData, reasons, warnings);
 
-  // 风险评分
+  // 安全评分
   const riskScore = calculateRiskScore(klineData, opportunityData, reasons, warnings);
 
   // 综合评分
@@ -1062,7 +1062,7 @@ function calculateTrendScore(
 }
 
 /**
- * 风险评分
+ * 安全评分
  */
 function calculateRiskScore(
   klineData: KLineData[],

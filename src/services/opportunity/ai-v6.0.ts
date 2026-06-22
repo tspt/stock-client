@@ -883,54 +883,260 @@ function v4ApplyStructuralAdjust(klineData: KLineData[], base: AIAnalysisResult)
   return { ...base, trendPrediction: tp, recommendation: rec, analyzedAt: Date.now() };
 }
 
-// ========== v5.0：假突破与动能衰竭 (保留) ==========
-function detectFalseBreakout(klineData: KLineData[]) {
+// ========== v5.0：假突破过滤 (完整版) ==========
+
+interface FalseBreakoutResult {
+  isFalseBreakout: boolean;
+  breakoutType: 'up' | 'down' | null;
+  severity: number; // 0-1，严重程度
+}
+
+function detectFalseBreakout(klineData: KLineData[]): FalseBreakoutResult {
   const len = klineData.length;
-  if (len < 10) return { isFalseBreakout: false, breakoutType: null, severity: 0 };
-  const recent5 = klineData.slice(-5);
-  const highs = recent5.map(k => k.high);
-  const maxHigh = Math.max(...highs);
-  const currentClose = recent5[4].close;
-  const daysSinceHigh = highs.lastIndexOf(maxHigh);
-  if (daysSinceHigh >= 1 && daysSinceHigh <= 2 && (maxHigh - currentClose) / maxHigh > 0.03) {
-    return { isFalseBreakout: true, breakoutType: 'up', severity: 0.5 };
+  if (len < 10) {
+    return { isFalseBreakout: false, breakoutType: null, severity: 0 };
   }
+
+  const recent5 = klineData.slice(-5);
+  const highs = recent5.map((k) => k.high);
+  const lows = recent5.map((k) => k.low);
+  const closes = recent5.map((k) => k.close);
+  const volumes = recent5.map((k) => k.volume);
+
+  const maxHigh = Math.max(...highs);
+  const minLow = Math.min(...lows);
+  const currentClose = closes[closes.length - 1];
+
+  // 检查向上假突破
+  const daysSinceHigh = highs.lastIndexOf(maxHigh);
+  if (daysSinceHigh >= 1 && daysSinceHigh <= 2) {
+    const pullback = (maxHigh - currentClose) / maxHigh;
+    if (pullback > 0.03) {
+      // 检查突破时的成交量是否异常
+      const breakoutVol = volumes[daysSinceHigh];
+      const avgVol = volumes.slice(0, daysSinceHigh).reduce((a, b) => a + b, 0) / daysSinceHigh;
+      const volRatio = avgVol > 0 ? breakoutVol / avgVol : 1;
+
+      // 无量突破更可能是假的
+      const severity = pullback * (volRatio < 0.8 ? 1.3 : 1.0);
+      return {
+        isFalseBreakout: true,
+        breakoutType: 'up',
+        severity: Math.min(severity, 1),
+      };
+    }
+  }
+
+  // 检查向下假突破
+  const daysSinceLow = lows.lastIndexOf(minLow);
+  if (daysSinceLow >= 1 && daysSinceLow <= 2) {
+    const bounce = (currentClose - minLow) / minLow;
+    if (bounce > 0.03) {
+      const breakoutVol = volumes[daysSinceLow];
+      const avgVol = volumes.slice(0, daysSinceLow).reduce((a, b) => a + b, 0) / daysSinceLow;
+      const volRatio = avgVol > 0 ? breakoutVol / avgVol : 1;
+
+      const severity = bounce * (volRatio < 0.8 ? 1.3 : 1.0);
+      return {
+        isFalseBreakout: true,
+        breakoutType: 'down',
+        severity: Math.min(severity, 1),
+      };
+    }
+  }
+
   return { isFalseBreakout: false, breakoutType: null, severity: 0 };
 }
 
-function detectMomentumExhaustion(klineData: KLineData[]) {
-  const len = klineData.length;
-  if (len < 15) return { exhausted: false, direction: null, exhaustionLevel: 0 };
-  const rsi6 = calculateRSI(klineData, 6);
-  const lastRSI = rsi6[len - 1];
-  const prevRSI = rsi6[len - 2];
-  if (lastRSI !== null && prevRSI !== null && prevRSI > 80 && lastRSI < prevRSI) {
-    return { exhausted: true, direction: 'up', exhaustionLevel: 0.6 };
-  }
-  return { exhausted: false, direction: null, exhaustionLevel: 0 };
+// ========== v5.0：动能衰竭检测 (完整版) ==========
+
+interface MomentumExhaustionResult {
+  exhausted: boolean;
+  direction: 'up' | 'down' | null;
+  exhaustionLevel: number; // 0-1，衰竭程度
 }
 
+function detectMomentumExhaustion(klineData: KLineData[]): MomentumExhaustionResult {
+  const len = klineData.length;
+  if (len < 15) {
+    return { exhausted: false, direction: null, exhaustionLevel: 0 };
+  }
+
+  const closes = klineData.map((k) => k.close);
+
+  // 1. 检查近5天涨跌幅是否递减
+  const recentChanges: number[] = [];
+  for (let i = len - 5; i < len; i++) {
+    const change = (closes[i] - closes[i - 1]) / closes[i - 1];
+    recentChanges.push(change);
+  }
+
+  let decreasingMomentum = false;
+  if (recentChanges.every((c) => c > 0)) {
+    // 全部上涨，检查是否递减
+    decreasingMomentum = recentChanges.every((c, i) => i === 0 || c <= recentChanges[i - 1]);
+  } else if (recentChanges.every((c) => c < 0)) {
+    // 全部下跌，检查是否递减（绝对值）
+    decreasingMomentum = recentChanges.every(
+      (c, i) => i === 0 || Math.abs(c) <= Math.abs(recentChanges[i - 1])
+    );
+  }
+
+  // 2. 检查 RSI 是否从极端区域回归
+  const rsi6 = calculateRSI(klineData, 6);
+  const lastRSI = rsi6[rsi6.length - 1];
+  const prevRSI = rsi6.length >= 2 ? rsi6[rsi6.length - 2] : null;
+
+  let rsiReversal = false;
+  let reversalDirection: 'up' | 'down' | null = null;
+
+  if (lastRSI !== null && prevRSI !== null) {
+    if (prevRSI > 80 && lastRSI < prevRSI) {
+      rsiReversal = true;
+      reversalDirection = 'down';
+    } else if (prevRSI < 20 && lastRSI > prevRSI) {
+      rsiReversal = true;
+      reversalDirection = 'up';
+    }
+  }
+
+  // 3. 检查 MACD 柱状图是否缩小
+  const macd = calculateMACD(klineData);
+  let macdShrinking = false;
+  let macdDirection: 'up' | 'down' | null = null;
+
+  if (macd.macd.length >= 2) {
+    const lastMACD = macd.macd[macd.macd.length - 1];
+    const prevMACD = macd.macd[macd.macd.length - 2];
+
+    if (lastMACD !== null && prevMACD !== null) {
+      if (lastMACD > 0 && lastMACD < prevMACD) {
+        macdShrinking = true;
+        macdDirection = 'down';
+      } else if (lastMACD < 0 && lastMACD > prevMACD) {
+        macdShrinking = true;
+        macdDirection = 'up';
+      }
+    }
+  }
+
+  // 综合判断：满足2个以上条件则判定为动能衰竭
+  let conditionsMet = 0;
+  let finalDirection: 'up' | 'down' | null = null;
+
+  if (decreasingMomentum) {
+    conditionsMet++;
+    finalDirection = recentChanges[0] > 0 ? 'up' : 'down';
+  }
+
+  if (rsiReversal) {
+    conditionsMet++;
+    finalDirection = reversalDirection;
+  }
+
+  if (macdShrinking) {
+    conditionsMet++;
+    finalDirection = macdDirection;
+  }
+
+  const exhausted = conditionsMet >= 2;
+  const exhaustionLevel = conditionsMet / 3;
+
+  return {
+    exhausted,
+    direction: finalDirection,
+    exhaustionLevel,
+  };
+}
+
+// ========== v5.0：增强版结构调整（整合 v4.0 + 假突破 + 动能衰竭） ==========
+
 function v5ApplyEnhancedAdjust(klineData: KLineData[], base: AIAnalysisResult): AIAnalysisResult {
+  // 先应用 v4.0 的短周期结构校正
   let result = v4ApplyStructuralAdjust(klineData, base);
-  const rec = result.recommendation!;
+
+  const rec = result.recommendation;
   const tp = result.trendPrediction;
 
-  const fb = detectFalseBreakout(klineData);
-  if (fb.isFalseBreakout && fb.breakoutType === 'up' && tp.direction === 'up') {
-    rec.trendScore -= 15;
-    tp.confidence *= 0.8;
-    rec.warnings.push('v5：检测到向上假突破');
+  if (!rec || !tp) {
+    return result;
   }
 
-  const me = detectMomentumExhaustion(klineData);
-  if (me.exhausted && me.direction === 'up' && tp.direction === 'up') {
-    rec.trendScore -= 10;
-    tp.confidence *= 0.85;
-    rec.warnings.push('v5：上涨动能衰竭');
+  let dTrend = 0;
+  let dRisk = 0;
+  let confMul = 1;
+
+  // 应用假突破过滤
+  const falseBreakout = detectFalseBreakout(klineData);
+  if (falseBreakout.isFalseBreakout) {
+    const severityPenalty = falseBreakout.severity * 20; // 最多扣20分
+
+    if (falseBreakout.breakoutType === 'up' && tp.direction === 'up') {
+      // 看涨但出现向上假突破
+      dTrend -= severityPenalty;
+      dRisk -= severityPenalty * 0.5;
+      confMul *= 1 - falseBreakout.severity * 0.3;
+      rec.warnings.push(
+        `v5：检测到向上假突破（严重程度${(falseBreakout.severity * 100).toFixed(
+          0
+        )}%），已大幅下调评分`
+      );
+    } else if (falseBreakout.breakoutType === 'down' && tp.direction === 'down') {
+      // 看跌但出现向下假突破
+      dTrend -= severityPenalty;
+      dRisk -= severityPenalty * 0.5;
+      confMul *= 1 - falseBreakout.severity * 0.3;
+      rec.warnings.push(
+        `v5：检测到向下假突破（严重程度${(falseBreakout.severity * 100).toFixed(
+          0
+        )}%），已大幅下调评分`
+      );
+    }
   }
 
+  // 应用动能衰竭检测
+  const momentum = detectMomentumExhaustion(klineData);
+  if (momentum.exhausted) {
+    const exhaustionPenalty = momentum.exhaustionLevel * 15; // 最多扣15分
+
+    if (momentum.direction === 'up' && tp.direction === 'up') {
+      // 上涨动能衰竭
+      dTrend -= exhaustionPenalty;
+      confMul *= 1 - momentum.exhaustionLevel * 0.2;
+      rec.warnings.push(
+        `v5：上涨动能衰竭（程度${(momentum.exhaustionLevel * 100).toFixed(0)}%），警惕回调`
+      );
+    } else if (momentum.direction === 'down' && tp.direction === 'down') {
+      // 下跌动能衰竭
+      dTrend -= exhaustionPenalty;
+      confMul *= 1 - momentum.exhaustionLevel * 0.2;
+      rec.warnings.push(
+        `v5：下跌动能衰竭（程度${(momentum.exhaustionLevel * 100).toFixed(0)}%），可能反弹`
+      );
+    }
+  }
+
+  // 应用调整
+  rec.trendScore = v4ClampIntScore(rec.trendScore + dTrend);
+  rec.riskScore = v4ClampIntScore(rec.riskScore + dRisk);
   rec.totalScore = v4RecomputeTotal(rec);
-  return result;
+
+  tp.confidence = Math.min(0.95, Math.max(0, tp.confidence * confMul));
+
+  if (confMul < 0.999) {
+    tp.reasoning.unshift(`v5：增强校正，置信度系数×${confMul.toFixed(2)}`);
+    tp.reasoning = tp.reasoning.slice(0, 5);
+  }
+
+  rec.reasons = rec.reasons.slice(0, 5);
+  rec.warnings = rec.warnings.slice(0, 5);
+
+  return {
+    ...result,
+    trendPrediction: tp,
+    recommendation: rec,
+    analyzedAt: Date.now(),
+  };
 }
 
 /**

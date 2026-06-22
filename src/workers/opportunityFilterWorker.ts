@@ -301,10 +301,10 @@ function passesAIFilter(
       missingReason: '缺少趋势评分数据',
     },
     {
-      name: '风险评分',
+      name: '安全评分',
       range: filters.aiRiskScoreRange,
       value: recommendation?.riskScore,
-      missingReason: '缺少风险评分数据',
+      missingReason: '缺少安全评分数据',
     },
   ];
 

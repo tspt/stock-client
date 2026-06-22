@@ -184,7 +184,7 @@ export const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({
                   />
                 </div>
                 <div className={styles.scoreItem}>
-                  <div className={styles.scoreItemLabel}>风险</div>
+                  <div className={styles.scoreItemLabel}>安全</div>
                   <Progress
                     percent={analysis.recommendation.riskScore}
                     strokeColor={getScoreColor(analysis.recommendation.riskScore)}

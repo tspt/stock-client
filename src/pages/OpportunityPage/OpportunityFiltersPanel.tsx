@@ -162,7 +162,7 @@ export function buildOpportunityFilterSummary(p: {
       pushRange(parts, 'AI趋势', p.aiTrendScoreRange);
     }
     if (p.aiRiskScoreRange.min != null || p.aiRiskScoreRange.max != null) {
-      pushRange(parts, 'AI风险', p.aiRiskScoreRange);
+      pushRange(parts, 'AI安全', p.aiRiskScoreRange);
     }
   }
 
@@ -1250,9 +1250,9 @@ export function OpportunityFiltersPanel({
                       />
                     </div>
 
-                    {/* 风险评分 */}
+                    {/* 安全评分 */}
                     <div className={styles.filterItem} style={{ minWidth: 320 }}>
-                      <span className={styles.filterLabel}>风险评分：</span>
+                      <span className={styles.filterLabel}>安全评分：</span>
                       <InputNumber
                         value={aiRiskScoreRange.min}
                         min={0}
@@ -1285,7 +1285,7 @@ export function OpportunityFiltersPanel({
                         }}
                       />
                       <span style={{ marginLeft: 8, color: 'var(--ant-color-text-secondary)', fontSize: 12 }}>
-                        （分数越高风险越低）
+                        （分数越高越安全）
                       </span>
                     </div>
 
