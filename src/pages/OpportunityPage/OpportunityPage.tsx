@@ -315,16 +315,16 @@ export function OpportunityPage() {
   const [errorExpanded, setErrorExpanded] = useState(false); // 失败详情展开状态
 
   // AI分析版本选择（切换时自动刷新）；与 store.analysisAiVersion 对齐供一键分析使用
-  const [aiVersion, setAiVersion] = useState<'v1' | 'v2' | 'v3' | 'v4' | 'v5' | 'v6'>('v5');
+  const [aiVersion, setAiVersion] = useState<'v1' | 'v2' | 'v3' | 'v4' | 'v5' | 'v6' | 'v7'>('v5');
   const [showAddToWatchListModal, setShowAddToWatchListModal] = useState(false);
   const [aiRefreshLoading, setAiRefreshLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(false); // 初始数据加载状态
 
-  const aiVersionLabel = (version: 'v1' | 'v2' | 'v3' | 'v4' | 'v5' | 'v6') =>
-    version === 'v6' ? 'v6.0性能增强' : version === 'v5' ? 'v5.0智能增强' : version === 'v3' ? 'v3.0增强版' : version === 'v2' ? 'v2.0优化版' : version === 'v4' ? 'v4.0结构增强' : 'v1.0原始版';
+  const aiVersionLabel = (version: 'v1' | 'v2' | 'v3' | 'v4' | 'v5' | 'v6' | 'v7') =>
+    version === 'v7' ? 'v7.0安全增强' : version === 'v6' ? 'v6.0性能增强' : version === 'v5' ? 'v5.0智能增强' : version === 'v3' ? 'v3.0增强版' : version === 'v2' ? 'v2.0优化版' : version === 'v4' ? 'v4.0结构增强' : 'v1.0原始版';
 
   // AI版本切换时自动执行刷新（无分析数据时仅写入 store，供下次一键分析使用）
-  const handleAiVersionChange = async (version: 'v1' | 'v2' | 'v3' | 'v4' | 'v5' | 'v6') => {
+  const handleAiVersionChange = async (version: 'v1' | 'v2' | 'v3' | 'v4' | 'v5' | 'v6' | 'v7') => {
     logger.info(`[AI版本切换] 切换到 ${version}`);
     setAiVersion(version);
     useOpportunityStore.setState({ analysisAiVersion: version });
@@ -348,6 +348,9 @@ export function OpportunityPage() {
       let performAIAnalysis: any;
       if (version === 'v6') {
         const module = await import('../../services/opportunity/ai-v6.0');
+        performAIAnalysis = module.performAIAnalysis;
+      } else if (version === 'v7') {
+        const module = await import('../../services/opportunity/ai-v7.0');
         performAIAnalysis = module.performAIAnalysis;
       } else if (version === 'v5') {
         const module = await import('../../services/opportunity/ai-v5.0');
@@ -1631,6 +1634,7 @@ export function OpportunityPage() {
               { label: 'v4.0 结构增强', value: 'v4' },
               { label: 'v5.0 智能增强', value: 'v5' },
               { label: 'v6.0 性能增强', value: 'v6' },
+              { label: 'v7.0 安全增强', value: 'v7' },
             ]}
             disabled={loading || aiRefreshLoading}
             title="切换AI分析算法版本（自动刷新）"

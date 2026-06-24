@@ -52,13 +52,13 @@ interface OpportunityState {
   analysisTimestamp: number | null;
 
   // 一键分析时使用的 AI 版本（与失败重试共用）
-  analysisAiVersion: 'v1' | 'v2' | 'v3' | 'v4' | 'v5' | 'v6';
+  analysisAiVersion: 'v1' | 'v2' | 'v3' | 'v4' | 'v5' | 'v6' | 'v7';
 
   startAnalysis: (
     period: KLinePeriod,
     stocks: StockInfo[],
     count: number,
-    aiVersion?: 'v1' | 'v2' | 'v3' | 'v4' | 'v5' | 'v6'
+    aiVersion?: 'v1' | 'v2' | 'v3' | 'v4' | 'v5' | 'v6' | 'v7'
   ) => Promise<void>;
   cancelAnalysis: () => void;
   retryFailedStocks: () => Promise<void>;
