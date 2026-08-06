@@ -15,7 +15,7 @@ export const OPPORTUNITY_DEFAULT_BASIC_FILTERS = {
   /** 价格 */
   priceRange: { min: 3, max: 100 },
   /** 市值范围（亿） */
-  marketCapRange: { min: 100, max: 1000 },
+  marketCapRange: { min: 30, max: 1000 },
   /** 总股本范围（亿） */
   totalSharesRange: { min: 1, max: 50 },
   /** 换手率范围（%） */
@@ -25,9 +25,9 @@ export const OPPORTUNITY_DEFAULT_BASIC_FILTERS = {
 /** 涨跌停筛选默认配置 */
 export const OPPORTUNITY_DEFAULT_LIMIT_MOVES = {
   /** 涨停/跌停统计周期 */
-  period: 10,
+  period: 20,
   /** 默认涨停次数 */
-  minLimitUpCount: 1,
+  minLimitUpCount: undefined,
 } as const;
 
 /** 行业板块筛选默认配置 */
@@ -112,13 +112,13 @@ export const OPPORTUNITY_DEFAULT_AI_ANALYSIS = {
   /** AI趋势判断 - 横盘 */
   trendSideways: false,
   /** AI置信度最小值（%） */
-  confidenceMin: 60,
+  confidenceMin: 70,
   /** AI形态评分最小值 */
   patternScoreMin: 60,
   /** AI趋势评分最小值 */
   trendScoreMin: 55,
   /** AI安全评分最小值 */
-  riskScoreMin: 40,
+  riskScoreMin: undefined,
 } as const;
 
 // ==================== 3. 横盘筛选 ====================
