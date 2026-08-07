@@ -40,29 +40,9 @@ try {
         syncEastMoneySessionCookies: (raw) => {
             return electron_1.ipcRenderer.invoke('sync-eastmoney-session-cookies', raw);
         },
-        // 保存股票K线数据到本地文件
-        saveStockData: (data) => {
-            return electron_1.ipcRenderer.invoke('save-stock-data', data);
-        },
-        // 扫描股票数据目录获取股票列表
-        scanStockDataDirectory: () => {
-            return electron_1.ipcRenderer.invoke('scan-stock-data-directory');
-        },
-        // 获取股票数据文件路径
-        getStockDataPath: (filename) => {
-            return electron_1.ipcRenderer.sendSync('get-stock-data-path', filename);
-        },
-        // 读取股票JSON文件中的日期买点
-        readStockBuyPoints: (filePath) => {
-            return electron_1.ipcRenderer.invoke('read-stock-buy-points', filePath);
-        },
-        // 批量导出K线数据
+        // 批量导出K线数据到 docs/回测优化/股票数据
         batchExportKlineData: (stocksData) => {
             return electron_1.ipcRenderer.invoke('batch-export-kline-data', stocksData);
-        },
-        // 分批保存回测信号数据
-        batchSaveBacktestSignals: (batches) => {
-            return electron_1.ipcRenderer.invoke('batch-save-backtest-signals', batches);
         },
         // 监听Cookie获取进度
         onCookieFetchProgress: (callback) => {

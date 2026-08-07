@@ -48,36 +48,7 @@ try {
       return ipcRenderer.invoke('sync-eastmoney-session-cookies', raw);
     },
 
-    // 保存股票K线数据到本地文件
-    saveStockData: (data: {
-      code: string;
-      name: string;
-      klineData: any[];
-      latestQuote?: any;
-      updatedAt?: number;
-      dates: string[];
-      exportContent?: string;
-      exportFilename?: string;
-    }) => {
-      return ipcRenderer.invoke('save-stock-data', data);
-    },
-
-    // 扫描股票数据目录获取股票列表
-    scanStockDataDirectory: () => {
-      return ipcRenderer.invoke('scan-stock-data-directory');
-    },
-
-    // 获取股票数据文件路径
-    getStockDataPath: (filename: string) => {
-      return ipcRenderer.sendSync('get-stock-data-path', filename);
-    },
-
-    // 读取股票JSON文件中的日期买点
-    readStockBuyPoints: (filePath: string) => {
-      return ipcRenderer.invoke('read-stock-buy-points', filePath);
-    },
-
-    // 批量导出K线数据
+    // 批量导出K线数据到 docs/回测优化/股票数据
     batchExportKlineData: (
       stocksData: Array<{
         code: string;
@@ -89,11 +60,6 @@ try {
       }>
     ) => {
       return ipcRenderer.invoke('batch-export-kline-data', stocksData);
-    },
-
-    // 分批保存回测信号数据
-    batchSaveBacktestSignals: (batches: Array<{ filename: string; data: any }>) => {
-      return ipcRenderer.invoke('batch-save-backtest-signals', batches);
     },
 
     // 监听Cookie获取进度

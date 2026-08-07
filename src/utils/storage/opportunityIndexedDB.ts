@@ -16,9 +16,7 @@ import {
   OPPORTUNITY_STORE_NAME,
   STOCK_RECORDS_STORE_NAME,
   STOCK_HISTORY_STORE_NAME,
-  SIGNAL_BACKTEST_STORE_NAME,
 } from '../config/constants';
-import { logger } from '@/utils/business/logger';
 
 let dbInstance: IDBDatabase | null = null;
 
@@ -66,14 +64,10 @@ export async function initOpportunityDB(): Promise<IDBDatabase> {
         });
       }
 
-      // 信号回测结果存储：直接删除重建，使用 code 作为主键
-      if (db.objectStoreNames.contains(SIGNAL_BACKTEST_STORE_NAME)) {
-        db.deleteObjectStore(SIGNAL_BACKTEST_STORE_NAME);
+      // v5: 移除已废弃的信号回测结果存储
+      if (db.objectStoreNames.contains('signalBacktestResults')) {
+        db.deleteObjectStore('signalBacktestResults');
       }
-      const backtestStore = db.createObjectStore(SIGNAL_BACKTEST_STORE_NAME, {
-        keyPath: 'code', // 使用股票代码作为主键
-      });
-      backtestStore.createIndex('signalDate', 'signalDate', { unique: false });
     };
   });
 }
@@ -309,116 +303,3 @@ export async function getStocksHistory(codes: string[]): Promise<StockHistoryRec
   });
 }
 
-// ==================== 信号回测结果管理 ====================
-
-export interface SignalBacktestResult {
-  code: string; // 股票代码 (作为主键)
-  name: string; // 股票名称
-  signals: Array<{
-    signalDate: string; // 信号日期 (YYYY-MM-DD)
-    entryPrice: number; // 入场价格
-    returns: {
-      day3: number | null; // 3日收益率
-      day5: number | null; // 5日收益率
-      day10: number | null; // 两周(约10个交易日)收益率
-      day20: number | null; // 一个月(约20个交易日)收益率
-    };
-  }>;
-  calculatedAt: number; // 计算时间戳
-}
-
-/**
- * 保存信号回测结果
- */
-export async function saveSignalBacktest(result: SignalBacktestResult): Promise<void> {
-  const db = await initOpportunityDB();
-  const transaction = db.transaction([SIGNAL_BACKTEST_STORE_NAME], 'readwrite');
-  const store = transaction.objectStore(SIGNAL_BACKTEST_STORE_NAME);
-
-  return new Promise((resolve, reject) => {
-    const request = store.put(result); // 使用 code 作为 key，如果存在则更新，不存在则插入
-    request.onsuccess = () => resolve();
-    request.onerror = () => reject(new Error('保存信号回测结果失败'));
-  });
-}
-
-/**
- * 获取指定股票的信号回测结果
- */
-export async function getSignalBacktestsByCode(code: string): Promise<SignalBacktestResult | null> {
-  const db = await initOpportunityDB();
-  const transaction = db.transaction([SIGNAL_BACKTEST_STORE_NAME], 'readonly');
-  const store = transaction.objectStore(SIGNAL_BACKTEST_STORE_NAME);
-
-  return new Promise((resolve, reject) => {
-    const request = store.get(code); // 直接通过 code 获取
-    request.onsuccess = () => resolve(request.result || null);
-    request.onerror = () => reject(new Error('获取信号回测结果失败'));
-  });
-}
-
-/**
- * 获取所有信号回测结果
- */
-export async function getAllSignalBacktests(): Promise<SignalBacktestResult[]> {
-  const db = await initOpportunityDB();
-  const transaction = db.transaction([SIGNAL_BACKTEST_STORE_NAME], 'readonly');
-  const store = transaction.objectStore(SIGNAL_BACKTEST_STORE_NAME);
-
-  return new Promise((resolve, reject) => {
-    const request = store.getAll(); // 获取所有记录
-    request.onsuccess = () => resolve(request.result || []);
-    request.onerror = () => reject(new Error('获取所有信号回测结果失败'));
-  });
-}
-
-/**
- * 清除所有信号回测结果
- */
-export async function clearAllSignalBacktests(): Promise<void> {
-  const db = await initOpportunityDB();
-  const transaction = db.transaction([SIGNAL_BACKTEST_STORE_NAME], 'readwrite');
-  const store = transaction.objectStore(SIGNAL_BACKTEST_STORE_NAME);
-
-  return new Promise((resolve, reject) => {
-    const request = store.clear();
-    request.onsuccess = () => resolve();
-    request.onerror = () => reject(new Error('清除所有信号回测结果失败'));
-  });
-}
-
-/**
- * 批量保存信号回测结果
- */
-export async function batchSaveSignalBacktests(results: SignalBacktestResult[]): Promise<void> {
-  if (results.length === 0) {
-    return;
-  }
-
-  const db = await initOpportunityDB();
-  const transaction = db.transaction([SIGNAL_BACKTEST_STORE_NAME], 'readwrite');
-  const store = transaction.objectStore(SIGNAL_BACKTEST_STORE_NAME);
-
-  return new Promise((resolve, reject) => {
-    let completed = 0;
-    const total = results.length;
-
-    results.forEach((result) => {
-      const request = store.put(result); // 使用 code 作为 key
-      request.onsuccess = () => {
-        completed++;
-        if (completed === total) {
-          resolve();
-        }
-      };
-      request.onerror = () => {
-        completed++;
-        if (completed === total) {
-          // 即使有错误也继续，避免阻塞整个流程
-          logger.warn('部分信号回测结果保存失败', result);
-          resolve();
-        }
-      };
-    });
-  });
-}
