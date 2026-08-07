@@ -13,7 +13,10 @@
     "proxy": "node server/proxy.js",
     "electron:dev": "npm run build:electron && concurrently \"npm run dev\" \"wait-on http://localhost:5173 && electron .\"",
     "electron:build": "npm run build && npm run build:electron && node scripts/electron-build-china.cjs",
-    "electron:build:win": "npm run build && npm run build:electron && node scripts/electron-build-china.cjs --win"
+    "electron:build:win": "npm run build && npm run build:electron && node scripts/electron-build-china.cjs --win",
+    "scan:buypoints": "node scripts/scan-buypoint-signals.cjs",
+    "classify:buypoints": "node scripts/classify-buypoint-scenarios.cjs",
+    "classify:latest": "node scripts/classify-latest-day.cjs"
   },
   "keywords": [
     "stock",

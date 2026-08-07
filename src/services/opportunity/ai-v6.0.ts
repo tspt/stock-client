@@ -859,8 +859,19 @@ function v4RecomputeTotal(rec: SmartRecommendationScore): number {
 }
 
 function v4ApplyStructuralAdjust(klineData: KLineData[], base: AIAnalysisResult): AIAnalysisResult {
-  const rec = { ...base.recommendation!, reasons: [...(base.recommendation!.reasons || [])], warnings: [...(base.recommendation!.warnings || [])] };
-  const tp = { ...base.trendPrediction, reasoning: [...(base.trendPrediction.reasoning || [])] };
+  if (!base.recommendation || !base.trendPrediction) {
+    return base;
+  }
+
+  const rec: SmartRecommendationScore = {
+    ...base.recommendation,
+    reasons: [...(base.recommendation.reasons || [])],
+    warnings: [...(base.recommendation.warnings || [])],
+  };
+  const tp: TrendPrediction = {
+    ...base.trendPrediction,
+    reasoning: [...(base.trendPrediction.reasoning || [])],
+  };
   const len = klineData.length;
   if (len < 10) return base;
 

@@ -71,6 +71,7 @@ export function buildOpportunityFilterSummary(p: {
   aiPatternScoreRange: NumRange;
   aiTrendScoreRange: NumRange;
   aiRiskScoreRange: NumRange;
+  aiVersion?: 'v1' | 'v2' | 'v3' | 'v4' | 'v5' | 'v6';
   // 行业与概念板块
   industrySectors?: string[];
   conceptSectors?: string[];

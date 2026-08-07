@@ -1,142 +1,121 @@
 /**
  * 历史回测页面
- * 基于本地 IndexDB 的全量历史数据进行策略回测
+ * - 导出 IndexedDB stockHistory 到 docs/回测优化/股票数据
+ * - 基于当前 stockHistory 重新扫描历史好买点与场景
+ * - 基于当前 stockHistory 扫描最新交易日高 lift 场景
  */
 
-import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
-import React from 'react';
-import { Layout, Card, Button, Space, Table, Progress, Select, DatePicker, Tag, Row, Col, Input, Typography, App, Drawer, Modal, Checkbox, InputNumber, Dropdown, Alert, Spin, type MenuProps } from 'antd';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  Layout,
+  Card,
+  Button,
+  Progress,
+  Typography,
+  App,
+  Space,
+  Statistic,
+  Row,
+  Col,
+  Checkbox,
+  Table,
+  Tag,
+  Tabs,
+  Select,
+  Input,
+  Alert,
+} from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { ExperimentOutlined, ReloadOutlined, SearchOutlined, FilterOutlined, ClearOutlined, ExportOutlined, CopyOutlined, DownOutlined } from '@ant-design/icons';
-import VirtualList from 'rc-virtual-list';
-import { getStocksHistory, getSignalBacktestsByCode, clearAllSignalBacktests, batchSaveSignalBacktests, getAllSignalBacktests, getStockHistory } from '@/utils/storage/opportunityIndexedDB';
-import { getModelMetadata as getModelMetadataV4 } from '@/utils/analysis/mlBuypointModel';
-import { getModelMetadata as getModelMetadataV5, setIndustryModels } from '@/utils/analysis/mlBuypointModel_v5';
-import { IndustryModelManager } from '@/utils/analysis/industryModelManager';
-import type { SkippedStock } from '@/types/industryModel';
-import { DEFAULT_EXPORT_STOCKS, getEnabledExportStocks, updateStocksFromScan, type ExportStockConfig } from '@/config/exportStocksConfig';
-import { exportLatestSignalsToPng } from '@/utils/export/backtestExportUtils';
-import { OPPORTUNITY_DEFAULT_INDUSTRY_SECTORS, OPPORTUNITY_DEFAULT_BASIC_FILTERS } from '@/utils/config/opportunityAnalysisDefaults';
-import { getUnifiedSectorBasics } from '@/services/hot/unified-sectors';
-import { useAllStocks } from '@/hooks/useAllStocks';
+import { ExportOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons';
+import { getStocksHistory, type StockHistoryRecord } from '@/utils/storage/opportunityIndexedDB';
+import {
+  HIGH_LIFT_SCENARIOS,
+  SCENARIOS,
+  scanHistoricalBuyPoints,
+  scanLatestScenarioSignals,
+  type BuyPointSignal,
+  type LatestScenarioSignal,
+  type ReturnSnapshot,
+  type ScenarioId,
+} from '@/utils/analysis/buypointScenario';
 import { logger } from '@/utils/business/logger';
 import styles from './BacktestPage.module.css';
 
 const { Header, Content } = Layout;
-const { Text } = Typography;
-const { RangePicker } = DatePicker;
+const { Text, Paragraph } = Typography;
 
-// Memoized 列表项组件，防止不必要的重渲染
-const StockListItem = React.memo(React.forwardRef<HTMLDivElement, {
-  item: any;
-  isSelected: boolean;
-  onSelect: (code: string) => void;
-  onExport: (code: string, name: string) => void;
-  industry?: { code: string; name: string } | null;
-  style?: React.CSSProperties;
-}>(({ item, isSelected, onSelect, onExport, industry, style }, ref) => {
-  return (
-    <div
-      ref={ref}
-      style={style}
-      className={`${styles.stockListItem} ${isSelected ? styles.selected : ''}`}
-      onClick={() => onSelect(item.code)}
-    >
-      <div className={styles.stockItemContent}>
-        <div className={styles.stockInfo}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <div className={styles.stockName}>{item.name}</div>
-            {industry && (
-              <Tag color="green" style={{ fontSize: 11, margin: 0, padding: '0 6px' }}>
-                {industry.name}
-              </Tag>
-            )}
-          </div>
-          <div className={styles.stockCode}>{item.code}</div>
-        </div>
-        <Tag color="blue" className={styles.signalCount}>{item.signals.length}个信号</Tag>
-      </div>
-      <Button
-        size="small"
-        icon={<CopyOutlined />}
-        onClick={(e) => {
-          e.stopPropagation();
-          onExport(item.code, item.name);
-        }}
-      >
-        复制
-      </Button>
-    </div>
-  );
-}));
+type IndustryInfo = { code: string; name: string };
 
-StockListItem.displayName = 'StockListItem';
+function isSTStock(name: string): boolean {
+  return name.includes('ST');
+}
+
+function filterHistories(histories: StockHistoryRecord[], excludeST: boolean): StockHistoryRecord[] {
+  if (!excludeST) return histories;
+  return histories.filter((h) => !isSTStock(h.name || ''));
+}
+
+function returnText(value: number | null): string {
+  return value == null ? '' : `${value.toFixed(2)}%`;
+}
+
+function returnColor(value: number | null): string | undefined {
+  if (value == null) return undefined;
+  if (value > 5) return '#cf1322';
+  if (value > 0) return '#d46b08';
+  return '#389e0d';
+}
+
+function getLatestDateSummary(histories: StockHistoryRecord[]): {
+  dominantDate: string;
+  dominantCount: number;
+} {
+  const counts = new Map<string, number>();
+  histories.forEach((history) => {
+    const latest = history.dailyLines?.[history.dailyLines.length - 1];
+    if (!latest) return;
+    const date = new Date(latest.time);
+    const key = `${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}`;
+    counts.set(key, (counts.get(key) || 0) + 1);
+  });
+
+  let dominantDate = '';
+  let dominantCount = 0;
+  counts.forEach((count, date) => {
+    if (count > dominantCount) {
+      dominantDate = date;
+      dominantCount = count;
+    }
+  });
+
+  return { dominantDate, dominantCount };
+}
+
+const scenarioOptions = [
+  { label: '全部场景', value: 'all' },
+  ...SCENARIOS.map((s) => ({ label: s.name, value: s.id })),
+];
+
+const highLiftIds = new Set(HIGH_LIFT_SCENARIOS.map((s) => s.id));
 
 export function BacktestPage() {
   const { message } = App.useApp();
-  const { allStocks } = useAllStocks();
-  const [loading, setLoading] = useState(false);
-  const [backtesting, setBacktesting] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [results, setResults] = useState<any[]>([]);
-  const [groupedResults, setGroupedResults] = useState<any[]>([]);
-  const [selectedStockCode, setSelectedStockCode] = useState<string | null>(null);
-  const [skippedStocks, setSkippedStocks] = useState<SkippedStock[]>([]);
-  const [searchText, setSearchText] = useState('');
-  // 市场筛选（多选）
-  const [selectedMarket, setSelectedMarket] = useState<string[]>([...OPPORTUNITY_DEFAULT_BASIC_FILTERS.selectedMarket]);
-  const [nameType, setNameType] = useState<string>('non_st');
-  // 行业板块筛选
-  const [industrySectors, setIndustrySectors] = useState<string[]>([...OPPORTUNITY_DEFAULT_INDUSTRY_SECTORS.excludedIndustries]);
-  const [industrySectorInvert, setIndustrySectorInvert] = useState<boolean>(OPPORTUNITY_DEFAULT_INDUSTRY_SECTORS.invertEnabled);
-  // 概念板块筛选
-  const [conceptSectors, setConceptSectors] = useState<string[]>([]);
-  const [conceptSectorInvert, setConceptSectorInvert] = useState<boolean>(false);
-  // 板块选项
-  const [industrySectorOptions, setIndustrySectorOptions] = useState<{ label: string; value: string }[]>([]);
-  const [conceptSectorOptions, setConceptSectorOptions] = useState<{ label: string; value: string }[]>([]);
-  // 股票板块映射
-  const [stockSectorMapping, setStockSectorMapping] = useState<Map<string, { industry?: { code: string; name: string }; concepts?: { code: string; name: string }[] }>>(new Map());
-  // 价格、市值、总股数范围
-  const [priceRange, setPriceRange] = useState<{ min?: number; max?: number }>({ ...OPPORTUNITY_DEFAULT_BASIC_FILTERS.priceRange });
-  const [marketCapRange, setMarketCapRange] = useState<{ min?: number; max?: number }>({ ...OPPORTUNITY_DEFAULT_BASIC_FILTERS.marketCapRange });
-  const [totalSharesRange, setTotalSharesRange] = useState<{ min?: number; max?: number }>({ ...OPPORTUNITY_DEFAULT_BASIC_FILTERS.totalSharesRange });
-  const [timeRange, setTimeRange] = useState<number>(0);
-  const [minWinRate, setMinWinRate] = useState<number>(0); // 近3日胜率最低值
-  const [minWinRateDay1, setMinWinRateDay1] = useState<number>(0); // 近1日胜率最低值
-  const [minWinRateDay2, setMinWinRateDay2] = useState<number>(0); // 近2日胜率最低值
-  const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
-  const [exportDrawerOpen, setExportDrawerOpen] = useState(false);
-  const [exportingStock, setExportingStock] = useState<{ code: string; name: string } | null>(null);
-  const [exportAllModalOpen, setExportAllModalOpen] = useState(false);
+  const [totalCount, setTotalCount] = useState(0);
+  const [exportCount, setExportCount] = useState(0);
+  const [excludeST, setExcludeST] = useState(true);
+  const [loadingCount, setLoadingCount] = useState(false);
   const [exporting, setExporting] = useState(false);
-  const [selectedExportStocks, setSelectedExportStocks] = useState<string[]>([]);
-  const [scanning, setScanning] = useState(false); // 扫描状态
-  const [dateInput, setDateInput] = useState(''); // 多行文本输入
-  const [saving, setSaving] = useState(false);
-  const [exportingLatest, setExportingLatest] = useState(false); // 导出最新信号状态
-  const [exportingFiltered, setExportingFiltered] = useState(false); // 导出过滤后股票状态
-  const [exportProgress, setExportProgress] = useState({ current: 0, total: 0 }); // 导出进度
-  // 批量导出K线数据相关状态
-  const [batchExportModalOpen, setBatchExportModalOpen] = useState(false);
-  const [batchExporting, setBatchExporting] = useState(false);
-  const workerRef = useRef<Worker | null>(null);
-  const taskIdCounter = useRef(0);
-  const listContainerRef = useRef<HTMLDivElement>(null);
-  const [listHeight, setListHeight] = useState(600);
+  const [scanningHistory, setScanningHistory] = useState(false);
+  const [scanningLatest, setScanningLatest] = useState(false);
+  const [exportProgress, setExportProgress] = useState({ current: 0, total: 0 });
+  const [industryMapping, setIndustryMapping] = useState<Map<string, IndustryInfo>>(new Map());
+  const [historySignals, setHistorySignals] = useState<BuyPointSignal[]>([]);
+  const [latestSignals, setLatestSignals] = useState<LatestScenarioSignal[]>([]);
+  const [historyScenarioFilter, setHistoryScenarioFilter] = useState<string>('all');
+  const [latestScenarioFilter, setLatestScenarioFilter] = useState<string>('all');
+  const [searchText, setSearchText] = useState('');
+  const [latestDateSummary, setLatestDateSummary] = useState({ dominantDate: '', dominantCount: 0 });
 
-  // 模型版本选择（默认v5）
-  const [modelVersion, setModelVersion] = useState<'v4' | 'v5'>('v5');
-  const [modelsLoading, setModelsLoading] = useState(true); // 模型加载状态
-  const [workerModelLoading, setWorkerModelLoading] = useState(false); // Worker模型加载状态
-  const [workerModelProgress, setWorkerModelProgress] = useState(0); // Worker模型加载进度
-
-  // 获取模型元数据（根据版本）
-  const modelMetadata = useMemo(() => {
-    return modelVersion === 'v5' ? getModelMetadataV5() : getModelMetadataV4();
-  }, [modelVersion]);
-
-  // 股票代码规范化函数：将纯数字代码转换为标准格式
   const normalizeStockCode = useCallback((code: string): string => {
     if (code.startsWith('SH') || code.startsWith('SZ')) {
       return code;
@@ -144,1544 +123,284 @@ export function BacktestPage() {
     const prefix = code.substring(0, 2);
     if (['60', '68', '90'].includes(prefix)) {
       return `SH${code}`;
-    } else if (['00', '30'].includes(prefix)) {
+    }
+    if (['00', '30'].includes(prefix)) {
       return `SZ${code}`;
     }
     return code;
   }, []);
 
-  // 加载板块映射
   useEffect(() => {
-    const loadSectorMapping = async () => {
+    const loadIndustryMapping = async () => {
       try {
-        const { getIndustrySectors, getConceptSectors } = await import('@/utils/storage/sectorStocksIndexedDB');
-
-        const mapping = new Map<string, { industry?: { code: string; name: string }; concepts?: { code: string; name: string }[] }>();
-
-        // 1. 加载行业板块
+        const { getIndustrySectors } = await import('@/utils/storage/sectorStocksIndexedDB');
+        const mapping = new Map<string, IndustryInfo>();
         const industrySectors = await getIndustrySectors();
         industrySectors.forEach((sector) => {
           sector.children?.forEach((stock) => {
             const normalizedCode = normalizeStockCode(stock.code);
             if (!mapping.has(normalizedCode)) {
-              mapping.set(normalizedCode, {});
+              mapping.set(normalizedCode, { code: sector.code, name: sector.name });
             }
-            const info = mapping.get(normalizedCode)!;
-            info.industry = { code: sector.code, name: sector.name };
           });
         });
-
-        // 2. 加载概念板块
-        const conceptSectors = await getConceptSectors();
-        conceptSectors.forEach((sector) => {
-          sector.children?.forEach((stock) => {
-            const normalizedCode = normalizeStockCode(stock.code);
-            if (!mapping.has(normalizedCode)) {
-              mapping.set(normalizedCode, {});
-            }
-            const info = mapping.get(normalizedCode)!;
-            if (!info.concepts) {
-              info.concepts = [];
-            }
-            info.concepts.push({ code: sector.code, name: sector.name });
-          });
-        });
-
-        setStockSectorMapping(mapping);
-        logger.info(`[BacktestPage] 板块映射加载完成，共 ${mapping.size} 只股票`);
+        setIndustryMapping(mapping);
+        logger.info(`[BacktestPage] 行业映射加载完成，共 ${mapping.size} 只股票`);
       } catch (error) {
-        logger.error('[BacktestPage] 加载板块映射失败:', error);
+        logger.error('[BacktestPage] 加载行业映射失败:', error);
       }
     };
 
-    loadSectorMapping();
+    loadIndustryMapping();
   }, [normalizeStockCode]);
 
-  // 加载行业模型（仅当使用v5版本时）
-  useEffect(() => {
-    if (modelVersion !== 'v5') {
-      setModelsLoading(false); // v4版本不需要加载模型
-      return;
-    }
+  const readFilteredHistories = useCallback(async () => {
+    const allHistories = await getStocksHistory([]);
+    const histories = filterHistories(allHistories, excludeST);
+    setTotalCount(allHistories.length);
+    setExportCount(histories.length);
+    setLatestDateSummary(getLatestDateSummary(histories));
+    return { allHistories, histories };
+  }, [excludeST]);
 
-    setModelsLoading(true); // 开始加载
-
-    const loadModels = async () => {
-      try {
-        logger.info('[BacktestPage] 开始加载v5.0行业模型...');
-        const manager = new IndustryModelManager({
-          baseUrl: '/models/industry',
-          timeout: 120000, // 2分钟超时
-          failFast: false, // 允许部分失败
-        });
-
-        await manager.loadAllModels((progress) => {
-          logger.info(`[BacktestPage] 模型加载进度: ${progress}%`);
-        });
-
-        const models = manager.getAllModels();
-        const index = manager.getIndex();
-        logger.info(`[BacktestPage] manager.getAllModels() 返回: ${models.length} 个模型`);
-        logger.info(`[BacktestPage] 前3个模型:`, models.slice(0, 3));
-
-        setIndustryModels(models, index?.industryToModelMap);
-        logger.info(`[BacktestPage] ✅ setIndustryModels 调用完成，已传入 ${models.length} 个模型`);
-        setModelsLoading(false); // 加载完成
-      } catch (error) {
-        logger.error('[BacktestPage] ❌ 加载行业模型失败:', error);
-        message.warning('行业模型加载失败，将使用默认模型');
-        setModelsLoading(false); // 失败也要设置为false，允许继续
-      }
-    };
-
-    loadModels();
-  }, [modelVersion]);
-
-  // 动态计算列表高度
-  useEffect(() => {
-    const updateHeight = () => {
-      if (listContainerRef.current) {
-        const containerRect = listContainerRef.current.getBoundingClientRect();
-        setListHeight(containerRect.height);
-      }
-    };
-
-    updateHeight();
-    window.addEventListener('resize', updateHeight);
-    return () => window.removeEventListener('resize', updateHeight);
-  }, []);
-
-  // 初始化 Worker
-  useEffect(() => {
-    const worker = new Worker(new URL('@/workers/backtestWorker.ts', import.meta.url), {
-      type: 'module',
-    });
-    workerRef.current = worker;
-
-    return () => {
-      worker.terminate();
-      workerRef.current = null;
-    };
-  }, []);
-
-  // 页面加载时从 IndexedDB 读取已保存的回测结果
-  useEffect(() => {
-    // 使用 Promise.all 并行加载，但确保状态更新的顺序性
-    const initializeData = async () => {
-      try {
-        await Promise.all([
-          loadSavedBacktestResults(),
-          loadSectorOptions()
-        ]);
-      } catch (error) {
-        logger.error('初始化数据失败:', error);
-      }
-    };
-
-    initializeData();
-  }, []);
-
-  // 加载板块选项数据
-  const loadSectorOptions = async () => {
+  const refreshHistoryCount = useCallback(async () => {
     try {
-      const { industry, concept } = await getUnifiedSectorBasics();
-      setIndustrySectorOptions(industry.map((s) => ({ label: s.name, value: s.code })));
-      setConceptSectorOptions(concept.map((s) => ({ label: s.name, value: s.code })));
+      setLoadingCount(true);
+      await readFilteredHistories();
     } catch (error) {
-      logger.error('加载板块选项失败:', error);
-    }
-  };
-
-  // 从 IndexedDB 加载已保存的回测结果
-  const loadSavedBacktestResults = async () => {
-    try {
-      setLoading(true);
-
-      const allResults = await getAllSignalBacktests();
-      if (allResults.length > 0) {
-        // 将按股票分组的数据展平为信号列表
-        const allSignals: any[] = [];
-        allResults.forEach(result => {
-          result.signals.forEach(signal => {
-            allSignals.push({
-              code: result.code,
-              name: result.name,
-              signalDate: signal.signalDate,
-              entryPrice: signal.entryPrice,
-              returns: signal.returns,
-            });
-          });
-        });
-
-        setResults(allSignals);
-        const grouped = groupSignalsByStock(allSignals);
-        setGroupedResults(grouped);
-
-        // 不在这里设置 selectedStockCode，让 useEffect 统一处理
-        // 这样可以避免与筛选逻辑冲突导致的二次渲染
-      }
-    } catch (error) {
-      logger.error('加载保存的回测结果失败:', error);
+      logger.error('[BacktestPage] 读取 stockHistory 数量失败:', error);
+      message.error('读取本地历史数据失败');
     } finally {
-      setLoading(false);
+      setLoadingCount(false);
     }
-  };
-
-  // 执行回测
-  const handleStartBacktest = async () => {
-    // 检查模型是否加载完成（v5版本）
-    if (modelVersion === 'v5' && modelsLoading) {
-      message.warning('行业模型正在加载中，请稍后再试...');
-      return;
-    }
-
-    if (!workerRef.current) {
-      message.error('回测引擎未就绪');
-      return;
-    }
-
-    setBacktesting(true);
-    setProgress(0);
-    setResults([]);
-    setSkippedStocks([]); // 清空跳过的股票列表
-    setWorkerModelLoading(false); // 重置Worker模型加载状态
-    setWorkerModelProgress(0); // 重置Worker模型加载进度
-    message.info('正在清除旧的回测数据...');
-
-    try {
-      // 清除之前的回测结果
-      await clearAllSignalBacktests();
-
-      message.info('正在从 IndexDB 加载历史数据...');
-      const allHistories = await getStocksHistory([]);
-
-      if (allHistories.length === 0) {
-        message.warning('当前没有可用的历史数据，请先在机会分析页触发数据同步');
-        setBacktesting(false);
-        return;
-      }
-
-      // 应用筛选条件，过滤股票
-      let histories = allHistories;
-
-      logger.info(`[BacktestPage] 开始应用筛选条件...`);
-      logger.info(`[BacktestPage] stockSectorMapping大小: ${stockSectorMapping.size}`);
-      logger.info(`[BacktestPage] selectedMarket: ${JSON.stringify(selectedMarket)}`);
-      logger.info(`[BacktestPage] nameType: ${nameType}`);
-      logger.info(`[BacktestPage] industrySectors: ${JSON.stringify(industrySectors)}`);
-
-      // 1. 按市场过滤
-      if (selectedMarket.length > 0) {
-        const beforeCount = histories.length;
-        histories = histories.filter(history => {
-          const pureCode = history.code.replace(/^(SH|SZ|BJ)/, '');
-          return selectedMarket.some(market => {
-            if (market === 'hs_main') return pureCode.startsWith('60') || pureCode.startsWith('00');
-            if (market === 'sz_gem') return pureCode.startsWith('30');
-            return true;
-          });
-        });
-        logger.info(`[BacktestPage] 市场过滤: ${beforeCount} -> ${histories.length}`);
-      }
-
-      // 2. 按名称过滤（ST筛选）
-      if (nameType !== 'all') {
-        const beforeCount = histories.length;
-        histories = histories.filter(history => {
-          const isST = history.name.includes('ST');
-          if (nameType === 'st') return isST;
-          if (nameType === 'non_st') return !isST;
-          return true;
-        });
-        logger.info(`[BacktestPage] ST过滤: ${beforeCount} -> ${histories.length}`);
-      }
-
-      // 3. 按行业过滤
-      if (industrySectors.length > 0) {
-        const beforeCount = histories.length;
-        histories = histories.filter(history => {
-          const sectorInfo = stockSectorMapping.get(history.code);
-          const industryName = sectorInfo?.industry?.name;
-          const industryCode = sectorInfo?.industry?.code;
-
-          // 如果股票有行业信息，检查是否在排除列表中
-          if (industryCode) {
-            // industrySectors 存储的是行业代码（如 BK1020）
-            const isExcluded = industrySectors.includes(industryCode);
-            return !isExcluded;
-          }
-          return true; // 没有行业信息的股票保留
-        });
-        logger.info(`[BacktestPage] 行业过滤: ${beforeCount} -> ${histories.length}`);
-      }
-
-      logger.info(`[BacktestPage] 筛选完成，最终股票数量: ${histories.length}`);
-
-      message.info(`开始回测 ${histories.length} 只股票的历史表现（总计 ${allHistories.length} 只，已过滤 ${allHistories.length - histories.length} 只）...`);
-      let processedCount = 0;
-      const allSignals: any[] = [];
-      const skippedStocksList: SkippedStock[] = []; // 记录跳过的股票
-      const totalTasks = histories.length;
-
-      // 统一的消息监听器
-      const onMessage = (e: MessageEvent) => {
-        const msg = e.data;
-        const { type, requestId, progress: stockProgress, signals } = msg;
-
-        // 处理模型加载进度消息
-        if (type === 'MODEL_LOADING_START') {
-          logger.info('[BacktestPage] Worker开始加载模型...');
-          setWorkerModelLoading(true);
-          setWorkerModelProgress(0);
-          return;
-        } else if (type === 'MODEL_LOADING_PROGRESS') {
-          logger.info(`[BacktestPage] Worker模型加载进度: ${msg.progress}% (${msg.loaded}/${msg.total})`);
-          setWorkerModelProgress(msg.progress);
-          return;
-        } else if (type === 'MODEL_LOADING_COMPLETE') {
-          logger.info(`[BacktestPage] Worker模型加载完成: ${msg.count} 个模型`);
-          setWorkerModelLoading(false);
-          setWorkerModelProgress(100);
-          return;
-        } else if (type === 'MODEL_LOADING_ERROR') {
-          logger.error(`[BacktestPage] Worker模型加载失败: ${msg.error}`);
-          message.error('Worker加载模型失败');
-          setWorkerModelLoading(false);
-          return;
-        }
-
-        // 查找对应的任务索引（简单匹配 requestId 前缀）
-        const code = requestId.split('_').pop();
-        const history = histories.find(h => h.code === code);
-
-        if (!history) return;
-
-        if (type === 'progress') {
-          // 简化进度计算：按已完成股票数 + 当前股票进度估算
-          const currentStockIndex = histories.indexOf(history);
-          const estimatedProgress = ((currentStockIndex + stockProgress / 100) / totalTasks) * 100;
-          setProgress(Math.min(Math.round(estimatedProgress), 99));
-        } else if (type === 'result') {
-          allSignals.push(...signals);
-          processedCount++;
-          const currentProgress = Math.round((processedCount / totalTasks) * 100);
-          // 在最后一个任务完成前，进度最多显示99%，避免数字和进度条不匹配
-          setProgress(processedCount === totalTasks ? 99 : Math.min(currentProgress, 99));
-
-          if (processedCount === totalTasks) {
-            setResults(allSignals);
-            // 按股票分组
-            const grouped = groupSignalsByStock(allSignals);
-            setGroupedResults(grouped);
-            // 设置跳过的股票列表
-            setSkippedStocks(skippedStocksList);
-            // 不在这里设置 selectedStockCode，让 useEffect 统一处理
-            setBacktesting(false);
-            workerRef.current?.removeEventListener('message', onMessage);
-
-            // 保存回测结果到 IndexedDB
-            saveBacktestResultsToIndexedDB(allSignals);
-
-
-
-            const skippedMsg = skippedStocksList.length > 0
-              ? `回测完成！共发现 ${allSignals.length} 个信号，${skippedStocksList.length} 只股票因缺少行业信息被跳过`
-              : `回测完成！共发现 ${allSignals.length} 个信号`;
-            message.success(skippedMsg);
-          }
-        }
-      };
-
-      workerRef.current.addEventListener('message', onMessage);
-
-      // 批量发送任务（包含行业信息）
-      for (const history of histories) {
-        // 获取股票的行业信息
-        const sectorInfo = stockSectorMapping.get(history.code);
-        const industryName = sectorInfo?.industry?.name;
-
-        // 如果没有行业信息，记录到跳过列表
-        if (!industryName) {
-          skippedStocksList.push({
-            code: history.code,
-            name: history.name,
-            reason: '缺少行业信息'
-          });
-          // 仍然发送任务，但 Worker 会使用默认模型
-        }
-
-        const currentTaskId = `bt_${taskIdCounter.current++}_${history.code}`;
-        workerRef.current.postMessage({
-          requestId: currentTaskId,
-          code: history.code,
-          name: history.name,
-          klineData: history.dailyLines,
-          industryName: industryName, // 传递行业名称
-        });
-      }
-    } catch (error) {
-      message.error('回测执行失败');
-      logger.error(error);
-      setBacktesting(false);
-    }
-  };
-
-  // 保存回测结果到 IndexedDB
-  const saveBacktestResultsToIndexedDB = async (signals: any[]) => {
-    try {
-      message.info('正在保存回测结果到本地存储...');
-
-      // 按股票代码分组信号
-      const groupedSignals = signals.reduce((acc, signal) => {
-        if (!acc[signal.code]) {
-          acc[signal.code] = {
-            code: signal.code,
-            name: signal.name,
-            signals: []
-          };
-        }
-        acc[signal.code].signals.push({
-          signalDate: signal.signalDate,
-          entryPrice: signal.entryPrice,
-          returns: signal.returns,
-        });
-        return acc;
-      }, {} as Record<string, any>);
-
-      // 转换为 IndexedDB 存储格式
-      const backtestResults = Object.values(groupedSignals).map((group: any) => ({
-        code: group.code,
-        name: group.name,
-        signals: group.signals,
-        calculatedAt: Date.now(),
-      }));
-
-      await batchSaveSignalBacktests(backtestResults);
-      message.success('回测结果已保存到本地存储');
-    } catch (error) {
-      logger.error('保存回测结果失败:', error);
-      message.error('保存回测结果失败');
-    }
-  };
-
-  // 按股票代码分组信号
-  const groupSignalsByStock = (signals: any[]) => {
-    interface StockGroup {
-      code: string;
-      name: string;
-      signals: any[];
-    }
-
-    const grouped = signals.reduce((acc, signal) => {
-      if (!acc[signal.code]) {
-        acc[signal.code] = {
-          code: signal.code,
-          name: signal.name,
-          signals: []
-        };
-      }
-      acc[signal.code].signals.push(signal);
-      return acc;
-    }, {} as Record<string, StockGroup>);
-
-    const values: StockGroup[] = Object.values(grouped);
-    return values.sort((a, b) => a.name.localeCompare(b.name, 'zh-CN'));
-  };
-
-  // 打开导出抽屉
-  const handleOpenExportDrawer = async (code: string, name: string) => {
-    setExportingStock({ code, name });
-
-    // 自动填充日期买点
-    try {
-      // 构建JSON文件路径（根据股票代码查找对应的JSON文件）
-      const stockCode = code.replace(/^(SH|SZ)/, '');
-      const jsonFileName = `${name}.json`;
-      const jsonFilePath = window.electronAPI?.getStockDataPath?.(jsonFileName);
-
-      if (jsonFilePath && window.electronAPI?.readStockBuyPoints) {
-        // 读取JSON文件中的日期买点
-        const buyPoints = await window.electronAPI.readStockBuyPoints(jsonFilePath);
-
-        if (buyPoints && buyPoints.length > 0) {
-          // 将日期格式从 YYYY/MM/DD 转换为 YYYYMMDD，每行一个
-          const formattedDates = buyPoints
-            .map((date: string) => date.replace(/\//g, ''))
-            .join('\n');
-          setDateInput(formattedDates);
-        } else {
-          setDateInput('');
-        }
-      } else {
-        setDateInput('');
-      }
-    } catch (error) {
-      logger.error('读取日期买点失败:', error);
-      setDateInput('');
-    }
-
-    setExportDrawerOpen(true);
-  };
-
-  // 日期格式化函数：将 "20251222" 格式化为 "2025/12/22"
-  const formatDateString = (input: string): string | null => {
-    const trimmed = input.trim();
-    if (!/^\d{8}$/.test(trimmed)) return null;
-
-    const year = trimmed.substring(0, 4);
-    const month = trimmed.substring(4, 6);
-    const day = trimmed.substring(6, 8);
-
-    // 验证日期有效性
-    const date = new Date(`${year}-${month}-${day}`);
-    if (isNaN(date.getTime())) return null;
-
-    return `${year}/${month}/${day}`;
-  };
-
-  // 保存股票数据到本地文件
-  const handleSaveStockData = async () => {
-    if (!exportingStock || !window.electronAPI?.saveStockData) {
-      message.error('保存功能不可用');
-      return;
-    }
-
-    // 解析日期输入（按换行分割）
-    const dateLines = dateInput.split('\n').filter((line) => line.trim());
-
-    if (dateLines.length === 0) {
-      message.warning('请至少输入一个日期');
-      return;
-    }
-
-    // 验证并格式化日期
-    const formattedDates: string[] = [];
-    for (const line of dateLines) {
-      const formatted = formatDateString(line);
-      if (!formatted) {
-        message.error(`日期格式错误: "${line}"，请输入8位数字（如20251222）`);
-        return;
-      }
-      formattedDates.push(formatted);
-    }
-
-    try {
-      setSaving(true);
-
-      // 从 IndexedDB 获取股票历史数据
-      const historyRecord = await getStockHistory(exportingStock.code);
-
-      if (!historyRecord) {
-        message.error('未找到该股票的历史数据');
-        setSaving(false);
-        return;
-      }
-
-      // 调用 Electron API 保存文件
-      const result = await window.electronAPI.saveStockData({
-        code: historyRecord.code,
-        name: historyRecord.name,
-        klineData: historyRecord.dailyLines,
-        latestQuote: historyRecord.latestQuote,
-        updatedAt: historyRecord.updatedAt,
-        dates: dateLines, // 传递原始输入，由主进程格式化
-      });
-
-      if (result.success) {
-        message.success(`保存成功！\n文件路径: ${result.filePath}`);
-        setExportDrawerOpen(false);
-        setDateInput('');
-      } else {
-        message.error('保存失败: ' + (result.error || '未知错误'));
-      }
-    } catch (error) {
-      logger.error('保存股票数据失败:', error);
-      message.error('保存失败: ' + (error as Error).message);
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  // 打开导出所有数据模态框（自动扫描目录）
-  const handleOpenExportAllModal = async () => {
-    setExportAllModalOpen(true);
-
-    // 自动执行扫描
-    await handleScanStockDirectory();
-  };
-
-  // 扫描股票数据目录获取最新股票列表
-  const handleScanStockDirectory = async () => {
-    if (!window.electronAPI?.scanStockDataDirectory) {
-      message.error('扫描功能不可用');
-      return;
-    }
-
-    try {
-      setScanning(true);
-
-      const result = await window.electronAPI.scanStockDataDirectory();
-
-      if (result.success && result.stocks) {
-        // 更新配置（临时，仅用于本次导出）
-        updateStocksFromScan(result.stocks);
-
-        // 选中所有股票
-        setSelectedExportStocks(result.stocks.map((s: { code: string }) => s.code));
-      } else {
-        message.error('扫描失败: ' + (result.error || '未知错误'));
-      }
-    } catch (error) {
-      logger.error('扫描目录失败:', error);
-      message.error('扫描失败: ' + (error as Error).message);
-    } finally {
-      setScanning(false);
-    }
-  };
-
-  // 切换股票选择状态
-  const toggleStockSelection = (code: string) => {
-    setSelectedExportStocks(prev =>
-      prev.includes(code)
-        ? prev.filter(c => c !== code)
-        : [...prev, code]
-    );
-  };
-
-  // 全选/取消全选
-  const toggleSelectAll = () => {
-    if (selectedExportStocks.length === DEFAULT_EXPORT_STOCKS.stocks.length) {
-      setSelectedExportStocks([]);
-    } else {
-      setSelectedExportStocks(DEFAULT_EXPORT_STOCKS.stocks.map(s => s.code));
-    }
-  };
-
-  // 导出数据为JSON格式
-  const convertToJSON = (data: any[]) => {
-    return JSON.stringify({
-      exportTime: new Date().toISOString(),
-      format: 'json',
-      totalStocks: data.length,
-      totalSignals: data.reduce((sum, item) => sum + (item.signals?.length || 0), 0),
-      data: data
-    }, null, 2);
-  };
-
-  // 执行批量导出
-  const handleExportAllData = async () => {
-    if (selectedExportStocks.length === 0) {
-      message.warning('请至少选择一只股票');
+  }, [message, readFilteredHistories]);
+
+  useEffect(() => {
+    refreshHistoryCount();
+  }, [refreshHistoryCount]);
+
+  const handleExportAllKlineData = async () => {
+    if (!window.electronAPI?.batchExportKlineData) {
+      message.error('批量导出功能不可用（需在 Electron 环境中运行）');
       return;
     }
 
     try {
       setExporting(true);
-      message.info('正在准备导出数据...');
+      setExportProgress({ current: 0, total: 0 });
+      message.info('正在读取 IndexedDB stockHistory...');
 
-      // 获取所有选中的股票回测数据
-      const allResults = await getAllSignalBacktests();
-      const filteredResults = allResults.filter(result =>
-        selectedExportStocks.includes(result.code)
-      );
+      const { allHistories, histories } = await readFilteredHistories();
+      const skippedST = allHistories.length - histories.length;
 
-      if (filteredResults.length === 0) {
-        message.warning('选中的股票没有回测数据');
-        setExporting(false);
+      if (allHistories.length === 0) {
+        message.warning('IndexedDB 中没有 stockHistory 数据');
         return;
       }
 
-      // 转换为JSON格式
-      const content = convertToJSON(filteredResults);
-      // 使用固定文件名，每次覆盖更新
-      const filename = `backtest_export_latest.json`;
+      if (histories.length === 0) {
+        message.warning('筛选后没有可导出的股票');
+        return;
+      }
 
-      // 使用Electron API保存文件
-      if (window.electronAPI?.saveStockData) {
-        const result = await window.electronAPI.saveStockData({
-          code: 'EXPORT_ALL',
-          name: '批量导出',
-          klineData: [],
-          dates: [],
-          // @ts-ignore - 添加额外字段用于导出
-          exportContent: content,
-          exportFilename: filename
-        });
+      setExportProgress({ current: 0, total: histories.length });
 
-        if (result.success) {
-          message.success(`导出成功！\n文件路径: ${result.filePath}`);
-          setExportAllModalOpen(false);
-        } else {
-          message.error('导出失败: ' + (result.error || '未知错误'));
+      const stocksData = histories.map((history, index) => {
+        const stockCode = normalizeStockCode(history.code);
+        const industry = history.industry || industryMapping.get(stockCode) || null;
+        if ((index + 1) % 50 === 0 || index + 1 === histories.length) {
+          setExportProgress({ current: index + 1, total: histories.length });
         }
+        return {
+          code: history.code,
+          name: history.name,
+          klineData: history.dailyLines,
+          latestQuote: history.latestQuote,
+          updatedAt: history.updatedAt,
+          industry,
+        };
+      });
+
+      const skipTip = excludeST && skippedST > 0 ? `（已排除 ${skippedST} 只 ST）` : '';
+      message.info(`正在导出 ${stocksData.length} 只股票的 K 线数据${skipTip}...`);
+      const result = await window.electronAPI.batchExportKlineData(stocksData);
+
+      if (result.success) {
+        const { summary } = result;
+        message.success(
+          summary
+            ? `导出完成！总计 ${summary.total} 只，成功 ${summary.success} 只，失败 ${summary.fail} 只`
+            : '导出完成！'
+        );
       } else {
-        // 降级方案：复制到剪贴板
-        navigator.clipboard.writeText(content);
-        message.success('数据已复制到剪贴板，请手动保存');
-        setExportAllModalOpen(false);
+        message.error('导出失败: ' + (result.error || '未知错误'));
       }
     } catch (error) {
-      logger.error('导出失败:', error);
+      logger.error('[BacktestPage] 导出失败:', error);
       message.error('导出失败: ' + (error as Error).message);
     } finally {
       setExporting(false);
-    }
-  };
-
-  // 导出最新日期的信号股票为图片
-  const handleExportLatestSignals = async () => {
-    if (groupedResults.length === 0) {
-      message.warning('暂无回测数据');
-      return;
-    }
-
-    try {
-      setExportingLatest(true);
-      message.info('正在准备导出最新信号股票...');
-
-      // 获取所有回测结果
-      const allResults = await getAllSignalBacktests();
-
-      if (allResults.length === 0) {
-        message.warning('没有可用的回测数据');
-        setExportingLatest(false);
-        return;
-      }
-
-      // 调用导出函数，传入当前筛选条件
-      await exportLatestSignalsToPng(allResults, {
-        fileNamePrefix: '最新信号股票',
-        selectedMarket,
-        industrySectors,
-        industrySectorInvert,
-        conceptSectors,
-        conceptSectorInvert,
-        priceRange,
-        marketCapRange,
-        totalSharesRange,
-      });
-
-      message.success('导出成功！');
-    } catch (error) {
-      logger.error('导出最新信号股票失败:', error);
-      message.error('导出失败: ' + (error as Error).message);
-    } finally {
-      setExportingLatest(false);
-    }
-  };
-
-  // 打开批量导出K线数据模态框
-  const handleOpenBatchExportModal = async () => {
-    setBatchExportModalOpen(true);
-    // 自动执行扫描
-    await handleScanStockDirectoryForBatchExport();
-  };
-
-  // 扫描股票数据目录获取最新股票列表（用于批量导出）
-  const handleScanStockDirectoryForBatchExport = async () => {
-    if (!window.electronAPI?.scanStockDataDirectory) {
-      message.error('扫描功能不可用');
-      return;
-    }
-
-    try {
-      setScanning(true);
-
-      const result = await window.electronAPI.scanStockDataDirectory();
-
-      if (result.success && result.stocks) {
-        // 更新配置（临时，仅用于本次导出）
-        updateStocksFromScan(result.stocks);
-
-        // 选中所有股票
-        setSelectedExportStocks(result.stocks.map((s: { code: string }) => s.code));
-      } else {
-        message.error('扫描失败: ' + (result.error || '未知错误'));
-      }
-    } catch (error) {
-      logger.error('扫描目录失败:', error);
-      message.error('扫描失败: ' + (error as Error).message);
-    } finally {
-      setScanning(false);
-    }
-  };
-
-  // 执行批量导出K线数据
-  const handleBatchExportKlineData = async () => {
-    if (selectedExportStocks.length === 0) {
-      message.warning('请至少选择一只股票');
-      return;
-    }
-
-    try {
-      setBatchExporting(true);
-      message.info(`正在准备导出 ${selectedExportStocks.length} 只股票的K线数据...`);
-
-      // 从 IndexedDB 获取所有选中股票的历史数据
-      const stocksData: Array<{
-        code: string;
-        name: string;
-        klineData: any[];
-        latestQuote?: any;
-        updatedAt?: number;
-        industry?: { code: string; name: string } | null;
-      }> = [];
-
-      for (const code of selectedExportStocks) {
-        try {
-          const historyRecord = await getStockHistory(code);
-          if (historyRecord) {
-            // 从 stockSectorMapping 获取行业信息
-            const stockCode = normalizeStockCode(code);
-            const sectorInfo = stockSectorMapping.get(stockCode);
-            const industry = sectorInfo?.industry || null;
-
-            stocksData.push({
-              code: historyRecord.code,
-              name: historyRecord.name,
-              klineData: historyRecord.dailyLines,
-              latestQuote: historyRecord.latestQuote,
-              updatedAt: historyRecord.updatedAt,
-              industry,
-            });
-          } else {
-            logger.warn(`[BacktestPage] 未找到股票 ${code} 的历史数据`);
-          }
-        } catch (error) {
-          logger.error(`[BacktestPage] 获取股票 ${code} 数据失败:`, error);
-        }
-      }
-
-      if (stocksData.length === 0) {
-        message.warning('选中的股票没有历史数据');
-        setBatchExporting(false);
-        return;
-      }
-
-      // 调用 Electron API 进行批量导出
-      if (window.electronAPI?.batchExportKlineData) {
-        const result = await window.electronAPI.batchExportKlineData(stocksData);
-
-        if (result.success) {
-          const { summary } = result;
-          if (summary) {
-            message.success(
-              `批量导出完成！\n总计: ${summary.total} 只\n成功: ${summary.success} 只\n失败: ${summary.fail} 只`
-            );
-          } else {
-            message.success('批量导出完成！');
-          }
-          setBatchExportModalOpen(false);
-        } else {
-          message.error('批量导出失败: ' + (result.error || '未知错误'));
-        }
-      } else {
-        message.error('批量导出功能不可用');
-      }
-    } catch (error) {
-      logger.error('批量导出失败:', error);
-      message.error('批量导出失败: ' + (error as Error).message);
-    } finally {
-      setBatchExporting(false);
-    }
-  };
-
-  // 导出过滤后的回测信号和K线数据（整合为一个按钮）
-  const handleExportFilteredData = async () => {
-    if (filteredStockList.length === 0) {
-      message.warning('没有可导出的股票');
-      return;
-    }
-
-    try {
-      setExportingFiltered(true);
-      setExportProgress({ current: 0, total: 0 });
-
-      const totalStocks = filteredStockList.length;
-      message.info(`正在准备导出 ${totalStocks} 只股票的数据...`);
-
-      // 并行获取回测信号和K线数据
-      const [allResults, stocksData] = await Promise.all([
-        getAllSignalBacktests(),
-        (async () => {
-          const data: Array<{
-            code: string;
-            name: string;
-            klineData: any[];
-            latestQuote?: any;
-            updatedAt?: number;
-            industry?: { code: string; name: string } | null;
-          }> = [];
-
-          // 批量获取所有股票的历史数据（优化：使用批量查询代替逐个查询）
-          const codes = filteredStockList.map(stock => stock.code);
-          const histories = await getStocksHistory(codes);
-
-          // 构建映射以便快速查找
-          const historyMap = new Map(histories.map(h => [h.code, h]));
-
-          // 处理每只股票的数据
-          for (let i = 0; i < filteredStockList.length; i++) {
-            const stock = filteredStockList[i];
-            try {
-              const historyRecord = historyMap.get(stock.code);
-              if (historyRecord) {
-                // 从 stockSectorMapping 获取行业信息
-                const stockCode = normalizeStockCode(stock.code);
-                const sectorInfo = stockSectorMapping.get(stockCode);
-                const industry = sectorInfo?.industry || null;
-
-                data.push({
-                  code: historyRecord.code,
-                  name: historyRecord.name,
-                  klineData: historyRecord.dailyLines,
-                  latestQuote: historyRecord.latestQuote,
-                  updatedAt: historyRecord.updatedAt,
-                  industry,
-                });
-              }
-              // 更新进度：获取数据阶段
-              setExportProgress({ current: Math.floor((i + 1) / totalStocks * 30), total: 100 });
-            } catch (error) {
-              logger.error(`[BacktestPage] 获取股票 ${stock.code} 数据失败:`, error);
-            }
-          }
-          return data;
-        })()
-      ]);
-
-      // 过滤出当前筛选的股票回测信号
-      const filteredCodes = new Set(filteredStockList.map(stock => stock.code));
-      const filteredResults = allResults.filter(result => filteredCodes.has(result.code));
-
-      if (filteredResults.length === 0 && stocksData.length === 0) {
-        message.warning('筛选后的股票没有数据');
-        setExportingFiltered(false);
-        setExportProgress({ current: 0, total: 0 });
-        return;
-      }
-
-      // 1. 导出回测信号（分批）
-      let signalFilesCount = 0;
-      if (filteredResults.length > 0) {
-        const BATCH_SIZE = 100;
-        const batches: Array<{ filename: string; data: any }> = [];
-        const now = new Date();
-        const timestamp = now.toISOString().replace(/[:.]/g, '-').slice(0, 19);
-
-        for (let i = 0; i < filteredResults.length; i += BATCH_SIZE) {
-          const batch = filteredResults.slice(i, i + BATCH_SIZE);
-          const batchNumber = Math.floor(i / BATCH_SIZE) + 1;
-          const totalBatches = Math.ceil(filteredResults.length / BATCH_SIZE);
-
-          const batchData = {
-            exportTime: now.toISOString(),
-            format: 'json',
-            batchInfo: {
-              currentBatch: batchNumber,
-              totalBatches,
-              stocksInBatch: batch.length,
-            },
-            totalStocks: batch.length,
-            totalSignals: batch.reduce((sum, item) => sum + (item.signals?.length || 0), 0),
-            data: batch,
-          };
-
-          const filename = `backtest_filtered_${timestamp}_batch_${String(batchNumber).padStart(3, '0')}.json`;
-          batches.push({ filename, data: batchData });
-        }
-
-        if (window.electronAPI?.batchSaveBacktestSignals) {
-          const signalResult = await window.electronAPI.batchSaveBacktestSignals(batches);
-          if (signalResult.success && signalResult.summary) {
-            signalFilesCount = signalResult.summary.success;
-          }
-          // 更新进度到65%
-          setExportProgress({ current: 65, total: 100 });
-        }
-      }
-
-      // 2. 导出K线数据
-      let klineStocksCount = 0;
-      if (stocksData.length > 0) {
-        if (window.electronAPI?.batchExportKlineData) {
-          const klineResult = await window.electronAPI.batchExportKlineData(stocksData);
-          if (klineResult.success && klineResult.summary) {
-            klineStocksCount = klineResult.summary.success;
-          }
-        }
-      }
-
-      setExportProgress({ current: 100, total: 100 });
-      message.success(
-        `全部数据导出完成！\n回测信号: ${signalFilesCount} 个文件\nK线数据: ${klineStocksCount} 只股票`
-      );
-    } catch (error) {
-      logger.error('导出过滤后数据失败:', error);
-      message.error('导出失败: ' + (error as Error).message);
-    } finally {
-      setExportingFiltered(false);
       setExportProgress({ current: 0, total: 0 });
     }
   };
 
-  // 导出下拉菜单项
-  const exportMenuItems: MenuProps['items'] = useMemo(
-    () => [
-      {
-        key: 'export-filtered-data',
-        label: '导出过滤后股票数据',
-        icon: <ExportOutlined />,
-        onClick: handleExportFilteredData,
-        disabled: exportingFiltered,
-      },
-      { type: 'divider' },
-      {
-        key: 'export-designated',
-        label: '导出指定股票',
-        icon: <ExportOutlined />,
-        onClick: handleOpenExportAllModal,
-        disabled: groupedResults.length === 0,
-      },
-      {
-        key: 'batch-export-kline',
-        label: '批量导出K线数据',
-        icon: <ExportOutlined />,
-        onClick: handleOpenBatchExportModal,
-      },
-      {
-        key: 'export-latest-signals',
-        label: '导出最新信号股票',
-        icon: <ExportOutlined />,
-        onClick: handleExportLatestSignals,
-        disabled: groupedResults.length === 0 || exportingLatest,
-      },
-    ],
-    [groupedResults.length, exportingLatest, exportingFiltered, handleExportFilteredData]
-  );
-
-  const handleResetFilter = () => {
-    setSelectedMarket([...OPPORTUNITY_DEFAULT_BASIC_FILTERS.selectedMarket]);
-    setNameType('non_st');
-    setIndustrySectors([...OPPORTUNITY_DEFAULT_INDUSTRY_SECTORS.excludedIndustries]);
-    setIndustrySectorInvert(OPPORTUNITY_DEFAULT_INDUSTRY_SECTORS.invertEnabled);
-    setConceptSectors([]);
-    setConceptSectorInvert(false);
-    setPriceRange({ ...OPPORTUNITY_DEFAULT_BASIC_FILTERS.priceRange });
-    setMarketCapRange({ ...OPPORTUNITY_DEFAULT_BASIC_FILTERS.marketCapRange });
-    setTotalSharesRange({ ...OPPORTUNITY_DEFAULT_BASIC_FILTERS.totalSharesRange });
-    setTimeRange(0);
-    setMinWinRate(0);
-    setMinWinRateDay1(0);
-    setMinWinRateDay2(0);
-    setSearchText('');
-    message.success('已重置筛选条件');
+  const handleScanHistoricalBuyPoints = async () => {
+    try {
+      setScanningHistory(true);
+      message.info('正在基于当前 stockHistory 扫描历史好买点...');
+      const { histories } = await readFilteredHistories();
+      const signals = scanHistoricalBuyPoints(histories, {
+        minHitCount: 3,
+        threshold: 5,
+        includeOther: true,
+      }).sort((a, b) => b.timestamp - a.timestamp);
+      setHistorySignals(signals);
+      message.success(`历史好买点扫描完成，共 ${signals.length} 条`);
+    } catch (error) {
+      logger.error('[BacktestPage] 扫描历史好买点失败:', error);
+      message.error('扫描历史好买点失败: ' + (error as Error).message);
+    } finally {
+      setScanningHistory(false);
+    }
   };
 
-  // 获取筛选摘要文本
-  const getFilterSummary = () => {
-    const parts: string[] = [];
-
-    // 市场
-    if (selectedMarket.length > 0) {
-      const marketLabels = selectedMarket.map(m => {
-        if (m === 'hs_main') return '沪深主板';
-        if (m === 'sz_gem') return '创业板';
-        return m;
+  const handleScanLatestSignals = async () => {
+    try {
+      setScanningLatest(true);
+      message.info('正在扫描最新交易日高价值场景...');
+      const { histories } = await readFilteredHistories();
+      const signals = scanLatestScenarioSignals(histories, { highLiftOnly: true }).sort((a, b) => {
+        if ((b.lift || 0) !== (a.lift || 0)) return (b.lift || 0) - (a.lift || 0);
+        return a.name.localeCompare(b.name, 'zh-CN');
       });
-      parts.push(`市场:${marketLabels.join('、')}`);
+      setLatestSignals(signals);
+      message.success(`最新交易日扫描完成，命中 ${signals.length} 只`);
+    } catch (error) {
+      logger.error('[BacktestPage] 扫描最新交易日失败:', error);
+      message.error('扫描最新交易日失败: ' + (error as Error).message);
+    } finally {
+      setScanningLatest(false);
     }
-
-    // 名称
-    const nameLabel = nameType === 'st' ? 'ST' : nameType === 'non_st' ? '非ST' : '不限';
-    parts.push(`名称:${nameLabel}`);
-
-    return parts.join(' · ');
   };
 
-  // 获取当前选中股票的信号
-  const getCurrentStockSignals = () => {
-    if (!selectedStockCode) return [];
-    const stockGroup = groupedResults.find(g => g.code === selectedStockCode);
-    if (!stockGroup) return [];
-    // 按信号日期倒序排列
-    return [...stockGroup.signals].sort((a, b) => b.signalDate.localeCompare(a.signalDate));
+  const filteredHistorySignals = useMemo(() => {
+    const keyword = searchText.trim().toLowerCase();
+    return historySignals.filter((item) => {
+      const scenarioMatch =
+        historyScenarioFilter === 'all' || item.scenario === historyScenarioFilter;
+      const keywordMatch =
+        !keyword ||
+        item.name.toLowerCase().includes(keyword) ||
+        item.code.toLowerCase().includes(keyword);
+      return scenarioMatch && keywordMatch;
+    });
+  }, [historyScenarioFilter, historySignals, searchText]);
+
+  const filteredLatestSignals = useMemo(() => {
+    const keyword = searchText.trim().toLowerCase();
+    return latestSignals.filter((item) => {
+      const scenarioMatch =
+        latestScenarioFilter === 'all' || item.scenario === latestScenarioFilter;
+      const keywordMatch =
+        !keyword ||
+        item.name.toLowerCase().includes(keyword) ||
+        item.code.toLowerCase().includes(keyword);
+      return scenarioMatch && keywordMatch;
+    });
+  }, [latestScenarioFilter, latestSignals, searchText]);
+
+  const scenarioStats = useMemo(() => {
+    const map = new Map<ScenarioId, number>();
+    historySignals.forEach((signal) => {
+      map.set(signal.scenario, (map.get(signal.scenario) || 0) + 1);
+    });
+    return SCENARIOS.map((scenario) => ({
+      ...scenario,
+      count: map.get(scenario.id) || 0,
+    })).filter((item) => item.count > 0);
+  }, [historySignals]);
+
+  const progressPercent =
+    exportProgress.total > 0
+      ? Math.round((exportProgress.current / exportProgress.total) * 100)
+      : 0;
+
+  const renderReturn = (returns: ReturnSnapshot, key: keyof ReturnSnapshot) => {
+    const value = returns[key];
+    return <Text style={{ color: returnColor(value) }}>{returnText(value)}</Text>;
   };
 
-  // 计算信号胜率统计（使用 useMemo 缓存）
-  const signalStatistics = useMemo(() => {
-    const signals = getCurrentStockSignals();
-    if (signals.length === 0) {
-      return {
-        day1: { total: 0, success: 0, rate: 0, incompleteCount: 0 },
-        day2: { total: 0, success: 0, rate: 0, incompleteCount: 0 },
-        day3: { total: 0, success: 0, rate: 0, incompleteCount: 0 },
-        day5: { total: 0, success: 0, rate: 0, incompleteCount: 0 },
-        day10: { total: 0, success: 0, rate: 0, incompleteCount: 0 },
-        day20: { total: 0, success: 0, rate: 0, incompleteCount: 0 },
-      };
-    }
-
-    const stats = {
-      day1: { total: 0, success: 0, rate: 0, incompleteCount: 0 },
-      day2: { total: 0, success: 0, rate: 0, incompleteCount: 0 },
-      day3: { total: 0, success: 0, rate: 0, incompleteCount: 0 },
-      day5: { total: 0, success: 0, rate: 0, incompleteCount: 0 },
-      day10: { total: 0, success: 0, rate: 0, incompleteCount: 0 },
-      day20: { total: 0, success: 0, rate: 0, incompleteCount: 0 },
-    };
-
-    // 优化：只遍历一次信号数组，同时计算所有时间段的统计
-    signals.forEach((signal: any) => {
-      const returns = signal.returns || {};
-
-      // 处理所有时间段的数据
-      const periods = [
-        { key: 'day1', days: 1 },
-        { key: 'day2', days: 2 },
-        { key: 'day3', days: 3 },
-        { key: 'day5', days: 5 },
-        { key: 'day10', days: 10 },
-        { key: 'day20', days: 20 }
-      ];
-
-      periods.forEach(({ key, days }) => {
-        const periodData = returns[key];
-        if (periodData) {
-          stats[key as keyof typeof stats].total++;
-          if (periodData.actualDays < days) {
-            stats[key as keyof typeof stats].incompleteCount++;
-          }
-          if (periodData.value > 0) {
-            stats[key as keyof typeof stats].success++;
-          }
-        }
-      });
-    });
-
-    // 计算胜率
-    Object.keys(stats).forEach(key => {
-      const periodStats = stats[key as keyof typeof stats];
-      periodStats.rate = periodStats.total > 0 ? (periodStats.success / periodStats.total) * 100 : 0;
-    });
-
-    return stats;
-  }, [selectedStockCode, groupedResults]);
-
-  // 过滤股票列表（使用 useMemo 优化性能）
-  const filteredStockList = useMemo(() => {
-    // 如果没有数据，直接返回空数组
-    if (!groupedResults || groupedResults.length === 0) {
-      return [];
-    }
-
-    let filtered = [...groupedResults]; // 创建副本以避免修改原数组
-
-    // 1. 按市场过滤（多选）
-    if (selectedMarket.length > 0) {
-      filtered = filtered.filter(item => {
-        const pureCode = item.code.replace(/^(SH|SZ|BJ)/, '');
-        return selectedMarket.some(market => {
-          if (market === 'hs_main') return pureCode.startsWith('60') || pureCode.startsWith('00');
-          if (market === 'sz_gem') return pureCode.startsWith('30');
-          return true;
-        });
-      });
-    }
-
-    // 2. 按名称过滤（ST筛选）
-    if (nameType !== 'all') {
-      filtered = filtered.filter(item => {
-        const isST = item.name.includes('ST');
-        if (nameType === 'st') return isST;
-        if (nameType === 'non_st') return !isST;
-        return true;
-      });
-    }
-
-    // 3. 按近1日胜率过滤
-    if (minWinRateDay1 > 0) {
-      filtered = filtered.filter(item => {
-        // 计算该股票的近1日胜率
-        const totalSignals = item.signals.length;
-        if (totalSignals === 0) return false;
-
-        let successCount = 0;
-        let validCount = 0;
-
-        item.signals.forEach((signal: any) => {
-          // 只统计完整周期（actualDays >= 1）
-          if (signal.returns.day1 && signal.returns.day1.actualDays >= 1) {
-            validCount++;
-            if (signal.returns.day1.value > 0) {
-              successCount++;
-            }
-          }
-        });
-
-        if (validCount === 0) return false;
-        const winRate = (successCount / validCount) * 100;
-        return winRate >= minWinRateDay1;
-      });
-    }
-
-    // 4. 按近2日胜率过滤
-    if (minWinRateDay2 > 0) {
-      filtered = filtered.filter(item => {
-        // 计算该股票的近2日胜率
-        const totalSignals = item.signals.length;
-        if (totalSignals === 0) return false;
-
-        let successCount = 0;
-        let validCount = 0;
-
-        item.signals.forEach((signal: any) => {
-          // 只统计完整周期（actualDays >= 2）
-          if (signal.returns.day2 && signal.returns.day2.actualDays >= 2) {
-            validCount++;
-            if (signal.returns.day2.value > 0) {
-              successCount++;
-            }
-          }
-        });
-
-        if (validCount === 0) return false;
-        const winRate = (successCount / validCount) * 100;
-        return winRate >= minWinRateDay2;
-      });
-    }
-
-    // 5. 按近3日胜率过滤
-    if (minWinRate > 0) {
-      filtered = filtered.filter(item => {
-        // 计算该股票的近3日胜率
-        const totalSignals = item.signals.length;
-        if (totalSignals === 0) return false;
-
-        let successCount = 0;
-        let validCount = 0;
-
-        item.signals.forEach((signal: any) => {
-          // 只统计完整周期（actualDays >= 3）
-          if (signal.returns.day3 && signal.returns.day3.actualDays >= 3) {
-            validCount++;
-            if (signal.returns.day3.value > 0) {
-              successCount++;
-            }
-          }
-        });
-
-        if (validCount === 0) return false;
-        const winRate = (successCount / validCount) * 100;
-        return winRate >= minWinRate;
-      });
-    }
-
-    // 6. 按时间范围过滤（筛选近期出现的信号）
-    if (timeRange > 0) {
-      const now = new Date();
-      const cutoffDate = new Date(now.getTime() - timeRange * 24 * 60 * 60 * 1000);
-
-      filtered = filtered.filter(item => {
-        // 检查该股票是否有在时间范围内的信号
-        return item.signals.some((signal: any) => {
-          const signalDate = new Date(signal.signalDate);
-          return signalDate >= cutoffDate;
-        });
-      });
-    }
-
-    // 按搜索文本过滤
-    if (searchText) {
-      const searchLower = searchText.toLowerCase();
-      filtered = filtered.filter(item =>
-        item.name.toLowerCase().includes(searchLower) ||
-        item.code.toLowerCase().includes(searchLower)
-      );
-    }
-
-    // 7. 按价格范围过滤（需要异步获取股票历史数据）
-    // 注意：这里简化处理，实际应该从 IndexedDB 获取最新价格
-    // 由于 groupedResults 中没有价格信息，暂时跳过此过滤
-    // TODO: 如果需要价格过滤，需要从 getStocksHistory 获取数据
-
-    // 8. 按市值范围过滤
-    // TODO: 需要从 stock history 中获取市值信息
-
-    // 9. 按总股数范围过滤
-    // TODO: 需要从 stock history 中获取总股数信息
-
-    // 10. 按行业板块过滤
-    if (industrySectors.length > 0) {
-      filtered = filtered.filter(item => {
-        const stockCode = normalizeStockCode(item.code);
-        const sectorInfo = stockSectorMapping.get(stockCode);
-        const stockIndustry = sectorInfo?.industry;
-
-        if (!stockIndustry) {
-          // 没有行业信息的股票，根据 invert 决定是否保留
-          return industrySectorInvert; // 如果排除选中，则保留；否则过滤掉
-        }
-
-        const isSelected = industrySectors.includes(stockIndustry.code);
-
-        if (industrySectorInvert) {
-          // 排除选中：选中的行业不显示
-          return !isSelected;
-        } else {
-          // 包含选中：只显示选中的行业
-          return isSelected;
-        }
-      });
-    }
-
-    // 11. 按概念板块过滤
-    if (conceptSectors.length > 0) {
-      filtered = filtered.filter(item => {
-        const stockCode = normalizeStockCode(item.code);
-        const sectorInfo = stockSectorMapping.get(stockCode);
-        const stockConcepts = sectorInfo?.concepts || [];
-
-        if (stockConcepts.length === 0) {
-          // 没有概念信息的股票，根据 invert 决定是否保留
-          return conceptSectorInvert;
-        }
-
-        // 检查股票是否有选中的概念
-        const hasSelectedConcept = stockConcepts.some(c => conceptSectors.includes(c.code));
-
-        if (conceptSectorInvert) {
-          // 排除选中：有选中的概念则不显示
-          return !hasSelectedConcept;
-        } else {
-          // 包含选中：必须有选中的概念
-          return hasSelectedConcept;
-        }
-      });
-    }
-
-    // 为每个股票添加industry信息
-    const filteredWithIndustry = filtered.map(item => {
-      const stockCode = normalizeStockCode(item.code);
-      const sectorInfo = stockSectorMapping.get(stockCode);
-      return {
-        ...item,
-        industry: sectorInfo?.industry || null,
-      };
-    });
-
-    return filteredWithIndustry;
-  }, [
-    groupedResults,
-    selectedMarket,
-    nameType,
-    minWinRateDay1,
-    minWinRateDay2,
-    minWinRate,
-    timeRange,
-    searchText,
-    priceRange,
-    marketCapRange,
-    totalSharesRange,
-    industrySectors,
-    industrySectorInvert,
-    conceptSectors,
-    conceptSectorInvert,
-    stockSectorMapping,
-    normalizeStockCode,
-  ]);
-
-  // 使用 ref 跟踪上一次的选中状态，避免不必要的更新
-  const prevFilteredStockListRef = useRef<any[]>([]);
-  const prevSelectedStockCodeRef = useRef<string | null>(null);
-  const selectionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const isInitialLoadRef = useRef(true); // 标记是否是首次加载
-
-  // 当筛选结果变化时，如果当前选中的股票不在结果中，自动选中第一个
-  useEffect(() => {
-    // 清除之前的定时器
-    if (selectionTimerRef.current) {
-      clearTimeout(selectionTimerRef.current);
-    }
-
-    // 如果是首次加载且有数据，立即选中第一个，不等待防抖
-    if (isInitialLoadRef.current && filteredStockList.length > 0 && !selectedStockCode) {
-      setSelectedStockCode(filteredStockList[0].code);
-      isInitialLoadRef.current = false;
-      prevFilteredStockListRef.current = filteredStockList;
-      prevSelectedStockCodeRef.current = filteredStockList[0].code;
-      return;
-    }
-
-    // 非首次加载，使用防抖
-    selectionTimerRef.current = setTimeout(() => {
-      // 检查是否有实际变化，避免不必要的更新
-      const hasListChanged = filteredStockList.length !== prevFilteredStockListRef.current.length ||
-        JSON.stringify(filteredStockList.map(item => item.code)) !==
-        JSON.stringify(prevFilteredStockListRef.current.map(item => item.code));
-
-      const hasSelectionChanged = selectedStockCode !== prevSelectedStockCodeRef.current;
-
-      if (hasListChanged || hasSelectionChanged) {
-        if (filteredStockList.length > 0) {
-          // 如果当前选中的股票不在筛选结果中，选中第一个
-          const isCurrentSelected = filteredStockList.some(item => item.code === selectedStockCode);
-          if (!isCurrentSelected) {
-            setSelectedStockCode(filteredStockList[0].code);
-          }
-        } else {
-          // 如果没有筛选结果，清空选中
-          if (selectedStockCode !== null) {
-            setSelectedStockCode(null);
-          }
-        }
-
-        // 更新 refs
-        prevFilteredStockListRef.current = filteredStockList;
-        prevSelectedStockCodeRef.current = selectedStockCode;
-      }
-    }, 100); // 100ms 防抖延迟
-
-    // 清理函数
-    return () => {
-      if (selectionTimerRef.current) {
-        clearTimeout(selectionTimerRef.current);
-      }
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filteredStockList]);
-
-  // 表格列定义
-  const columns: ColumnsType<any> = [
-    { title: '股票代码', dataIndex: 'code', key: 'code', width: 100 },
-    { title: '股票名称', dataIndex: 'name', key: 'name', width: 100 },
+  const historicalColumns: ColumnsType<BuyPointSignal> = [
     {
-      title: '信号日期',
-      dataIndex: 'signalDate',
-      key: 'signalDate',
-      width: 180,
-      render: (val: string) => (
-        <Space size={4}>
-          <span>{val}</span>
-          <Tag color="cyan" style={{ fontSize: 11, margin: 0 }}>
-            ML {modelMetadata.version}
-          </Tag>
-        </Space>
-      )
+      title: '股票',
+      dataIndex: 'name',
+      width: 160,
+      fixed: 'left',
+      render: (_, record) => (
+        <div>
+          <div>{record.name}</div>
+          <Text type="secondary">{record.code}</Text>
+        </div>
+      ),
     },
+    { title: '买点日期', dataIndex: 'date', width: 110 },
     {
-      title: '1日收益',
-      dataIndex: ['returns', 'day1'],
-      key: 'day1',
-      render: (val: any) => {
-        if (!val) return '-';
-        const isComplete = val.actualDays >= 1;
-        return (
-          <span>
-            <span style={{ color: val.value > 0 ? '#ff4d4f' : '#52c41a' }}>
-              {val.value > 0 ? '+' : ''}{Number(val.value).toFixed(2)}%
-            </span>
-            {!isComplete && (
-              <span className={styles.actualDaysTag}>({val.actualDays}天)</span>
-            )}
-          </span>
-        );
-      }
+      title: '场景',
+      dataIndex: 'scenarioName',
+      width: 150,
+      render: (_, record) => (
+        <Tag color={highLiftIds.has(record.scenario) ? 'red' : 'blue'}>
+          {record.scenarioName}
+        </Tag>
+      ),
     },
+    { title: '买入价', dataIndex: 'entryPrice', width: 90 },
+    { title: '命中项', dataIndex: 'hitCount', width: 80 },
+    { title: '1日', width: 80, render: (_, record) => renderReturn(record.returns, 'd1') },
+    { title: '2日', width: 80, render: (_, record) => renderReturn(record.returns, 'd2') },
+    { title: '3日', width: 80, render: (_, record) => renderReturn(record.returns, 'd3') },
+    { title: '5日', width: 80, render: (_, record) => renderReturn(record.returns, 'd5') },
+    { title: '两周', width: 80, render: (_, record) => renderReturn(record.returns, 'd10') },
     {
-      title: '2日收益',
-      dataIndex: ['returns', 'day2'],
-      key: 'day2',
-      render: (val: any) => {
-        if (!val) return '-';
-        const isComplete = val.actualDays >= 2;
-        return (
-          <span>
-            <span style={{ color: val.value > 0 ? '#ff4d4f' : '#52c41a' }}>
-              {val.value > 0 ? '+' : ''}{Number(val.value).toFixed(2)}%
-            </span>
-            {!isComplete && (
-              <span className={styles.actualDaysTag}>({val.actualDays}天)</span>
-            )}
-          </span>
-        );
-      }
+      title: '命中规则',
+      dataIndex: 'matchedRule',
+      ellipsis: true,
+      width: 260,
     },
+  ];
+
+  const latestColumns: ColumnsType<LatestScenarioSignal> = [
     {
-      title: '3日收益',
-      dataIndex: ['returns', 'day3'],
-      key: 'day3',
-      render: (val: any) => {
-        if (!val) return '-';
-        const isComplete = val.actualDays >= 3;
-        return (
-          <span>
-            <span style={{ color: val.value > 0 ? '#ff4d4f' : '#52c41a' }}>
-              {val.value > 0 ? '+' : ''}{Number(val.value).toFixed(2)}%
-            </span>
-            {!isComplete && (
-              <span className={styles.actualDaysTag}>({val.actualDays}天)</span>
-            )}
-          </span>
-        );
-      }
+      title: '股票',
+      dataIndex: 'name',
+      width: 160,
+      fixed: 'left',
+      render: (_, record) => (
+        <div>
+          <div>{record.name}</div>
+          <Text type="secondary">{record.code}</Text>
+        </div>
+      ),
     },
+    { title: '数据日期', dataIndex: 'date', width: 110 },
     {
-      title: '5日收益',
-      dataIndex: ['returns', 'day5'],
-      key: 'day5',
-      render: (val: any) => {
-        if (!val) return '-';
-        const isComplete = val.actualDays >= 5;
-        return (
-          <span>
-            <span style={{ color: val.value > 0 ? '#ff4d4f' : '#52c41a' }}>
-              {val.value > 0 ? '+' : ''}{Number(val.value).toFixed(2)}%
-            </span>
-            {!isComplete && (
-              <span className={styles.actualDaysTag}>({val.actualDays}天)</span>
-            )}
-          </span>
-        );
-      }
+      title: '场景',
+      dataIndex: 'scenarioName',
+      width: 150,
+      render: (_, record) => <Tag color="red">{record.scenarioName}</Tag>,
     },
+    { title: '收盘价', dataIndex: 'close', width: 90 },
+    { title: 'lift', dataIndex: 'lift', width: 80, render: (v) => v?.toFixed(2) },
+    { title: '1日', width: 80, render: (_, record) => renderReturn(record.returns, 'd1') },
+    { title: '2日', width: 80, render: (_, record) => renderReturn(record.returns, 'd2') },
+    { title: '3日', width: 80, render: (_, record) => renderReturn(record.returns, 'd3') },
+    { title: '5日', width: 80, render: (_, record) => renderReturn(record.returns, 'd5') },
+    { title: '两周', width: 80, render: (_, record) => renderReturn(record.returns, 'd10') },
     {
-      title: '两周收益',
-      dataIndex: ['returns', 'day10'],
-      key: 'day10',
-      render: (val: any) => {
-        if (!val) return '-';
-        const isComplete = val.actualDays >= 10;
-        return (
-          <span>
-            <span style={{ color: val.value > 0 ? '#ff4d4f' : '#52c41a' }}>
-              {val.value > 0 ? '+' : ''}{Number(val.value).toFixed(2)}%
-            </span>
-            {!isComplete && (
-              <span className={styles.actualDaysTag}>({val.actualDays}天)</span>
-            )}
-          </span>
-        );
-      }
-    },
-    {
-      title: '一月收益',
-      dataIndex: ['returns', 'day20'],
-      key: 'day20',
-      render: (val: any) => {
-        if (!val) return '-';
-        const isComplete = val.actualDays >= 20;
-        return (
-          <span>
-            <span style={{ color: val.value > 0 ? '#ff4d4f' : '#52c41a' }}>
-              {val.value > 0 ? '+' : ''}{Number(val.value).toFixed(2)}%
-            </span>
-            {!isComplete && (
-              <span className={styles.actualDaysTag}>({val.actualDays}天)</span>
-            )}
-          </span>
-        );
-      }
+      title: '命中规则',
+      dataIndex: 'matchedRule',
+      ellipsis: true,
+      width: 280,
     },
   ];
 
@@ -1690,817 +409,176 @@ export function BacktestPage() {
       <Header className={styles.header}>
         <div className={styles.headerContent}>
           <div className={styles.headerLeft}>
-            <Text className={styles.pageTitle}>历史回测</Text>
-            <Text type="secondary" className={styles.pageSubtitle}>
-              基于本地历史数据的策略回测分析
-            </Text>
+            <h1 className={styles.pageTitle}>历史回测</h1>
+            <span className={styles.pageSubtitle}>
+              K 线导出、历史好买点归类、最新交易日场景扫描
+            </span>
           </div>
-          <Space>
-            {/* 模型版本切换 */}
-            <Dropdown
-              menu={{
-                items: [
-                  {
-                    key: 'v5',
-                    label: (
-                      <Space>
-                        <Text>v5.0 (28特征)</Text>
-                        {modelVersion === 'v5' && <Tag color="green">当前</Tag>}
-                      </Space>
-                    ),
-                    onClick: () => setModelVersion('v5'),
-                  },
-                  {
-                    key: 'v4',
-                    label: (
-                      <Space>
-                        <Text>v4.0 (8特征)</Text>
-                        {modelVersion === 'v4' && <Tag color="green">当前</Tag>}
-                      </Space>
-                    ),
-                    onClick: () => setModelVersion('v4'),
-                  },
-                ],
-              }}
-              placement="bottomLeft"
-            >
-              <Button>
-                ML模型: {modelVersion.toUpperCase()}
-                <DownOutlined style={{ fontSize: 10, marginLeft: 4 }} />
-              </Button>
-            </Dropdown>
-
-            <Button icon={<FilterOutlined />} onClick={() => setFilterDrawerOpen(true)}>
-              筛选条件
-            </Button>
-
-            {/* 导出下拉菜单 */}
-            <Dropdown menu={{ items: exportMenuItems }} placement="bottomRight">
-              <Button icon={<ExportOutlined />}>
-                导出 <DownOutlined style={{ fontSize: 10, marginLeft: 4 }} />
-              </Button>
-            </Dropdown>
-
-            <Button
-              type="primary"
-              icon={<ExperimentOutlined />}
-              onClick={handleStartBacktest}
-              disabled={backtesting || (modelVersion === 'v5' && modelsLoading)}
-            >
-              {backtesting ? (
-                <Space>
-                  {workerModelLoading && <Spin size="small" />}
-                  <span>
-                    {workerModelLoading
-                      ? `加载行业模型... ${workerModelProgress}%`
-                      : progress === 0
-                        ? '准备中...'
-                        : `回测进行中... 已完成 ${progress}%`}
-                  </span>
-                </Space>
-              ) : (modelVersion === 'v5' && modelsLoading) ? (
-                <Space>
-                  <Spin size="small" />
-                  <span>模型加载中...</span>
-                </Space>
-              ) : (
-                '执行全量回测'
-              )}
-            </Button>
-          </Space>
         </div>
       </Header>
 
       <Content className={styles.content}>
+        <div className={styles.pageBody}>
+          <Card>
+            <Row gutter={[24, 16]} style={{ marginBottom: 20 }}>
+              <Col>
+                <Statistic title="stockHistory 总数" value={totalCount} loading={loadingCount} />
+              </Col>
+              <Col>
+                <Statistic title="参与扫描/导出" value={exportCount} loading={loadingCount} />
+              </Col>
+              <Col>
+                <Statistic title="行业映射数" value={industryMapping.size} />
+              </Col>
+              <Col>
+                <Statistic title="历史好买点" value={historySignals.length} />
+              </Col>
+              <Col>
+                <Statistic title="最新日命中" value={latestSignals.length} />
+              </Col>
+            </Row>
 
-        {/* 模型信息卡片 */}
-        <Card className={styles.modelInfoCard} style={{ margin: 16 }}>
-          <Space size="large" wrap>
-            <Tag color="blue" style={{ fontSize: 14, padding: '4px 12px' }}>
-              ML模型 {modelMetadata.version}
-            </Tag>
-            <Text type="secondary">
-              训练时间: {modelMetadata.trainingDate}
-            </Text>
-            {'performance' in modelMetadata && (modelMetadata as any).performance ? (
-              <>
-                <Text type="secondary">
-                  准确率: <Text strong style={{ color: '#52c41a' }}>{(modelMetadata as any).performance.accuracy}%</Text>
-                </Text>
-                <Text type="secondary">
-                  召回率: <Text strong style={{ color: '#52c41a' }}>{(modelMetadata as any).performance.recall}%</Text>
-                </Text>
-                <Text type="secondary">
-                  F1分数: <Text strong style={{ color: '#52c41a' }}>{(modelMetadata as any).performance.f1}</Text>
-                </Text>
-              </>
-            ) : null}
-            {'trainingSamples' in modelMetadata && (modelMetadata as any).trainingSamples ? (
-              <Text type="secondary">
-                训练样本: {(modelMetadata as any).trainingSamples.total}个
-                （{(modelMetadata as any).trainingSamples.positive}正 + {(modelMetadata as any).trainingSamples.negative}负）
-              </Text>
-            ) : null}
-            {'featureCount' in modelMetadata ? (
-              <Text type="secondary">
-                特征数: {(modelMetadata as any).featureCount}个
-              </Text>
-            ) : null}
-            {'industries' in modelMetadata ? (
-              <Text type="secondary">
-                行业数: {(modelMetadata as any).industries}个
-              </Text>
-            ) : null}
-          </Space>
-        </Card>
-
-        {backtesting && progress > 0 && (
-          <div className={styles.progressOverlay}>
-            <div className={styles.progressInfo}>
-              <Text strong>回测进行中...</Text>
-              <Text type="secondary">已完成 {progress}%</Text>
-            </div>
-            <Progress
-              percent={progress}
-              status="active"
-              showInfo={false}
-              strokeColor="#1890ff"
-              trailColor="rgba(0, 0, 0, 0.06)"
-              size="small"
-              style={{ borderRadius: 4 }}
-            />
-          </div>
-        )}
-
-        {exportingFiltered && exportProgress.total > 0 && (
-          <div className={styles.progressOverlay}>
-            <div className={styles.progressInfo}>
-              <Text strong>导出进行中...</Text>
-              <Text type="secondary">
-                {exportProgress.current < 30 && '正在获取股票数据'}
-                {exportProgress.current >= 30 && exportProgress.current < 65 && '正在导出回测信号'}
-                {exportProgress.current >= 65 && exportProgress.current < 100 && '正在导出K线数据'}
-                {exportProgress.current === 100 && '导出完成'}
-              </Text>
-            </div>
-            <Progress
-              percent={Math.round((exportProgress.current / exportProgress.total) * 100)}
-              status="active"
-              showInfo={false}
-              strokeColor="#52c41a"
-              trailColor="rgba(0, 0, 0, 0.06)"
-              size="small"
-              style={{ borderRadius: 4 }}
-            />
-          </div>
-        )}
-
-        <Row gutter={0} className={styles.mainRow}>
-          <Col span={6} className={styles.stockListCol}>
-            <Card
-              title={
-                <Space>
-                  <span>股票列表</span>
-                  <Tag color="blue" style={{ fontSize: 12, padding: '2px 8px' }}>
-                    {filteredStockList.length} 只
-                  </Tag>
-                </Space>
+            <Alert
+              type="info"
+              showIcon
+              style={{ marginBottom: 16 }}
+              message={
+                latestDateSummary.dominantDate
+                  ? `当前 K 线众数截止日：${latestDateSummary.dominantDate}（${latestDateSummary.dominantCount} 只）`
+                  : '尚未读取到 K 线截止日'
               }
-              className={styles.stockListCard}
-            >
-              <div className={styles.filterSection}>
-                <Input
-                  placeholder="搜索股票名称或代码"
-                  prefix={<SearchOutlined />}
-                  value={searchText}
-                  onChange={(e) => setSearchText(e.target.value)}
-                  className={styles.searchInput}
-                  allowClear
+              description="历史好买点和最新日场景都直接读取 IndexedDB stockHistory；如果机会分析更新了 K 线，点击下方扫描按钮即可用最新数据重算。"
+            />
+
+            <Paragraph type="secondary">
+              历史好买点规则：买入收盘后 1/2/3/5/10 日累计收益中至少 3 项 &gt; 5%。
+              最新交易日只展示 lift&gt;1 的高价值场景，未来收益尚未发生时对应列为空。
+            </Paragraph>
+
+            <Space wrap>
+              <Checkbox
+                checked={excludeST}
+                disabled={exporting || scanningHistory || scanningLatest}
+                onChange={(e) => setExcludeST(e.target.checked)}
+              >
+                排除 ST 股票
+              </Checkbox>
+              <Button onClick={refreshHistoryCount} disabled={loadingCount}>
+                刷新数量
+              </Button>
+              <Button
+                type="primary"
+                icon={<ExportOutlined />}
+                loading={exporting}
+                disabled={exportCount === 0 && !exporting}
+                onClick={handleExportAllKlineData}
+              >
+                导出 K 线数据
+              </Button>
+              <Button
+                icon={<ReloadOutlined />}
+                loading={scanningHistory}
+                disabled={exportCount === 0}
+                onClick={handleScanHistoricalBuyPoints}
+              >
+                重新扫描历史买点
+              </Button>
+              <Button
+                icon={<SearchOutlined />}
+                loading={scanningLatest}
+                disabled={exportCount === 0}
+                onClick={handleScanLatestSignals}
+              >
+                扫描最新交易日
+              </Button>
+            </Space>
+
+            {exporting && exportProgress.total > 0 && (
+              <div className={styles.exportProgress}>
+                <Progress
+                  percent={progressPercent}
+                  status="active"
+                  format={() => `${exportProgress.current}/${exportProgress.total}`}
                 />
               </div>
-              <div ref={listContainerRef} className={styles.stockListContainer}>
-                {filteredStockList.length === 0 ? (
-                  <div className={styles.emptyText}>暂无回测数据</div>
-                ) : (
-                  <VirtualList
-                    data={filteredStockList}
-                    height={listHeight}
-                    itemHeight={64}
-                    itemKey="code"
-                    // 添加稳定性优化，防止不必要的重渲染
-                    style={{ outline: 'none' }}
-                  >
-                    {(item, index, { style }) => (
-                      <StockListItem
-                        key={item.code}
-                        item={item}
-                        isSelected={selectedStockCode === item.code}
-                        onSelect={setSelectedStockCode}
-                        onExport={handleOpenExportDrawer}
-                        industry={item.industry}
-                        style={style}
-                      />
-                    )}
-                  </VirtualList>
-                )}
-              </div>
-            </Card>
-          </Col>
-          <Col span={18}>
-            {/* 跳过股票提示 */}
-            {skippedStocks.length > 0 && (
-              <Alert
-                message={`${skippedStocks.length} 只股票未进行分析`}
-                description={
-                  <div>
-                    <p style={{ marginBottom: 8 }}>以下股票因缺少行业信息而被跳过（使用默认模型）：</p>
-                    <ul style={{ marginBottom: 0, paddingLeft: 20 }}>
-                      {skippedStocks.slice(0, 10).map(stock => (
-                        <li key={stock.code} style={{ fontSize: 12 }}>
-                          {stock.code} - {stock.name}: {stock.reason}
-                        </li>
-                      ))}
-                      {skippedStocks.length > 10 && (
-                        <li style={{ fontSize: 12, color: '#999' }}>
-                          ...还有 {skippedStocks.length - 10} 只
-                        </li>
-                      )}
-                    </ul>
-                  </div>
-                }
-                type="warning"
-                showIcon
-                closable
-                style={{ marginBottom: 16 }}
-              />
             )}
+          </Card>
 
-            <Card title="信号详情" className={styles.signalDetailCard}>
-              {/* 胜率统计汇总 */}
-              {selectedStockCode && (
-                <div className={styles.statisticsSummary}>
-                  <div className={styles.statItem}>
-                    <div className={styles.statLabel}>1日胜率</div>
-                    <div className={styles.statValue} style={{
-                      color: signalStatistics.day1.total > 0
-                        ? (signalStatistics.day1.rate > 50 ? '#ff4d4f' : 'var(--ant-color-text-secondary)')
-                        : 'var(--ant-color-text-tertiary)'
-                    }}>
-                      {signalStatistics.day1.total > 0
-                        ? `${signalStatistics.day1.rate.toFixed(1)}%`
-                        : '—'}
-                    </div>
-                    <div className={styles.statDetail}>
-                      {signalStatistics.day1.success}/{signalStatistics.day1.total}
-                      {signalStatistics.day1.incompleteCount > 0 && (
-                        <span className={styles.incompleteTag}>
-                          ({signalStatistics.day1.incompleteCount}个不完整)
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <div className={styles.statItem}>
-                    <div className={styles.statLabel}>2日胜率</div>
-                    <div className={styles.statValue} style={{
-                      color: signalStatistics.day2.total > 0
-                        ? (signalStatistics.day2.rate > 50 ? '#ff4d4f' : 'var(--ant-color-text-secondary)')
-                        : 'var(--ant-color-text-tertiary)'
-                    }}>
-                      {signalStatistics.day2.total > 0
-                        ? `${signalStatistics.day2.rate.toFixed(1)}%`
-                        : '—'}
-                    </div>
-                    <div className={styles.statDetail}>
-                      {signalStatistics.day2.success}/{signalStatistics.day2.total}
-                      {signalStatistics.day2.incompleteCount > 0 && (
-                        <span className={styles.incompleteTag}>
-                          ({signalStatistics.day2.incompleteCount}个不完整)
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <div className={styles.statItem}>
-                    <div className={styles.statLabel}>3日胜率</div>
-                    <div className={styles.statValue} style={{
-                      color: signalStatistics.day3.total > 0
-                        ? (signalStatistics.day3.rate > 50 ? '#ff4d4f' : 'var(--ant-color-text-secondary)')
-                        : 'var(--ant-color-text-tertiary)'
-                    }}>
-                      {signalStatistics.day3.total > 0
-                        ? `${signalStatistics.day3.rate.toFixed(1)}%`
-                        : '—'}
-                    </div>
-                    <div className={styles.statDetail}>
-                      {signalStatistics.day3.success}/{signalStatistics.day3.total}
-                      {signalStatistics.day3.incompleteCount > 0 && (
-                        <span className={styles.incompleteTag}>
-                          ({signalStatistics.day3.incompleteCount}个不完整)
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <div className={styles.statItem}>
-                    <div className={styles.statLabel}>5日胜率</div>
-                    <div className={styles.statValue} style={{
-                      color: signalStatistics.day5.total > 0
-                        ? (signalStatistics.day5.rate > 50 ? '#ff4d4f' : 'var(--ant-color-text-secondary)')
-                        : 'var(--ant-color-text-tertiary)'
-                    }}>
-                      {signalStatistics.day5.total > 0
-                        ? `${signalStatistics.day5.rate.toFixed(1)}%`
-                        : '—'}
-                    </div>
-                    <div className={styles.statDetail}>
-                      {signalStatistics.day5.success}/{signalStatistics.day5.total}
-                      {signalStatistics.day5.incompleteCount > 0 && (
-                        <span className={styles.incompleteTag}>
-                          ({signalStatistics.day5.incompleteCount}个不完整)
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <div className={styles.statItem}>
-                    <div className={styles.statLabel}>两周胜率</div>
-                    <div className={styles.statValue} style={{
-                      color: signalStatistics.day10.total > 0
-                        ? (signalStatistics.day10.rate > 50 ? '#ff4d4f' : 'var(--ant-color-text-secondary)')
-                        : 'var(--ant-color-text-tertiary)'
-                    }}>
-                      {signalStatistics.day10.total > 0
-                        ? `${signalStatistics.day10.rate.toFixed(1)}%`
-                        : '—'}
-                    </div>
-                    <div className={styles.statDetail}>
-                      {signalStatistics.day10.success}/{signalStatistics.day10.total}
-                      {signalStatistics.day10.incompleteCount > 0 && (
-                        <span className={styles.incompleteTag}>
-                          ({signalStatistics.day10.incompleteCount}个不完整)
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <div className={styles.statItem}>
-                    <div className={styles.statLabel}>一月胜率</div>
-                    <div className={styles.statValue} style={{
-                      color: signalStatistics.day20.total > 0
-                        ? (signalStatistics.day20.rate > 50 ? '#ff4d4f' : 'var(--ant-color-text-secondary)')
-                        : 'var(--ant-color-text-tertiary)'
-                    }}>
-                      {signalStatistics.day20.total > 0
-                        ? `${signalStatistics.day20.rate.toFixed(1)}%`
-                        : '—'}
-                    </div>
-                    <div className={styles.statDetail}>
-                      {signalStatistics.day20.success}/{signalStatistics.day20.total}
-                      {signalStatistics.day20.incompleteCount > 0 && (
-                        <span className={styles.incompleteTag}>
-                          ({signalStatistics.day20.incompleteCount}个不完整)
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              )}
-              <Table
-                columns={columns}
-                dataSource={getCurrentStockSignals()}
-                rowKey={(record) => `${record.code}-${record.signalDate}`}
-                pagination={{ pageSize: 100, showTotal: (total) => `共 ${total} 条信号` }}
-                scroll={{ x: 800, y: 'calc(100vh - 500px)' }}
-                size="small"
-                locale={{ emptyText: selectedStockCode ? '该股票暂无信号' : '请选择左侧股票查看信号' }}
+          <Card>
+            <Space wrap style={{ marginBottom: 16 }}>
+              <Input
+                allowClear
+                placeholder="搜索股票名称/代码"
+                prefix={<SearchOutlined />}
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+                style={{ width: 220 }}
               />
-            </Card>
-          </Col>
-        </Row>
+            </Space>
+
+            <Tabs
+              items={[
+                {
+                  key: 'latest',
+                  label: `最新交易日命中 (${filteredLatestSignals.length})`,
+                  children: (
+                    <>
+                      <Space wrap style={{ marginBottom: 12 }}>
+                        <Select
+                          value={latestScenarioFilter}
+                          options={[
+                            { label: '全部高价值场景', value: 'all' },
+                            ...HIGH_LIFT_SCENARIOS.map((s) => ({ label: s.name, value: s.id })),
+                          ]}
+                          onChange={setLatestScenarioFilter}
+                          style={{ width: 200 }}
+                        />
+                      </Space>
+                      <Table
+                        rowKey={(record) => `${record.code}-${record.date}-${record.scenario}`}
+                        columns={latestColumns}
+                        dataSource={filteredLatestSignals}
+                        pagination={{ pageSize: 50, showSizeChanger: true }}
+                        scroll={{ x: 1200 }}
+                        size="small"
+                      />
+                    </>
+                  ),
+                },
+                {
+                  key: 'history',
+                  label: `历史好买点 (${filteredHistorySignals.length})`,
+                  children: (
+                    <>
+                      <Space wrap style={{ marginBottom: 12 }}>
+                        <Select
+                          value={historyScenarioFilter}
+                          options={scenarioOptions}
+                          onChange={setHistoryScenarioFilter}
+                          style={{ width: 220 }}
+                        />
+                        {scenarioStats.map((item) => (
+                          <Tag key={item.id} color={highLiftIds.has(item.id) ? 'red' : 'blue'}>
+                            {item.name}: {item.count}
+                          </Tag>
+                        ))}
+                      </Space>
+                      <Table
+                        rowKey={(record) => `${record.code}-${record.date}-${record.scenario}`}
+                        columns={historicalColumns}
+                        dataSource={filteredHistorySignals}
+                        pagination={{ pageSize: 50, showSizeChanger: true }}
+                        scroll={{ x: 1300 }}
+                        size="small"
+                      />
+                    </>
+                  ),
+                },
+              ]}
+            />
+          </Card>
+        </div>
       </Content>
-
-      {/* 筛选条件抽屉 */}
-      <Drawer
-        title="筛选条件"
-        placement="right"
-        width={500}
-        open={filterDrawerOpen}
-        onClose={() => setFilterDrawerOpen(false)}
-        destroyOnHidden
-        styles={{ body: { padding: '16px 16px', height: 'calc(100vh - 64px)', display: 'flex', flexDirection: 'column' } }}
-      >
-        <div style={{ flex: 1, overflow: 'auto' }}>
-          {/* 市场（多选） */}
-          <div className={styles.filterRow}>
-            <div className={styles.filterItem}>
-              <span className={styles.filterLabel}>市场：</span>
-              <Select
-                mode="multiple"
-                value={selectedMarket}
-                onChange={setSelectedMarket}
-                style={{ width: '100%' }}
-                placeholder="请选择市场"
-                options={[
-                  { label: '沪深主板', value: 'hs_main' },
-                  { label: '创业板', value: 'sz_gem' },
-                ]}
-                maxTagCount="responsive"
-              />
-            </div>
-          </div>
-
-          {/* 名称 */}
-          <div className={styles.filterRow}>
-            <div className={styles.filterItem}>
-              <span className={styles.filterLabel}>名称：</span>
-              <Select
-                value={nameType}
-                onChange={setNameType}
-                style={{ width: '100%' }}
-                options={[
-                  { label: '非ST', value: 'non_st' },
-                  { label: 'ST', value: 'st' },
-                  { label: '不限', value: 'all' },
-                ]}
-              />
-            </div>
-          </div>
-
-          {/* 行业板块 */}
-          <div className={styles.filterRow}>
-            <div className={styles.filterItem}>
-              <span className={styles.filterLabel}>行业板块：</span>
-              <div style={{ flex: 1, display: 'flex', gap: '8px', alignItems: 'center' }}>
-                <Select
-                  mode="multiple"
-                  value={industrySectors}
-                  onChange={setIndustrySectors}
-                  style={{ flex: 1 }}
-                  placeholder="选择行业板块"
-                  options={industrySectorOptions}
-                  maxTagCount="responsive"
-                />
-                <Checkbox
-                  checked={industrySectorInvert}
-                  onChange={(e) => setIndustrySectorInvert(e.target.checked)}
-                >
-                  排除选中
-                </Checkbox>
-              </div>
-            </div>
-          </div>
-
-          {/* 概念板块 */}
-          <div className={styles.filterRow}>
-            <div className={styles.filterItem}>
-              <span className={styles.filterLabel}>概念板块：</span>
-              <div style={{ flex: 1, display: 'flex', gap: '8px', alignItems: 'center' }}>
-                <Select
-                  mode="multiple"
-                  value={conceptSectors}
-                  onChange={setConceptSectors}
-                  style={{ flex: 1 }}
-                  placeholder="选择概念板块"
-                  options={conceptSectorOptions}
-                  maxTagCount="responsive"
-                />
-                <Checkbox
-                  checked={conceptSectorInvert}
-                  onChange={(e) => setConceptSectorInvert(e.target.checked)}
-                >
-                  排除选中
-                </Checkbox>
-              </div>
-            </div>
-          </div>
-
-          {/* 价格范围 */}
-          <div className={styles.filterRow}>
-            <div className={styles.filterItem}>
-              <span className={styles.filterLabel}>价格范围（元）：</span>
-              <Space style={{ width: '100%' }}>
-                <InputNumber
-                  placeholder="最小"
-                  value={priceRange.min}
-                  onChange={(value) => setPriceRange({ ...priceRange, min: value ?? undefined })}
-                  style={{ flex: 1 }}
-                  min={0}
-                />
-                <span>-</span>
-                <InputNumber
-                  placeholder="最大"
-                  value={priceRange.max}
-                  onChange={(value) => setPriceRange({ ...priceRange, max: value ?? undefined })}
-                  style={{ flex: 1 }}
-                  min={0}
-                />
-              </Space>
-            </div>
-          </div>
-
-          {/* 市值范围 */}
-          <div className={styles.filterRow}>
-            <div className={styles.filterItem}>
-              <span className={styles.filterLabel}>总市值（亿）：</span>
-              <Space style={{ width: '100%' }}>
-                <InputNumber
-                  placeholder="最小"
-                  value={marketCapRange.min}
-                  onChange={(value) => setMarketCapRange({ ...marketCapRange, min: value ?? undefined })}
-                  style={{ flex: 1 }}
-                  min={0}
-                />
-                <span>-</span>
-                <InputNumber
-                  placeholder="最大"
-                  value={marketCapRange.max}
-                  onChange={(value) => setMarketCapRange({ ...marketCapRange, max: value ?? undefined })}
-                  style={{ flex: 1 }}
-                  min={0}
-                />
-              </Space>
-            </div>
-          </div>
-
-          {/* 总股数范围 */}
-          <div className={styles.filterRow}>
-            <div className={styles.filterItem}>
-              <span className={styles.filterLabel}>总股数（亿）：</span>
-              <Space style={{ width: '100%' }}>
-                <InputNumber
-                  placeholder="最小"
-                  value={totalSharesRange.min}
-                  onChange={(value) => setTotalSharesRange({ ...totalSharesRange, min: value ?? undefined })}
-                  style={{ flex: 1 }}
-                  min={0}
-                />
-                <span>-</span>
-                <InputNumber
-                  placeholder="最大"
-                  value={totalSharesRange.max}
-                  onChange={(value) => setTotalSharesRange({ ...totalSharesRange, max: value ?? undefined })}
-                  style={{ flex: 1 }}
-                  min={0}
-                />
-              </Space>
-            </div>
-          </div>
-
-          {/* 时间范围 */}
-          <div className={styles.filterRow}>
-            <div className={styles.filterItem}>
-              <span className={styles.filterLabel}>时间范围：</span>
-              <Select
-                value={timeRange}
-                onChange={setTimeRange}
-                style={{ width: 120 }}
-                options={[
-                  { label: '近1日', value: 1 },
-                  { label: '近7天', value: 7 },
-                  { label: '近14天', value: 14 },
-                  { label: '近30天', value: 30 },
-                  { label: '近60天', value: 60 },
-                  { label: '近90天', value: 90 },
-                  { label: '不限', value: 0 },
-                ]}
-              />
-            </div>
-          </div>
-
-          {/* 近1日胜率 */}
-          <div className={styles.filterRow}>
-            <div className={styles.filterItem}>
-              <span className={styles.filterLabel}>近1日胜率 ≥ (%)：</span>
-              <Input
-                type="number"
-                value={minWinRateDay1}
-                onChange={(e) => {
-                  const value = Number(e.target.value);
-                  if (value >= 0 && value <= 100) {
-                    setMinWinRateDay1(value);
-                  }
-                }}
-                min={0}
-                max={100}
-                placeholder="0-100"
-                style={{ width: 120 }}
-              />
-            </div>
-          </div>
-
-          {/* 近2日胜率 */}
-          <div className={styles.filterRow}>
-            <div className={styles.filterItem}>
-              <span className={styles.filterLabel}>近2日胜率 ≥ (%)：</span>
-              <Input
-                type="number"
-                value={minWinRateDay2}
-                onChange={(e) => {
-                  const value = Number(e.target.value);
-                  if (value >= 0 && value <= 100) {
-                    setMinWinRateDay2(value);
-                  }
-                }}
-                min={0}
-                max={100}
-                placeholder="0-100"
-                style={{ width: 120 }}
-              />
-            </div>
-          </div>
-
-          {/* 近3日胜率 */}
-          <div className={styles.filterRow}>
-            <div className={styles.filterItem}>
-              <span className={styles.filterLabel}>近3日胜率 ≥ (%)：</span>
-              <Input
-                type="number"
-                value={minWinRate}
-                onChange={(e) => {
-                  const value = Number(e.target.value);
-                  if (value >= 0 && value <= 100) {
-                    setMinWinRate(value);
-                  }
-                }}
-                min={0}
-                max={100}
-                placeholder="0-100"
-                style={{ width: 120 }}
-              />
-            </div>
-          </div>
-
-          {/* 重置按钮 */}
-          <div className={styles.filterRow}>
-            <Button onClick={handleResetFilter}>
-              重置筛选
-            </Button>
-          </div>
-        </div>
-      </Drawer>
-
-      {/* 导出股票数据抽屉 */}
-      <Drawer
-        title="导出股票K线数据"
-        placement="right"
-        width={500}
-        open={exportDrawerOpen}
-        onClose={() => setExportDrawerOpen(false)}
-        destroyOnHidden
-      >
-        <div style={{ marginBottom: 16 }}>
-          <div style={{ marginBottom: 8 }}>
-            <Text strong>股票名称：</Text>
-            <Text>{exportingStock?.name}</Text>
-          </div>
-          <div style={{ marginBottom: 8 }}>
-            <Text strong>股票代码：</Text>
-            <Text>{exportingStock?.code}</Text>
-          </div>
-        </div>
-
-        <div style={{ marginBottom: 16 }}>
-          <Text strong>日期买点（每行一个日期，仅输入8位数字）：</Text>
-          <Text type="secondary" style={{ display: 'block', marginTop: 4 }}>
-            示例：20251222
-          </Text>
-          <Input.TextArea
-            rows={6}
-            value={dateInput}
-            onChange={(e) => setDateInput(e.target.value)}
-            style={{ marginTop: 8, resize: 'none' }}
-          />
-        </div>
-
-        <div style={{ textAlign: 'right' }}>
-          <Space>
-            <Button onClick={() => setExportDrawerOpen(false)}>
-              取消
-            </Button>
-            <Button
-              type="primary"
-              onClick={handleSaveStockData}
-              loading={saving}
-            >
-              保存
-            </Button>
-          </Space>
-        </div>
-      </Drawer>
-
-      {/* 导出指定股票模态框 */}
-      <Modal
-        title="导出指定股票回测数据"
-        open={exportAllModalOpen}
-        onCancel={() => setExportAllModalOpen(false)}
-        onOk={handleExportAllData}
-        confirmLoading={exporting}
-        width={800}
-        okText="导出"
-        cancelText="取消"
-      >
-        <div style={{ marginBottom: 16 }}>
-          <div style={{ marginBottom: 12 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-              <Text strong>选择股票 ({selectedExportStocks.length}/{DEFAULT_EXPORT_STOCKS.stocks.length})：</Text>
-              <Button
-                size="small"
-                onClick={toggleSelectAll}
-              >
-                {selectedExportStocks.length === DEFAULT_EXPORT_STOCKS.stocks.length ? '取消全选' : '全选'}
-              </Button>
-            </div>
-            <div style={{
-              maxHeight: 300,
-              overflow: 'auto',
-              border: '1px solid #d9d9d9',
-              borderRadius: 4,
-              padding: 8
-            }}>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 8 }}>
-                {DEFAULT_EXPORT_STOCKS.stocks.map(stock => (
-                  <div
-                    key={stock.code}
-                    style={{
-                      padding: '6px 8px',
-                      border: selectedExportStocks.includes(stock.code) ? '1px solid #1890ff' : '1px solid #d9d9d9',
-                      borderRadius: 4,
-                      cursor: 'pointer',
-                      backgroundColor: selectedExportStocks.includes(stock.code) ? '#e6f7ff' : 'transparent',
-                      fontSize: 12
-                    }}
-                    onClick={() => toggleStockSelection(stock.code)}
-                  >
-                    <div style={{ fontWeight: 500 }}>{stock.name}</div>
-                    <div style={{ color: '#8c8c8c', fontSize: 11 }}>{stock.code}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div style={{ marginTop: 12 }}>
-            <Text type="secondary" style={{ fontSize: 12 }}>
-              提示：默认导出股票数据目录中的股票，可手动调整选择。数据将保存到 docs/回测优化/历史回测数据 目录，格式为JSON。
-            </Text>
-          </div>
-        </div>
-      </Modal>
-
-      {/* 批量导出K线数据模态框 */}
-      <Modal
-        title="批量导出K线数据"
-        open={batchExportModalOpen}
-        onCancel={() => setBatchExportModalOpen(false)}
-        onOk={handleBatchExportKlineData}
-        confirmLoading={batchExporting}
-        width={800}
-        okText="导出"
-        cancelText="取消"
-      >
-        <div style={{ marginBottom: 16 }}>
-          <div style={{ marginBottom: 12 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-              <Text strong>选择股票 ({selectedExportStocks.length}/{DEFAULT_EXPORT_STOCKS.stocks.length})：</Text>
-              <Button
-                size="small"
-                onClick={toggleSelectAll}
-              >
-                {selectedExportStocks.length === DEFAULT_EXPORT_STOCKS.stocks.length ? '取消全选' : '全选'}
-              </Button>
-            </div>
-            <div style={{
-              maxHeight: 300,
-              overflow: 'auto',
-              border: '1px solid #d9d9d9',
-              borderRadius: 4,
-              padding: 8
-            }}>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 8 }}>
-                {DEFAULT_EXPORT_STOCKS.stocks.map(stock => (
-                  <div
-                    key={stock.code}
-                    style={{
-                      padding: '6px 8px',
-                      border: selectedExportStocks.includes(stock.code) ? '1px solid #1890ff' : '1px solid #d9d9d9',
-                      borderRadius: 4,
-                      cursor: 'pointer',
-                      backgroundColor: selectedExportStocks.includes(stock.code) ? '#e6f7ff' : 'transparent',
-                      fontSize: 12
-                    }}
-                    onClick={() => toggleStockSelection(stock.code)}
-                  >
-                    <div style={{ fontWeight: 500 }}>{stock.name}</div>
-                    <div style={{ color: '#8c8c8c', fontSize: 11 }}>{stock.code}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div style={{ marginTop: 12 }}>
-            <Text type="secondary" style={{ fontSize: 12 }}>
-              提示：默认导出股票数据目录中的股票，可手动调整选择。如果目标文件中 buypointDate 不为空数组，则不会覆盖该字段，只更新 data 字段。数据将保存到 docs/回测优化/股票数据 目录。
-            </Text>
-          </div>
-        </div>
-      </Modal>
     </Layout>
   );
 }
