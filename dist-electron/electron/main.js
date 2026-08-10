@@ -640,6 +640,49 @@ function setupIpcHandlers() {
             return { success: false, error: errorMessage, results: [] };
         }
     });
+    /**
+     * 导出回测结果到 docs/回测优化/最新买点 或 docs/回测优化/历史买点
+     */
+    ipcMain.handle('export-backtest-signals-file', async (_event, payload) => {
+        try {
+            const { kind, format, fileBaseName, content } = payload;
+            if (!fileBaseName || !/^[0-9A-Za-z_\-]+$/.test(fileBaseName)) {
+                return { success: false, error: '非法文件名' };
+            }
+            if (format !== 'json' && format !== 'xlsx') {
+                return { success: false, error: '不支持的导出格式' };
+            }
+            const folderName = kind === 'latest' ? '最新买点' : '历史买点';
+            let targetDir;
+            if (isDev) {
+                targetDir = join(app.getAppPath(), 'docs', '回测优化', folderName);
+            }
+            else {
+                const exeDir = join(app.getPath('exe'), '..');
+                targetDir = join(exeDir, 'docs', '回测优化', folderName);
+            }
+            if (!existsSync(targetDir)) {
+                mkdirSync(targetDir, { recursive: true });
+                mainLog(`[主进程] 创建目录: ${targetDir}`);
+            }
+            const ext = format === 'json' ? 'json' : 'xlsx';
+            const filePath = join(targetDir, `${fileBaseName}.${ext}`);
+            if (format === 'json') {
+                writeFileSync(filePath, String(content), 'utf-8');
+            }
+            else {
+                const bytes = Buffer.from(content);
+                writeFileSync(filePath, bytes);
+            }
+            mainLog(`[主进程] 回测结果已导出: ${filePath}`);
+            return { success: true, filePath };
+        }
+        catch (error) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            mainLog(`[主进程] 回测结果导出失败: ${errorMessage}`, true);
+            return { success: false, error: errorMessage };
+        }
+    });
 }
 // 应用准备就绪
 app.whenReady().then(async () => {

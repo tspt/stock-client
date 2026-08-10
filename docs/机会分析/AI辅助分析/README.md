@@ -450,7 +450,6 @@ const similar = findSimilarPatterns(currentData, stockPool, searchConfig);
 - [ ] 整合新闻舆情情感分析
 - [ ] 实现强化学习优化策略
 - [ ] 建立用户反馈闭环
-- [ ] 云端模型训练与更新
 
 ## 🤝 贡献指南
 

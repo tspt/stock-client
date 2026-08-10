@@ -5,7 +5,7 @@
  * - 基于当前 stockHistory 扫描最新交易日高 lift 场景
  */
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import {
   Layout,
   Card,
@@ -24,9 +24,10 @@ import {
   Select,
   Input,
   Alert,
+  Dropdown,
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { ExportOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons';
+import { DownOutlined, ExportOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons';
 import { getStocksHistory, type StockHistoryRecord } from '@/utils/storage/opportunityIndexedDB';
 import {
   HIGH_LIFT_SCENARIOS,
@@ -38,11 +39,21 @@ import {
   type ReturnSnapshot,
   type ScenarioId,
 } from '@/utils/analysis/buypointScenario';
+import {
+  exportBacktestSignalsToExcel,
+  exportBacktestSignalsToJson,
+  resolveHistoryExportDate,
+  resolveLatestExportDate,
+  type BacktestExportFormat,
+} from '@/utils/export/backtestExportUtils';
 import { logger } from '@/utils/business/logger';
 import styles from './BacktestPage.module.css';
 
 const { Header, Content } = Layout;
 const { Text, Paragraph } = Typography;
+
+/** 表格滚动区为表头与分页预留的高度 */
+const TABLE_SCROLL_Y_RESERVE = 102;
 
 type IndustryInfo = { code: string; name: string };
 
@@ -105,6 +116,7 @@ export function BacktestPage() {
   const [excludeST, setExcludeST] = useState(true);
   const [loadingCount, setLoadingCount] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [exportingResults, setExportingResults] = useState(false);
   const [scanningHistory, setScanningHistory] = useState(false);
   const [scanningLatest, setScanningLatest] = useState(false);
   const [exportProgress, setExportProgress] = useState({ current: 0, total: 0 });
@@ -115,6 +127,9 @@ export function BacktestPage() {
   const [latestScenarioFilter, setLatestScenarioFilter] = useState<string>('all');
   const [searchText, setSearchText] = useState('');
   const [latestDateSummary, setLatestDateSummary] = useState({ dominantDate: '', dominantCount: 0 });
+  const [activeTab, setActiveTab] = useState('latest');
+  const [tableScrollY, setTableScrollY] = useState(360);
+  const tableAreaRef = useRef<HTMLDivElement>(null);
 
   const normalizeStockCode = useCallback((code: string): string => {
     if (code.startsWith('SH') || code.startsWith('SZ')) {
@@ -309,6 +324,72 @@ export function BacktestPage() {
     });
   }, [latestScenarioFilter, latestSignals, searchText]);
 
+  const handleExportResults = async (format: BacktestExportFormat) => {
+    const kind = activeTab === 'latest' ? 'latest' : 'history';
+    const data = kind === 'latest' ? filteredLatestSignals : filteredHistorySignals;
+
+    if (data.length === 0) {
+      message.warning('请先扫描');
+      return;
+    }
+
+    if (!window.electronAPI?.exportBacktestSignalsFile) {
+      message.error('导出到项目目录不可用（需在 Electron 环境中运行）');
+      return;
+    }
+
+    try {
+      setExportingResults(true);
+      const fileBaseName =
+        kind === 'latest'
+          ? resolveLatestExportDate(filteredLatestSignals, latestDateSummary.dominantDate)
+          : resolveHistoryExportDate(latestDateSummary.dominantDate);
+
+      const meta = {
+        tab: kind,
+        searchText: searchText.trim(),
+        scenarioFilter: kind === 'latest' ? latestScenarioFilter : historyScenarioFilter,
+        excludeST,
+        latestDate: latestDateSummary.dominantDate || null,
+        fileBaseName,
+      };
+
+      const filePath =
+        format === 'json'
+          ? await exportBacktestSignalsToJson({ kind, data, fileBaseName, meta })
+          : await exportBacktestSignalsToExcel({ kind, data, fileBaseName });
+
+      message.success(
+        `已导出${kind === 'latest' ? '最新交易日命中' : '历史好买点'} ${data.length} 条到 ${filePath}`
+      );
+    } catch (error) {
+      logger.error('[BacktestPage] 导出结果失败:', error);
+      message.error('导出结果失败: ' + (error as Error).message);
+    } finally {
+      setExportingResults(false);
+    }
+  };
+
+  useLayoutEffect(() => {
+    const el = tableAreaRef.current;
+    if (!el) return;
+
+    const updateScrollY = () => {
+      const next = Math.floor(el.clientHeight - TABLE_SCROLL_Y_RESERVE);
+      const value = Math.max(200, next);
+      setTableScrollY((prev) => (prev === value ? prev : value));
+    };
+
+    updateScrollY();
+    const frame = requestAnimationFrame(updateScrollY);
+    const resizeObserver = new ResizeObserver(updateScrollY);
+    resizeObserver.observe(el);
+    return () => {
+      cancelAnimationFrame(frame);
+      resizeObserver.disconnect();
+    };
+  }, []);
+
   const scenarioStats = useMemo(() => {
     const map = new Map<ScenarioId, number>();
     historySignals.forEach((signal) => {
@@ -343,7 +424,14 @@ export function BacktestPage() {
         </div>
       ),
     },
-    { title: '买点日期', dataIndex: 'date', width: 110 },
+    {
+      title: '买点日期',
+      dataIndex: 'date',
+      width: 110,
+      sorter: (a, b) => a.timestamp - b.timestamp,
+      defaultSortOrder: 'descend',
+      showSorterTooltip: { title: '按买点日期排序' },
+    },
     {
       title: '场景',
       dataIndex: 'scenarioName',
@@ -404,6 +492,24 @@ export function BacktestPage() {
     },
   ];
 
+  const renderSearchInput = () => (
+    <Input
+      allowClear
+      placeholder="搜索股票名称/代码"
+      prefix={<SearchOutlined />}
+      value={searchText}
+      onChange={(e) => setSearchText(e.target.value)}
+      style={{ width: 220 }}
+      size="small"
+    />
+  );
+
+  const activeDataLength =
+    activeTab === 'latest' ? filteredLatestSignals.length : filteredHistorySignals.length;
+  const activeColumns = activeTab === 'latest' ? latestColumns : historicalColumns;
+  const activeDataSource = activeTab === 'latest' ? filteredLatestSignals : filteredHistorySignals;
+  const activeScrollX = activeTab === 'latest' ? 1200 : 1300;
+
   return (
     <Layout className={styles.backtestPage}>
       <Header className={styles.header}>
@@ -414,13 +520,65 @@ export function BacktestPage() {
               K 线导出、历史好买点归类、最新交易日场景扫描
             </span>
           </div>
+          <Space wrap className={styles.headerActions}>
+            <Checkbox
+              checked={excludeST}
+              disabled={exporting || scanningHistory || scanningLatest}
+              onChange={(e) => setExcludeST(e.target.checked)}
+            >
+              排除ST
+            </Checkbox>
+            <Button onClick={refreshHistoryCount} disabled={loadingCount} loading={loadingCount}>
+              刷新统计
+            </Button>
+            <Button
+              type="primary"
+              icon={<ExportOutlined />}
+              loading={exporting}
+              disabled={exportCount === 0 && !exporting}
+              onClick={handleExportAllKlineData}
+            >
+              导出K线
+            </Button>
+            <Dropdown
+              menu={{
+                items: [
+                  { key: 'xlsx', label: '导出 Excel (.xlsx)' },
+                  { key: 'json', label: '导出 JSON (.json)' },
+                ],
+                onClick: ({ key }) => {
+                  void handleExportResults(key as BacktestExportFormat);
+                },
+              }}
+            >
+              <Button icon={<ExportOutlined />} loading={exportingResults}>
+                导出结果 <DownOutlined />
+              </Button>
+            </Dropdown>
+            <Button
+              icon={<ReloadOutlined />}
+              loading={scanningHistory}
+              disabled={exportCount === 0}
+              onClick={handleScanHistoricalBuyPoints}
+            >
+              扫描历史
+            </Button>
+            <Button
+              icon={<SearchOutlined />}
+              loading={scanningLatest}
+              disabled={exportCount === 0}
+              onClick={handleScanLatestSignals}
+            >
+              扫描最新
+            </Button>
+          </Space>
         </div>
       </Header>
 
       <Content className={styles.content}>
         <div className={styles.pageBody}>
-          <Card>
-            <Row gutter={[24, 16]} style={{ marginBottom: 20 }}>
+          <Card className={styles.summaryPanel} size="small">
+            <Row gutter={[16, 8]} className={styles.metricStrip}>
               <Col>
                 <Statistic title="stockHistory 总数" value={totalCount} loading={loadingCount} />
               </Col>
@@ -428,154 +586,108 @@ export function BacktestPage() {
                 <Statistic title="参与扫描/导出" value={exportCount} loading={loadingCount} />
               </Col>
               <Col>
-                <Statistic title="行业映射数" value={industryMapping.size} />
+                <Statistic title="行业映射数" value={industryMapping.size} loading={loadingCount} />
               </Col>
               <Col>
-                <Statistic title="历史好买点" value={historySignals.length} />
+                <Statistic title="历史好买点" value={historySignals.length} loading={loadingCount} />
               </Col>
               <Col>
-                <Statistic title="最新日命中" value={latestSignals.length} />
+                <Statistic title="最新日命中" value={latestSignals.length} loading={loadingCount} />
               </Col>
             </Row>
 
             <Alert
               type="info"
               showIcon
-              style={{ marginBottom: 16 }}
+              className={styles.compactAlert}
               message={
                 latestDateSummary.dominantDate
                   ? `当前 K 线众数截止日：${latestDateSummary.dominantDate}（${latestDateSummary.dominantCount} 只）`
                   : '尚未读取到 K 线截止日'
               }
-              description="历史好买点和最新日场景都直接读取 IndexedDB stockHistory；如果机会分析更新了 K 线，点击下方扫描按钮即可用最新数据重算。"
+              description="历史好买点和最新日场景都直接读取 IndexedDB stockHistory；如果机会分析更新了 K 线，点击顶部扫描按钮即可用最新数据重算。"
             />
 
-            <Paragraph type="secondary">
+            <Paragraph type="secondary" className={styles.compactRule}>
               历史好买点规则：买入收盘后 1/2/3/5/10 日累计收益中至少 3 项 &gt; 5%。
               最新交易日只展示 lift&gt;1 的高价值场景，未来收益尚未发生时对应列为空。
             </Paragraph>
-
-            <Space wrap>
-              <Checkbox
-                checked={excludeST}
-                disabled={exporting || scanningHistory || scanningLatest}
-                onChange={(e) => setExcludeST(e.target.checked)}
-              >
-                排除 ST 股票
-              </Checkbox>
-              <Button onClick={refreshHistoryCount} disabled={loadingCount}>
-                刷新数量
-              </Button>
-              <Button
-                type="primary"
-                icon={<ExportOutlined />}
-                loading={exporting}
-                disabled={exportCount === 0 && !exporting}
-                onClick={handleExportAllKlineData}
-              >
-                导出 K 线数据
-              </Button>
-              <Button
-                icon={<ReloadOutlined />}
-                loading={scanningHistory}
-                disabled={exportCount === 0}
-                onClick={handleScanHistoricalBuyPoints}
-              >
-                重新扫描历史买点
-              </Button>
-              <Button
-                icon={<SearchOutlined />}
-                loading={scanningLatest}
-                disabled={exportCount === 0}
-                onClick={handleScanLatestSignals}
-              >
-                扫描最新交易日
-              </Button>
-            </Space>
 
             {exporting && exportProgress.total > 0 && (
               <div className={styles.exportProgress}>
                 <Progress
                   percent={progressPercent}
                   status="active"
+                  size="small"
                   format={() => `${exportProgress.current}/${exportProgress.total}`}
                 />
               </div>
             )}
           </Card>
 
-          <Card>
-            <Space wrap style={{ marginBottom: 16 }}>
-              <Input
-                allowClear
-                placeholder="搜索股票名称/代码"
-                prefix={<SearchOutlined />}
-                value={searchText}
-                onChange={(e) => setSearchText(e.target.value)}
-                style={{ width: 220 }}
-              />
-            </Space>
-
+          <Card className={styles.resultCard} size="small">
             <Tabs
+              className={styles.resultTabs}
+              activeKey={activeTab}
+              onChange={setActiveTab}
               items={[
                 {
                   key: 'latest',
                   label: `最新交易日命中 (${filteredLatestSignals.length})`,
-                  children: (
-                    <>
-                      <Space wrap style={{ marginBottom: 12 }}>
-                        <Select
-                          value={latestScenarioFilter}
-                          options={[
-                            { label: '全部高价值场景', value: 'all' },
-                            ...HIGH_LIFT_SCENARIOS.map((s) => ({ label: s.name, value: s.id })),
-                          ]}
-                          onChange={setLatestScenarioFilter}
-                          style={{ width: 200 }}
-                        />
-                      </Space>
-                      <Table
-                        rowKey={(record) => `${record.code}-${record.date}-${record.scenario}`}
-                        columns={latestColumns}
-                        dataSource={filteredLatestSignals}
-                        pagination={{ pageSize: 50, showSizeChanger: true }}
-                        scroll={{ x: 1200 }}
-                        size="small"
-                      />
-                    </>
-                  ),
                 },
                 {
                   key: 'history',
                   label: `历史好买点 (${filteredHistorySignals.length})`,
-                  children: (
-                    <>
-                      <Space wrap style={{ marginBottom: 12 }}>
-                        <Select
-                          value={historyScenarioFilter}
-                          options={scenarioOptions}
-                          onChange={setHistoryScenarioFilter}
-                          style={{ width: 220 }}
-                        />
-                        {scenarioStats.map((item) => (
-                          <Tag key={item.id} color={highLiftIds.has(item.id) ? 'red' : 'blue'}>
-                            {item.name}: {item.count}
-                          </Tag>
-                        ))}
-                      </Space>
-                      <Table
-                        rowKey={(record) => `${record.code}-${record.date}-${record.scenario}`}
-                        columns={historicalColumns}
-                        dataSource={filteredHistorySignals}
-                        pagination={{ pageSize: 50, showSizeChanger: true }}
-                        scroll={{ x: 1300 }}
-                        size="small"
-                      />
-                    </>
-                  ),
                 },
               ]}
             />
+
+            <div className={styles.tabToolbar}>
+              <div className={styles.tabToolbarLeft}>
+                {activeTab === 'latest' ? (
+                  <Select
+                    value={latestScenarioFilter}
+                    options={[
+                      { label: '全部高价值场景', value: 'all' },
+                      ...HIGH_LIFT_SCENARIOS.map((s) => ({ label: s.name, value: s.id })),
+                    ]}
+                    onChange={setLatestScenarioFilter}
+                    style={{ width: 200 }}
+                    size="small"
+                  />
+                ) : (
+                  <>
+                    <Select
+                      value={historyScenarioFilter}
+                      options={scenarioOptions}
+                      onChange={setHistoryScenarioFilter}
+                      style={{ width: 220 }}
+                      size="small"
+                    />
+                    {scenarioStats.map((item) => (
+                      <Tag key={item.id} color={highLiftIds.has(item.id) ? 'red' : 'blue'}>
+                        {item.name}: {item.count}
+                      </Tag>
+                    ))}
+                  </>
+                )}
+              </div>
+              {renderSearchInput()}
+            </div>
+
+            <div className={styles.tableArea} ref={tableAreaRef}>
+              <Table
+                rowKey={(record) => `${record.code}-${record.date}-${record.scenario}-${record.timestamp}`}
+                columns={activeColumns}
+                dataSource={activeDataSource}
+                pagination={{ pageSize: 50, showSizeChanger: true }}
+                scroll={{
+                  x: activeScrollX,
+                  y: activeDataLength > 0 ? tableScrollY : undefined,
+                }}
+                size="small"
+              />
+            </div>
           </Card>
         </div>
       </Content>

@@ -15,10 +15,8 @@ release
 
 # Generated backtest data (local artifacts)
 docs/回测优化/股票数据/**/*.json
-docs/回测优化/历史回测数据/**/*.json
 docs/回测优化/买点信号/**/*.json
 docs/回测优化/买点场景/**/*.json
-public/models/industry/
 
 # Editor directories and files
 .vscode/*

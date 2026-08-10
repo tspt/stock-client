@@ -62,6 +62,16 @@ try {
       return ipcRenderer.invoke('batch-export-kline-data', stocksData);
     },
 
+    // 导出回测结果到 docs/回测优化/最新买点 或 历史买点
+    exportBacktestSignalsFile: (payload: {
+      kind: 'latest' | 'history';
+      format: 'json' | 'xlsx';
+      fileBaseName: string;
+      content: string | number[];
+    }) => {
+      return ipcRenderer.invoke('export-backtest-signals-file', payload);
+    },
+
     // 监听Cookie获取进度
     onCookieFetchProgress: (callback: (progress: any) => void) => {
       const listener = (_event: any, progress: any) => callback(progress);
