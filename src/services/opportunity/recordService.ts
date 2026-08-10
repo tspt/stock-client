@@ -73,6 +73,42 @@ export async function addStocksToTodayRecord(
 }
 
 /**
+ * 计算股票在记录日期序列末尾的连续上榜天数
+ * 仅当股票在最新记录日也上榜时返回连续天数，否则为 0
+ */
+export function calcConsecutiveStreakAtEnd(
+  stockDates: string[],
+  allRecordDates: string[]
+): number {
+  if (stockDates.length === 0 || allRecordDates.length === 0) {
+    return 0;
+  }
+
+  const dateSet = new Set(stockDates);
+  const latestStockDate = stockDates.reduce((max, d) => (d > max ? d : max), stockDates[0]);
+  const globalLatest = allRecordDates[allRecordDates.length - 1];
+
+  if (latestStockDate !== globalLatest) {
+    return 0;
+  }
+
+  let streak = 1;
+  let idx = allRecordDates.length - 1;
+
+  while (idx > 0) {
+    const prevDate = allRecordDates[idx - 1];
+    if (dateSet.has(prevDate)) {
+      streak += 1;
+      idx -= 1;
+    } else {
+      break;
+    }
+  }
+
+  return streak;
+}
+
+/**
  * 计算股票统计信息
  * 聚合所有日期的记录，统计每只股票的出现次数、最新日期等
  */
@@ -134,8 +170,12 @@ export async function calculateStockStatistics(dateRange?: {
       });
     });
 
-    // 转换为数组并按出现次数降序排序
+    const allRecordDates = [...new Set(allRecords.map((record) => record.date))].sort();
+
     const statistics = Array.from(statsMap.values());
+    statistics.forEach((stat) => {
+      stat.consecutiveDays = calcConsecutiveStreakAtEnd(stat.dates, allRecordDates);
+    });
     statistics.sort((a, b) => b.count - a.count);
 
     return statistics;

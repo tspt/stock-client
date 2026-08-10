@@ -991,4 +991,6 @@ export interface StockStatistics {
   industry?: IndustryInfo;
   /** 所有上榜日期列表 */
   dates: string[];
+  /** 当前连续上榜天数（以最新记录日为终点，沿记录日期序列向前统计） */
+  consecutiveDays?: number;
 }

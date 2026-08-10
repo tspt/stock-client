@@ -3,12 +3,12 @@
  * 展示股票上榜统计信息和趋势图
  */
 
-import { useEffect, useState } from 'react';
-import { Layout, Card, Button, Space, Table, Tabs, Spin, Empty, Tag, Modal, Typography, App } from 'antd';
+import { useEffect, useMemo, useState } from 'react';
+import { Layout, Card, Button, Space, Table, Tabs, Spin, Empty, Tag, Typography, App, Switch, Select } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { DeleteOutlined, ReloadOutlined, BarChartOutlined, TableOutlined } from '@ant-design/icons';
+import { ReloadOutlined, BarChartOutlined, TableOutlined } from '@ant-design/icons';
 import type { StockStatistics } from '@/types/stock';
-import { calculateStockStatistics, clearAllRecords, calculateTrendData } from '@/services/opportunity/recordService';
+import { calculateStockStatistics, calculateTrendData } from '@/services/opportunity/recordService';
 import { StockTrendChart } from '@/components/StockTrendChart/StockTrendChart';
 import styles from './AnalysisRecordPage.module.css';
 
@@ -16,12 +16,23 @@ const { Header, Content } = Layout;
 const { Text } = Typography;
 
 export function AnalysisRecordPage() {
-  const { message, modal } = App.useApp();
+  const { message } = App.useApp();
   const [statistics, setStatistics] = useState<StockStatistics[]>([]);
   const [loading, setLoading] = useState(false);
   const [dateRange, setDateRange] = useState<[string, string] | null>(null);
   const [trendData, setTrendData] = useState<Array<{ date: string; count: number }>>([]);
   const [activeTab, setActiveTab] = useState('table');
+  const [consecutiveFilterEnabled, setConsecutiveFilterEnabled] = useState(false);
+  const [minConsecutiveDays, setMinConsecutiveDays] = useState(2);
+
+  const filteredStatistics = useMemo(() => {
+    if (!consecutiveFilterEnabled) {
+      return statistics;
+    }
+    return statistics
+      .filter((item) => (item.consecutiveDays ?? 0) >= minConsecutiveDays)
+      .sort((a, b) => (b.consecutiveDays ?? 0) - (a.consecutiveDays ?? 0) || b.count - a.count);
+  }, [statistics, consecutiveFilterEnabled, minConsecutiveDays]);
 
   // 加载统计数据
   const loadStatistics = async () => {
@@ -44,32 +55,6 @@ export function AnalysisRecordPage() {
     } catch (error) {
       message.error('加载趋势数据失败');
     }
-  };
-
-  // 清空所有记录
-  const handleClearAll = async () => {
-    if (statistics.length === 0 && trendData.length === 0) {
-      message.warning('暂无记录可清空');
-      return;
-    }
-
-    modal.confirm({
-      title: '确认清空',
-      content: '确定要清空所有分析记录吗？此操作不可恢复。',
-      okText: '确定',
-      cancelText: '取消',
-      okType: 'danger',
-      onOk: async () => {
-        try {
-          await clearAllRecords();
-          message.success('已清空所有记录');
-          loadStatistics();
-          loadTrendData();
-        } catch (error) {
-          message.error('清空记录失败');
-        }
-      },
-    });
   };
 
   // 当日期范围改变时重新加载
@@ -114,6 +99,24 @@ export function AnalysisRecordPage() {
           </Tag>
         </span>
       ),
+    },
+    {
+      title: '连续天数',
+      dataIndex: 'consecutiveDays',
+      key: 'consecutiveDays',
+      width: 100,
+      sorter: (a, b) => (a.consecutiveDays ?? 0) - (b.consecutiveDays ?? 0),
+      render: (days?: number) => {
+        const value = days ?? 0;
+        if (value === 0) {
+          return <span style={{ color: '#999' }}>-</span>;
+        }
+        return (
+          <Tag color={value >= 5 ? 'red' : value >= 3 ? 'orange' : 'green'}>
+            {value} 天
+          </Tag>
+        );
+      },
     },
     {
       title: '最新上榜日期',
@@ -165,9 +168,6 @@ export function AnalysisRecordPage() {
             </Text>
           </div>
           <Space>
-            <Button danger icon={<DeleteOutlined />} onClick={handleClearAll}>
-              清空所有记录
-            </Button>
             <Button icon={<ReloadOutlined />} onClick={() => { loadStatistics(); loadTrendData(); }}>
               刷新
             </Button>
@@ -191,10 +191,39 @@ export function AnalysisRecordPage() {
                 ),
                 children: (
                   <Spin spinning={loading}>
-                    {statistics.length > 0 ? (
+                    <div className={styles.tableToolbar}>
+                      <Space wrap>
+                        <Switch
+                          checked={consecutiveFilterEnabled}
+                          onChange={setConsecutiveFilterEnabled}
+                          checkedChildren="连续出现"
+                          unCheckedChildren="全部"
+                        />
+                        {consecutiveFilterEnabled && (
+                          <>
+                            <span className={styles.filterLabel}>最少连续</span>
+                            <Select
+                              value={minConsecutiveDays}
+                              onChange={setMinConsecutiveDays}
+                              style={{ width: 88 }}
+                              options={[
+                                { value: 2, label: '2 天' },
+                                { value: 3, label: '3 天' },
+                                { value: 4, label: '4 天' },
+                                { value: 5, label: '5 天' },
+                              ]}
+                            />
+                            <Text type="secondary" className={styles.filterHint}>
+                              仅显示最新记录日仍上榜、且连续出现 ≥ {minConsecutiveDays} 天的股票
+                            </Text>
+                          </>
+                        )}
+                      </Space>
+                    </div>
+                    {filteredStatistics.length > 0 ? (
                       <Table
                         columns={columns}
-                        dataSource={statistics}
+                        dataSource={filteredStatistics}
                         rowKey="code"
                         pagination={{
                           defaultPageSize: 50,
@@ -202,11 +231,17 @@ export function AnalysisRecordPage() {
                           showTotal: (total) => `共 ${total} 条记录`,
                           pageSizeOptions: ['50', '100', '200'],
                         }}
-                        scroll={{ x: 800, y: 'calc(100vh - 280px)' }}
+                        scroll={{ x: 800, y: 'calc(100vh - 330px)' }}
                         size="small"
                       />
                     ) : (
-                      <Empty description="暂无记录数据" />
+                      <Empty
+                        description={
+                          consecutiveFilterEnabled
+                            ? `暂无连续 ${minConsecutiveDays} 天及以上上榜的股票`
+                            : '暂无记录数据'
+                        }
+                      />
                     )}
                   </Spin>
                 ),

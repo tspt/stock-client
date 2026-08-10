@@ -14,6 +14,7 @@ import {
   calculateADX,
 } from '@/utils/analysis/technicalIndicators';
 import { performAIAnalysisWithTimestamp as performAIV6Analysis } from '@/services/opportunity/ai-v6.0';
+import { performAIAnalysis as performAIV7Analysis } from '@/services/opportunity/ai-v7.0';
 import { performAIAnalysis as performAIV5Analysis } from '@/services/opportunity/ai-v5.0';
 import { performAIAnalysis as performAIV4Analysis } from '@/services/opportunity/ai-v4.0';
 import { performAIAnalysis as performAIV3Analysis } from '@/services/opportunity/ai-v3.0';
@@ -706,6 +707,8 @@ async function runFilterTask(
             let result: StockOpportunityData['aiAnalysis'];
             if (filters.aiVersion === 'v6') {
               result = performAIV6Analysis(klineData, nextItem, undefined, context).result;
+            } else if (filters.aiVersion === 'v7') {
+              result = performAIV7Analysis(klineData, nextItem);
             } else if (filters.aiVersion === 'v5') {
               result = performAIV5Analysis(klineData, nextItem);
             } else if (filters.aiVersion === 'v4') {

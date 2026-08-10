@@ -27,9 +27,12 @@ import {
 } from '@/utils/config/opportunityAnalysisDefaults';
 import { logger } from '@/utils/business/logger';
 
-type OpportunityAiVersion = 'v1' | 'v2' | 'v3' | 'v4' | 'v5' | 'v6';
+type OpportunityAiVersion = 'v1' | 'v2' | 'v3' | 'v4' | 'v5' | 'v6' | 'v7';
 
 async function loadPerformAIAnalysis(aiVersion: OpportunityAiVersion) {
+  if (aiVersion === 'v7') {
+    return (await import('./ai-v7.0')).performAIAnalysis;
+  }
   if (aiVersion === 'v6') {
     return (await import('./ai-v6.0')).performAIAnalysis;
   }

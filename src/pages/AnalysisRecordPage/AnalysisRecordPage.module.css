@@ -97,6 +97,21 @@
   gap: 4px;
 }
 
+.tableToolbar {
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--ant-color-border-secondary);
+}
+
+.filterLabel {
+  font-size: 13px;
+  color: var(--ant-color-text-secondary);
+}
+
+.filterHint {
+  font-size: 12px;
+}
+
 /* 深色主题适配 */
 [data-theme='dark'] .analysisRecordPage {
   background: #141414;
