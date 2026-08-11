@@ -23,12 +23,17 @@ import {
   Tabs,
   Select,
   Input,
+  InputNumber,
   Alert,
   Dropdown,
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { DownOutlined, ExportOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons';
-import { getStocksHistory, type StockHistoryRecord } from '@/utils/storage/opportunityIndexedDB';
+import {
+  getAllStockRecords,
+  getStocksHistory,
+  type StockHistoryRecord,
+} from '@/utils/storage/opportunityIndexedDB';
 import {
   HIGH_LIFT_SCENARIOS,
   SCENARIOS,
@@ -39,6 +44,12 @@ import {
   type ReturnSnapshot,
   type ScenarioId,
 } from '@/utils/analysis/buypointScenario';
+import {
+  buildTrackedLatestSignals,
+  getTrackingStatus,
+  type TrackedLatestSignal,
+  type TrackingStatus,
+} from '@/utils/analysis/latestSignalTracking';
 import {
   exportBacktestSignalsToExcel,
   exportBacktestSignalsToJson,
@@ -125,6 +136,17 @@ export function BacktestPage() {
   const [latestSignals, setLatestSignals] = useState<LatestScenarioSignal[]>([]);
   const [historyScenarioFilter, setHistoryScenarioFilter] = useState<string>('all');
   const [latestScenarioFilter, setLatestScenarioFilter] = useState<string>('all');
+  const [trackingScenarioFilter, setTrackingScenarioFilter] = useState<string>('all');
+  const [trackingDateRange, setTrackingDateRange] = useState<string>('recent5');
+  const [trackingStatusFilter, setTrackingStatusFilter] = useState<TrackingStatus[]>([
+    'tracking',
+    'passed',
+  ]);
+  const [trackingOnlyOpportunity, setTrackingOnlyOpportunity] = useState(true);
+  const [trackingThreshold, setTrackingThreshold] = useState(5);
+  const [trackingMinHitCount, setTrackingMinHitCount] = useState(3);
+  const [trackingRows, setTrackingRows] = useState<TrackedLatestSignal[]>([]);
+  const [loadingTracking, setLoadingTracking] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [latestDateSummary, setLatestDateSummary] = useState({ dominantDate: '', dominantCount: 0 });
   const [activeTab, setActiveTab] = useState('latest');
@@ -298,6 +320,43 @@ export function BacktestPage() {
     }
   };
 
+  const handleLoadTrackingRows = async () => {
+    if (!window.electronAPI?.readLatestBuyPointFiles) {
+      message.error('读取最新买点文件不可用（需在 Electron 环境中运行并重启应用）');
+      return;
+    }
+
+    try {
+      setLoadingTracking(true);
+      const result = await window.electronAPI.readLatestBuyPointFiles();
+      if (!result.success) {
+        message.error('读取最新买点文件失败: ' + (result.error || '未知错误'));
+        return;
+      }
+
+      const files = result.files || [];
+      if (files.length === 0) {
+        setTrackingRows([]);
+        message.warning('暂无最新买点文件，请先扫描并导出最新交易日命中');
+        return;
+      }
+
+      const histories = filterHistories(await getStocksHistory([]), excludeST);
+      const records = await getAllStockRecords();
+      const rows = buildTrackedLatestSignals(files, histories, records, {
+        threshold: trackingThreshold,
+        minHitCount: trackingMinHitCount,
+      });
+      setTrackingRows(rows);
+      message.success(`买点追踪已更新，共读取 ${files.length} 个文件、${rows.length} 条信号`);
+    } catch (error) {
+      logger.error('[BacktestPage] 更新买点追踪失败:', error);
+      message.error('更新买点追踪失败: ' + (error as Error).message);
+    } finally {
+      setLoadingTracking(false);
+    }
+  };
+
   const filteredHistorySignals = useMemo(() => {
     const keyword = searchText.trim().toLowerCase();
     return historySignals.filter((item) => {
@@ -324,7 +383,53 @@ export function BacktestPage() {
     });
   }, [latestScenarioFilter, latestSignals, searchText]);
 
+  const trackedRowsWithStatus = useMemo(() => {
+    return trackingRows.map((row) => ({
+      ...row,
+      ...getTrackingStatus(row.trackedReturns, {
+        threshold: trackingThreshold,
+        minHitCount: trackingMinHitCount,
+      }),
+    }));
+  }, [trackingMinHitCount, trackingRows, trackingThreshold]);
+
+  const filteredTrackingRows = useMemo(() => {
+    const keyword = searchText.trim().toLowerCase();
+    const sortedDates = Array.from(new Set(trackedRowsWithStatus.map((item) => item.signalDateKey)))
+      .sort()
+      .reverse();
+    const dateLimit =
+      trackingDateRange === 'recent5' ? 5 : trackingDateRange === 'recent10' ? 10 : sortedDates.length;
+    const allowedDates = new Set(sortedDates.slice(0, dateLimit));
+    const allowedStatuses = new Set(trackingStatusFilter);
+
+    return trackedRowsWithStatus.filter((item) => {
+      const dateMatch = trackingDateRange === 'all' || allowedDates.has(item.signalDateKey);
+      const scenarioMatch =
+        trackingScenarioFilter === 'all' || item.scenario === trackingScenarioFilter;
+      const statusMatch = allowedStatuses.has(item.status);
+      const opportunityMatch = !trackingOnlyOpportunity || item.opportunityRecordHit;
+      const keywordMatch =
+        !keyword ||
+        item.name.toLowerCase().includes(keyword) ||
+        item.code.toLowerCase().includes(keyword);
+      return dateMatch && scenarioMatch && statusMatch && opportunityMatch && keywordMatch;
+    });
+  }, [
+    searchText,
+    trackedRowsWithStatus,
+    trackingDateRange,
+    trackingOnlyOpportunity,
+    trackingScenarioFilter,
+    trackingStatusFilter,
+  ]);
+
   const handleExportResults = async (format: BacktestExportFormat) => {
+    if (activeTab === 'tracking') {
+      message.info('买点追踪导出稍后补充，当前可先在表格筛选查看');
+      return;
+    }
+
     const kind = activeTab === 'latest' ? 'latest' : 'history';
     const data = kind === 'latest' ? filteredLatestSignals : filteredHistorySignals;
 
@@ -411,6 +516,12 @@ export function BacktestPage() {
     return <Text style={{ color: returnColor(value) }}>{returnText(value)}</Text>;
   };
 
+  const renderTrackingStatus = (status: TrackingStatus) => {
+    if (status === 'passed') return <Tag color="red">已达标</Tag>;
+    if (status === 'failed') return <Tag>未达标</Tag>;
+    return <Tag color="blue">验证中</Tag>;
+  };
+
   const historicalColumns: ColumnsType<BuyPointSignal> = [
     {
       title: '股票',
@@ -492,6 +603,50 @@ export function BacktestPage() {
     },
   ];
 
+  const trackingColumns: ColumnsType<TrackedLatestSignal> = [
+    {
+      title: '股票',
+      dataIndex: 'name',
+      width: 150,
+      fixed: 'left',
+      render: (_, record) => (
+        <div>
+          <div>{record.name}</div>
+          <Text type="secondary">{record.code}</Text>
+        </div>
+      ),
+    },
+    { title: '信号日期', dataIndex: 'signalDate', width: 110, sorter: (a, b) => a.timestamp - b.timestamp },
+    {
+      title: '场景',
+      dataIndex: 'scenarioName',
+      width: 150,
+      render: (_, record) => <Tag color={highLiftIds.has(record.scenario) ? 'red' : 'blue'}>{record.scenarioName}</Tag>,
+    },
+    { title: '收盘价', dataIndex: 'close', width: 90 },
+    { title: 'lift', dataIndex: 'lift', width: 80, render: (v) => v?.toFixed(2) },
+    { title: '1日', width: 80, render: (_, record) => renderReturn(record.trackedReturns, 'd1') },
+    { title: '2日', width: 80, render: (_, record) => renderReturn(record.trackedReturns, 'd2') },
+    { title: '3日', width: 80, render: (_, record) => renderReturn(record.trackedReturns, 'd3') },
+    { title: '5日', width: 80, render: (_, record) => renderReturn(record.trackedReturns, 'd5') },
+    { title: '两周', width: 80, render: (_, record) => renderReturn(record.trackedReturns, 'd10') },
+    { title: '已发生', dataIndex: 'occurredCount', width: 80 },
+    { title: '命中', dataIndex: 'hitCount', width: 80 },
+    { title: '状态', dataIndex: 'status', width: 90, render: renderTrackingStatus },
+    {
+      title: '机会记录',
+      dataIndex: 'opportunityRecordHit',
+      width: 90,
+      render: (hit) => <Tag color={hit ? 'green' : 'default'}>{hit ? '是' : '否'}</Tag>,
+    },
+    {
+      title: '命中规则',
+      dataIndex: 'matchedRule',
+      ellipsis: true,
+      width: 280,
+    },
+  ];
+
   const renderSearchInput = () => (
     <Input
       allowClear
@@ -505,10 +660,24 @@ export function BacktestPage() {
   );
 
   const activeDataLength =
-    activeTab === 'latest' ? filteredLatestSignals.length : filteredHistorySignals.length;
-  const activeColumns = activeTab === 'latest' ? latestColumns : historicalColumns;
-  const activeDataSource = activeTab === 'latest' ? filteredLatestSignals : filteredHistorySignals;
-  const activeScrollX = activeTab === 'latest' ? 1200 : 1300;
+    activeTab === 'latest'
+      ? filteredLatestSignals.length
+      : activeTab === 'tracking'
+        ? filteredTrackingRows.length
+        : filteredHistorySignals.length;
+  const activeColumns: ColumnsType<any> =
+    activeTab === 'latest'
+      ? latestColumns
+      : activeTab === 'tracking'
+        ? trackingColumns
+        : historicalColumns;
+  const activeDataSource =
+    activeTab === 'latest'
+      ? filteredLatestSignals
+      : activeTab === 'tracking'
+        ? filteredTrackingRows
+        : filteredHistorySignals;
+  const activeScrollX = activeTab === 'latest' ? 1200 : activeTab === 'tracking' ? 1600 : 1300;
 
   return (
     <Layout className={styles.backtestPage}>
@@ -629,7 +798,12 @@ export function BacktestPage() {
             <Tabs
               className={styles.resultTabs}
               activeKey={activeTab}
-              onChange={setActiveTab}
+              onChange={(key) => {
+                setActiveTab(key);
+                if (key === 'tracking' && trackingRows.length === 0) {
+                  void handleLoadTrackingRows();
+                }
+              }}
               items={[
                 {
                   key: 'latest',
@@ -638,6 +812,10 @@ export function BacktestPage() {
                 {
                   key: 'history',
                   label: `历史好买点 (${filteredHistorySignals.length})`,
+                },
+                {
+                  key: 'tracking',
+                  label: `买点追踪 (${filteredTrackingRows.length})`,
                 },
               ]}
             />
@@ -655,6 +833,75 @@ export function BacktestPage() {
                     style={{ width: 200 }}
                     size="small"
                   />
+                ) : activeTab === 'tracking' ? (
+                  <>
+                    <Checkbox
+                      checked={trackingOnlyOpportunity}
+                      onChange={(e) => setTrackingOnlyOpportunity(e.target.checked)}
+                    >
+                      仅机会交集
+                    </Checkbox>
+                    <Select
+                      value={trackingDateRange}
+                      options={[
+                        { label: '最近5日', value: 'recent5' },
+                        { label: '最近10日', value: 'recent10' },
+                        { label: '全部日期', value: 'all' },
+                      ]}
+                      onChange={setTrackingDateRange}
+                      style={{ width: 110 }}
+                      size="small"
+                    />
+                    <Select
+                      value={trackingScenarioFilter}
+                      options={[
+                        { label: '全部场景', value: 'all' },
+                        ...HIGH_LIFT_SCENARIOS.map((s) => ({ label: s.name, value: s.id })),
+                      ]}
+                      onChange={setTrackingScenarioFilter}
+                      style={{ width: 160 }}
+                      size="small"
+                    />
+                    <Select
+                      mode="multiple"
+                      value={trackingStatusFilter}
+                      options={[
+                        { label: '验证中', value: 'tracking' },
+                        { label: '已达标', value: 'passed' },
+                        { label: '未达标', value: 'failed' },
+                      ]}
+                      onChange={setTrackingStatusFilter}
+                      style={{ width: 190 }}
+                      size="small"
+                    />
+                    <InputNumber
+                      addonBefore="阈值"
+                      addonAfter="%"
+                      min={0}
+                      max={50}
+                      value={trackingThreshold}
+                      onChange={(value) => setTrackingThreshold(Number(value ?? 5))}
+                      style={{ width: 120 }}
+                      size="small"
+                    />
+                    <InputNumber
+                      addonBefore="命中"
+                      min={1}
+                      max={5}
+                      value={trackingMinHitCount}
+                      onChange={(value) => setTrackingMinHitCount(Number(value ?? 3))}
+                      style={{ width: 100 }}
+                      size="small"
+                    />
+                    <Button
+                      size="small"
+                      icon={<ReloadOutlined />}
+                      loading={loadingTracking}
+                      onClick={handleLoadTrackingRows}
+                    >
+                      更新收益
+                    </Button>
+                  </>
                 ) : (
                   <>
                     <Select

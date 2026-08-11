@@ -25,9 +25,9 @@ export const OPPORTUNITY_DEFAULT_BASIC_FILTERS = {
 /** 涨跌停筛选默认配置 */
 export const OPPORTUNITY_DEFAULT_LIMIT_MOVES = {
   /** 涨停/跌停统计周期 */
-  period: 20,
+  period: 30,
   /** 默认涨停次数 */
-  minLimitUpCount: undefined,
+  minLimitUpCount: 1,
 } as const;
 
 /** 行业板块筛选默认配置 */
@@ -112,7 +112,7 @@ export const OPPORTUNITY_DEFAULT_AI_ANALYSIS = {
   /** AI趋势判断 - 横盘 */
   trendSideways: false,
   /** AI置信度最小值（%） */
-  confidenceMin: 70,
+  confidenceMin: 75,
   /** AI形态评分最小值 */
   patternScoreMin: 60,
   /** AI趋势评分最小值 */

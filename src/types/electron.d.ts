@@ -66,6 +66,18 @@ export interface ElectronAPI {
     error?: string;
   }>;
 
+  /** 读取 docs/回测优化/最新买点 下的 JSON 快照 */
+  readLatestBuyPointFiles: () => Promise<{
+    success: boolean;
+    files?: Array<{
+      fileName: string;
+      fileBaseName: string;
+      filePath: string;
+      content: any;
+    }>;
+    error?: string;
+  }>;
+
   /** 监听Cookie获取进度 */
   onCookieFetchProgress: (
     callback: (progress: {

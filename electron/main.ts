@@ -24,6 +24,7 @@ import {
   existsSync,
   appendFileSync,
   writeFileSync,
+  readFileSync,
   mkdirSync,
   readdirSync,
   unlinkSync,
@@ -826,6 +827,46 @@ function setupIpcHandlers() {
       }
     }
   );
+
+  /**
+   * 读取 docs/回测优化/最新买点 下的 JSON 快照文件
+   */
+  ipcMain.handle('read-latest-buy-point-files', async () => {
+    try {
+      let targetDir: string;
+      if (isDev) {
+        targetDir = join(app.getAppPath(), 'docs', '回测优化', '最新买点');
+      } else {
+        const exeDir = join(app.getPath('exe'), '..');
+        targetDir = join(exeDir, 'docs', '回测优化', '最新买点');
+      }
+
+      if (!existsSync(targetDir)) {
+        return { success: true, files: [] };
+      }
+
+      const files = readdirSync(targetDir)
+        .filter((file) => file.endsWith('.json'))
+        .sort();
+
+      const results = files.map((fileName) => {
+        const filePath = join(targetDir, fileName);
+        const content = JSON.parse(readFileSync(filePath, 'utf-8'));
+        return {
+          fileName,
+          fileBaseName: fileName.replace(/\.json$/i, ''),
+          filePath,
+          content,
+        };
+      });
+
+      return { success: true, files: results };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      mainLog(`[主进程] 读取最新买点文件失败: ${errorMessage}`, true);
+      return { success: false, error: errorMessage, files: [] };
+    }
+  });
 }
 
 // 应用准备就绪

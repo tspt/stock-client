@@ -72,6 +72,11 @@ try {
       return ipcRenderer.invoke('export-backtest-signals-file', payload);
     },
 
+    // 读取 docs/回测优化/最新买点 下的 JSON 快照
+    readLatestBuyPointFiles: () => {
+      return ipcRenderer.invoke('read-latest-buy-point-files');
+    },
+
     // 监听Cookie获取进度
     onCookieFetchProgress: (callback: (progress: any) => void) => {
       const listener = (_event: any, progress: any) => callback(progress);
