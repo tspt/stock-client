@@ -1,0 +1,372 @@
+{
+  "version": "1.0",
+  "kind": "opportunity-record",
+  "date": "2026-07-08",
+  "createdAt": 1783499094262,
+  "updatedAt": 1786417836048,
+  "stocks": [
+    {
+      "code": "SZ000034",
+      "name": "神州数码",
+      "concepts": [
+        {
+          "code": "BK0549",
+          "name": "深圳特区"
+        },
+        {
+          "code": "BK1137",
+          "name": "存储芯片"
+        },
+        {
+          "code": "BK1138",
+          "name": "液冷概念"
+        }
+      ],
+      "timestamp": 1783499094261,
+      "industry": {
+        "code": "BK1238",
+        "name": "IT服务Ⅱ"
+      }
+    },
+    {
+      "code": "SZ000066",
+      "name": "中国长城",
+      "concepts": [
+        {
+          "code": "BK0514",
+          "name": "参股券商"
+        },
+        {
+          "code": "BK0549",
+          "name": "深圳特区"
+        },
+        {
+          "code": "BK0601",
+          "name": "海工装备"
+        },
+        {
+          "code": "BK0700",
+          "name": "充电桩"
+        },
+        {
+          "code": "BK0710",
+          "name": "量子科技"
+        },
+        {
+          "code": "BK0714",
+          "name": "5G概念"
+        },
+        {
+          "code": "BK1138",
+          "name": "液冷概念"
+        }
+      ],
+      "timestamp": 1783499094261,
+      "industry": {
+        "code": "BK0735",
+        "name": "计算机设备"
+      }
+    },
+    {
+      "code": "SZ000801",
+      "name": "四川九洲",
+      "concepts": [
+        {
+          "code": "BK0714",
+          "name": "5G概念"
+        }
+      ],
+      "timestamp": 1783499094261,
+      "industry": {
+        "code": "BK1241",
+        "name": "黑色家电"
+      }
+    },
+    {
+      "code": "SZ002268",
+      "name": "电科网安",
+      "concepts": [
+        {
+          "code": "BK0556",
+          "name": "移动支付"
+        },
+        {
+          "code": "BK0710",
+          "name": "量子科技"
+        },
+        {
+          "code": "BK0714",
+          "name": "5G概念"
+        },
+        {
+          "code": "BK0920",
+          "name": "车联网(车路云)"
+        },
+        {
+          "code": "BK0969",
+          "name": "汽车芯片"
+        },
+        {
+          "code": "BK1071",
+          "name": "跨境支付"
+        }
+      ],
+      "timestamp": 1783499094261,
+      "industry": {
+        "code": "BK0735",
+        "name": "计算机设备"
+      }
+    },
+    {
+      "code": "SZ002396",
+      "name": "星网锐捷",
+      "concepts": [
+        {
+          "code": "BK0556",
+          "name": "移动支付"
+        },
+        {
+          "code": "BK0680",
+          "name": "智能家居"
+        },
+        {
+          "code": "BK0714",
+          "name": "5G概念"
+        },
+        {
+          "code": "BK0718",
+          "name": "证金持股"
+        },
+        {
+          "code": "BK0915",
+          "name": "WiFi"
+        },
+        {
+          "code": "BK0920",
+          "name": "车联网(车路云)"
+        }
+      ],
+      "timestamp": 1783499094261,
+      "industry": {
+        "code": "BK0448",
+        "name": "通信设备"
+      }
+    },
+    {
+      "code": "SZ002422",
+      "name": "科伦药业",
+      "concepts": [
+        {
+          "code": "BK1056",
+          "name": "幽门螺杆菌概念"
+        },
+        {
+          "code": "BK1078",
+          "name": "肝炎概念"
+        },
+        {
+          "code": "BK1174",
+          "name": "合成生物"
+        }
+      ],
+      "timestamp": 1783499094262,
+      "industry": {
+        "code": "BK0465",
+        "name": "化学制药"
+      }
+    },
+    {
+      "code": "SZ002497",
+      "name": "雅化集团",
+      "concepts": [],
+      "timestamp": 1783499094262,
+      "industry": {
+        "code": "BK0538",
+        "name": "化学制品"
+      }
+    },
+    {
+      "code": "SZ002841",
+      "name": "视源股份",
+      "concepts": [
+        {
+          "code": "BK0641",
+          "name": "智能穿戴"
+        },
+        {
+          "code": "BK0680",
+          "name": "智能家居"
+        },
+        {
+          "code": "BK1646",
+          "name": "消费电子概念"
+        },
+        {
+          "code": "BK1651",
+          "name": "显示技术"
+        }
+      ],
+      "timestamp": 1783499094262,
+      "industry": {
+        "code": "BK1037",
+        "name": "消费电子"
+      }
+    },
+    {
+      "code": "SZ002897",
+      "name": "意华股份",
+      "concepts": [
+        {
+          "code": "BK0493",
+          "name": "新能源"
+        },
+        {
+          "code": "BK0714",
+          "name": "5G概念"
+        },
+        {
+          "code": "BK0865",
+          "name": "电子烟"
+        },
+        {
+          "code": "BK0964",
+          "name": "6G概念"
+        },
+        {
+          "code": "BK1168",
+          "name": "铜缆高速连接"
+        }
+      ],
+      "timestamp": 1783499094262,
+      "industry": {
+        "code": "BK0448",
+        "name": "通信设备"
+      }
+    },
+    {
+      "code": "SZ003043",
+      "name": "华亚智能",
+      "concepts": [
+        {
+          "code": "BK0528",
+          "name": "转债标的"
+        },
+        {
+          "code": "BK0592",
+          "name": "铁路基建"
+        },
+        {
+          "code": "BK0884",
+          "name": "光刻机(胶)"
+        },
+        {
+          "code": "BK0917",
+          "name": "半导体概念"
+        }
+      ],
+      "timestamp": 1783499094262,
+      "industry": {
+        "code": "BK1036",
+        "name": "半导体"
+      }
+    },
+    {
+      "code": "SH600118",
+      "name": "中国卫星",
+      "concepts": [
+        {
+          "code": "BK1663",
+          "name": "大盘股"
+        }
+      ],
+      "timestamp": 1783499094262,
+      "industry": {
+        "code": "BK1232",
+        "name": "航天装备Ⅱ"
+      }
+    },
+    {
+      "code": "SH600641",
+      "name": "先导基电",
+      "concepts": [
+        {
+          "code": "BK0840",
+          "name": "OLED"
+        },
+        {
+          "code": "BK0917",
+          "name": "半导体概念"
+        }
+      ],
+      "timestamp": 1783499094262,
+      "industry": {
+        "code": "BK1036",
+        "name": "半导体"
+      }
+    },
+    {
+      "code": "SH600988",
+      "name": "赤峰黄金",
+      "concepts": [
+        {
+          "code": "BK0499",
+          "name": "AH股"
+        },
+        {
+          "code": "BK1663",
+          "name": "大盘股"
+        }
+      ],
+      "timestamp": 1783499094262,
+      "industry": {
+        "code": "BK0732",
+        "name": "贵金属"
+      }
+    },
+    {
+      "code": "SH603317",
+      "name": "天味食品",
+      "concepts": [
+        {
+          "code": "BK1026",
+          "name": "调味品概念"
+        }
+      ],
+      "timestamp": 1783499094262,
+      "industry": {
+        "code": "BK1278",
+        "name": "调味发酵品Ⅱ"
+      }
+    },
+    {
+      "code": "SH603950",
+      "name": "长源东谷",
+      "concepts": [
+        {
+          "code": "BK0926",
+          "name": "湖北自贸"
+        }
+      ],
+      "timestamp": 1783499094262,
+      "industry": {
+        "code": "BK0481",
+        "name": "汽车零部件"
+      }
+    },
+    {
+      "code": "SH605118",
+      "name": "力鼎光电",
+      "concepts": [
+        {
+          "code": "BK1178",
+          "name": "AI眼镜"
+        }
+      ],
+      "timestamp": 1783499094262,
+      "industry": {
+        "code": "BK0735",
+        "name": "计算机设备"
+      }
+    }
+  ]
+}

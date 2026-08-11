@@ -66,6 +66,7 @@ export function resolveHistoryExportDate(cutoffDate?: string | null): string {
 }
 
 function toLatestRow(item: LatestScenarioSignal) {
+  const concepts = ((item as any).concepts || []) as Array<{ name: string }>;
   return {
     代码: item.code,
     名称: item.name,
@@ -81,10 +82,12 @@ function toLatestRow(item: LatestScenarioSignal) {
     '两周收益%': formatReturn(item.returns.d10),
     命中规则: item.matchedRule,
     行业: item.industry?.name || '',
+    概念: concepts.map((concept) => concept.name).join('、'),
   };
 }
 
 function toHistoryRow(item: BuyPointSignal) {
+  const concepts = ((item as any).concepts || []) as Array<{ name: string }>;
   return {
     代码: item.code,
     名称: item.name,
@@ -100,6 +103,7 @@ function toHistoryRow(item: BuyPointSignal) {
     '两周收益%': formatReturn(item.returns.d10),
     命中规则: item.matchedRule,
     行业: item.industry?.name || '',
+    概念: concepts.map((concept) => concept.name).join('、'),
   };
 }
 

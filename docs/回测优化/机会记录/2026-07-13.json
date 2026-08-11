@@ -1,0 +1,199 @@
+{
+  "version": "1.0",
+  "kind": "opportunity-record",
+  "date": "2026-07-13",
+  "createdAt": 1783938401522,
+  "updatedAt": 1786417836054,
+  "stocks": [
+    {
+      "code": "SZ002185",
+      "name": "华天科技",
+      "concepts": [
+        {
+          "code": "BK0714",
+          "name": "5G概念"
+        },
+        {
+          "code": "BK0917",
+          "name": "半导体概念"
+        },
+        {
+          "code": "BK1101",
+          "name": "先进封装"
+        },
+        {
+          "code": "BK1128",
+          "name": "CPO概念"
+        },
+        {
+          "code": "BK1137",
+          "name": "存储芯片"
+        }
+      ],
+      "timestamp": 1783938401522,
+      "industry": {
+        "code": "BK1036",
+        "name": "半导体"
+      }
+    },
+    {
+      "code": "SZ002258",
+      "name": "利尔化学",
+      "concepts": [
+        {
+          "code": "BK0730",
+          "name": "农药兽药"
+        }
+      ],
+      "timestamp": 1783938401522,
+      "industry": {
+        "code": "BK0731",
+        "name": "农化制品"
+      }
+    },
+    {
+      "code": "SZ002292",
+      "name": "奥飞娱乐",
+      "concepts": [
+        {
+          "code": "BK0847",
+          "name": "影视概念"
+        },
+        {
+          "code": "BK0954",
+          "name": "盲盒经济"
+        }
+      ],
+      "timestamp": 1783938401522,
+      "industry": {
+        "code": "BK1266",
+        "name": "文娱用品"
+      }
+    },
+    {
+      "code": "SZ002414",
+      "name": "高德红外",
+      "concepts": [
+        {
+          "code": "BK0680",
+          "name": "智能家居"
+        },
+        {
+          "code": "BK0699",
+          "name": "全息技术"
+        },
+        {
+          "code": "BK0917",
+          "name": "半导体概念"
+        },
+        {
+          "code": "BK0920",
+          "name": "车联网(车路云)"
+        },
+        {
+          "code": "BK0926",
+          "name": "湖北自贸"
+        },
+        {
+          "code": "BK1124",
+          "name": "毫米波概念"
+        }
+      ],
+      "timestamp": 1783938401522,
+      "industry": {
+        "code": "BK1233",
+        "name": "军工电子Ⅱ"
+      }
+    },
+    {
+      "code": "SH600120",
+      "name": "浙江东方",
+      "concepts": [
+        {
+          "code": "BK0514",
+          "name": "参股券商"
+        },
+        {
+          "code": "BK0524",
+          "name": "参股期货"
+        },
+        {
+          "code": "BK0710",
+          "name": "量子科技"
+        },
+        {
+          "code": "BK0718",
+          "name": "证金持股"
+        },
+        {
+          "code": "BK0935",
+          "name": "中芯概念"
+        }
+      ],
+      "timestamp": 1783938401522,
+      "industry": {
+        "code": "BK0738",
+        "name": "多元金融"
+      }
+    },
+    {
+      "code": "SH600352",
+      "name": "浙江龙盛",
+      "concepts": [
+        {
+          "code": "BK1640",
+          "name": "价值股"
+        }
+      ],
+      "timestamp": 1783938401522,
+      "industry": {
+        "code": "BK0538",
+        "name": "化学制品"
+      }
+    },
+    {
+      "code": "SH601369",
+      "name": "陕鼓动力",
+      "concepts": [
+        {
+          "code": "BK0981",
+          "name": "工业气体"
+        }
+      ],
+      "timestamp": 1783938401522,
+      "industry": {
+        "code": "BK0910",
+        "name": "专用设备"
+      }
+    },
+    {
+      "code": "SH603606",
+      "name": "东方电缆",
+      "concepts": [
+        {
+          "code": "BK0514",
+          "name": "参股券商"
+        },
+        {
+          "code": "BK0601",
+          "name": "海工装备"
+        }
+      ],
+      "timestamp": 1783938401522,
+      "industry": {
+        "code": "BK0457",
+        "name": "电网设备"
+      }
+    },
+    {
+      "code": "SH603823",
+      "name": "百合花",
+      "concepts": [],
+      "timestamp": 1783938401522,
+      "industry": {
+        "code": "BK0538",
+        "name": "化学制品"
+      }
+    }
+  ]
+}

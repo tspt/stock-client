@@ -77,6 +77,26 @@ try {
       return ipcRenderer.invoke('read-latest-buy-point-files');
     },
 
+    // 机会记录：写入 docs/回测优化/机会记录/{YYYY-MM-DD}.json
+    writeOpportunityRecordFile: (payload: { fileBaseName: string; content: string }) => {
+      return ipcRenderer.invoke('write-opportunity-record-file', payload);
+    },
+
+    // 机会记录：读取全部 JSON
+    readOpportunityRecordFiles: () => {
+      return ipcRenderer.invoke('read-opportunity-record-files');
+    },
+
+    // 机会记录：删除指定日期文件
+    deleteOpportunityRecordFile: (date: string) => {
+      return ipcRenderer.invoke('delete-opportunity-record-file', date);
+    },
+
+    // 机会记录：清空目录
+    clearOpportunityRecordFiles: () => {
+      return ipcRenderer.invoke('clear-opportunity-record-files');
+    },
+
     // 监听Cookie获取进度
     onCookieFetchProgress: (callback: (progress: any) => void) => {
       const listener = (_event: any, progress: any) => callback(progress);

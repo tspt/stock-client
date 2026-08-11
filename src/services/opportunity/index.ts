@@ -11,6 +11,7 @@ export {
   clearAllRecords,
   getRecordsByDateRange,
   calculateTrendData,
+  getAllStockRecords,
 } from './recordService';
 export type {
   StockOpportunityData,

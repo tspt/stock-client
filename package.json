@@ -15,6 +15,7 @@
     "electron:build": "npm run build && npm run build:electron && node scripts/electron-build-china.cjs",
     "electron:build:win": "npm run build && npm run build:electron && node scripts/electron-build-china.cjs --win",
     "scan:buypoints": "node scripts/scan-buypoint-signals.cjs",
+    "backfill:opportunity-record-industry": "electron scripts/backfill-opportunity-record-industry.mjs",
     "classify:buypoints": "node scripts/classify-buypoint-scenarios.cjs",
     "classify:latest": "node scripts/classify-latest-day.cjs"
   },

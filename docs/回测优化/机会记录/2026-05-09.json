@@ -1,0 +1,1367 @@
+{
+  "version": "1.0",
+  "kind": "opportunity-record",
+  "date": "2026-05-09",
+  "createdAt": 1778318449083,
+  "updatedAt": 1786417836009,
+  "stocks": [
+    {
+      "code": "SH600761",
+      "name": "安徽合力",
+      "concepts": [],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK0739",
+        "name": "工程机械"
+      }
+    },
+    {
+      "code": "SH600780",
+      "name": "通宝能源",
+      "concepts": [
+        {
+          "code": "BK0718",
+          "name": "证金持股"
+        },
+        {
+          "code": "BK1024",
+          "name": "绿色电力"
+        },
+        {
+          "code": "BK1112",
+          "name": "破净股"
+        }
+      ],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK0428",
+        "name": "电力"
+      }
+    },
+    {
+      "code": "SH600845",
+      "name": "宝信软件",
+      "concepts": [
+        {
+          "code": "BK0612",
+          "name": "上证180_"
+        },
+        {
+          "code": "BK0920",
+          "name": "车联网(车路云)"
+        },
+        {
+          "code": "BK1119",
+          "name": "PLC概念"
+        },
+        {
+          "code": "BK1133",
+          "name": "ERP概念"
+        },
+        {
+          "code": "BK1663",
+          "name": "大盘股"
+        }
+      ],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK1238",
+        "name": "IT服务Ⅱ"
+      }
+    },
+    {
+      "code": "SH600866",
+      "name": "星湖科技",
+      "concepts": [
+        {
+          "code": "BK1174",
+          "name": "合成生物"
+        }
+      ],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK0538",
+        "name": "化学制品"
+      }
+    },
+    {
+      "code": "SH600868",
+      "name": "梅雁吉祥",
+      "concepts": [
+        {
+          "code": "BK0677",
+          "name": "粤港自贸"
+        },
+        {
+          "code": "BK1024",
+          "name": "绿色电力"
+        }
+      ],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK0428",
+        "name": "电力"
+      }
+    },
+    {
+      "code": "SH600884",
+      "name": "杉杉股份",
+      "concepts": [
+        {
+          "code": "BK0666",
+          "name": "苹果概念"
+        },
+        {
+          "code": "BK0840",
+          "name": "OLED"
+        }
+      ],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK1033",
+        "name": "电池"
+      }
+    },
+    {
+      "code": "SH600885",
+      "name": "宏发股份",
+      "concepts": [
+        {
+          "code": "BK0493",
+          "name": "新能源"
+        }
+      ],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK0457",
+        "name": "电网设备"
+      }
+    },
+    {
+      "code": "SH600933",
+      "name": "爱柯迪",
+      "concepts": [
+        {
+          "code": "BK0528",
+          "name": "转债标的"
+        }
+      ],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK0481",
+        "name": "汽车零部件"
+      }
+    },
+    {
+      "code": "SH600956",
+      "name": "新天绿能",
+      "concepts": [
+        {
+          "code": "BK0493",
+          "name": "新能源"
+        },
+        {
+          "code": "BK0499",
+          "name": "AH股"
+        },
+        {
+          "code": "BK0843",
+          "name": "天然气"
+        },
+        {
+          "code": "BK1003",
+          "name": "抽水蓄能"
+        },
+        {
+          "code": "BK1024",
+          "name": "绿色电力"
+        },
+        {
+          "code": "BK1649",
+          "name": "油气资源"
+        }
+      ],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK0428",
+        "name": "电力"
+      }
+    },
+    {
+      "code": "SH600960",
+      "name": "渤海汽车",
+      "concepts": [
+        {
+          "code": "BK1004",
+          "name": "工业母机"
+        },
+        {
+          "code": "BK1089",
+          "name": "汽车热管理"
+        }
+      ],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK0481",
+        "name": "汽车零部件"
+      }
+    },
+    {
+      "code": "SH600961",
+      "name": "株冶集团",
+      "concepts": [],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK1287",
+        "name": "工业金属"
+      }
+    },
+    {
+      "code": "SH600963",
+      "name": "岳阳林纸",
+      "concepts": [
+        {
+          "code": "BK0470",
+          "name": "造纸印刷"
+        },
+        {
+          "code": "BK0856",
+          "name": "工业大麻"
+        },
+        {
+          "code": "BK1024",
+          "name": "绿色电力"
+        }
+      ],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK1267",
+        "name": "造纸"
+      }
+    },
+    {
+      "code": "SH600969",
+      "name": "郴电国际",
+      "concepts": [
+        {
+          "code": "BK0700",
+          "name": "充电桩"
+        },
+        {
+          "code": "BK0981",
+          "name": "工业气体"
+        },
+        {
+          "code": "BK1058",
+          "name": "地下管网"
+        },
+        {
+          "code": "BK1112",
+          "name": "破净股"
+        }
+      ],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK0428",
+        "name": "电力"
+      }
+    },
+    {
+      "code": "SH600973",
+      "name": "宝胜股份",
+      "concepts": [
+        {
+          "code": "BK0592",
+          "name": "铁路基建"
+        },
+        {
+          "code": "BK0679",
+          "name": "超导概念"
+        },
+        {
+          "code": "BK1168",
+          "name": "铜缆高速连接"
+        }
+      ],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK0457",
+        "name": "电网设备"
+      }
+    },
+    {
+      "code": "SH600980",
+      "name": "北矿科技",
+      "concepts": [
+        {
+          "code": "BK0619",
+          "name": "3D打印"
+        }
+      ],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK0910",
+        "name": "专用设备"
+      }
+    },
+    {
+      "code": "SH600982",
+      "name": "宁波能源",
+      "concepts": [
+        {
+          "code": "BK0493",
+          "name": "新能源"
+        },
+        {
+          "code": "BK0981",
+          "name": "工业气体"
+        },
+        {
+          "code": "BK1003",
+          "name": "抽水蓄能"
+        },
+        {
+          "code": "BK1024",
+          "name": "绿色电力"
+        },
+        {
+          "code": "BK1070",
+          "name": "土壤修复"
+        },
+        {
+          "code": "BK1098",
+          "name": "生物质能发电"
+        }
+      ],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK0428",
+        "name": "电力"
+      }
+    },
+    {
+      "code": "SH600984",
+      "name": "建设机械",
+      "concepts": [],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK0739",
+        "name": "工程机械"
+      }
+    },
+    {
+      "code": "SH600995",
+      "name": "南网储能",
+      "concepts": [
+        {
+          "code": "BK0700",
+          "name": "充电桩"
+        },
+        {
+          "code": "BK1003",
+          "name": "抽水蓄能"
+        },
+        {
+          "code": "BK1024",
+          "name": "绿色电力"
+        }
+      ],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK0428",
+        "name": "电力"
+      }
+    },
+    {
+      "code": "SH600996",
+      "name": "贵广网络",
+      "concepts": [
+        {
+          "code": "BK0680",
+          "name": "智能家居"
+        }
+      ],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK1219",
+        "name": "电视广播Ⅱ"
+      }
+    },
+    {
+      "code": "SH601020",
+      "name": "华钰矿业",
+      "concepts": [],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK1287",
+        "name": "工业金属"
+      }
+    },
+    {
+      "code": "SH601026",
+      "name": "道生天合",
+      "concepts": [
+        {
+          "code": "BK0501",
+          "name": "次新股"
+        },
+        {
+          "code": "BK0917",
+          "name": "半导体概念"
+        },
+        {
+          "code": "BK1171",
+          "name": "碳纤维"
+        }
+      ],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK1032",
+        "name": "风电设备"
+      }
+    },
+    {
+      "code": "SH601096",
+      "name": "宏盛华源",
+      "concepts": [
+        {
+          "code": "BK0918",
+          "name": "特高压"
+        }
+      ],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK1248",
+        "name": "专业工程"
+      }
+    },
+    {
+      "code": "SH601112",
+      "name": "振石股份",
+      "concepts": [
+        {
+          "code": "BK0501",
+          "name": "次新股"
+        }
+      ],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK0546",
+        "name": "玻璃玻纤"
+      }
+    },
+    {
+      "code": "SH601113",
+      "name": "华鼎股份",
+      "concepts": [],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK0471",
+        "name": "化学纤维"
+      }
+    },
+    {
+      "code": "SH601168",
+      "name": "西部矿业",
+      "concepts": [],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK1287",
+        "name": "工业金属"
+      }
+    },
+    {
+      "code": "SH601177",
+      "name": "杭齿前进",
+      "concepts": [],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK0545",
+        "name": "通用设备"
+      }
+    },
+    {
+      "code": "SH601218",
+      "name": "XD吉鑫科",
+      "concepts": [
+        {
+          "code": "BK1024",
+          "name": "绿色电力"
+        }
+      ],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK1032",
+        "name": "风电设备"
+      }
+    },
+    {
+      "code": "SH601330",
+      "name": "绿色动力",
+      "concepts": [
+        {
+          "code": "BK0499",
+          "name": "AH股"
+        },
+        {
+          "code": "BK0528",
+          "name": "转债标的"
+        },
+        {
+          "code": "BK0549",
+          "name": "深圳特区"
+        },
+        {
+          "code": "BK0914",
+          "name": "医废处理"
+        },
+        {
+          "code": "BK1024",
+          "name": "绿色电力"
+        },
+        {
+          "code": "BK1098",
+          "name": "生物质能发电"
+        }
+      ],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK1235",
+        "name": "环境治理"
+      }
+    },
+    {
+      "code": "SH601515",
+      "name": "衢州东峰",
+      "concepts": [
+        {
+          "code": "BK0733",
+          "name": "包装材料"
+        },
+        {
+          "code": "BK0865",
+          "name": "电子烟"
+        },
+        {
+          "code": "BK1113",
+          "name": "复合集流体"
+        }
+      ],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK1265",
+        "name": "包装印刷"
+      }
+    },
+    {
+      "code": "SH601519",
+      "name": "大智慧",
+      "concepts": [
+        {
+          "code": "BK1190",
+          "name": "虚拟机器人"
+        }
+      ],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK0737",
+        "name": "软件开发"
+      }
+    },
+    {
+      "code": "SH601615",
+      "name": "明阳智能",
+      "concepts": [
+        {
+          "code": "BK0493",
+          "name": "新能源"
+        },
+        {
+          "code": "BK1024",
+          "name": "绿色电力"
+        }
+      ],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK1032",
+        "name": "风电设备"
+      }
+    },
+    {
+      "code": "SH601619",
+      "name": "嘉泽新能",
+      "concepts": [
+        {
+          "code": "BK0493",
+          "name": "新能源"
+        },
+        {
+          "code": "BK0528",
+          "name": "转债标的"
+        },
+        {
+          "code": "BK1024",
+          "name": "绿色电力"
+        }
+      ],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK0428",
+        "name": "电力"
+      }
+    },
+    {
+      "code": "SH601700",
+      "name": "风范股份",
+      "concepts": [
+        {
+          "code": "BK0918",
+          "name": "特高压"
+        }
+      ],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK0457",
+        "name": "电网设备"
+      }
+    },
+    {
+      "code": "SH601789",
+      "name": "宁波建工",
+      "concepts": [
+        {
+          "code": "BK0514",
+          "name": "参股券商"
+        },
+        {
+          "code": "BK1179",
+          "name": "房屋检测"
+        }
+      ],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK1246",
+        "name": "房屋建设Ⅱ"
+      }
+    },
+    {
+      "code": "SH601858",
+      "name": "中国科传",
+      "concepts": [
+        {
+          "code": "BK0839",
+          "name": "知识产权"
+        }
+      ],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK1218",
+        "name": "出版"
+      }
+    },
+    {
+      "code": "SH601865",
+      "name": "福莱特",
+      "concepts": [
+        {
+          "code": "BK0499",
+          "name": "AH股"
+        },
+        {
+          "code": "BK0528",
+          "name": "转债标的"
+        }
+      ],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK1031",
+        "name": "光伏设备"
+      }
+    },
+    {
+      "code": "SH601882",
+      "name": "海天精工",
+      "concepts": [
+        {
+          "code": "BK1004",
+          "name": "工业母机"
+        }
+      ],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK0545",
+        "name": "通用设备"
+      }
+    },
+    {
+      "code": "SH603001",
+      "name": "奥康国际",
+      "concepts": [
+        {
+          "code": "BK0955",
+          "name": "C2M概念"
+        }
+      ],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK1225",
+        "name": "服装家纺"
+      }
+    },
+    {
+      "code": "SH603004",
+      "name": "鼎龙科技",
+      "concepts": [],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK0538",
+        "name": "化学制品"
+      }
+    },
+    {
+      "code": "SH603005",
+      "name": "晶方科技",
+      "concepts": [
+        {
+          "code": "BK0714",
+          "name": "5G概念"
+        },
+        {
+          "code": "BK0884",
+          "name": "光刻机(胶)"
+        },
+        {
+          "code": "BK0901",
+          "name": "3D摄像头"
+        },
+        {
+          "code": "BK0917",
+          "name": "半导体概念"
+        },
+        {
+          "code": "BK0969",
+          "name": "汽车芯片"
+        },
+        {
+          "code": "BK0970",
+          "name": "生物识别"
+        },
+        {
+          "code": "BK1101",
+          "name": "先进封装"
+        },
+        {
+          "code": "BK1152",
+          "name": "高带宽内存"
+        },
+        {
+          "code": "BK1175",
+          "name": "玻璃基板"
+        }
+      ],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK1036",
+        "name": "半导体"
+      }
+    },
+    {
+      "code": "SH603010",
+      "name": "万盛股份",
+      "concepts": [],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK0538",
+        "name": "化学制品"
+      }
+    },
+    {
+      "code": "SH603013",
+      "name": "亚普股份",
+      "concepts": [
+        {
+          "code": "BK1089",
+          "name": "汽车热管理"
+        }
+      ],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK0481",
+        "name": "汽车零部件"
+      }
+    },
+    {
+      "code": "SH603025",
+      "name": "大豪科技",
+      "concepts": [
+        {
+          "code": "BK0710",
+          "name": "量子科技"
+        }
+      ],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK1237",
+        "name": "自动化设备"
+      }
+    },
+    {
+      "code": "SH603033",
+      "name": "三维股份",
+      "concepts": [
+        {
+          "code": "BK0592",
+          "name": "铁路基建"
+        },
+        {
+          "code": "BK0909",
+          "name": "降解塑料"
+        }
+      ],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK1018",
+        "name": "橡胶"
+      }
+    },
+    {
+      "code": "SH603035",
+      "name": "常熟汽饰",
+      "concepts": [
+        {
+          "code": "BK1112",
+          "name": "破净股"
+        }
+      ],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK0481",
+        "name": "汽车零部件"
+      }
+    },
+    {
+      "code": "SH603037",
+      "name": "凯众股份",
+      "concepts": [
+        {
+          "code": "BK0528",
+          "name": "转债标的"
+        },
+        {
+          "code": "BK1155",
+          "name": "小米汽车"
+        }
+      ],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK0481",
+        "name": "汽车零部件"
+      }
+    },
+    {
+      "code": "SH603038",
+      "name": "华立股份",
+      "concepts": [],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK0476",
+        "name": "装修建材"
+      }
+    },
+    {
+      "code": "SH603039",
+      "name": "泛微网络",
+      "concepts": [],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK0737",
+        "name": "软件开发"
+      }
+    },
+    {
+      "code": "SH603040",
+      "name": "新坐标",
+      "concepts": [
+        {
+          "code": "BK1089",
+          "name": "汽车热管理"
+        }
+      ],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK0481",
+        "name": "汽车零部件"
+      }
+    },
+    {
+      "code": "SH603042",
+      "name": "华脉科技",
+      "concepts": [
+        {
+          "code": "BK0714",
+          "name": "5G概念"
+        },
+        {
+          "code": "BK1168",
+          "name": "铜缆高速连接"
+        }
+      ],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK0448",
+        "name": "通信设备"
+      }
+    },
+    {
+      "code": "SH603045",
+      "name": "福达合金",
+      "concepts": [
+        {
+          "code": "BK0680",
+          "name": "智能家居"
+        },
+        {
+          "code": "BK0700",
+          "name": "充电桩"
+        },
+        {
+          "code": "BK0714",
+          "name": "5G概念"
+        },
+        {
+          "code": "BK1006",
+          "name": "碳基材料"
+        },
+        {
+          "code": "BK1675",
+          "name": "历史新高"
+        }
+      ],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK1288",
+        "name": "金属新材料"
+      }
+    },
+    {
+      "code": "SH603050",
+      "name": "科林电气",
+      "concepts": [
+        {
+          "code": "BK0700",
+          "name": "充电桩"
+        }
+      ],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK0457",
+        "name": "电网设备"
+      }
+    },
+    {
+      "code": "SH603051",
+      "name": "鹿山新材",
+      "concepts": [
+        {
+          "code": "BK0623",
+          "name": "海洋经济"
+        },
+        {
+          "code": "BK1160",
+          "name": "柔性屏(折叠屏)"
+        }
+      ],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK0538",
+        "name": "化学制品"
+      }
+    },
+    {
+      "code": "SH603060",
+      "name": "国检集团",
+      "concepts": [
+        {
+          "code": "BK0528",
+          "name": "转债标的"
+        },
+        {
+          "code": "BK1070",
+          "name": "土壤修复"
+        },
+        {
+          "code": "BK1179",
+          "name": "房屋检测"
+        }
+      ],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK1043",
+        "name": "专业服务"
+      }
+    },
+    {
+      "code": "SH603062",
+      "name": "麦加芯彩",
+      "concepts": [
+        {
+          "code": "BK0601",
+          "name": "海工装备"
+        }
+      ],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK0538",
+        "name": "化学制品"
+      }
+    },
+    {
+      "code": "SH603063",
+      "name": "禾望电气",
+      "concepts": [
+        {
+          "code": "BK0549",
+          "name": "深圳特区"
+        },
+        {
+          "code": "BK1675",
+          "name": "历史新高"
+        }
+      ],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK1032",
+        "name": "风电设备"
+      }
+    },
+    {
+      "code": "SH603067",
+      "name": "振华股份",
+      "concepts": [
+        {
+          "code": "BK0805",
+          "name": "钛白粉概念"
+        },
+        {
+          "code": "BK0895",
+          "name": "维生素"
+        }
+      ],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK1019",
+        "name": "化学原料"
+      }
+    },
+    {
+      "code": "SH603081",
+      "name": "大丰实业",
+      "concepts": [
+        {
+          "code": "BK0708",
+          "name": "体育产业"
+        },
+        {
+          "code": "BK1142",
+          "name": "裸眼3D"
+        }
+      ],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK0910",
+        "name": "专用设备"
+      }
+    },
+    {
+      "code": "SH603082",
+      "name": "北自科技",
+      "concepts": [],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK1237",
+        "name": "自动化设备"
+      }
+    },
+    {
+      "code": "SH603089",
+      "name": "正裕工业",
+      "concepts": [],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK0481",
+        "name": "汽车零部件"
+      }
+    },
+    {
+      "code": "SH603091",
+      "name": "众鑫股份",
+      "concepts": [],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK1265",
+        "name": "包装印刷"
+      }
+    },
+    {
+      "code": "SH603092",
+      "name": "德力佳",
+      "concepts": [
+        {
+          "code": "BK0501",
+          "name": "次新股"
+        }
+      ],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK1032",
+        "name": "风电设备"
+      }
+    },
+    {
+      "code": "SH603093",
+      "name": "南华期货",
+      "concepts": [
+        {
+          "code": "BK0499",
+          "name": "AH股"
+        },
+        {
+          "code": "BK0524",
+          "name": "参股期货"
+        }
+      ],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK0738",
+        "name": "多元金融"
+      }
+    },
+    {
+      "code": "SH603125",
+      "name": "常青科技",
+      "concepts": [
+        {
+          "code": "BK0884",
+          "name": "光刻机(胶)"
+        }
+      ],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK0538",
+        "name": "化学制品"
+      }
+    },
+    {
+      "code": "SH603138",
+      "name": "海量数据",
+      "concepts": [],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK1238",
+        "name": "IT服务Ⅱ"
+      }
+    },
+    {
+      "code": "SH603159",
+      "name": "上海亚虹",
+      "concepts": [],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK0910",
+        "name": "专用设备"
+      }
+    },
+    {
+      "code": "SH603165",
+      "name": "荣晟环保",
+      "concepts": [
+        {
+          "code": "BK0470",
+          "name": "造纸印刷"
+        }
+      ],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK1267",
+        "name": "造纸"
+      }
+    },
+    {
+      "code": "SH603179",
+      "name": "新泉股份",
+      "concepts": [],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK0481",
+        "name": "汽车零部件"
+      }
+    },
+    {
+      "code": "SH603187",
+      "name": "海容冷链",
+      "concepts": [],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK0545",
+        "name": "通用设备"
+      }
+    },
+    {
+      "code": "SH603190",
+      "name": "亚通精工",
+      "concepts": [
+        {
+          "code": "BK1093",
+          "name": "汽车一体化压铸"
+        }
+      ],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK0481",
+        "name": "汽车零部件"
+      }
+    },
+    {
+      "code": "SH603192",
+      "name": "汇得科技",
+      "concepts": [
+        {
+          "code": "BK1089",
+          "name": "汽车热管理"
+        }
+      ],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK0538",
+        "name": "化学制品"
+      }
+    },
+    {
+      "code": "SH603194",
+      "name": "中力股份",
+      "concepts": [],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK0739",
+        "name": "工程机械"
+      }
+    },
+    {
+      "code": "SH603202",
+      "name": "天有为",
+      "concepts": [],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK0481",
+        "name": "汽车零部件"
+      }
+    },
+    {
+      "code": "SH603203",
+      "name": "快克智能",
+      "concepts": [
+        {
+          "code": "BK0641",
+          "name": "智能穿戴"
+        },
+        {
+          "code": "BK0666",
+          "name": "苹果概念"
+        },
+        {
+          "code": "BK0840",
+          "name": "OLED"
+        },
+        {
+          "code": "BK0877",
+          "name": "PCB"
+        },
+        {
+          "code": "BK0917",
+          "name": "半导体概念"
+        },
+        {
+          "code": "BK0935",
+          "name": "中芯概念"
+        },
+        {
+          "code": "BK1101",
+          "name": "先进封装"
+        },
+        {
+          "code": "BK1137",
+          "name": "存储芯片"
+        },
+        {
+          "code": "BK1138",
+          "name": "液冷概念"
+        },
+        {
+          "code": "BK1178",
+          "name": "AI眼镜"
+        },
+        {
+          "code": "BK1646",
+          "name": "消费电子概念"
+        }
+      ],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK1237",
+        "name": "自动化设备"
+      }
+    },
+    {
+      "code": "SH603207",
+      "name": "小方制药",
+      "concepts": [
+        {
+          "code": "BK0676",
+          "name": "独家药品"
+        }
+      ],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK0465",
+        "name": "化学制药"
+      }
+    },
+    {
+      "code": "SH603212",
+      "name": "赛伍技术",
+      "concepts": [
+        {
+          "code": "BK0840",
+          "name": "OLED"
+        },
+        {
+          "code": "BK0893",
+          "name": "无线耳机"
+        },
+        {
+          "code": "BK1048",
+          "name": "IGBT概念"
+        },
+        {
+          "code": "BK1646",
+          "name": "消费电子概念"
+        }
+      ],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK1031",
+        "name": "光伏设备"
+      }
+    },
+    {
+      "code": "SH603217",
+      "name": "元利科技",
+      "concepts": [],
+      "timestamp": 1778318449083,
+      "industry": {
+        "code": "BK0538",
+        "name": "化学制品"
+      }
+    }
+  ]
+}

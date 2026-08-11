@@ -30,10 +30,10 @@ import {
 import type { ColumnsType } from 'antd/es/table';
 import { DownOutlined, ExportOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons';
 import {
-  getAllStockRecords,
   getStocksHistory,
   type StockHistoryRecord,
 } from '@/utils/storage/opportunityIndexedDB';
+import { getAllStockRecords } from '@/services/opportunity/recordService';
 import {
   HIGH_LIFT_SCENARIOS,
   SCENARIOS,
@@ -66,7 +66,7 @@ const { Text, Paragraph } = Typography;
 /** 表格滚动区为表头与分页预留的高度 */
 const TABLE_SCROLL_Y_RESERVE = 102;
 
-type IndustryInfo = { code: string; name: string };
+type SectorInfo = { code: string; name: string };
 
 function isSTStock(name: string): boolean {
   return name.includes('ST');
@@ -131,7 +131,8 @@ export function BacktestPage() {
   const [scanningHistory, setScanningHistory] = useState(false);
   const [scanningLatest, setScanningLatest] = useState(false);
   const [exportProgress, setExportProgress] = useState({ current: 0, total: 0 });
-  const [industryMapping, setIndustryMapping] = useState<Map<string, IndustryInfo>>(new Map());
+  const [industryMapping, setIndustryMapping] = useState<Map<string, SectorInfo>>(new Map());
+  const [conceptMapping, setConceptMapping] = useState<Map<string, SectorInfo[]>>(new Map());
   const [historySignals, setHistorySignals] = useState<BuyPointSignal[]>([]);
   const [latestSignals, setLatestSignals] = useState<LatestScenarioSignal[]>([]);
   const [historyScenarioFilter, setHistoryScenarioFilter] = useState<string>('all');
@@ -168,11 +169,15 @@ export function BacktestPage() {
   }, []);
 
   useEffect(() => {
-    const loadIndustryMapping = async () => {
+    const loadSectorMapping = async () => {
       try {
-        const { getIndustrySectors } = await import('@/utils/storage/sectorStocksIndexedDB');
-        const mapping = new Map<string, IndustryInfo>();
-        const industrySectors = await getIndustrySectors();
+        const { getIndustrySectors, getConceptSectors } = await import('@/utils/storage/sectorStocksIndexedDB');
+        const mapping = new Map<string, SectorInfo>();
+        const conceptMap = new Map<string, SectorInfo[]>();
+        const [industrySectors, conceptSectors] = await Promise.all([
+          getIndustrySectors(),
+          getConceptSectors(),
+        ]);
         industrySectors.forEach((sector) => {
           sector.children?.forEach((stock) => {
             const normalizedCode = normalizeStockCode(stock.code);
@@ -181,14 +186,25 @@ export function BacktestPage() {
             }
           });
         });
+        conceptSectors.forEach((sector) => {
+          sector.children?.forEach((stock) => {
+            const normalizedCode = normalizeStockCode(stock.code);
+            const concepts = conceptMap.get(normalizedCode) || [];
+            if (!concepts.some((item) => item.code === sector.code)) {
+              concepts.push({ code: sector.code, name: sector.name });
+            }
+            conceptMap.set(normalizedCode, concepts);
+          });
+        });
         setIndustryMapping(mapping);
-        logger.info(`[BacktestPage] 行业映射加载完成，共 ${mapping.size} 只股票`);
+        setConceptMapping(conceptMap);
+        logger.info(`[BacktestPage] 板块映射加载完成，行业 ${mapping.size} 只，概念 ${conceptMap.size} 只`);
       } catch (error) {
-        logger.error('[BacktestPage] 加载行业映射失败:', error);
+        logger.error('[BacktestPage] 加载板块映射失败:', error);
       }
     };
 
-    loadIndustryMapping();
+    loadSectorMapping();
   }, [normalizeStockCode]);
 
   const readFilteredHistories = useCallback(async () => {
@@ -431,7 +447,12 @@ export function BacktestPage() {
     }
 
     const kind = activeTab === 'latest' ? 'latest' : 'history';
-    const data = kind === 'latest' ? filteredLatestSignals : filteredHistorySignals;
+    const sourceData = kind === 'latest' ? filteredLatestSignals : filteredHistorySignals;
+    const data = sourceData.map((item) => ({
+      ...item,
+      industry: getRecordIndustry(item),
+      concepts: getRecordConcepts(item),
+    }));
 
     if (data.length === 0) {
       message.warning('请先扫描');
@@ -522,11 +543,37 @@ export function BacktestPage() {
     return <Tag color="blue">验证中</Tag>;
   };
 
+  const getRecordIndustry = (record: { code: string; industry?: SectorInfo | null }) => {
+    return record.industry || industryMapping.get(normalizeStockCode(record.code)) || null;
+  };
+
+  const getRecordConcepts = (record: { code: string; concepts?: SectorInfo[] }) => {
+    return record.concepts || conceptMapping.get(normalizeStockCode(record.code)) || [];
+  };
+
+  const renderIndustry = (_: unknown, record: { code: string; industry?: SectorInfo | null }) => {
+    const industry = getRecordIndustry(record);
+    return industry ? industry.name : <Text type="secondary">-</Text>;
+  };
+
+  const renderConcepts = (_: unknown, record: { code: string; concepts?: SectorInfo[] }) => {
+    const concepts = getRecordConcepts(record);
+    if (concepts.length === 0) return <Text type="secondary">-</Text>;
+    return (
+      <>
+        {concepts.slice(0, 3).map((concept) => (
+          <Tag key={concept.code}>{concept.name}</Tag>
+        ))}
+        {concepts.length > 3 && <Tag color="default">+{concepts.length - 3}</Tag>}
+      </>
+    );
+  };
+
   const historicalColumns: ColumnsType<BuyPointSignal> = [
     {
       title: '股票',
       dataIndex: 'name',
-      width: 160,
+      width: 130,
       fixed: 'left',
       render: (_, record) => (
         <div>
@@ -560,6 +607,8 @@ export function BacktestPage() {
     { title: '3日', width: 80, render: (_, record) => renderReturn(record.returns, 'd3') },
     { title: '5日', width: 80, render: (_, record) => renderReturn(record.returns, 'd5') },
     { title: '两周', width: 80, render: (_, record) => renderReturn(record.returns, 'd10') },
+    { title: '所属行业', width: 120, render: renderIndustry },
+    { title: '所属概念', width: 220, render: renderConcepts },
     {
       title: '命中规则',
       dataIndex: 'matchedRule',
@@ -572,7 +621,7 @@ export function BacktestPage() {
     {
       title: '股票',
       dataIndex: 'name',
-      width: 160,
+      width: 130,
       fixed: 'left',
       render: (_, record) => (
         <div>
@@ -595,6 +644,8 @@ export function BacktestPage() {
     { title: '3日', width: 80, render: (_, record) => renderReturn(record.returns, 'd3') },
     { title: '5日', width: 80, render: (_, record) => renderReturn(record.returns, 'd5') },
     { title: '两周', width: 80, render: (_, record) => renderReturn(record.returns, 'd10') },
+    { title: '所属行业', width: 120, render: renderIndustry },
+    { title: '所属概念', width: 220, render: renderConcepts },
     {
       title: '命中规则',
       dataIndex: 'matchedRule',
@@ -607,7 +658,7 @@ export function BacktestPage() {
     {
       title: '股票',
       dataIndex: 'name',
-      width: 150,
+      width: 130,
       fixed: 'left',
       render: (_, record) => (
         <div>
@@ -639,6 +690,8 @@ export function BacktestPage() {
       width: 90,
       render: (hit) => <Tag color={hit ? 'green' : 'default'}>{hit ? '是' : '否'}</Tag>,
     },
+    { title: '所属行业', width: 120, render: renderIndustry },
+    { title: '所属概念', width: 220, render: renderConcepts },
     {
       title: '命中规则',
       dataIndex: 'matchedRule',
@@ -677,7 +730,7 @@ export function BacktestPage() {
       : activeTab === 'tracking'
         ? filteredTrackingRows
         : filteredHistorySignals;
-  const activeScrollX = activeTab === 'latest' ? 1200 : activeTab === 'tracking' ? 1600 : 1300;
+  const activeScrollX = activeTab === 'latest' ? 1540 : activeTab === 'tracking' ? 1960 : 1640;
 
   return (
     <Layout className={styles.backtestPage}>
@@ -756,6 +809,9 @@ export function BacktestPage() {
               </Col>
               <Col>
                 <Statistic title="行业映射数" value={industryMapping.size} loading={loadingCount} />
+              </Col>
+              <Col>
+                <Statistic title="概念映射数" value={conceptMapping.size} loading={loadingCount} />
               </Col>
               <Col>
                 <Statistic title="历史好买点" value={historySignals.length} loading={loadingCount} />
@@ -927,7 +983,11 @@ export function BacktestPage() {
                 rowKey={(record) => `${record.code}-${record.date}-${record.scenario}-${record.timestamp}`}
                 columns={activeColumns}
                 dataSource={activeDataSource}
-                pagination={{ pageSize: 50, showSizeChanger: true }}
+                pagination={{
+                  pageSize: 50,
+                  showSizeChanger: true,
+                  pageSizeOptions: ['50', '100', '200'],
+                }}
                 scroll={{
                   x: activeScrollX,
                   y: activeDataLength > 0 ? tableScrollY : undefined,

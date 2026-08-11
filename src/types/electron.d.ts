@@ -78,6 +78,41 @@ export interface ElectronAPI {
     error?: string;
   }>;
 
+  /** 写入机会记录到 docs/回测优化/机会记录 */
+  writeOpportunityRecordFile: (payload: {
+    fileBaseName: string;
+    content: string;
+  }) => Promise<{
+    success: boolean;
+    filePath?: string;
+    error?: string;
+  }>;
+
+  /** 读取 docs/回测优化/机会记录 下的全部 JSON */
+  readOpportunityRecordFiles: () => Promise<{
+    success: boolean;
+    files?: Array<{
+      fileName: string;
+      fileBaseName: string;
+      filePath: string;
+      content: any;
+    }>;
+    error?: string;
+  }>;
+
+  /** 删除指定日期的机会记录文件 */
+  deleteOpportunityRecordFile: (date: string) => Promise<{
+    success: boolean;
+    error?: string;
+  }>;
+
+  /** 清空机会记录目录 */
+  clearOpportunityRecordFiles: () => Promise<{
+    success: boolean;
+    deletedCount?: number;
+    error?: string;
+  }>;
+
   /** 监听Cookie获取进度 */
   onCookieFetchProgress: (
     callback: (progress: {

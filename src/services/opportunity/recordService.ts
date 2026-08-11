@@ -1,6 +1,7 @@
 /**
  * 股票记录管理服务
  * 用于管理机会分析中的股票上榜记录
+ * 存储：docs/回测优化/机会记录/{YYYY-MM-DD}.json
  */
 
 import type {
@@ -10,12 +11,19 @@ import type {
   StockStatistics,
 } from '@/types/stock';
 import {
-  saveStockRecord,
-  getStockRecordByDate,
-  getAllStockRecords,
-  deleteStockRecord,
-} from '@/utils/storage/opportunityIndexedDB';
+  saveStockRecordToFile,
+  getAllStockRecordsFromFiles,
+  deleteStockRecordFile,
+  clearAllStockRecordFiles,
+} from '@/utils/storage/opportunityRecordFiles';
 import { logger } from '@/utils/business/logger';
+
+/**
+ * 获取全部机会记录（供回测页等直接消费）
+ */
+export async function getAllStockRecords(): Promise<StockRecord[]> {
+  return getAllStockRecordsFromFiles();
+}
 
 /**
  * 获取指定日期的日期字符串 (YYYY-MM-DD)
@@ -36,8 +44,8 @@ function extractRecordItems(stocks: StockOpportunityData[]): StockRecordItem[] {
   return stocks.map((stock) => ({
     code: stock.code,
     name: stock.name,
-    concepts: [], // TODO: 后续可以从其他服务获取概念板块信息
-    industry: undefined, // TODO: 后续可以从其他服务获取行业板块信息
+    concepts: stock.concepts ?? [],
+    industry: stock.industry,
     timestamp: Date.now(),
   }));
 }
@@ -56,7 +64,6 @@ export async function addStocksToTodayRecord(
     const date = getDateDateString(timestamp);
     const newItems = extractRecordItems(stocks);
 
-    // 直接创建新记录，覆盖同一天的旧数据
     const record: StockRecord = {
       date: date,
       stocks: newItems,
@@ -64,7 +71,7 @@ export async function addStocksToTodayRecord(
       updatedAt: Date.now(),
     };
 
-    await saveStockRecord(record);
+    await saveStockRecordToFile(record);
     logger.info(`成功更新 ${date} 的股票记录，共 ${stocks.length} 只股票`);
   } catch (error) {
     logger.error('更新股票记录失败:', error);
@@ -119,14 +126,12 @@ export async function calculateStockStatistics(dateRange?: {
   try {
     let allRecords = await getAllStockRecords();
 
-    // 如果指定了日期范围，则过滤
     if (dateRange) {
       allRecords = allRecords.filter((record) => {
         return record.date >= dateRange.startDate && record.date <= dateRange.endDate;
       });
     }
 
-    // 按股票代码聚合统计
     const statsMap = new Map<string, StockStatistics>();
 
     allRecords.forEach((record) => {
@@ -134,29 +139,23 @@ export async function calculateStockStatistics(dateRange?: {
         const existing = statsMap.get(item.code);
 
         if (existing) {
-          // 更新统计
           existing.count += 1;
           existing.dates.push(record.date);
 
-          // 更新最新日期
           if (record.date > existing.latestDate) {
             existing.latestDate = record.date;
           }
 
-          // 合并概念板块（去重）
           if (item.concepts) {
-            // 使用 code 作为唯一标识进行去重
             const existingConceptCodes = new Set(existing.concepts.map((c) => c.code));
             const newConcepts = item.concepts.filter((c) => !existingConceptCodes.has(c.code));
             existing.concepts = [...existing.concepts, ...newConcepts];
           }
 
-          // 更新行业（取最新的）
           if (item.industry) {
             existing.industry = item.industry;
           }
         } else {
-          // 新建统计
           statsMap.set(item.code, {
             code: item.code,
             name: item.name,
@@ -190,7 +189,7 @@ export async function calculateStockStatistics(dateRange?: {
  */
 export async function removeRecordByDate(date: string): Promise<void> {
   try {
-    await deleteStockRecord(date);
+    await deleteStockRecordFile(date);
     logger.info(`成功删除日期 ${date} 的记录`);
   } catch (error) {
     logger.error('删除记录失败:', error);
@@ -203,13 +202,7 @@ export async function removeRecordByDate(date: string): Promise<void> {
  */
 export async function clearAllRecords(): Promise<void> {
   try {
-    const allRecords = await getAllStockRecords();
-
-    // 逐个删除所有记录
-    for (const record of allRecords) {
-      await deleteStockRecord(record.date);
-    }
-
+    await clearAllStockRecordFiles();
     logger.info('成功清空所有股票记录');
   } catch (error) {
     logger.error('清空记录失败:', error);
@@ -227,7 +220,6 @@ export async function getRecordsByDateRange(
   try {
     const allRecords = await getAllStockRecords();
 
-    // 过滤指定日期范围的记录
     return allRecords.filter((record) => {
       return record.date >= startDate && record.date <= endDate;
     });
@@ -248,17 +240,14 @@ export async function calculateTrendData(dateRange?: {
   try {
     let allRecords = await getAllStockRecords();
 
-    // 如果指定了日期范围，则过滤
     if (dateRange) {
       allRecords = allRecords.filter((record) => {
         return record.date >= dateRange.startDate && record.date <= dateRange.endDate;
       });
     }
 
-    // 按日期排序
     allRecords.sort((a, b) => a.date.localeCompare(b.date));
 
-    // 转换为趋势数据
     return allRecords.map((record) => ({
       date: record.date,
       count: record.stocks.length,

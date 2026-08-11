@@ -1,0 +1,392 @@
+{
+  "version": "1.0",
+  "kind": "opportunity-record",
+  "date": "2026-07-14",
+  "createdAt": 1784013200271,
+  "updatedAt": 1786417836056,
+  "stocks": [
+    {
+      "code": "SZ000650",
+      "name": "仁和药业",
+      "concepts": [
+        {
+          "code": "BK0676",
+          "name": "独家药品"
+        },
+        {
+          "code": "BK0974",
+          "name": "化妆品概念"
+        },
+        {
+          "code": "BK1078",
+          "name": "肝炎概念"
+        },
+        {
+          "code": "BK1178",
+          "name": "AI眼镜"
+        },
+        {
+          "code": "BK1640",
+          "name": "价值股"
+        }
+      ],
+      "timestamp": 1784013200270,
+      "industry": {
+        "code": "BK1040",
+        "name": "中药Ⅱ"
+      }
+    },
+    {
+      "code": "SZ000829",
+      "name": "天音控股",
+      "concepts": [
+        {
+          "code": "BK0666",
+          "name": "苹果概念"
+        },
+        {
+          "code": "BK0671",
+          "name": "彩票概念"
+        },
+        {
+          "code": "BK0865",
+          "name": "电子烟"
+        },
+        {
+          "code": "BK0959",
+          "name": "数字阅读"
+        }
+      ],
+      "timestamp": 1784013200270,
+      "industry": {
+        "code": "BK1270",
+        "name": "专业连锁Ⅱ"
+      }
+    },
+    {
+      "code": "SZ000989",
+      "name": "九芝堂",
+      "concepts": [
+        {
+          "code": "BK0996",
+          "name": "毛发医疗"
+        }
+      ],
+      "timestamp": 1784013200270,
+      "industry": {
+        "code": "BK1040",
+        "name": "中药Ⅱ"
+      }
+    },
+    {
+      "code": "SZ002007",
+      "name": "华兰生物",
+      "concepts": [],
+      "timestamp": 1784013200270,
+      "industry": {
+        "code": "BK1044",
+        "name": "生物制品"
+      }
+    },
+    {
+      "code": "SZ002382",
+      "name": "蓝帆医疗",
+      "concepts": [
+        {
+          "code": "BK0528",
+          "name": "转债标的"
+        },
+        {
+          "code": "BK1112",
+          "name": "破净股"
+        }
+      ],
+      "timestamp": 1784013200270,
+      "industry": {
+        "code": "BK1041",
+        "name": "医疗器械"
+      }
+    },
+    {
+      "code": "SZ002412",
+      "name": "汉森制药",
+      "concepts": [
+        {
+          "code": "BK1056",
+          "name": "幽门螺杆菌概念"
+        },
+        {
+          "code": "BK1078",
+          "name": "肝炎概念"
+        }
+      ],
+      "timestamp": 1784013200270,
+      "industry": {
+        "code": "BK1040",
+        "name": "中药Ⅱ"
+      }
+    },
+    {
+      "code": "SZ002788",
+      "name": "鹭燕医药",
+      "concepts": [],
+      "timestamp": 1784013200270,
+      "industry": {
+        "code": "BK1042",
+        "name": "医药商业"
+      }
+    },
+    {
+      "code": "SZ002864",
+      "name": "盘龙药业",
+      "concepts": [
+        {
+          "code": "BK0676",
+          "name": "独家药品"
+        },
+        {
+          "code": "BK1078",
+          "name": "肝炎概念"
+        }
+      ],
+      "timestamp": 1784013200270,
+      "industry": {
+        "code": "BK1040",
+        "name": "中药Ⅱ"
+      }
+    },
+    {
+      "code": "SH600529",
+      "name": "山东药玻",
+      "concepts": [],
+      "timestamp": 1784013200270,
+      "industry": {
+        "code": "BK1041",
+        "name": "医疗器械"
+      }
+    },
+    {
+      "code": "SH600557",
+      "name": "康缘药业",
+      "concepts": [
+        {
+          "code": "BK0676",
+          "name": "独家药品"
+        },
+        {
+          "code": "BK0718",
+          "name": "证金持股"
+        },
+        {
+          "code": "BK0894",
+          "name": "阿兹海默"
+        },
+        {
+          "code": "BK0996",
+          "name": "毛发医疗"
+        }
+      ],
+      "timestamp": 1784013200270,
+      "industry": {
+        "code": "BK1040",
+        "name": "中药Ⅱ"
+      }
+    },
+    {
+      "code": "SH600587",
+      "name": "新华医疗",
+      "concepts": [
+        {
+          "code": "BK0914",
+          "name": "医废处理"
+        },
+        {
+          "code": "BK1174",
+          "name": "合成生物"
+        }
+      ],
+      "timestamp": 1784013200270,
+      "industry": {
+        "code": "BK1041",
+        "name": "医疗器械"
+      }
+    },
+    {
+      "code": "SH600645",
+      "name": "中源协和",
+      "concepts": [
+        {
+          "code": "BK0806",
+          "name": "精准医疗"
+        },
+        {
+          "code": "BK0939",
+          "name": "辅助生殖"
+        },
+        {
+          "code": "BK0986",
+          "name": "CAR-T细胞疗法"
+        },
+        {
+          "code": "BK1063",
+          "name": "重组蛋白"
+        }
+      ],
+      "timestamp": 1784013200270,
+      "industry": {
+        "code": "BK1044",
+        "name": "生物制品"
+      }
+    },
+    {
+      "code": "SH600713",
+      "name": "南京医药",
+      "concepts": [
+        {
+          "code": "BK0514",
+          "name": "参股券商"
+        },
+        {
+          "code": "BK0528",
+          "name": "转债标的"
+        },
+        {
+          "code": "BK0889",
+          "name": "医美概念"
+        },
+        {
+          "code": "BK0990",
+          "name": "快递概念"
+        },
+        {
+          "code": "BK1112",
+          "name": "破净股"
+        }
+      ],
+      "timestamp": 1784013200271,
+      "industry": {
+        "code": "BK1042",
+        "name": "医药商业"
+      }
+    },
+    {
+      "code": "SH600750",
+      "name": "华润江中",
+      "concepts": [
+        {
+          "code": "BK0718",
+          "name": "证金持股"
+        },
+        {
+          "code": "BK1640",
+          "name": "价值股"
+        },
+        {
+          "code": "BK1641",
+          "name": "红利股"
+        }
+      ],
+      "timestamp": 1784013200271,
+      "industry": {
+        "code": "BK1040",
+        "name": "中药Ⅱ"
+      }
+    },
+    {
+      "code": "SH600829",
+      "name": "人民同泰",
+      "concepts": [
+        {
+          "code": "BK0838",
+          "name": "东北振兴"
+        }
+      ],
+      "timestamp": 1784013200271,
+      "industry": {
+        "code": "BK1042",
+        "name": "医药商业"
+      }
+    },
+    {
+      "code": "SH600867",
+      "name": "通化东宝",
+      "concepts": [
+        {
+          "code": "BK0676",
+          "name": "独家药品"
+        },
+        {
+          "code": "BK0838",
+          "name": "东北振兴"
+        },
+        {
+          "code": "BK1063",
+          "name": "重组蛋白"
+        }
+      ],
+      "timestamp": 1784013200271,
+      "industry": {
+        "code": "BK1044",
+        "name": "生物制品"
+      }
+    },
+    {
+      "code": "SH600993",
+      "name": "马应龙",
+      "concepts": [],
+      "timestamp": 1784013200271,
+      "industry": {
+        "code": "BK1040",
+        "name": "中药Ⅱ"
+      }
+    },
+    {
+      "code": "SH603233",
+      "name": "大参林",
+      "concepts": [
+        {
+          "code": "BK0528",
+          "name": "转债标的"
+        }
+      ],
+      "timestamp": 1784013200271,
+      "industry": {
+        "code": "BK1042",
+        "name": "医药商业"
+      }
+    },
+    {
+      "code": "SH603590",
+      "name": "康辰药业",
+      "concepts": [],
+      "timestamp": 1784013200271,
+      "industry": {
+        "code": "BK1044",
+        "name": "生物制品"
+      }
+    },
+    {
+      "code": "SH603998",
+      "name": "方盛制药",
+      "concepts": [
+        {
+          "code": "BK0856",
+          "name": "工业大麻"
+        },
+        {
+          "code": "BK0974",
+          "name": "化妆品概念"
+        },
+        {
+          "code": "BK1655",
+          "name": "零售概念"
+        }
+      ],
+      "timestamp": 1784013200271,
+      "industry": {
+        "code": "BK1040",
+        "name": "中药Ⅱ"
+      }
+    }
+  ]
+}

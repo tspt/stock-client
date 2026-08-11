@@ -720,6 +720,125 @@ function setupIpcHandlers() {
             return { success: false, error: errorMessage, files: [] };
         }
     });
+    const OPPORTUNITY_RECORD_DATE_PATTERN = /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/;
+    function getOpportunityRecordDir() {
+        if (isDev) {
+            return join(app.getAppPath(), 'docs', '回测优化', '机会记录');
+        }
+        const exeDir = join(app.getPath('exe'), '..');
+        return join(exeDir, 'docs', '回测优化', '机会记录');
+    }
+    function ensureOpportunityRecordDir() {
+        const targetDir = getOpportunityRecordDir();
+        if (!existsSync(targetDir)) {
+            mkdirSync(targetDir, { recursive: true });
+            mainLog(`[主进程] 创建目录: ${targetDir}`);
+        }
+        return targetDir;
+    }
+    /**
+     * 写入机会记录到 docs/回测优化/机会记录/{YYYY-MM-DD}.json
+     */
+    ipcMain.handle('write-opportunity-record-file', async (_event, payload) => {
+        try {
+            const { fileBaseName, content } = payload;
+            if (!fileBaseName || !OPPORTUNITY_RECORD_DATE_PATTERN.test(fileBaseName)) {
+                return { success: false, error: '非法文件名，需为 YYYY-MM-DD 格式' };
+            }
+            const targetDir = ensureOpportunityRecordDir();
+            const filePath = join(targetDir, `${fileBaseName}.json`);
+            writeFileSync(filePath, String(content), 'utf-8');
+            mainLog(`[主进程] 机会记录已保存: ${filePath}`);
+            return { success: true, filePath };
+        }
+        catch (error) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            mainLog(`[主进程] 保存机会记录失败: ${errorMessage}`, true);
+            return { success: false, error: errorMessage };
+        }
+    });
+    /**
+     * 读取 docs/回测优化/机会记录 下的全部 JSON
+     */
+    ipcMain.handle('read-opportunity-record-files', async () => {
+        try {
+            const targetDir = getOpportunityRecordDir();
+            if (!existsSync(targetDir)) {
+                return { success: true, files: [] };
+            }
+            const files = readdirSync(targetDir)
+                .filter((file) => file.endsWith('.json'))
+                .sort();
+            const results = files.map((fileName) => {
+                const filePath = join(targetDir, fileName);
+                const content = JSON.parse(readFileSync(filePath, 'utf-8'));
+                return {
+                    fileName,
+                    fileBaseName: fileName.replace(/\.json$/i, ''),
+                    filePath,
+                    content,
+                };
+            });
+            return { success: true, files: results };
+        }
+        catch (error) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            mainLog(`[主进程] 读取机会记录文件失败: ${errorMessage}`, true);
+            return { success: false, error: errorMessage, files: [] };
+        }
+    });
+    /**
+     * 删除指定日期的机会记录文件
+     */
+    ipcMain.handle('delete-opportunity-record-file', async (_event, date) => {
+        try {
+            if (!date || !OPPORTUNITY_RECORD_DATE_PATTERN.test(date)) {
+                return { success: false, error: '非法日期，需为 YYYY-MM-DD 格式' };
+            }
+            const targetDir = getOpportunityRecordDir();
+            const filePath = join(targetDir, `${date}.json`);
+            if (existsSync(filePath)) {
+                unlinkSync(filePath);
+                mainLog(`[主进程] 已删除机会记录: ${filePath}`);
+            }
+            return { success: true };
+        }
+        catch (error) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            mainLog(`[主进程] 删除机会记录失败: ${errorMessage}`, true);
+            return { success: false, error: errorMessage };
+        }
+    });
+    /**
+     * 清空 docs/回测优化/机会记录 目录下全部 JSON
+     */
+    ipcMain.handle('clear-opportunity-record-files', async () => {
+        try {
+            const targetDir = getOpportunityRecordDir();
+            if (!existsSync(targetDir)) {
+                return { success: true, deletedCount: 0 };
+            }
+            const files = readdirSync(targetDir).filter((file) => file.endsWith('.json'));
+            let deletedCount = 0;
+            for (const file of files) {
+                try {
+                    unlinkSync(join(targetDir, file));
+                    deletedCount++;
+                }
+                catch (error) {
+                    const errorMessage = error instanceof Error ? error.message : String(error);
+                    mainLog(`[主进程] 删除机会记录文件失败 ${file}: ${errorMessage}`, true);
+                }
+            }
+            mainLog(`[主进程] 已清空机会记录目录，删除 ${deletedCount} 个文件`);
+            return { success: true, deletedCount };
+        }
+        catch (error) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            mainLog(`[主进程] 清空机会记录失败: ${errorMessage}`, true);
+            return { success: false, error: errorMessage, deletedCount: 0 };
+        }
+    });
 }
 // 应用准备就绪
 app.whenReady().then(async () => {
