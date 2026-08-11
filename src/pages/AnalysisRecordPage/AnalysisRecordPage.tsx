@@ -24,6 +24,7 @@ export function AnalysisRecordPage() {
   const [activeTab, setActiveTab] = useState('table');
   const [consecutiveFilterEnabled, setConsecutiveFilterEnabled] = useState(false);
   const [minConsecutiveDays, setMinConsecutiveDays] = useState(2);
+  const [tablePageSize, setTablePageSize] = useState(100);
 
   const filteredStatistics = useMemo(() => {
     if (!consecutiveFilterEnabled) {
@@ -226,10 +227,11 @@ export function AnalysisRecordPage() {
                         dataSource={filteredStatistics}
                         rowKey="code"
                         pagination={{
-                          defaultPageSize: 50,
+                          pageSize: tablePageSize,
                           showSizeChanger: true,
                           showTotal: (total) => `共 ${total} 条记录`,
                           pageSizeOptions: ['50', '100', '200'],
+                          onChange: (_, pageSize) => setTablePageSize(pageSize),
                         }}
                         scroll={{ x: 800, y: 'calc(100vh - 330px)' }}
                         size="small"

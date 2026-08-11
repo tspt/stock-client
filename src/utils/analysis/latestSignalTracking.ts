@@ -132,16 +132,19 @@ export function buildTrackedLatestSignals(
   const recordMap = buildOpportunityRecordMap(records);
 
   const rows = files.flatMap((file) => {
+    const fileDateKey = normalizeDateKey(file.fileBaseName);
     const items = Array.isArray(file.content?.items) ? file.content.items : [];
-    return items.map((signal) => {
+    return items.flatMap((signal) => {
       const signalDateKey = normalizeDateKey(signal.date);
-      const recordCodes = recordMap.get(signalDateKey);
+      if (signalDateKey !== fileDateKey) return [];
+
+      const recordCodes = recordMap.get(fileDateKey);
       const opportunityRecordHit =
         !!recordCodes && (recordCodes.has(signal.code) || recordCodes.has(pureCode(signal.code)));
       const trackedReturns = calculateFutureReturns(historyMap.get(signal.code) || historyMap.get(pureCode(signal.code)), signal);
       const stat = getTrackingStatus(trackedReturns, options);
 
-      return {
+      return [{
         ...signal,
         sourceFile: file.fileName,
         signalDate: signal.date,
@@ -149,7 +152,7 @@ export function buildTrackedLatestSignals(
         opportunityRecordHit,
         trackedReturns,
         ...stat,
-      };
+      }];
     });
   });
 

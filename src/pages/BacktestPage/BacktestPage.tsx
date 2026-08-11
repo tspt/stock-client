@@ -24,11 +24,11 @@ import {
   Select,
   Input,
   InputNumber,
-  Alert,
   Dropdown,
+  Tooltip,
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { DownOutlined, ExportOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons';
+import { DownOutlined, ExportOutlined, InfoCircleOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons';
 import {
   getStocksHistory,
   type StockHistoryRecord,
@@ -61,10 +61,10 @@ import { logger } from '@/utils/business/logger';
 import styles from './BacktestPage.module.css';
 
 const { Header, Content } = Layout;
-const { Text, Paragraph } = Typography;
+const { Text } = Typography;
 
 /** 表格滚动区为表头与分页预留的高度 */
-const TABLE_SCROLL_Y_RESERVE = 102;
+const TABLE_SCROLL_Y_RESERVE = 72;
 
 type SectorInfo = { code: string; name: string };
 
@@ -151,6 +151,7 @@ export function BacktestPage() {
   const [searchText, setSearchText] = useState('');
   const [latestDateSummary, setLatestDateSummary] = useState({ dominantDate: '', dominantCount: 0 });
   const [activeTab, setActiveTab] = useState('latest');
+  const [tablePageSize, setTablePageSize] = useState(100);
   const [tableScrollY, setTableScrollY] = useState(360);
   const tableAreaRef = useRef<HTMLDivElement>(null);
 
@@ -409,7 +410,7 @@ export function BacktestPage() {
     }));
   }, [trackingMinHitCount, trackingRows, trackingThreshold]);
 
-  const filteredTrackingRows = useMemo(() => {
+  const trackingAnalysisRows = useMemo(() => {
     const keyword = searchText.trim().toLowerCase();
     const sortedDates = Array.from(new Set(trackedRowsWithStatus.map((item) => item.signalDateKey)))
       .sort()
@@ -417,19 +418,17 @@ export function BacktestPage() {
     const dateLimit =
       trackingDateRange === 'recent5' ? 5 : trackingDateRange === 'recent10' ? 10 : sortedDates.length;
     const allowedDates = new Set(sortedDates.slice(0, dateLimit));
-    const allowedStatuses = new Set(trackingStatusFilter);
 
     return trackedRowsWithStatus.filter((item) => {
       const dateMatch = trackingDateRange === 'all' || allowedDates.has(item.signalDateKey);
       const scenarioMatch =
         trackingScenarioFilter === 'all' || item.scenario === trackingScenarioFilter;
-      const statusMatch = allowedStatuses.has(item.status);
       const opportunityMatch = !trackingOnlyOpportunity || item.opportunityRecordHit;
       const keywordMatch =
         !keyword ||
         item.name.toLowerCase().includes(keyword) ||
         item.code.toLowerCase().includes(keyword);
-      return dateMatch && scenarioMatch && statusMatch && opportunityMatch && keywordMatch;
+      return dateMatch && scenarioMatch && opportunityMatch && keywordMatch;
     });
   }, [
     searchText,
@@ -437,8 +436,147 @@ export function BacktestPage() {
     trackingDateRange,
     trackingOnlyOpportunity,
     trackingScenarioFilter,
+  ]);
+
+  const filteredTrackingRows = useMemo(() => {
+    const allowedStatuses = new Set(trackingStatusFilter);
+    const uniqueRows = new Map<string, TrackedLatestSignal>();
+
+    trackingAnalysisRows.forEach((item) => {
+      if (!allowedStatuses.has(item.status)) return;
+      const key = `${normalizeStockCode(item.code)}-${item.signalDateKey}`;
+      const current = uniqueRows.get(key);
+      uniqueRows.set(key, current ? pickPreferredTrackingRow(current, item) : item);
+    });
+
+    return Array.from(uniqueRows.values());
+  }, [
+    normalizeStockCode,
+    trackingAnalysisRows,
     trackingStatusFilter,
   ]);
+
+  const trackingStats = useMemo(() => {
+    const total = filteredTrackingRows.length;
+    const passed = filteredTrackingRows.filter((item) => item.status === 'passed').length;
+    const failed = filteredTrackingRows.filter((item) => item.status === 'failed').length;
+    const tracking = filteredTrackingRows.filter((item) => item.status === 'tracking').length;
+    const verified = passed + failed;
+    const passRate = verified > 0 ? Number(((passed / verified) * 100).toFixed(1)) : null;
+    const maxReturns = filteredTrackingRows
+      .map((item) => item.maxReturn)
+      .filter((value): value is number => value != null);
+    const avgMaxReturn =
+      maxReturns.length > 0
+        ? Number((maxReturns.reduce((sum, value) => sum + value, 0) / maxReturns.length).toFixed(2))
+        : null;
+    const scenarioMap = new Map<
+      string,
+      { name: string; total: number; passed: number; failed: number; tracking: number }
+    >();
+
+    filteredTrackingRows.forEach((item) => {
+      const current =
+        scenarioMap.get(item.scenario) ||
+        { name: item.scenarioName, total: 0, passed: 0, failed: 0, tracking: 0 };
+      current.total += 1;
+      current[item.status] += 1;
+      scenarioMap.set(item.scenario, current);
+    });
+
+    const scenarios = Array.from(scenarioMap.values())
+      .map((item) => {
+        const scenarioVerified = item.passed + item.failed;
+        return {
+          ...item,
+          passRate:
+            scenarioVerified > 0 ? Number(((item.passed / scenarioVerified) * 100).toFixed(1)) : null,
+        };
+      })
+      .sort((a, b) => b.total - a.total)
+      .slice(0, 6);
+
+    return { total, passed, failed, tracking, verified, passRate, avgMaxReturn, scenarios };
+  }, [filteredTrackingRows]);
+
+  const trackingAnalysisStats = useMemo(() => {
+    const ruleMap = new Map<
+      string,
+      {
+        scenarioName: string;
+        matchedRule: string;
+        total: number;
+        passed: number;
+        failed: number;
+        tracking: number;
+      }
+    >();
+
+    trackingAnalysisRows.forEach((item) => {
+      const key = `${item.scenarioName}｜${item.matchedRule}`;
+      const current =
+        ruleMap.get(key) || {
+          scenarioName: item.scenarioName,
+          matchedRule: item.matchedRule,
+          total: 0,
+          passed: 0,
+          failed: 0,
+          tracking: 0,
+        };
+      current.total += 1;
+      current[item.status] += 1;
+      ruleMap.set(key, current);
+    });
+
+    const ruleStats = Array.from(ruleMap.values())
+      .map((item) => {
+        const verified = item.passed + item.failed;
+        return {
+          ...item,
+          verified,
+          passRate: verified > 0 ? Number(((item.passed / verified) * 100).toFixed(1)) : null,
+        };
+      })
+      .sort((a, b) => {
+        if (b.verified !== a.verified) return b.verified - a.verified;
+        return b.total - a.total;
+      });
+
+    const failedRules = ruleStats
+      .filter((item) => item.failed > 0)
+      .sort((a, b) => b.failed - a.failed)
+      .slice(0, 6);
+
+    const thresholds = [3, 5, 8];
+    const minHits = [2, 3, 4];
+    const parameterStats = thresholds.flatMap((threshold) =>
+      minHits.map((minHitCount) => {
+        const counts = trackingAnalysisRows.reduce(
+          (acc, item) => {
+            const status = getTrackingStatus(item.trackedReturns, { threshold, minHitCount }).status;
+            acc[status] += 1;
+            return acc;
+          },
+          { passed: 0, failed: 0, tracking: 0 }
+        );
+        const verified = counts.passed + counts.failed;
+        return {
+          threshold,
+          minHitCount,
+          ...counts,
+          verified,
+          passRate:
+            verified > 0 ? Number(((counts.passed / verified) * 100).toFixed(1)) : null,
+        };
+      })
+    );
+
+    return {
+      ruleStats: ruleStats.slice(0, 8),
+      failedRules,
+      parameterStats,
+    };
+  }, [trackingAnalysisRows]);
 
   const handleExportResults = async (format: BacktestExportFormat) => {
     if (activeTab === 'tracking') {
@@ -537,10 +675,39 @@ export function BacktestPage() {
     return <Text style={{ color: returnColor(value) }}>{returnText(value)}</Text>;
   };
 
+  const compareReturn = (a: ReturnSnapshot, b: ReturnSnapshot, key: keyof ReturnSnapshot) => {
+    return (a[key] ?? Number.NEGATIVE_INFINITY) - (b[key] ?? Number.NEGATIVE_INFINITY);
+  };
+
+  function pickPreferredTrackingRow(current: TrackedLatestSignal, next: TrackedLatestSignal) {
+    if ((next.lift || 0) !== (current.lift || 0)) {
+      return (next.lift || 0) > (current.lift || 0) ? next : current;
+    }
+    if ((next.maxReturn ?? Number.NEGATIVE_INFINITY) !== (current.maxReturn ?? Number.NEGATIVE_INFINITY)) {
+      return (next.maxReturn ?? Number.NEGATIVE_INFINITY) > (current.maxReturn ?? Number.NEGATIVE_INFINITY) ? next : current;
+    }
+    if (next.hitCount !== current.hitCount) {
+      return next.hitCount > current.hitCount ? next : current;
+    }
+    return current;
+  }
+
   const renderTrackingStatus = (status: TrackingStatus) => {
     if (status === 'passed') return <Tag color="red">已达标</Tag>;
     if (status === 'failed') return <Tag>未达标</Tag>;
     return <Tag color="blue">验证中</Tag>;
+  };
+
+  const getRuleShortLabel = (rule: string): string => {
+    const limitUpMatch = rule.match(/近5日近似涨停根数=(\d+)/);
+    if (limitUpMatch) return `涨停≥${limitUpMatch[1]}`;
+    if (rule.includes('近3日累计涨幅') && rule.includes('≥20')) return '3日涨≥20%';
+    if (rule.includes('量比') && rule.includes('≥1.5')) return '量比≥1.5';
+    if (rule.includes('量比') && rule.includes('[1.0,1.5)')) return '量比1-1.5';
+    if (rule.includes('近3日累计') && rule.includes('[5,20)')) return '3日涨5-20%';
+    if (rule.includes('回撤') && rule.includes('量比≤0.9')) return '缩量回踩';
+    if (rule.includes('回撤') && rule.includes('放量收涨')) return '放量企稳';
+    return rule.length > 12 ? `${rule.slice(0, 12)}...` : rule;
   };
 
   const getRecordIndustry = (record: { code: string; industry?: SectorInfo | null }) => {
@@ -560,27 +727,27 @@ export function BacktestPage() {
     const concepts = getRecordConcepts(record);
     if (concepts.length === 0) return <Text type="secondary">-</Text>;
     return (
-      <>
+      <div className={styles.conceptTags}>
         {concepts.slice(0, 3).map((concept) => (
           <Tag key={concept.code}>{concept.name}</Tag>
         ))}
         {concepts.length > 3 && <Tag color="default">+{concepts.length - 3}</Tag>}
-      </>
+      </div>
     );
   };
 
   const historicalColumns: ColumnsType<BuyPointSignal> = [
     {
-      title: '股票',
-      dataIndex: 'name',
-      width: 130,
+      title: '股票号码',
+      dataIndex: 'code',
+      width: 100,
       fixed: 'left',
-      render: (_, record) => (
-        <div>
-          <div>{record.name}</div>
-          <Text type="secondary">{record.code}</Text>
-        </div>
-      ),
+    },
+    {
+      title: '股票名称',
+      dataIndex: 'name',
+      width: 100,
+      fixed: 'left',
     },
     {
       title: '买点日期',
@@ -602,13 +769,13 @@ export function BacktestPage() {
     },
     { title: '买入价', dataIndex: 'entryPrice', width: 90 },
     { title: '命中项', dataIndex: 'hitCount', width: 80 },
-    { title: '1日', width: 80, render: (_, record) => renderReturn(record.returns, 'd1') },
-    { title: '2日', width: 80, render: (_, record) => renderReturn(record.returns, 'd2') },
-    { title: '3日', width: 80, render: (_, record) => renderReturn(record.returns, 'd3') },
-    { title: '5日', width: 80, render: (_, record) => renderReturn(record.returns, 'd5') },
-    { title: '两周', width: 80, render: (_, record) => renderReturn(record.returns, 'd10') },
+    { title: '1日', width: 80, sorter: (a, b) => compareReturn(a.returns, b.returns, 'd1'), render: (_, record) => renderReturn(record.returns, 'd1') },
+    { title: '2日', width: 80, sorter: (a, b) => compareReturn(a.returns, b.returns, 'd2'), render: (_, record) => renderReturn(record.returns, 'd2') },
+    { title: '3日', width: 80, sorter: (a, b) => compareReturn(a.returns, b.returns, 'd3'), render: (_, record) => renderReturn(record.returns, 'd3') },
+    { title: '5日', width: 80, sorter: (a, b) => compareReturn(a.returns, b.returns, 'd5'), render: (_, record) => renderReturn(record.returns, 'd5') },
+    { title: '两周', width: 80, sorter: (a, b) => compareReturn(a.returns, b.returns, 'd10'), render: (_, record) => renderReturn(record.returns, 'd10') },
     { title: '所属行业', width: 120, render: renderIndustry },
-    { title: '所属概念', width: 220, render: renderConcepts },
+    { title: '所属概念', width: 360, render: renderConcepts },
     {
       title: '命中规则',
       dataIndex: 'matchedRule',
@@ -619,16 +786,16 @@ export function BacktestPage() {
 
   const latestColumns: ColumnsType<LatestScenarioSignal> = [
     {
-      title: '股票',
-      dataIndex: 'name',
-      width: 130,
+      title: '股票号码',
+      dataIndex: 'code',
+      width: 100,
       fixed: 'left',
-      render: (_, record) => (
-        <div>
-          <div>{record.name}</div>
-          <Text type="secondary">{record.code}</Text>
-        </div>
-      ),
+    },
+    {
+      title: '股票名称',
+      dataIndex: 'name',
+      width: 100,
+      fixed: 'left',
     },
     { title: '数据日期', dataIndex: 'date', width: 110 },
     {
@@ -639,13 +806,13 @@ export function BacktestPage() {
     },
     { title: '收盘价', dataIndex: 'close', width: 90 },
     { title: 'lift', dataIndex: 'lift', width: 80, render: (v) => v?.toFixed(2) },
-    { title: '1日', width: 80, render: (_, record) => renderReturn(record.returns, 'd1') },
-    { title: '2日', width: 80, render: (_, record) => renderReturn(record.returns, 'd2') },
-    { title: '3日', width: 80, render: (_, record) => renderReturn(record.returns, 'd3') },
-    { title: '5日', width: 80, render: (_, record) => renderReturn(record.returns, 'd5') },
-    { title: '两周', width: 80, render: (_, record) => renderReturn(record.returns, 'd10') },
+    { title: '1日', width: 80, sorter: (a, b) => compareReturn(a.returns, b.returns, 'd1'), render: (_, record) => renderReturn(record.returns, 'd1') },
+    { title: '2日', width: 80, sorter: (a, b) => compareReturn(a.returns, b.returns, 'd2'), render: (_, record) => renderReturn(record.returns, 'd2') },
+    { title: '3日', width: 80, sorter: (a, b) => compareReturn(a.returns, b.returns, 'd3'), render: (_, record) => renderReturn(record.returns, 'd3') },
+    { title: '5日', width: 80, sorter: (a, b) => compareReturn(a.returns, b.returns, 'd5'), render: (_, record) => renderReturn(record.returns, 'd5') },
+    { title: '两周', width: 80, sorter: (a, b) => compareReturn(a.returns, b.returns, 'd10'), render: (_, record) => renderReturn(record.returns, 'd10') },
     { title: '所属行业', width: 120, render: renderIndustry },
-    { title: '所属概念', width: 220, render: renderConcepts },
+    { title: '所属概念', width: 360, render: renderConcepts },
     {
       title: '命中规则',
       dataIndex: 'matchedRule',
@@ -656,16 +823,16 @@ export function BacktestPage() {
 
   const trackingColumns: ColumnsType<TrackedLatestSignal> = [
     {
-      title: '股票',
-      dataIndex: 'name',
-      width: 130,
+      title: '股票号码',
+      dataIndex: 'code',
+      width: 100,
       fixed: 'left',
-      render: (_, record) => (
-        <div>
-          <div>{record.name}</div>
-          <Text type="secondary">{record.code}</Text>
-        </div>
-      ),
+    },
+    {
+      title: '股票名称',
+      dataIndex: 'name',
+      width: 100,
+      fixed: 'left',
     },
     { title: '信号日期', dataIndex: 'signalDate', width: 110, sorter: (a, b) => a.timestamp - b.timestamp },
     {
@@ -676,11 +843,11 @@ export function BacktestPage() {
     },
     { title: '收盘价', dataIndex: 'close', width: 90 },
     { title: 'lift', dataIndex: 'lift', width: 80, render: (v) => v?.toFixed(2) },
-    { title: '1日', width: 80, render: (_, record) => renderReturn(record.trackedReturns, 'd1') },
-    { title: '2日', width: 80, render: (_, record) => renderReturn(record.trackedReturns, 'd2') },
-    { title: '3日', width: 80, render: (_, record) => renderReturn(record.trackedReturns, 'd3') },
-    { title: '5日', width: 80, render: (_, record) => renderReturn(record.trackedReturns, 'd5') },
-    { title: '两周', width: 80, render: (_, record) => renderReturn(record.trackedReturns, 'd10') },
+    { title: '1日', width: 80, sorter: (a, b) => compareReturn(a.trackedReturns, b.trackedReturns, 'd1'), render: (_, record) => renderReturn(record.trackedReturns, 'd1') },
+    { title: '2日', width: 80, sorter: (a, b) => compareReturn(a.trackedReturns, b.trackedReturns, 'd2'), render: (_, record) => renderReturn(record.trackedReturns, 'd2') },
+    { title: '3日', width: 80, sorter: (a, b) => compareReturn(a.trackedReturns, b.trackedReturns, 'd3'), render: (_, record) => renderReturn(record.trackedReturns, 'd3') },
+    { title: '5日', width: 80, sorter: (a, b) => compareReturn(a.trackedReturns, b.trackedReturns, 'd5'), render: (_, record) => renderReturn(record.trackedReturns, 'd5') },
+    { title: '两周', width: 80, sorter: (a, b) => compareReturn(a.trackedReturns, b.trackedReturns, 'd10'), render: (_, record) => renderReturn(record.trackedReturns, 'd10') },
     { title: '已发生', dataIndex: 'occurredCount', width: 80 },
     { title: '命中', dataIndex: 'hitCount', width: 80 },
     { title: '状态', dataIndex: 'status', width: 90, render: renderTrackingStatus },
@@ -691,7 +858,7 @@ export function BacktestPage() {
       render: (hit) => <Tag color={hit ? 'green' : 'default'}>{hit ? '是' : '否'}</Tag>,
     },
     { title: '所属行业', width: 120, render: renderIndustry },
-    { title: '所属概念', width: 220, render: renderConcepts },
+    { title: '所属概念', width: 360, render: renderConcepts },
     {
       title: '命中规则',
       dataIndex: 'matchedRule',
@@ -730,7 +897,7 @@ export function BacktestPage() {
       : activeTab === 'tracking'
         ? filteredTrackingRows
         : filteredHistorySignals;
-  const activeScrollX = activeTab === 'latest' ? 1540 : activeTab === 'tracking' ? 1960 : 1640;
+  const activeScrollX = activeTab === 'latest' ? 1800 : activeTab === 'tracking' ? 2140 : 1800;
 
   return (
     <Layout className={styles.backtestPage}>
@@ -819,24 +986,28 @@ export function BacktestPage() {
               <Col>
                 <Statistic title="最新日命中" value={latestSignals.length} loading={loadingCount} />
               </Col>
+              <Col>
+                <div className={styles.compactInfo}>
+                  <Tooltip
+                    placement="right"
+                    title={
+                      <div className={styles.compactInfoTooltip}>
+                        <div>历史好买点和最新日场景都直接读取 IndexedDB stockHistory；如果机会分析更新了 K 线，点击顶部扫描按钮即可用最新数据重算。</div>
+                        <div>历史好买点规则：买入收盘后 1/2/3/5/10 日累计收益中至少 3 项 &gt; 5%。</div>
+                        <div>最新交易日只展示 lift&gt;1 的高价值场景，未来收益尚未发生时对应列为空。</div>
+                      </div>
+                    }
+                  >
+                    <InfoCircleOutlined className={styles.compactInfoIcon} />
+                  </Tooltip>
+                  <span>
+                    {latestDateSummary.dominantDate
+                      ? `当前 K 线众数截止日：${latestDateSummary.dominantDate}（${latestDateSummary.dominantCount} 只）`
+                      : '尚未读取到 K 线截止日'}
+                  </span>
+                </div>
+              </Col>
             </Row>
-
-            <Alert
-              type="info"
-              showIcon
-              className={styles.compactAlert}
-              message={
-                latestDateSummary.dominantDate
-                  ? `当前 K 线众数截止日：${latestDateSummary.dominantDate}（${latestDateSummary.dominantCount} 只）`
-                  : '尚未读取到 K 线截止日'
-              }
-              description="历史好买点和最新日场景都直接读取 IndexedDB stockHistory；如果机会分析更新了 K 线，点击顶部扫描按钮即可用最新数据重算。"
-            />
-
-            <Paragraph type="secondary" className={styles.compactRule}>
-              历史好买点规则：买入收盘后 1/2/3/5/10 日累计收益中至少 3 项 &gt; 5%。
-              最新交易日只展示 lift&gt;1 的高价值场景，未来收益尚未发生时对应列为空。
-            </Paragraph>
 
             {exporting && exportProgress.total > 0 && (
               <div className={styles.exportProgress}>
@@ -978,15 +1149,110 @@ export function BacktestPage() {
               {renderSearchInput()}
             </div>
 
+            {activeTab === 'tracking' && (
+              <div className={styles.trackingStatsPanel}>
+                <Row gutter={[16, 8]} className={styles.trackingStatsRow}>
+                  <Col>
+                    <Statistic title="当前展示" value={trackingStats.total} />
+                  </Col>
+                  <Col>
+                    <Statistic title="已达标" value={trackingStats.passed} />
+                  </Col>
+                  <Col>
+                    <Statistic title="验证中" value={trackingStats.tracking} />
+                  </Col>
+                  <Col>
+                    <Statistic title="未达标" value={trackingStats.failed} />
+                  </Col>
+                  <Col>
+                    <Statistic
+                      title="已验证达标率"
+                      value={trackingStats.passRate == null ? '-' : `${trackingStats.passRate}%`}
+                    />
+                  </Col>
+                  <Col>
+                    <Statistic
+                      title="平均最大收益"
+                      value={
+                        trackingStats.avgMaxReturn == null ? '-' : `${trackingStats.avgMaxReturn}%`
+                      }
+                    />
+                  </Col>
+                </Row>
+                {trackingStats.scenarios.length > 0 && (
+                  <div className={styles.trackingAnalysisBlock}>
+                    <Text type="secondary">场景统计：</Text>
+                    <Space wrap size={[4, 4]} className={styles.trackingScenarioStats}>
+                      {trackingStats.scenarios.map((item) => (
+                        <Tag key={item.name} color="blue">
+                          {item.name}: {item.total} / 达标 {item.passed}
+                          {item.passRate != null ? ` / ${item.passRate}%` : ''}
+                        </Tag>
+                      ))}
+                    </Space>
+                  </div>
+                )}
+                {trackingAnalysisStats.failedRules.length > 0 && (
+                  <div className={styles.trackingAnalysisBlock}>
+                    <Text type="secondary">失败样本 Top：</Text>
+                    <Space wrap size={[4, 4]}>
+                      {trackingAnalysisStats.failedRules.map((item) => (
+                        <Tag
+                          key={`${item.scenarioName}-${item.matchedRule}`}
+                          color="default"
+                          title={item.matchedRule}
+                        >
+                          {item.scenarioName}｜{getRuleShortLabel(item.matchedRule)}: 失败 {item.failed} / {item.total}
+                        </Tag>
+                      ))}
+                    </Space>
+                  </div>
+                )}
+                {trackingAnalysisStats.ruleStats.length > 0 && (
+                  <div className={styles.trackingAnalysisBlock}>
+                    <Text type="secondary">规则胜率 Top：</Text>
+                    <Space wrap size={[4, 4]}>
+                      {trackingAnalysisStats.ruleStats.map((item) => (
+                        <Tag
+                          key={`${item.scenarioName}-${item.matchedRule}`}
+                          color={item.passRate != null && item.passRate >= 50 ? 'red' : 'blue'}
+                          title={item.matchedRule}
+                        >
+                          {item.scenarioName}｜{getRuleShortLabel(item.matchedRule)}:{' '}
+                          {item.passRate == null ? '待验证' : `${item.passRate}%`}
+                          （{item.passed}/{item.verified}）
+                        </Tag>
+                      ))}
+                    </Space>
+                  </div>
+                )}
+                {trackingAnalysisStats.parameterStats.length > 0 && (
+                  <div className={styles.trackingAnalysisBlock}>
+                    <Text type="secondary">参数回测：</Text>
+                    <Space wrap size={[4, 4]}>
+                      {trackingAnalysisStats.parameterStats.map((item) => (
+                        <Tag key={`${item.threshold}-${item.minHitCount}`} color="purple">
+                          {item.threshold}% / {item.minHitCount}中：
+                          {item.passRate == null ? '待验证' : `${item.passRate}%`}
+                          （{item.passed}/{item.verified}）
+                        </Tag>
+                      ))}
+                    </Space>
+                  </div>
+                )}
+              </div>
+            )}
+
             <div className={styles.tableArea} ref={tableAreaRef}>
               <Table
                 rowKey={(record) => `${record.code}-${record.date}-${record.scenario}-${record.timestamp}`}
                 columns={activeColumns}
                 dataSource={activeDataSource}
                 pagination={{
-                  pageSize: 50,
+                  pageSize: tablePageSize,
                   showSizeChanger: true,
                   pageSizeOptions: ['50', '100', '200'],
+                  onChange: (_, pageSize) => setTablePageSize(pageSize),
                 }}
                 scroll={{
                   x: activeScrollX,

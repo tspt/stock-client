@@ -116,7 +116,7 @@ export const OPPORTUNITY_DEFAULT_AI_ANALYSIS = {
   /** AI形态评分最小值 */
   patternScoreMin: 60,
   /** AI趋势评分最小值 */
-  trendScoreMin: 50,
+  trendScoreMin: 55,
   /** AI安全评分最小值 */
   riskScoreMin: undefined,
 } as const;
