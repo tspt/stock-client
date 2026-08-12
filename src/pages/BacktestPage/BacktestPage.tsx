@@ -28,12 +28,13 @@ import {
   Tooltip,
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { DownOutlined, ExportOutlined, InfoCircleOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons';
+import { DatabaseOutlined, DownOutlined, ExportOutlined, InfoCircleOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons';
 import {
   getStocksHistory,
   type StockHistoryRecord,
 } from '@/utils/storage/opportunityIndexedDB';
 import { getAllStockRecords } from '@/services/opportunity/recordService';
+import { AddStocksToWatchListModal } from '@/components/AddStocksToWatchListModal/AddStocksToWatchListModal';
 import {
   HIGH_LIFT_SCENARIOS,
   SCENARIOS,
@@ -57,6 +58,7 @@ import {
   resolveLatestExportDate,
   type BacktestExportFormat,
 } from '@/utils/export/backtestExportUtils';
+import { exportStockNamesToPng } from '@/utils/export/stockNamesExportUtils';
 import { logger } from '@/utils/business/logger';
 import styles from './BacktestPage.module.css';
 
@@ -148,6 +150,7 @@ export function BacktestPage() {
   const [trackingMinHitCount, setTrackingMinHitCount] = useState(3);
   const [trackingRows, setTrackingRows] = useState<TrackedLatestSignal[]>([]);
   const [loadingTracking, setLoadingTracking] = useState(false);
+  const [showAddTrackingLatestModal, setShowAddTrackingLatestModal] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [latestDateSummary, setLatestDateSummary] = useState({ dominantDate: '', dominantCount: 0 });
   const [activeTab, setActiveTab] = useState('latest');
@@ -456,6 +459,29 @@ export function BacktestPage() {
     trackingStatusFilter,
   ]);
 
+  const trackingLatestSignalStocks = useMemo(() => {
+    let latestDateKey = '';
+    filteredTrackingRows.forEach((item) => {
+      if (item.signalDateKey > latestDateKey) {
+        latestDateKey = item.signalDateKey;
+      }
+    });
+
+    const stockMap = new Map<string, { code: string; name: string }>();
+    filteredTrackingRows.forEach((item) => {
+      if (item.signalDateKey !== latestDateKey) return;
+      const code = normalizeStockCode(item.code);
+      if (!stockMap.has(code)) {
+        stockMap.set(code, { code, name: item.name });
+      }
+    });
+
+    return {
+      latestDateKey,
+      stocks: Array.from(stockMap.values()),
+    };
+  }, [filteredTrackingRows, normalizeStockCode]);
+
   const trackingStats = useMemo(() => {
     const total = filteredTrackingRows.length;
     const passed = filteredTrackingRows.filter((item) => item.status === 'passed').length;
@@ -632,6 +658,41 @@ export function BacktestPage() {
     } finally {
       setExportingResults(false);
     }
+  };
+
+  const handleExportTrackingLatestNames = async () => {
+    const { latestDateKey, stocks } = trackingLatestSignalStocks;
+    if (stocks.length === 0) {
+      message.warning('没有可导出的最新信号日期股票');
+      return;
+    }
+
+    const names = stocks.map((stock) => stock.name || stock.code).filter(Boolean);
+    if (names.length === 0) {
+      message.warning('没有可用的股票名称');
+      return;
+    }
+
+    try {
+      const exportTime = new Date().toLocaleString('zh-CN');
+      const filterSummary = `最新信号日期: ${latestDateKey}\n导出时间: ${exportTime}\n当前筛选后最新信号股票: ${stocks.length} 只`;
+      await exportStockNamesToPng(names, {
+        fileNamePrefix: '买点追踪_最新信号股票',
+        filterSummary,
+      });
+      message.success('最新信号日期股票已导出为图片');
+    } catch (error) {
+      logger.error('[BacktestPage] 导出买点追踪最新信号股票失败:', error);
+      message.error('导出最新信号股票失败: ' + (error as Error).message);
+    }
+  };
+
+  const handleAddTrackingLatestStocks = () => {
+    if (trackingLatestSignalStocks.stocks.length === 0) {
+      message.warning('没有可添加的最新信号日期股票');
+      return;
+    }
+    setShowAddTrackingLatestModal(true);
   };
 
   useLayoutEffect(() => {
@@ -1128,6 +1189,22 @@ export function BacktestPage() {
                     >
                       更新收益
                     </Button>
+                    <Button
+                      size="small"
+                      icon={<ExportOutlined />}
+                      disabled={loadingTracking || trackingLatestSignalStocks.stocks.length === 0}
+                      onClick={() => void handleExportTrackingLatestNames()}
+                    >
+                      导出最新信号(PNG)
+                    </Button>
+                    <Button
+                      size="small"
+                      icon={<DatabaseOutlined />}
+                      disabled={loadingTracking || trackingLatestSignalStocks.stocks.length === 0}
+                      onClick={handleAddTrackingLatestStocks}
+                    >
+                      添加最新信号
+                    </Button>
                   </>
                 ) : (
                   <>
@@ -1264,6 +1341,11 @@ export function BacktestPage() {
           </Card>
         </div>
       </Content>
+      <AddStocksToWatchListModal
+        visible={showAddTrackingLatestModal}
+        stocks={trackingLatestSignalStocks.stocks}
+        onClose={() => setShowAddTrackingLatestModal(false)}
+      />
     </Layout>
   );
 }
