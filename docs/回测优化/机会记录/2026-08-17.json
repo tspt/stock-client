@@ -1,0 +1,5102 @@
+{
+  "version": "1.0",
+  "kind": "opportunity-record",
+  "date": "2026-08-17",
+  "createdAt": 1786978882820,
+  "updatedAt": 1786978882820,
+  "stocks": [
+    {
+      "code": "SZ000045",
+      "name": "深纺织Ａ",
+      "concepts": [
+        {
+          "code": "BK0498",
+          "name": "AB股"
+        },
+        {
+          "code": "BK0549",
+          "name": "深圳特区"
+        },
+        {
+          "code": "BK0683",
+          "name": "央国企改革"
+        },
+        {
+          "code": "BK0722",
+          "name": "虚拟现实"
+        },
+        {
+          "code": "BK0804",
+          "name": "深股通"
+        },
+        {
+          "code": "BK0840",
+          "name": "OLED"
+        },
+        {
+          "code": "BK0859",
+          "name": "超清视频"
+        },
+        {
+          "code": "BK1651",
+          "name": "显示技术"
+        }
+      ],
+      "industry": {
+        "code": "BK1038",
+        "name": "光学光电子"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SZ000510",
+      "name": "新金路",
+      "concepts": [
+        {
+          "code": "BK0534",
+          "name": "成渝特区"
+        },
+        {
+          "code": "BK0590",
+          "name": "西部大开发"
+        }
+      ],
+      "industry": {
+        "code": "BK1019",
+        "name": "化学原料"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SZ000636",
+      "name": "风华高科",
+      "concepts": [
+        {
+          "code": "BK0535",
+          "name": "QFII重仓"
+        },
+        {
+          "code": "BK0568",
+          "name": "深成500"
+        },
+        {
+          "code": "BK0574",
+          "name": "锂电池概念"
+        },
+        {
+          "code": "BK0683",
+          "name": "央国企改革"
+        },
+        {
+          "code": "BK0703",
+          "name": "超级电容"
+        },
+        {
+          "code": "BK0714",
+          "name": "5G概念"
+        },
+        {
+          "code": "BK0804",
+          "name": "深股通"
+        },
+        {
+          "code": "BK0854",
+          "name": "华为概念"
+        },
+        {
+          "code": "BK0890",
+          "name": "MLCC"
+        },
+        {
+          "code": "BK0976",
+          "name": "被动元件概念"
+        },
+        {
+          "code": "BK1090",
+          "name": "机器人概念"
+        },
+        {
+          "code": "BK1144",
+          "name": "高压快充"
+        },
+        {
+          "code": "BK1190",
+          "name": "虚拟机器人"
+        },
+        {
+          "code": "BK1643",
+          "name": "小盘股"
+        },
+        {
+          "code": "BK1648",
+          "name": "电池技术"
+        },
+        {
+          "code": "BK1650",
+          "name": "通信技术"
+        }
+      ],
+      "industry": {
+        "code": "BK0459",
+        "name": "元件"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SZ000803",
+      "name": "山高环能",
+      "concepts": [
+        {
+          "code": "BK0494",
+          "name": "节能环保"
+        },
+        {
+          "code": "BK0534",
+          "name": "成渝特区"
+        },
+        {
+          "code": "BK0554",
+          "name": "物联网"
+        },
+        {
+          "code": "BK0590",
+          "name": "西部大开发"
+        },
+        {
+          "code": "BK0634",
+          "name": "大数据"
+        },
+        {
+          "code": "BK0683",
+          "name": "央国企改革"
+        },
+        {
+          "code": "BK0832",
+          "name": "工业互联"
+        },
+        {
+          "code": "BK0873",
+          "name": "垃圾分类"
+        },
+        {
+          "code": "BK1633",
+          "name": "昨日高振幅"
+        }
+      ],
+      "industry": {
+        "code": "BK0428",
+        "name": "电力"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SZ000859",
+      "name": "国风新材",
+      "concepts": [
+        {
+          "code": "BK0523",
+          "name": "新材料"
+        },
+        {
+          "code": "BK0683",
+          "name": "央国企改革"
+        },
+        {
+          "code": "BK0804",
+          "name": "深股通"
+        },
+        {
+          "code": "BK0840",
+          "name": "OLED"
+        },
+        {
+          "code": "BK0884",
+          "name": "光刻机(胶)"
+        },
+        {
+          "code": "BK0900",
+          "name": "新能源车"
+        },
+        {
+          "code": "BK1181",
+          "name": "并购重组概念"
+        }
+      ],
+      "industry": {
+        "code": "BK0454",
+        "name": "塑料"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SZ000889",
+      "name": "中嘉博创",
+      "concepts": [
+        {
+          "code": "BK0535",
+          "name": "QFII重仓"
+        },
+        {
+          "code": "BK0634",
+          "name": "大数据"
+        },
+        {
+          "code": "BK0714",
+          "name": "5G概念"
+        },
+        {
+          "code": "BK0813",
+          "name": "雄安新区"
+        },
+        {
+          "code": "BK0815",
+          "name": "昨日涨停"
+        },
+        {
+          "code": "BK0830",
+          "name": "区块链"
+        },
+        {
+          "code": "BK0845",
+          "name": "百度概念"
+        },
+        {
+          "code": "BK0854",
+          "name": "华为概念"
+        },
+        {
+          "code": "BK0867",
+          "name": "富时罗素"
+        },
+        {
+          "code": "BK0879",
+          "name": "标准普尔"
+        },
+        {
+          "code": "BK0883",
+          "name": "数字货币"
+        },
+        {
+          "code": "BK1050",
+          "name": "昨日涨停_含一字"
+        },
+        {
+          "code": "BK1630",
+          "name": "昨日首板"
+        },
+        {
+          "code": "BK1632",
+          "name": "昨日高换手"
+        },
+        {
+          "code": "BK1633",
+          "name": "昨日高振幅"
+        },
+        {
+          "code": "BK1637",
+          "name": "东方财富热股"
+        },
+        {
+          "code": "BK1638",
+          "name": "最近多板"
+        },
+        {
+          "code": "BK1650",
+          "name": "通信技术"
+        }
+      ],
+      "industry": {
+        "code": "BK0736",
+        "name": "通信服务"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SZ001230",
+      "name": "劲旅环境",
+      "concepts": [
+        {
+          "code": "BK0628",
+          "name": "智慧城市"
+        },
+        {
+          "code": "BK0721",
+          "name": "PPP模式"
+        },
+        {
+          "code": "BK0800",
+          "name": "人工智能"
+        },
+        {
+          "code": "BK0802",
+          "name": "无人驾驶"
+        },
+        {
+          "code": "BK0873",
+          "name": "垃圾分类"
+        },
+        {
+          "code": "BK0900",
+          "name": "新能源车"
+        },
+        {
+          "code": "BK0922",
+          "name": "数据中心"
+        },
+        {
+          "code": "BK1005",
+          "name": "专精特新"
+        },
+        {
+          "code": "BK1080",
+          "name": "新型城镇化"
+        },
+        {
+          "code": "BK1090",
+          "name": "机器人概念"
+        },
+        {
+          "code": "BK1188",
+          "name": "DeepSeek概念"
+        }
+      ],
+      "industry": {
+        "code": "BK1235",
+        "name": "环境治理"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SZ001258",
+      "name": "立新能源",
+      "concepts": [
+        {
+          "code": "BK0493",
+          "name": "新能源"
+        },
+        {
+          "code": "BK0588",
+          "name": "光伏概念"
+        },
+        {
+          "code": "BK0590",
+          "name": "西部大开发"
+        },
+        {
+          "code": "BK0595",
+          "name": "风能"
+        },
+        {
+          "code": "BK0683",
+          "name": "央国企改革"
+        },
+        {
+          "code": "BK0700",
+          "name": "充电桩"
+        },
+        {
+          "code": "BK0804",
+          "name": "深股通"
+        },
+        {
+          "code": "BK0989",
+          "name": "储能概念"
+        },
+        {
+          "code": "BK1024",
+          "name": "绿色电力"
+        },
+        {
+          "code": "BK1677",
+          "name": "2025年报预增"
+        }
+      ],
+      "industry": {
+        "code": "BK0428",
+        "name": "电力"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SZ001696",
+      "name": "宗申动力",
+      "concepts": [
+        {
+          "code": "BK0429",
+          "name": "交运设备"
+        },
+        {
+          "code": "BK0490",
+          "name": "军工"
+        },
+        {
+          "code": "BK0534",
+          "name": "成渝特区"
+        },
+        {
+          "code": "BK0552",
+          "name": "机构重仓"
+        },
+        {
+          "code": "BK0568",
+          "name": "深成500"
+        },
+        {
+          "code": "BK0590",
+          "name": "西部大开发"
+        },
+        {
+          "code": "BK0625",
+          "name": "通用航空"
+        },
+        {
+          "code": "BK0682",
+          "name": "燃料电池概念"
+        },
+        {
+          "code": "BK0701",
+          "name": "中证500"
+        },
+        {
+          "code": "BK0704",
+          "name": "无人机"
+        },
+        {
+          "code": "BK0804",
+          "name": "深股通"
+        },
+        {
+          "code": "BK0808",
+          "name": "军民融合"
+        },
+        {
+          "code": "BK0864",
+          "name": "氢能源"
+        },
+        {
+          "code": "BK0867",
+          "name": "富时罗素"
+        },
+        {
+          "code": "BK0879",
+          "name": "标准普尔"
+        },
+        {
+          "code": "BK0900",
+          "name": "新能源车"
+        },
+        {
+          "code": "BK0924",
+          "name": "地摊经济"
+        },
+        {
+          "code": "BK0960",
+          "name": "无线充电"
+        },
+        {
+          "code": "BK0989",
+          "name": "储能概念"
+        },
+        {
+          "code": "BK1005",
+          "name": "专精特新"
+        },
+        {
+          "code": "BK1014",
+          "name": "发电机概念"
+        },
+        {
+          "code": "BK1090",
+          "name": "机器人概念"
+        },
+        {
+          "code": "BK1093",
+          "name": "汽车一体化压铸"
+        },
+        {
+          "code": "BK1166",
+          "name": "低空经济"
+        },
+        {
+          "code": "BK1198",
+          "name": "2025三季报预增"
+        },
+        {
+          "code": "BK1648",
+          "name": "电池技术"
+        },
+        {
+          "code": "BK1664",
+          "name": "中盘股"
+        },
+        {
+          "code": "BK1677",
+          "name": "2025年报预增"
+        }
+      ],
+      "industry": {
+        "code": "BK0545",
+        "name": "通用设备"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SZ002081",
+      "name": "金 螳 螂",
+      "concepts": [
+        {
+          "code": "BK0594",
+          "name": "长江三角"
+        },
+        {
+          "code": "BK0665",
+          "name": "电商概念"
+        },
+        {
+          "code": "BK0721",
+          "name": "PPP模式"
+        },
+        {
+          "code": "BK0804",
+          "name": "深股通"
+        },
+        {
+          "code": "BK0867",
+          "name": "富时罗素"
+        },
+        {
+          "code": "BK0879",
+          "name": "标准普尔"
+        },
+        {
+          "code": "BK0917",
+          "name": "半导体概念"
+        },
+        {
+          "code": "BK0945",
+          "name": "装配建筑"
+        },
+        {
+          "code": "BK0952",
+          "name": "第三代半导体"
+        },
+        {
+          "code": "BK0963",
+          "name": "商业航天"
+        },
+        {
+          "code": "BK1112",
+          "name": "破净股"
+        },
+        {
+          "code": "BK1632",
+          "name": "昨日高换手"
+        },
+        {
+          "code": "BK1633",
+          "name": "昨日高振幅"
+        },
+        {
+          "code": "BK1637",
+          "name": "东方财富热股"
+        }
+      ],
+      "industry": {
+        "code": "BK0725",
+        "name": "装修装饰Ⅱ"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SZ002083",
+      "name": "孚日股份",
+      "concepts": [
+        {
+          "code": "BK0493",
+          "name": "新能源"
+        },
+        {
+          "code": "BK0506",
+          "name": "创投"
+        },
+        {
+          "code": "BK0574",
+          "name": "锂电池概念"
+        },
+        {
+          "code": "BK0664",
+          "name": "婴童概念"
+        },
+        {
+          "code": "BK0683",
+          "name": "央国企改革"
+        },
+        {
+          "code": "BK0690",
+          "name": "氟化工概念"
+        },
+        {
+          "code": "BK0804",
+          "name": "深股通"
+        },
+        {
+          "code": "BK0812",
+          "name": "贬值受益"
+        },
+        {
+          "code": "BK0867",
+          "name": "富时罗素"
+        },
+        {
+          "code": "BK1074",
+          "name": "托育服务"
+        },
+        {
+          "code": "BK1131",
+          "name": "同步磁阻电机"
+        },
+        {
+          "code": "BK1648",
+          "name": "电池技术"
+        }
+      ],
+      "industry": {
+        "code": "BK1224",
+        "name": "纺织制造"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SZ002088",
+      "name": "鲁阳节能",
+      "concepts": [
+        {
+          "code": "BK0523",
+          "name": "新材料"
+        },
+        {
+          "code": "BK0574",
+          "name": "锂电池概念"
+        },
+        {
+          "code": "BK0804",
+          "name": "深股通"
+        },
+        {
+          "code": "BK0818",
+          "name": "可燃冰"
+        },
+        {
+          "code": "BK0823",
+          "name": "养老金"
+        },
+        {
+          "code": "BK1641",
+          "name": "红利股"
+        },
+        {
+          "code": "BK1648",
+          "name": "电池技术"
+        },
+        {
+          "code": "BK1649",
+          "name": "油气资源"
+        },
+        {
+          "code": "BK1678",
+          "name": "2025年报预减"
+        }
+      ],
+      "industry": {
+        "code": "BK0476",
+        "name": "装修建材"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SZ002165",
+      "name": "红 宝 丽",
+      "concepts": [
+        {
+          "code": "BK0523",
+          "name": "新材料"
+        },
+        {
+          "code": "BK0535",
+          "name": "QFII重仓"
+        },
+        {
+          "code": "BK0588",
+          "name": "光伏概念"
+        },
+        {
+          "code": "BK0594",
+          "name": "长江三角"
+        },
+        {
+          "code": "BK0804",
+          "name": "深股通"
+        },
+        {
+          "code": "BK0945",
+          "name": "装配建筑"
+        },
+        {
+          "code": "BK1011",
+          "name": "环氧丙烷"
+        },
+        {
+          "code": "BK1076",
+          "name": "建筑节能"
+        },
+        {
+          "code": "BK1633",
+          "name": "昨日高振幅"
+        },
+        {
+          "code": "BK1678",
+          "name": "2025年报预减"
+        }
+      ],
+      "industry": {
+        "code": "BK0538",
+        "name": "化学制品"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SZ002194",
+      "name": "武汉凡谷",
+      "concepts": [
+        {
+          "code": "BK0506",
+          "name": "创投"
+        },
+        {
+          "code": "BK0554",
+          "name": "物联网"
+        },
+        {
+          "code": "BK0714",
+          "name": "5G概念"
+        },
+        {
+          "code": "BK0804",
+          "name": "深股通"
+        },
+        {
+          "code": "BK0854",
+          "name": "华为概念"
+        },
+        {
+          "code": "BK0867",
+          "name": "富时罗素"
+        },
+        {
+          "code": "BK0921",
+          "name": "卫星互联网"
+        },
+        {
+          "code": "BK1022",
+          "name": "职业教育"
+        },
+        {
+          "code": "BK1124",
+          "name": "毫米波概念"
+        },
+        {
+          "code": "BK1650",
+          "name": "通信技术"
+        },
+        {
+          "code": "BK1673",
+          "name": "破增发价股"
+        }
+      ],
+      "industry": {
+        "code": "BK0448",
+        "name": "通信设备"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SZ002203",
+      "name": "海亮股份",
+      "concepts": [
+        {
+          "code": "BK0525",
+          "name": "参股银行"
+        },
+        {
+          "code": "BK0568",
+          "name": "深成500"
+        },
+        {
+          "code": "BK0594",
+          "name": "长江三角"
+        },
+        {
+          "code": "BK0695",
+          "name": "小金属概念"
+        },
+        {
+          "code": "BK0701",
+          "name": "中证500"
+        },
+        {
+          "code": "BK0804",
+          "name": "深股通"
+        },
+        {
+          "code": "BK0867",
+          "name": "富时罗素"
+        },
+        {
+          "code": "BK0879",
+          "name": "标准普尔"
+        },
+        {
+          "code": "BK0968",
+          "name": "固态电池"
+        },
+        {
+          "code": "BK1113",
+          "name": "复合集流体"
+        },
+        {
+          "code": "BK1648",
+          "name": "电池技术"
+        },
+        {
+          "code": "BK1664",
+          "name": "中盘股"
+        }
+      ],
+      "industry": {
+        "code": "BK1287",
+        "name": "工业金属"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SZ002213",
+      "name": "大为股份",
+      "concepts": [
+        {
+          "code": "BK0549",
+          "name": "深圳特区"
+        },
+        {
+          "code": "BK0574",
+          "name": "锂电池概念"
+        },
+        {
+          "code": "BK0877",
+          "name": "PCB"
+        },
+        {
+          "code": "BK0891",
+          "name": "国产芯片"
+        },
+        {
+          "code": "BK0898",
+          "name": "胎压监测"
+        },
+        {
+          "code": "BK0900",
+          "name": "新能源车"
+        },
+        {
+          "code": "BK0917",
+          "name": "半导体概念"
+        },
+        {
+          "code": "BK1104",
+          "name": "信创"
+        },
+        {
+          "code": "BK1137",
+          "name": "存储芯片"
+        },
+        {
+          "code": "BK1173",
+          "name": "锂矿概念"
+        },
+        {
+          "code": "BK1632",
+          "name": "昨日高换手"
+        },
+        {
+          "code": "BK1633",
+          "name": "昨日高振幅"
+        },
+        {
+          "code": "BK1648",
+          "name": "电池技术"
+        }
+      ],
+      "industry": {
+        "code": "BK1036",
+        "name": "半导体"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SZ002229",
+      "name": "鸿博股份",
+      "concepts": [
+        {
+          "code": "BK0470",
+          "name": "造纸印刷"
+        },
+        {
+          "code": "BK0525",
+          "name": "参股银行"
+        },
+        {
+          "code": "BK0535",
+          "name": "QFII重仓"
+        },
+        {
+          "code": "BK0552",
+          "name": "机构重仓"
+        },
+        {
+          "code": "BK0579",
+          "name": "云计算"
+        },
+        {
+          "code": "BK0671",
+          "name": "彩票概念"
+        },
+        {
+          "code": "BK0800",
+          "name": "人工智能"
+        },
+        {
+          "code": "BK0804",
+          "name": "深股通"
+        },
+        {
+          "code": "BK0830",
+          "name": "区块链"
+        },
+        {
+          "code": "BK1061",
+          "name": "数字经济"
+        },
+        {
+          "code": "BK1126",
+          "name": "ChatGPT概念"
+        },
+        {
+          "code": "BK1129",
+          "name": "数字水印"
+        },
+        {
+          "code": "BK1134",
+          "name": "算力概念"
+        },
+        {
+          "code": "BK1161",
+          "name": "英伟达概念"
+        },
+        {
+          "code": "BK1654",
+          "name": "文娱消费"
+        }
+      ],
+      "industry": {
+        "code": "BK1265",
+        "name": "包装印刷"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SZ002346",
+      "name": "柘中股份",
+      "concepts": [
+        {
+          "code": "BK0506",
+          "name": "创投"
+        },
+        {
+          "code": "BK0525",
+          "name": "参股银行"
+        },
+        {
+          "code": "BK0535",
+          "name": "QFII重仓"
+        },
+        {
+          "code": "BK0552",
+          "name": "机构重仓"
+        },
+        {
+          "code": "BK0574",
+          "name": "锂电池概念"
+        },
+        {
+          "code": "BK0594",
+          "name": "长江三角"
+        },
+        {
+          "code": "BK0700",
+          "name": "充电桩"
+        },
+        {
+          "code": "BK0708",
+          "name": "体育产业"
+        },
+        {
+          "code": "BK0804",
+          "name": "深股通"
+        },
+        {
+          "code": "BK0917",
+          "name": "半导体概念"
+        },
+        {
+          "code": "BK0977",
+          "name": "碳化硅"
+        },
+        {
+          "code": "BK1648",
+          "name": "电池技术"
+        },
+        {
+          "code": "BK1677",
+          "name": "2025年报预增"
+        }
+      ],
+      "industry": {
+        "code": "BK0457",
+        "name": "电网设备"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SZ002350",
+      "name": "北京科锐",
+      "concepts": [
+        {
+          "code": "BK0493",
+          "name": "新能源"
+        },
+        {
+          "code": "BK0506",
+          "name": "创投"
+        },
+        {
+          "code": "BK0581",
+          "name": "智能电网"
+        },
+        {
+          "code": "BK0600",
+          "name": "参股新三板"
+        },
+        {
+          "code": "BK0700",
+          "name": "充电桩"
+        },
+        {
+          "code": "BK0703",
+          "name": "超级电容"
+        },
+        {
+          "code": "BK0813",
+          "name": "雄安新区"
+        },
+        {
+          "code": "BK0864",
+          "name": "氢能源"
+        },
+        {
+          "code": "BK0908",
+          "name": "HJT电池"
+        },
+        {
+          "code": "BK0918",
+          "name": "特高压"
+        },
+        {
+          "code": "BK0922",
+          "name": "数据中心"
+        },
+        {
+          "code": "BK0958",
+          "name": "虚拟电厂"
+        },
+        {
+          "code": "BK0989",
+          "name": "储能概念"
+        },
+        {
+          "code": "BK1647",
+          "name": "电网概念"
+        }
+      ],
+      "industry": {
+        "code": "BK0457",
+        "name": "电网设备"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SZ002369",
+      "name": "卓翼科技",
+      "concepts": [
+        {
+          "code": "BK0506",
+          "name": "创投"
+        },
+        {
+          "code": "BK0549",
+          "name": "深圳特区"
+        },
+        {
+          "code": "BK0554",
+          "name": "物联网"
+        },
+        {
+          "code": "BK0641",
+          "name": "智能穿戴"
+        },
+        {
+          "code": "BK0722",
+          "name": "虚拟现实"
+        },
+        {
+          "code": "BK0804",
+          "name": "深股通"
+        },
+        {
+          "code": "BK0830",
+          "name": "区块链"
+        },
+        {
+          "code": "BK0854",
+          "name": "华为概念"
+        },
+        {
+          "code": "BK0893",
+          "name": "无线耳机"
+        },
+        {
+          "code": "BK0915",
+          "name": "WiFi"
+        },
+        {
+          "code": "BK0955",
+          "name": "C2M概念"
+        },
+        {
+          "code": "BK1090",
+          "name": "机器人概念"
+        },
+        {
+          "code": "BK1646",
+          "name": "消费电子概念"
+        },
+        {
+          "code": "BK1650",
+          "name": "通信技术"
+        }
+      ],
+      "industry": {
+        "code": "BK1037",
+        "name": "消费电子"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SZ002402",
+      "name": "和而泰",
+      "concepts": [
+        {
+          "code": "BK0490",
+          "name": "军工"
+        },
+        {
+          "code": "BK0549",
+          "name": "深圳特区"
+        },
+        {
+          "code": "BK0554",
+          "name": "物联网"
+        },
+        {
+          "code": "BK0568",
+          "name": "深成500"
+        },
+        {
+          "code": "BK0634",
+          "name": "大数据"
+        },
+        {
+          "code": "BK0641",
+          "name": "智能穿戴"
+        },
+        {
+          "code": "BK0680",
+          "name": "智能家居"
+        },
+        {
+          "code": "BK0701",
+          "name": "中证500"
+        },
+        {
+          "code": "BK0712",
+          "name": "一带一路"
+        },
+        {
+          "code": "BK0714",
+          "name": "5G概念"
+        },
+        {
+          "code": "BK0800",
+          "name": "人工智能"
+        },
+        {
+          "code": "BK0804",
+          "name": "深股通"
+        },
+        {
+          "code": "BK0821",
+          "name": "MSCI中国"
+        },
+        {
+          "code": "BK0833",
+          "name": "小米概念"
+        },
+        {
+          "code": "BK0867",
+          "name": "富时罗素"
+        },
+        {
+          "code": "BK0879",
+          "name": "标准普尔"
+        },
+        {
+          "code": "BK0891",
+          "name": "国产芯片"
+        },
+        {
+          "code": "BK0916",
+          "name": "氮化镓"
+        },
+        {
+          "code": "BK0917",
+          "name": "半导体概念"
+        },
+        {
+          "code": "BK0921",
+          "name": "卫星互联网"
+        },
+        {
+          "code": "BK0952",
+          "name": "第三代半导体"
+        },
+        {
+          "code": "BK0963",
+          "name": "商业航天"
+        },
+        {
+          "code": "BK0989",
+          "name": "储能概念"
+        },
+        {
+          "code": "BK1089",
+          "name": "汽车热管理"
+        },
+        {
+          "code": "BK1090",
+          "name": "机器人概念"
+        },
+        {
+          "code": "BK1124",
+          "name": "毫米波概念"
+        },
+        {
+          "code": "BK1155",
+          "name": "小米汽车"
+        },
+        {
+          "code": "BK1180",
+          "name": "华为海思"
+        },
+        {
+          "code": "BK1188",
+          "name": "DeepSeek概念"
+        },
+        {
+          "code": "BK1646",
+          "name": "消费电子概念"
+        },
+        {
+          "code": "BK1650",
+          "name": "通信技术"
+        },
+        {
+          "code": "BK1664",
+          "name": "中盘股"
+        },
+        {
+          "code": "BK1677",
+          "name": "2025年报预增"
+        }
+      ],
+      "industry": {
+        "code": "BK1242",
+        "name": "家电零部件Ⅱ"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SZ002451",
+      "name": "摩恩电气",
+      "concepts": [
+        {
+          "code": "BK0493",
+          "name": "新能源"
+        },
+        {
+          "code": "BK0506",
+          "name": "创投"
+        },
+        {
+          "code": "BK0535",
+          "name": "QFII重仓"
+        },
+        {
+          "code": "BK0552",
+          "name": "机构重仓"
+        },
+        {
+          "code": "BK0581",
+          "name": "智能电网"
+        },
+        {
+          "code": "BK0592",
+          "name": "铁路基建"
+        },
+        {
+          "code": "BK0595",
+          "name": "风能"
+        },
+        {
+          "code": "BK0700",
+          "name": "充电桩"
+        },
+        {
+          "code": "BK0714",
+          "name": "5G概念"
+        },
+        {
+          "code": "BK0980",
+          "name": "化债(AMC)概念"
+        },
+        {
+          "code": "BK1647",
+          "name": "电网概念"
+        },
+        {
+          "code": "BK1650",
+          "name": "通信技术"
+        }
+      ],
+      "industry": {
+        "code": "BK0457",
+        "name": "电网设备"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SZ002484",
+      "name": "江海股份",
+      "concepts": [
+        {
+          "code": "BK0490",
+          "name": "军工"
+        },
+        {
+          "code": "BK0568",
+          "name": "深成500"
+        },
+        {
+          "code": "BK0617",
+          "name": "石墨烯"
+        },
+        {
+          "code": "BK0683",
+          "name": "央国企改革"
+        },
+        {
+          "code": "BK0703",
+          "name": "超级电容"
+        },
+        {
+          "code": "BK0714",
+          "name": "5G概念"
+        },
+        {
+          "code": "BK0804",
+          "name": "深股通"
+        },
+        {
+          "code": "BK0854",
+          "name": "华为概念"
+        },
+        {
+          "code": "BK0867",
+          "name": "富时罗素"
+        },
+        {
+          "code": "BK0875",
+          "name": "ETC"
+        },
+        {
+          "code": "BK0900",
+          "name": "新能源车"
+        },
+        {
+          "code": "BK0976",
+          "name": "被动元件概念"
+        },
+        {
+          "code": "BK1633",
+          "name": "昨日高振幅"
+        },
+        {
+          "code": "BK1643",
+          "name": "小盘股"
+        },
+        {
+          "code": "BK1650",
+          "name": "通信技术"
+        }
+      ],
+      "industry": {
+        "code": "BK0459",
+        "name": "元件"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SZ002534",
+      "name": "西子洁能",
+      "concepts": [
+        {
+          "code": "BK0492",
+          "name": "煤化工概念"
+        },
+        {
+          "code": "BK0494",
+          "name": "节能环保"
+        },
+        {
+          "code": "BK0506",
+          "name": "创投"
+        },
+        {
+          "code": "BK0577",
+          "name": "核能核电"
+        },
+        {
+          "code": "BK0588",
+          "name": "光伏概念"
+        },
+        {
+          "code": "BK0682",
+          "name": "燃料电池概念"
+        },
+        {
+          "code": "BK0804",
+          "name": "深股通"
+        },
+        {
+          "code": "BK0864",
+          "name": "氢能源"
+        },
+        {
+          "code": "BK0989",
+          "name": "储能概念"
+        },
+        {
+          "code": "BK1024",
+          "name": "绿色电力"
+        },
+        {
+          "code": "BK1094",
+          "name": "钙钛矿电池"
+        },
+        {
+          "code": "BK1095",
+          "name": "钒电池"
+        },
+        {
+          "code": "BK1103",
+          "name": "熔盐储能"
+        },
+        {
+          "code": "BK1163",
+          "name": "可控核聚变"
+        },
+        {
+          "code": "BK1186",
+          "name": "首发经济"
+        },
+        {
+          "code": "BK1643",
+          "name": "小盘股"
+        },
+        {
+          "code": "BK1648",
+          "name": "电池技术"
+        }
+      ],
+      "industry": {
+        "code": "BK1034",
+        "name": "其他电源设备Ⅱ"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SZ002577",
+      "name": "雷柏科技",
+      "concepts": [
+        {
+          "code": "BK0549",
+          "name": "深圳特区"
+        },
+        {
+          "code": "BK0641",
+          "name": "智能穿戴"
+        },
+        {
+          "code": "BK0804",
+          "name": "深股通"
+        },
+        {
+          "code": "BK0845",
+          "name": "百度概念"
+        },
+        {
+          "code": "BK0853",
+          "name": "电子竞技"
+        },
+        {
+          "code": "BK0893",
+          "name": "无线耳机"
+        },
+        {
+          "code": "BK0960",
+          "name": "无线充电"
+        },
+        {
+          "code": "BK1090",
+          "name": "机器人概念"
+        },
+        {
+          "code": "BK1149",
+          "name": "星闪概念"
+        },
+        {
+          "code": "BK1164",
+          "name": "AIPC"
+        },
+        {
+          "code": "BK1646",
+          "name": "消费电子概念"
+        },
+        {
+          "code": "BK1672",
+          "name": "破发股"
+        }
+      ],
+      "industry": {
+        "code": "BK0735",
+        "name": "计算机设备"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SZ002578",
+      "name": "闽发铝业",
+      "concepts": [
+        {
+          "code": "BK0588",
+          "name": "光伏概念"
+        },
+        {
+          "code": "BK0683",
+          "name": "央国企改革"
+        },
+        {
+          "code": "BK0900",
+          "name": "新能源车"
+        }
+      ],
+      "industry": {
+        "code": "BK1287",
+        "name": "工业金属"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SZ002606",
+      "name": "大连电瓷",
+      "concepts": [
+        {
+          "code": "BK0567",
+          "name": "股权激励"
+        },
+        {
+          "code": "BK0581",
+          "name": "智能电网"
+        },
+        {
+          "code": "BK0817",
+          "name": "昨日触板"
+        },
+        {
+          "code": "BK0918",
+          "name": "特高压"
+        },
+        {
+          "code": "BK0958",
+          "name": "虚拟电厂"
+        },
+        {
+          "code": "BK1631",
+          "name": "昨日炸板"
+        },
+        {
+          "code": "BK1632",
+          "name": "昨日高换手"
+        },
+        {
+          "code": "BK1633",
+          "name": "昨日高振幅"
+        },
+        {
+          "code": "BK1638",
+          "name": "最近多板"
+        },
+        {
+          "code": "BK1647",
+          "name": "电网概念"
+        }
+      ],
+      "industry": {
+        "code": "BK0457",
+        "name": "电网设备"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SZ002623",
+      "name": "亚玛顿",
+      "concepts": [
+        {
+          "code": "BK0493",
+          "name": "新能源"
+        },
+        {
+          "code": "BK0523",
+          "name": "新材料"
+        },
+        {
+          "code": "BK0588",
+          "name": "光伏概念"
+        },
+        {
+          "code": "BK0644",
+          "name": "特斯拉概念"
+        },
+        {
+          "code": "BK1024",
+          "name": "绿色电力"
+        },
+        {
+          "code": "BK1094",
+          "name": "钙钛矿电池"
+        },
+        {
+          "code": "BK1197",
+          "name": "反内卷概念"
+        },
+        {
+          "code": "BK1633",
+          "name": "昨日高振幅"
+        },
+        {
+          "code": "BK1672",
+          "name": "破发股"
+        }
+      ],
+      "industry": {
+        "code": "BK1031",
+        "name": "光伏设备"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SZ002667",
+      "name": "*ST威领",
+      "concepts": [
+        {
+          "code": "BK0873",
+          "name": "垃圾分类"
+        },
+        {
+          "code": "BK0989",
+          "name": "储能概念"
+        },
+        {
+          "code": "BK1173",
+          "name": "锂矿概念"
+        },
+        {
+          "code": "BK1197",
+          "name": "反内卷概念"
+        },
+        {
+          "code": "BK1633",
+          "name": "昨日高振幅"
+        }
+      ],
+      "industry": {
+        "code": "BK0910",
+        "name": "专用设备"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SZ002685",
+      "name": "华东重机",
+      "concepts": [
+        {
+          "code": "BK0804",
+          "name": "深股通"
+        },
+        {
+          "code": "BK0864",
+          "name": "氢能源"
+        },
+        {
+          "code": "BK0867",
+          "name": "富时罗素"
+        },
+        {
+          "code": "BK0891",
+          "name": "国产芯片"
+        },
+        {
+          "code": "BK0905",
+          "name": "传感器"
+        },
+        {
+          "code": "BK0917",
+          "name": "半导体概念"
+        },
+        {
+          "code": "BK1005",
+          "name": "专精特新"
+        },
+        {
+          "code": "BK1097",
+          "name": "TOPCon电池"
+        },
+        {
+          "code": "BK1678",
+          "name": "2025年报预减"
+        }
+      ],
+      "industry": {
+        "code": "BK0739",
+        "name": "工程机械"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SZ002703",
+      "name": "浙江世宝",
+      "concepts": [
+        {
+          "code": "BK0499",
+          "name": "AH股"
+        },
+        {
+          "code": "BK0552",
+          "name": "机构重仓"
+        },
+        {
+          "code": "BK0802",
+          "name": "无人驾驶"
+        },
+        {
+          "code": "BK0804",
+          "name": "深股通"
+        },
+        {
+          "code": "BK0833",
+          "name": "小米概念"
+        },
+        {
+          "code": "BK0879",
+          "name": "标准普尔"
+        },
+        {
+          "code": "BK0900",
+          "name": "新能源车"
+        },
+        {
+          "code": "BK1155",
+          "name": "小米汽车"
+        },
+        {
+          "code": "BK1643",
+          "name": "小盘股"
+        },
+        {
+          "code": "BK1667",
+          "name": "小盘成长"
+        }
+      ],
+      "industry": {
+        "code": "BK0481",
+        "name": "汽车零部件"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SZ002718",
+      "name": "友邦吊顶",
+      "concepts": [
+        {
+          "code": "BK0552",
+          "name": "机构重仓"
+        },
+        {
+          "code": "BK0594",
+          "name": "长江三角"
+        },
+        {
+          "code": "BK0957",
+          "name": "拼多多概念"
+        },
+        {
+          "code": "BK1642",
+          "name": "微利股"
+        },
+        {
+          "code": "BK1679",
+          "name": "2025年报扭亏"
+        }
+      ],
+      "industry": {
+        "code": "BK0476",
+        "name": "装修建材"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SZ002774",
+      "name": "快意电梯",
+      "concepts": [
+        {
+          "code": "BK0535",
+          "name": "QFII重仓"
+        },
+        {
+          "code": "BK0552",
+          "name": "机构重仓"
+        },
+        {
+          "code": "BK0677",
+          "name": "粤港自贸"
+        },
+        {
+          "code": "BK0712",
+          "name": "一带一路"
+        },
+        {
+          "code": "BK1005",
+          "name": "专精特新"
+        }
+      ],
+      "industry": {
+        "code": "BK0910",
+        "name": "专用设备"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SZ002786",
+      "name": "银宝山新",
+      "concepts": [
+        {
+          "code": "BK0549",
+          "name": "深圳特区"
+        },
+        {
+          "code": "BK0683",
+          "name": "央国企改革"
+        },
+        {
+          "code": "BK0714",
+          "name": "5G概念"
+        },
+        {
+          "code": "BK0722",
+          "name": "虚拟现实"
+        },
+        {
+          "code": "BK0804",
+          "name": "深股通"
+        },
+        {
+          "code": "BK0833",
+          "name": "小米概念"
+        },
+        {
+          "code": "BK0854",
+          "name": "华为概念"
+        },
+        {
+          "code": "BK0900",
+          "name": "新能源车"
+        },
+        {
+          "code": "BK0980",
+          "name": "化债(AMC)概念"
+        },
+        {
+          "code": "BK1090",
+          "name": "机器人概念"
+        },
+        {
+          "code": "BK1650",
+          "name": "通信技术"
+        }
+      ],
+      "industry": {
+        "code": "BK0910",
+        "name": "专用设备"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SZ002795",
+      "name": "永和智控",
+      "concepts": [
+        {
+          "code": "BK0535",
+          "name": "QFII重仓"
+        },
+        {
+          "code": "BK0812",
+          "name": "贬值受益"
+        },
+        {
+          "code": "BK0815",
+          "name": "昨日涨停"
+        },
+        {
+          "code": "BK1050",
+          "name": "昨日涨停_含一字"
+        },
+        {
+          "code": "BK1097",
+          "name": "TOPCon电池"
+        },
+        {
+          "code": "BK1148",
+          "name": "BC电池"
+        },
+        {
+          "code": "BK1630",
+          "name": "昨日首板"
+        },
+        {
+          "code": "BK1633",
+          "name": "昨日高振幅"
+        },
+        {
+          "code": "BK1637",
+          "name": "东方财富热股"
+        },
+        {
+          "code": "BK1638",
+          "name": "最近多板"
+        },
+        {
+          "code": "BK1674",
+          "name": "近期新高"
+        },
+        {
+          "code": "BK1676",
+          "name": "百日新高"
+        }
+      ],
+      "industry": {
+        "code": "BK0545",
+        "name": "通用设备"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SZ002811",
+      "name": "郑中设计",
+      "concepts": [
+        {
+          "code": "BK0549",
+          "name": "深圳特区"
+        },
+        {
+          "code": "BK0712",
+          "name": "一带一路"
+        },
+        {
+          "code": "BK0800",
+          "name": "人工智能"
+        },
+        {
+          "code": "BK0945",
+          "name": "装配建筑"
+        },
+        {
+          "code": "BK1111",
+          "name": "AIGC概念"
+        },
+        {
+          "code": "BK1188",
+          "name": "DeepSeek概念"
+        },
+        {
+          "code": "BK1677",
+          "name": "2025年报预增"
+        }
+      ],
+      "industry": {
+        "code": "BK0725",
+        "name": "装修装饰Ⅱ"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SZ002827",
+      "name": "高争民爆",
+      "concepts": [
+        {
+          "code": "BK0590",
+          "name": "西部大开发"
+        },
+        {
+          "code": "BK0683",
+          "name": "央国企改革"
+        },
+        {
+          "code": "BK0804",
+          "name": "深股通"
+        },
+        {
+          "code": "BK1066",
+          "name": "民爆概念"
+        },
+        {
+          "code": "BK1192",
+          "name": "雅下水电概念"
+        }
+      ],
+      "industry": {
+        "code": "BK0538",
+        "name": "化学制品"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SZ002841",
+      "name": "视源股份",
+      "concepts": [
+        {
+          "code": "BK0568",
+          "name": "深成500"
+        },
+        {
+          "code": "BK0641",
+          "name": "智能穿戴"
+        },
+        {
+          "code": "BK0662",
+          "name": "在线教育"
+        },
+        {
+          "code": "BK0680",
+          "name": "智能家居"
+        },
+        {
+          "code": "BK0701",
+          "name": "中证500"
+        },
+        {
+          "code": "BK0800",
+          "name": "人工智能"
+        },
+        {
+          "code": "BK0804",
+          "name": "深股通"
+        },
+        {
+          "code": "BK0821",
+          "name": "MSCI中国"
+        },
+        {
+          "code": "BK0833",
+          "name": "小米概念"
+        },
+        {
+          "code": "BK0859",
+          "name": "超清视频"
+        },
+        {
+          "code": "BK0867",
+          "name": "富时罗素"
+        },
+        {
+          "code": "BK0879",
+          "name": "标准普尔"
+        },
+        {
+          "code": "BK1090",
+          "name": "机器人概念"
+        },
+        {
+          "code": "BK1149",
+          "name": "星闪概念"
+        },
+        {
+          "code": "BK1188",
+          "name": "DeepSeek概念"
+        },
+        {
+          "code": "BK1629",
+          "name": "AI应用"
+        },
+        {
+          "code": "BK1646",
+          "name": "消费电子概念"
+        },
+        {
+          "code": "BK1651",
+          "name": "显示技术"
+        },
+        {
+          "code": "BK1664",
+          "name": "中盘股"
+        },
+        {
+          "code": "BK1670",
+          "name": "中盘价值"
+        },
+        {
+          "code": "BK1673",
+          "name": "破增发价股"
+        }
+      ],
+      "industry": {
+        "code": "BK1037",
+        "name": "消费电子"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SZ002859",
+      "name": "洁美科技",
+      "concepts": [
+        {
+          "code": "BK0523",
+          "name": "新材料"
+        },
+        {
+          "code": "BK0528",
+          "name": "转债标的"
+        },
+        {
+          "code": "BK0536",
+          "name": "基金重仓"
+        },
+        {
+          "code": "BK0574",
+          "name": "锂电池概念"
+        },
+        {
+          "code": "BK0679",
+          "name": "超导概念"
+        },
+        {
+          "code": "BK0714",
+          "name": "5G概念"
+        },
+        {
+          "code": "BK0804",
+          "name": "深股通"
+        },
+        {
+          "code": "BK0833",
+          "name": "小米概念"
+        },
+        {
+          "code": "BK0854",
+          "name": "华为概念"
+        },
+        {
+          "code": "BK0867",
+          "name": "富时罗素"
+        },
+        {
+          "code": "BK0877",
+          "name": "PCB"
+        },
+        {
+          "code": "BK0879",
+          "name": "标准普尔"
+        },
+        {
+          "code": "BK0890",
+          "name": "MLCC"
+        },
+        {
+          "code": "BK0891",
+          "name": "国产芯片"
+        },
+        {
+          "code": "BK0968",
+          "name": "固态电池"
+        },
+        {
+          "code": "BK0976",
+          "name": "被动元件概念"
+        },
+        {
+          "code": "BK1090",
+          "name": "机器人概念"
+        },
+        {
+          "code": "BK1113",
+          "name": "复合集流体"
+        },
+        {
+          "code": "BK1163",
+          "name": "可控核聚变"
+        },
+        {
+          "code": "BK1643",
+          "name": "小盘股"
+        },
+        {
+          "code": "BK1648",
+          "name": "电池技术"
+        }
+      ],
+      "industry": {
+        "code": "BK1223",
+        "name": "其他电子Ⅱ"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SZ002866",
+      "name": "传艺科技",
+      "concepts": [
+        {
+          "code": "BK0535",
+          "name": "QFII重仓"
+        },
+        {
+          "code": "BK0804",
+          "name": "深股通"
+        },
+        {
+          "code": "BK0833",
+          "name": "小米概念"
+        },
+        {
+          "code": "BK0854",
+          "name": "华为概念"
+        },
+        {
+          "code": "BK0877",
+          "name": "PCB"
+        },
+        {
+          "code": "BK0968",
+          "name": "固态电池"
+        },
+        {
+          "code": "BK0988",
+          "name": "钠离子电池"
+        },
+        {
+          "code": "BK0989",
+          "name": "储能概念"
+        },
+        {
+          "code": "BK1005",
+          "name": "专精特新"
+        },
+        {
+          "code": "BK1632",
+          "name": "昨日高换手"
+        },
+        {
+          "code": "BK1633",
+          "name": "昨日高振幅"
+        },
+        {
+          "code": "BK1648",
+          "name": "电池技术"
+        },
+        {
+          "code": "BK1679",
+          "name": "2025年报扭亏"
+        }
+      ],
+      "industry": {
+        "code": "BK1037",
+        "name": "消费电子"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SZ002870",
+      "name": "香山股份",
+      "concepts": [
+        {
+          "code": "BK0641",
+          "name": "智能穿戴"
+        },
+        {
+          "code": "BK0644",
+          "name": "特斯拉概念"
+        },
+        {
+          "code": "BK0700",
+          "name": "充电桩"
+        },
+        {
+          "code": "BK0800",
+          "name": "人工智能"
+        },
+        {
+          "code": "BK0900",
+          "name": "新能源车"
+        },
+        {
+          "code": "BK0984",
+          "name": "华为汽车"
+        },
+        {
+          "code": "BK1144",
+          "name": "高压快充"
+        },
+        {
+          "code": "BK1157",
+          "name": "飞行汽车(eVTOL)"
+        },
+        {
+          "code": "BK1166",
+          "name": "低空经济"
+        },
+        {
+          "code": "BK1184",
+          "name": "人形机器人"
+        }
+      ],
+      "industry": {
+        "code": "BK0481",
+        "name": "汽车零部件"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SZ002896",
+      "name": "中大力德",
+      "concepts": [
+        {
+          "code": "BK0804",
+          "name": "深股通"
+        },
+        {
+          "code": "BK1090",
+          "name": "机器人概念"
+        },
+        {
+          "code": "BK1100",
+          "name": "减速器"
+        },
+        {
+          "code": "BK1145",
+          "name": "机器人执行器"
+        },
+        {
+          "code": "BK1184",
+          "name": "人形机器人"
+        },
+        {
+          "code": "BK1643",
+          "name": "小盘股"
+        }
+      ],
+      "industry": {
+        "code": "BK0545",
+        "name": "通用设备"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SZ002969",
+      "name": "嘉美包装",
+      "concepts": [
+        {
+          "code": "BK0665",
+          "name": "电商概念"
+        },
+        {
+          "code": "BK0733",
+          "name": "包装材料"
+        },
+        {
+          "code": "BK1073",
+          "name": "啤酒概念"
+        },
+        {
+          "code": "BK1165",
+          "name": "娃哈哈概念"
+        },
+        {
+          "code": "BK1678",
+          "name": "2025年报预减"
+        }
+      ],
+      "industry": {
+        "code": "BK1265",
+        "name": "包装印刷"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SZ002970",
+      "name": "锐明技术",
+      "concepts": [
+        {
+          "code": "BK0549",
+          "name": "深圳特区"
+        },
+        {
+          "code": "BK0800",
+          "name": "人工智能"
+        },
+        {
+          "code": "BK0802",
+          "name": "无人驾驶"
+        },
+        {
+          "code": "BK0804",
+          "name": "深股通"
+        },
+        {
+          "code": "BK0854",
+          "name": "华为概念"
+        },
+        {
+          "code": "BK0867",
+          "name": "富时罗素"
+        },
+        {
+          "code": "BK0873",
+          "name": "垃圾分类"
+        },
+        {
+          "code": "BK0920",
+          "name": "车联网(车路云)"
+        },
+        {
+          "code": "BK1005",
+          "name": "专精特新"
+        },
+        {
+          "code": "BK1049",
+          "name": "EDR概念"
+        },
+        {
+          "code": "BK1124",
+          "name": "毫米波概念"
+        },
+        {
+          "code": "BK1149",
+          "name": "星闪概念"
+        }
+      ],
+      "industry": {
+        "code": "BK0735",
+        "name": "计算机设备"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SZ002979",
+      "name": "雷赛智能",
+      "concepts": [
+        {
+          "code": "BK0549",
+          "name": "深圳特区"
+        },
+        {
+          "code": "BK0800",
+          "name": "人工智能"
+        },
+        {
+          "code": "BK0804",
+          "name": "深股通"
+        },
+        {
+          "code": "BK0854",
+          "name": "华为概念"
+        },
+        {
+          "code": "BK1005",
+          "name": "专精特新"
+        },
+        {
+          "code": "BK1090",
+          "name": "机器人概念"
+        },
+        {
+          "code": "BK1119",
+          "name": "PLC概念"
+        },
+        {
+          "code": "BK1145",
+          "name": "机器人执行器"
+        },
+        {
+          "code": "BK1184",
+          "name": "人形机器人"
+        },
+        {
+          "code": "BK1643",
+          "name": "小盘股"
+        },
+        {
+          "code": "BK1667",
+          "name": "小盘成长"
+        }
+      ],
+      "industry": {
+        "code": "BK1237",
+        "name": "自动化设备"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SZ003043",
+      "name": "华亚智能",
+      "concepts": [
+        {
+          "code": "BK0528",
+          "name": "转债标的"
+        },
+        {
+          "code": "BK0592",
+          "name": "铁路基建"
+        },
+        {
+          "code": "BK0668",
+          "name": "医疗器械概念"
+        },
+        {
+          "code": "BK0804",
+          "name": "深股通"
+        },
+        {
+          "code": "BK0884",
+          "name": "光刻机(胶)"
+        },
+        {
+          "code": "BK0917",
+          "name": "半导体概念"
+        },
+        {
+          "code": "BK0968",
+          "name": "固态电池"
+        },
+        {
+          "code": "BK1648",
+          "name": "电池技术"
+        }
+      ],
+      "industry": {
+        "code": "BK1036",
+        "name": "半导体"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SH600156",
+      "name": "华升股份",
+      "concepts": [
+        {
+          "code": "BK0665",
+          "name": "电商概念"
+        },
+        {
+          "code": "BK0668",
+          "name": "医疗器械概念"
+        },
+        {
+          "code": "BK0683",
+          "name": "央国企改革"
+        },
+        {
+          "code": "BK0812",
+          "name": "贬值受益"
+        },
+        {
+          "code": "BK0922",
+          "name": "数据中心"
+        },
+        {
+          "code": "BK1134",
+          "name": "算力概念"
+        },
+        {
+          "code": "BK1138",
+          "name": "液冷概念"
+        },
+        {
+          "code": "BK1181",
+          "name": "并购重组概念"
+        },
+        {
+          "code": "BK1632",
+          "name": "昨日高换手"
+        },
+        {
+          "code": "BK1633",
+          "name": "昨日高振幅"
+        }
+      ],
+      "industry": {
+        "code": "BK1224",
+        "name": "纺织制造"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SH600186",
+      "name": "莲花控股",
+      "concepts": [
+        {
+          "code": "BK0552",
+          "name": "机构重仓"
+        },
+        {
+          "code": "BK0665",
+          "name": "电商概念"
+        },
+        {
+          "code": "BK0707",
+          "name": "沪股通"
+        },
+        {
+          "code": "BK0809",
+          "name": "AI智能体"
+        },
+        {
+          "code": "BK0825",
+          "name": "新零售"
+        },
+        {
+          "code": "BK0866",
+          "name": "人造肉"
+        },
+        {
+          "code": "BK1026",
+          "name": "调味品概念"
+        },
+        {
+          "code": "BK1134",
+          "name": "算力概念"
+        },
+        {
+          "code": "BK1188",
+          "name": "DeepSeek概念"
+        },
+        {
+          "code": "BK1198",
+          "name": "2025三季报预增"
+        },
+        {
+          "code": "BK1632",
+          "name": "昨日高换手"
+        },
+        {
+          "code": "BK1633",
+          "name": "昨日高振幅"
+        },
+        {
+          "code": "BK1637",
+          "name": "东方财富热股"
+        },
+        {
+          "code": "BK1638",
+          "name": "最近多板"
+        },
+        {
+          "code": "BK1643",
+          "name": "小盘股"
+        },
+        {
+          "code": "BK1653",
+          "name": "味蕾经济"
+        },
+        {
+          "code": "BK1667",
+          "name": "小盘成长"
+        },
+        {
+          "code": "BK1677",
+          "name": "2025年报预增"
+        },
+        {
+          "code": "BK1680",
+          "name": "2026—季报预增"
+        }
+      ],
+      "industry": {
+        "code": "BK1278",
+        "name": "调味发酵品Ⅱ"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SH600203",
+      "name": "福日电子",
+      "concepts": [
+        {
+          "code": "BK0494",
+          "name": "节能环保"
+        },
+        {
+          "code": "BK0514",
+          "name": "参股券商"
+        },
+        {
+          "code": "BK0554",
+          "name": "物联网"
+        },
+        {
+          "code": "BK0580",
+          "name": "LED概念"
+        },
+        {
+          "code": "BK0683",
+          "name": "央国企改革"
+        },
+        {
+          "code": "BK0704",
+          "name": "无人机"
+        },
+        {
+          "code": "BK0707",
+          "name": "沪股通"
+        },
+        {
+          "code": "BK0833",
+          "name": "小米概念"
+        },
+        {
+          "code": "BK0854",
+          "name": "华为概念"
+        },
+        {
+          "code": "BK0859",
+          "name": "超清视频"
+        },
+        {
+          "code": "BK0969",
+          "name": "汽车芯片"
+        },
+        {
+          "code": "BK1090",
+          "name": "机器人概念"
+        },
+        {
+          "code": "BK1142",
+          "name": "裸眼3D"
+        },
+        {
+          "code": "BK1160",
+          "name": "柔性屏(折叠屏)"
+        },
+        {
+          "code": "BK1162",
+          "name": "AI手机"
+        },
+        {
+          "code": "BK1177",
+          "name": "荣耀概念"
+        }
+      ],
+      "industry": {
+        "code": "BK1037",
+        "name": "消费电子"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SH600343",
+      "name": "航天动力",
+      "concepts": [
+        {
+          "code": "BK0490",
+          "name": "军工"
+        },
+        {
+          "code": "BK0590",
+          "name": "西部大开发"
+        },
+        {
+          "code": "BK0597",
+          "name": "水利建设"
+        },
+        {
+          "code": "BK0683",
+          "name": "央国企改革"
+        },
+        {
+          "code": "BK0707",
+          "name": "沪股通"
+        },
+        {
+          "code": "BK0808",
+          "name": "军民融合"
+        },
+        {
+          "code": "BK0864",
+          "name": "氢能源"
+        },
+        {
+          "code": "BK0879",
+          "name": "标准普尔"
+        },
+        {
+          "code": "BK1643",
+          "name": "小盘股"
+        },
+        {
+          "code": "BK1668",
+          "name": "小盘价值"
+        }
+      ],
+      "industry": {
+        "code": "BK0545",
+        "name": "通用设备"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SH600613",
+      "name": "神奇制药",
+      "concepts": [
+        {
+          "code": "BK0498",
+          "name": "AB股"
+        },
+        {
+          "code": "BK0514",
+          "name": "参股券商"
+        },
+        {
+          "code": "BK0525",
+          "name": "参股银行"
+        },
+        {
+          "code": "BK0594",
+          "name": "长江三角"
+        },
+        {
+          "code": "BK0615",
+          "name": "中药概念"
+        },
+        {
+          "code": "BK1673",
+          "name": "破增发价股"
+        }
+      ],
+      "industry": {
+        "code": "BK0465",
+        "name": "化学制药"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SH600619",
+      "name": "海立股份",
+      "concepts": [
+        {
+          "code": "BK0498",
+          "name": "AB股"
+        },
+        {
+          "code": "BK0552",
+          "name": "机构重仓"
+        },
+        {
+          "code": "BK0594",
+          "name": "长江三角"
+        },
+        {
+          "code": "BK0643",
+          "name": "上海自贸"
+        },
+        {
+          "code": "BK0683",
+          "name": "央国企改革"
+        },
+        {
+          "code": "BK0707",
+          "name": "沪股通"
+        },
+        {
+          "code": "BK0833",
+          "name": "小米概念"
+        },
+        {
+          "code": "BK0852",
+          "name": "冷链物流"
+        },
+        {
+          "code": "BK0884",
+          "name": "光刻机(胶)"
+        },
+        {
+          "code": "BK0900",
+          "name": "新能源车"
+        },
+        {
+          "code": "BK1089",
+          "name": "汽车热管理"
+        },
+        {
+          "code": "BK1102",
+          "name": "空气能热泵"
+        },
+        {
+          "code": "BK1643",
+          "name": "小盘股"
+        },
+        {
+          "code": "BK1667",
+          "name": "小盘成长"
+        },
+        {
+          "code": "BK1677",
+          "name": "2025年报预增"
+        }
+      ],
+      "industry": {
+        "code": "BK1242",
+        "name": "家电零部件Ⅱ"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SH600641",
+      "name": "先导基电",
+      "concepts": [
+        {
+          "code": "BK0506",
+          "name": "创投"
+        },
+        {
+          "code": "BK0519",
+          "name": "稀缺资源"
+        },
+        {
+          "code": "BK0525",
+          "name": "参股银行"
+        },
+        {
+          "code": "BK0552",
+          "name": "机构重仓"
+        },
+        {
+          "code": "BK0588",
+          "name": "光伏概念"
+        },
+        {
+          "code": "BK0594",
+          "name": "长江三角"
+        },
+        {
+          "code": "BK0695",
+          "name": "小金属概念"
+        },
+        {
+          "code": "BK0705",
+          "name": "上证380"
+        },
+        {
+          "code": "BK0707",
+          "name": "沪股通"
+        },
+        {
+          "code": "BK0840",
+          "name": "OLED"
+        },
+        {
+          "code": "BK0867",
+          "name": "富时罗素"
+        },
+        {
+          "code": "BK0879",
+          "name": "标准普尔"
+        },
+        {
+          "code": "BK0891",
+          "name": "国产芯片"
+        },
+        {
+          "code": "BK0917",
+          "name": "半导体概念"
+        },
+        {
+          "code": "BK1643",
+          "name": "小盘股"
+        }
+      ],
+      "industry": {
+        "code": "BK1036",
+        "name": "半导体"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SH600667",
+      "name": "太极实业",
+      "concepts": [
+        {
+          "code": "BK0425",
+          "name": "工程建设"
+        },
+        {
+          "code": "BK0552",
+          "name": "机构重仓"
+        },
+        {
+          "code": "BK0588",
+          "name": "光伏概念"
+        },
+        {
+          "code": "BK0594",
+          "name": "长江三角"
+        },
+        {
+          "code": "BK0683",
+          "name": "央国企改革"
+        },
+        {
+          "code": "BK0705",
+          "name": "上证380"
+        },
+        {
+          "code": "BK0707",
+          "name": "沪股通"
+        },
+        {
+          "code": "BK0867",
+          "name": "富时罗素"
+        },
+        {
+          "code": "BK0879",
+          "name": "标准普尔"
+        },
+        {
+          "code": "BK0891",
+          "name": "国产芯片"
+        },
+        {
+          "code": "BK0917",
+          "name": "半导体概念"
+        },
+        {
+          "code": "BK0922",
+          "name": "数据中心"
+        },
+        {
+          "code": "BK1024",
+          "name": "绿色电力"
+        },
+        {
+          "code": "BK1137",
+          "name": "存储芯片"
+        },
+        {
+          "code": "BK1643",
+          "name": "小盘股"
+        },
+        {
+          "code": "BK1667",
+          "name": "小盘成长"
+        }
+      ],
+      "industry": {
+        "code": "BK0726",
+        "name": "工程咨询服务Ⅱ"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SH600745",
+      "name": "*ST闻泰",
+      "concepts": [
+        {
+          "code": "BK0528",
+          "name": "转债标的"
+        },
+        {
+          "code": "BK0567",
+          "name": "股权激励"
+        },
+        {
+          "code": "BK0666",
+          "name": "苹果概念"
+        },
+        {
+          "code": "BK0707",
+          "name": "沪股通"
+        },
+        {
+          "code": "BK0714",
+          "name": "5G概念"
+        },
+        {
+          "code": "BK0722",
+          "name": "虚拟现实"
+        },
+        {
+          "code": "BK0801",
+          "name": "增强现实"
+        },
+        {
+          "code": "BK0821",
+          "name": "MSCI中国"
+        },
+        {
+          "code": "BK0854",
+          "name": "华为概念"
+        },
+        {
+          "code": "BK0867",
+          "name": "富时罗素"
+        },
+        {
+          "code": "BK0891",
+          "name": "国产芯片"
+        },
+        {
+          "code": "BK0893",
+          "name": "无线耳机"
+        },
+        {
+          "code": "BK0916",
+          "name": "氮化镓"
+        },
+        {
+          "code": "BK0917",
+          "name": "半导体概念"
+        },
+        {
+          "code": "BK0922",
+          "name": "数据中心"
+        },
+        {
+          "code": "BK0952",
+          "name": "第三代半导体"
+        },
+        {
+          "code": "BK0969",
+          "name": "汽车芯片"
+        },
+        {
+          "code": "BK1048",
+          "name": "IGBT概念"
+        },
+        {
+          "code": "BK1161",
+          "name": "英伟达概念"
+        },
+        {
+          "code": "BK1164",
+          "name": "AIPC"
+        },
+        {
+          "code": "BK1177",
+          "name": "荣耀概念"
+        },
+        {
+          "code": "BK1181",
+          "name": "并购重组概念"
+        },
+        {
+          "code": "BK1650",
+          "name": "通信技术"
+        },
+        {
+          "code": "BK1664",
+          "name": "中盘股"
+        },
+        {
+          "code": "BK1670",
+          "name": "中盘价值"
+        },
+        {
+          "code": "BK1673",
+          "name": "破增发价股"
+        }
+      ],
+      "industry": {
+        "code": "BK1036",
+        "name": "半导体"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SH600769",
+      "name": "祥龙电业",
+      "concepts": [
+        {
+          "code": "BK0425",
+          "name": "工程建设"
+        },
+        {
+          "code": "BK0683",
+          "name": "央国企改革"
+        }
+      ],
+      "industry": {
+        "code": "BK1235",
+        "name": "环境治理"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SH600860",
+      "name": "京城股份",
+      "concepts": [
+        {
+          "code": "BK0499",
+          "name": "AH股"
+        },
+        {
+          "code": "BK0682",
+          "name": "燃料电池概念"
+        },
+        {
+          "code": "BK0683",
+          "name": "央国企改革"
+        },
+        {
+          "code": "BK0707",
+          "name": "沪股通"
+        },
+        {
+          "code": "BK0843",
+          "name": "天然气"
+        },
+        {
+          "code": "BK0864",
+          "name": "氢能源"
+        },
+        {
+          "code": "BK0879",
+          "name": "标准普尔"
+        },
+        {
+          "code": "BK1090",
+          "name": "机器人概念"
+        },
+        {
+          "code": "BK1150",
+          "name": "新型工业化"
+        },
+        {
+          "code": "BK1649",
+          "name": "油气资源"
+        }
+      ],
+      "industry": {
+        "code": "BK0545",
+        "name": "通用设备"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SH601609",
+      "name": "金田股份",
+      "concepts": [
+        {
+          "code": "BK0528",
+          "name": "转债标的"
+        },
+        {
+          "code": "BK0578",
+          "name": "稀土永磁"
+        },
+        {
+          "code": "BK0644",
+          "name": "特斯拉概念"
+        },
+        {
+          "code": "BK0666",
+          "name": "苹果概念"
+        },
+        {
+          "code": "BK0704",
+          "name": "无人机"
+        },
+        {
+          "code": "BK0707",
+          "name": "沪股通"
+        },
+        {
+          "code": "BK0800",
+          "name": "人工智能"
+        },
+        {
+          "code": "BK0900",
+          "name": "新能源车"
+        },
+        {
+          "code": "BK0918",
+          "name": "特高压"
+        },
+        {
+          "code": "BK1090",
+          "name": "机器人概念"
+        },
+        {
+          "code": "BK1134",
+          "name": "算力概念"
+        },
+        {
+          "code": "BK1138",
+          "name": "液冷概念"
+        },
+        {
+          "code": "BK1144",
+          "name": "高压快充"
+        },
+        {
+          "code": "BK1155",
+          "name": "小米汽车"
+        },
+        {
+          "code": "BK1156",
+          "name": "PEEK材料概念"
+        },
+        {
+          "code": "BK1163",
+          "name": "可控核聚变"
+        },
+        {
+          "code": "BK1168",
+          "name": "铜缆高速连接"
+        },
+        {
+          "code": "BK1184",
+          "name": "人形机器人"
+        },
+        {
+          "code": "BK1643",
+          "name": "小盘股"
+        },
+        {
+          "code": "BK1647",
+          "name": "电网概念"
+        },
+        {
+          "code": "BK1668",
+          "name": "小盘价值"
+        },
+        {
+          "code": "BK1677",
+          "name": "2025年报预增"
+        }
+      ],
+      "industry": {
+        "code": "BK1287",
+        "name": "工业金属"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SH601886",
+      "name": "江河集团",
+      "concepts": [
+        {
+          "code": "BK0588",
+          "name": "光伏概念"
+        },
+        {
+          "code": "BK0707",
+          "name": "沪股通"
+        },
+        {
+          "code": "BK0712",
+          "name": "一带一路"
+        },
+        {
+          "code": "BK0889",
+          "name": "医美概念"
+        },
+        {
+          "code": "BK0937",
+          "name": "蚂蚁概念"
+        },
+        {
+          "code": "BK0945",
+          "name": "装配建筑"
+        },
+        {
+          "code": "BK1076",
+          "name": "建筑节能"
+        }
+      ],
+      "industry": {
+        "code": "BK0725",
+        "name": "装修装饰Ⅱ"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SH603009",
+      "name": "北特科技",
+      "concepts": [
+        {
+          "code": "BK0536",
+          "name": "基金重仓"
+        },
+        {
+          "code": "BK0643",
+          "name": "上海自贸"
+        },
+        {
+          "code": "BK0644",
+          "name": "特斯拉概念"
+        },
+        {
+          "code": "BK0707",
+          "name": "沪股通"
+        },
+        {
+          "code": "BK0900",
+          "name": "新能源车"
+        },
+        {
+          "code": "BK1089",
+          "name": "汽车热管理"
+        },
+        {
+          "code": "BK1184",
+          "name": "人形机器人"
+        },
+        {
+          "code": "BK1643",
+          "name": "小盘股"
+        },
+        {
+          "code": "BK1667",
+          "name": "小盘成长"
+        },
+        {
+          "code": "BK1677",
+          "name": "2025年报预增"
+        }
+      ],
+      "industry": {
+        "code": "BK0481",
+        "name": "汽车零部件"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SH603039",
+      "name": "泛微网络",
+      "concepts": [
+        {
+          "code": "BK0552",
+          "name": "机构重仓"
+        },
+        {
+          "code": "BK0696",
+          "name": "国产软件"
+        },
+        {
+          "code": "BK0707",
+          "name": "沪股通"
+        },
+        {
+          "code": "BK0867",
+          "name": "富时罗素"
+        },
+        {
+          "code": "BK0879",
+          "name": "标准普尔"
+        },
+        {
+          "code": "BK1188",
+          "name": "DeepSeek概念"
+        },
+        {
+          "code": "BK1189",
+          "name": "腾讯云"
+        },
+        {
+          "code": "BK1629",
+          "name": "AI应用"
+        },
+        {
+          "code": "BK1643",
+          "name": "小盘股"
+        }
+      ],
+      "industry": {
+        "code": "BK0737",
+        "name": "软件开发"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SH603065",
+      "name": "宿迁联盛",
+      "concepts": [
+        {
+          "code": "BK0523",
+          "name": "新材料"
+        },
+        {
+          "code": "BK1005",
+          "name": "专精特新"
+        },
+        {
+          "code": "BK1672",
+          "name": "破发股"
+        }
+      ],
+      "industry": {
+        "code": "BK0538",
+        "name": "化学制品"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SH603095",
+      "name": "越剑智能",
+      "concepts": [
+        {
+          "code": "BK0525",
+          "name": "参股银行"
+        },
+        {
+          "code": "BK0535",
+          "name": "QFII重仓"
+        },
+        {
+          "code": "BK1005",
+          "name": "专精特新"
+        }
+      ],
+      "industry": {
+        "code": "BK0910",
+        "name": "专用设备"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SH603110",
+      "name": "东方材料",
+      "concepts": [
+        {
+          "code": "BK0535",
+          "name": "QFII重仓"
+        },
+        {
+          "code": "BK0617",
+          "name": "石墨烯"
+        },
+        {
+          "code": "BK0877",
+          "name": "PCB"
+        },
+        {
+          "code": "BK0922",
+          "name": "数据中心"
+        },
+        {
+          "code": "BK1134",
+          "name": "算力概念"
+        },
+        {
+          "code": "BK1165",
+          "name": "娃哈哈概念"
+        },
+        {
+          "code": "BK1188",
+          "name": "DeepSeek概念"
+        }
+      ],
+      "industry": {
+        "code": "BK0538",
+        "name": "化学制品"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SH603131",
+      "name": "上海沪工",
+      "concepts": [
+        {
+          "code": "BK0490",
+          "name": "军工"
+        },
+        {
+          "code": "BK0535",
+          "name": "QFII重仓"
+        },
+        {
+          "code": "BK0552",
+          "name": "机构重仓"
+        },
+        {
+          "code": "BK0594",
+          "name": "长江三角"
+        },
+        {
+          "code": "BK0707",
+          "name": "沪股通"
+        },
+        {
+          "code": "BK0712",
+          "name": "一带一路"
+        },
+        {
+          "code": "BK0808",
+          "name": "军民融合"
+        },
+        {
+          "code": "BK0921",
+          "name": "卫星互联网"
+        },
+        {
+          "code": "BK0963",
+          "name": "商业航天"
+        },
+        {
+          "code": "BK1005",
+          "name": "专精特新"
+        },
+        {
+          "code": "BK1090",
+          "name": "机器人概念"
+        }
+      ],
+      "industry": {
+        "code": "BK0545",
+        "name": "通用设备"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SH603155",
+      "name": "新亚强",
+      "concepts": [
+        {
+          "code": "BK0523",
+          "name": "新材料"
+        },
+        {
+          "code": "BK0574",
+          "name": "锂电池概念"
+        },
+        {
+          "code": "BK0580",
+          "name": "LED概念"
+        },
+        {
+          "code": "BK0683",
+          "name": "央国企改革"
+        },
+        {
+          "code": "BK0707",
+          "name": "沪股通"
+        },
+        {
+          "code": "BK0884",
+          "name": "光刻机(胶)"
+        },
+        {
+          "code": "BK0889",
+          "name": "医美概念"
+        },
+        {
+          "code": "BK0917",
+          "name": "半导体概念"
+        },
+        {
+          "code": "BK0961",
+          "name": "有机硅概念"
+        }
+      ],
+      "industry": {
+        "code": "BK0538",
+        "name": "化学制品"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SH603185",
+      "name": "弘元绿能",
+      "concepts": [
+        {
+          "code": "BK0588",
+          "name": "光伏概念"
+        },
+        {
+          "code": "BK0707",
+          "name": "沪股通"
+        },
+        {
+          "code": "BK0867",
+          "name": "富时罗素"
+        },
+        {
+          "code": "BK0879",
+          "name": "标准普尔"
+        },
+        {
+          "code": "BK0952",
+          "name": "第三代半导体"
+        },
+        {
+          "code": "BK1005",
+          "name": "专精特新"
+        },
+        {
+          "code": "BK1197",
+          "name": "反内卷概念"
+        },
+        {
+          "code": "BK1643",
+          "name": "小盘股"
+        },
+        {
+          "code": "BK1668",
+          "name": "小盘价值"
+        },
+        {
+          "code": "BK1673",
+          "name": "破增发价股"
+        },
+        {
+          "code": "BK1679",
+          "name": "2025年报扭亏"
+        }
+      ],
+      "industry": {
+        "code": "BK1031",
+        "name": "光伏设备"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SH603285",
+      "name": "键邦股份",
+      "concepts": [
+        {
+          "code": "BK0494",
+          "name": "节能环保"
+        },
+        {
+          "code": "BK0512",
+          "name": "化工原料"
+        },
+        {
+          "code": "BK0523",
+          "name": "新材料"
+        },
+        {
+          "code": "BK0574",
+          "name": "锂电池概念"
+        },
+        {
+          "code": "BK0712",
+          "name": "一带一路"
+        },
+        {
+          "code": "BK1648",
+          "name": "电池技术"
+        }
+      ],
+      "industry": {
+        "code": "BK0538",
+        "name": "化学制品"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SH603339",
+      "name": "四方科技",
+      "concepts": [
+        {
+          "code": "BK0852",
+          "name": "冷链物流"
+        },
+        {
+          "code": "BK0879",
+          "name": "标准普尔"
+        },
+        {
+          "code": "BK1005",
+          "name": "专精特新"
+        },
+        {
+          "code": "BK1138",
+          "name": "液冷概念"
+        }
+      ],
+      "industry": {
+        "code": "BK0545",
+        "name": "通用设备"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SH603358",
+      "name": "华达科技",
+      "concepts": [
+        {
+          "code": "BK0552",
+          "name": "机构重仓"
+        },
+        {
+          "code": "BK0644",
+          "name": "特斯拉概念"
+        },
+        {
+          "code": "BK0707",
+          "name": "沪股通"
+        },
+        {
+          "code": "BK0879",
+          "name": "标准普尔"
+        },
+        {
+          "code": "BK0898",
+          "name": "胎压监测"
+        },
+        {
+          "code": "BK0900",
+          "name": "新能源车"
+        },
+        {
+          "code": "BK0935",
+          "name": "中芯概念"
+        },
+        {
+          "code": "BK1643",
+          "name": "小盘股"
+        },
+        {
+          "code": "BK1668",
+          "name": "小盘价值"
+        }
+      ],
+      "industry": {
+        "code": "BK0481",
+        "name": "汽车零部件"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SH603458",
+      "name": "勘设股份",
+      "concepts": [
+        {
+          "code": "BK0590",
+          "name": "西部大开发"
+        },
+        {
+          "code": "BK0634",
+          "name": "大数据"
+        },
+        {
+          "code": "BK0700",
+          "name": "充电桩"
+        },
+        {
+          "code": "BK0802",
+          "name": "无人驾驶"
+        },
+        {
+          "code": "BK0875",
+          "name": "ETC"
+        },
+        {
+          "code": "BK0985",
+          "name": "换电概念"
+        }
+      ],
+      "industry": {
+        "code": "BK0726",
+        "name": "工程咨询服务Ⅱ"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SH603459",
+      "name": "红板科技",
+      "concepts": [
+        {
+          "code": "BK0501",
+          "name": "次新股"
+        },
+        {
+          "code": "BK0574",
+          "name": "锂电池概念"
+        },
+        {
+          "code": "BK0580",
+          "name": "LED概念"
+        },
+        {
+          "code": "BK0802",
+          "name": "无人驾驶"
+        },
+        {
+          "code": "BK0833",
+          "name": "小米概念"
+        },
+        {
+          "code": "BK0854",
+          "name": "华为概念"
+        },
+        {
+          "code": "BK0877",
+          "name": "PCB"
+        },
+        {
+          "code": "BK0900",
+          "name": "新能源车"
+        },
+        {
+          "code": "BK0902",
+          "name": "MiniLED"
+        },
+        {
+          "code": "BK0905",
+          "name": "传感器"
+        },
+        {
+          "code": "BK0948",
+          "name": "MicroLED"
+        },
+        {
+          "code": "BK1128",
+          "name": "CPO概念"
+        },
+        {
+          "code": "BK1136",
+          "name": "光通信模块"
+        },
+        {
+          "code": "BK1137",
+          "name": "存储芯片"
+        },
+        {
+          "code": "BK1177",
+          "name": "荣耀概念"
+        },
+        {
+          "code": "BK1646",
+          "name": "消费电子概念"
+        },
+        {
+          "code": "BK1677",
+          "name": "2025年报预增"
+        }
+      ],
+      "industry": {
+        "code": "BK0459",
+        "name": "元件"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SH603496",
+      "name": "恒为科技",
+      "concepts": [
+        {
+          "code": "BK0447",
+          "name": "互联网服务"
+        },
+        {
+          "code": "BK0567",
+          "name": "股权激励"
+        },
+        {
+          "code": "BK0581",
+          "name": "智能电网"
+        },
+        {
+          "code": "BK0696",
+          "name": "国产软件"
+        },
+        {
+          "code": "BK0705",
+          "name": "上证380"
+        },
+        {
+          "code": "BK0707",
+          "name": "沪股通"
+        },
+        {
+          "code": "BK0714",
+          "name": "5G概念"
+        },
+        {
+          "code": "BK0854",
+          "name": "华为概念"
+        },
+        {
+          "code": "BK0861",
+          "name": "数字孪生"
+        },
+        {
+          "code": "BK1005",
+          "name": "专精特新"
+        },
+        {
+          "code": "BK1047",
+          "name": "数据安全"
+        },
+        {
+          "code": "BK1090",
+          "name": "机器人概念"
+        },
+        {
+          "code": "BK1104",
+          "name": "信创"
+        },
+        {
+          "code": "BK1134",
+          "name": "算力概念"
+        },
+        {
+          "code": "BK1150",
+          "name": "新型工业化"
+        },
+        {
+          "code": "BK1632",
+          "name": "昨日高换手"
+        },
+        {
+          "code": "BK1633",
+          "name": "昨日高振幅"
+        },
+        {
+          "code": "BK1650",
+          "name": "通信技术"
+        }
+      ],
+      "industry": {
+        "code": "BK0735",
+        "name": "计算机设备"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SH603507",
+      "name": "振江股份",
+      "concepts": [
+        {
+          "code": "BK0493",
+          "name": "新能源"
+        },
+        {
+          "code": "BK0588",
+          "name": "光伏概念"
+        },
+        {
+          "code": "BK0595",
+          "name": "风能"
+        },
+        {
+          "code": "BK0600",
+          "name": "参股新三板"
+        },
+        {
+          "code": "BK1005",
+          "name": "专精特新"
+        },
+        {
+          "code": "BK1090",
+          "name": "机器人概念"
+        }
+      ],
+      "industry": {
+        "code": "BK1032",
+        "name": "风电设备"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SH603530",
+      "name": "神马电力",
+      "concepts": [
+        {
+          "code": "BK0577",
+          "name": "核能核电"
+        },
+        {
+          "code": "BK0581",
+          "name": "智能电网"
+        },
+        {
+          "code": "BK0707",
+          "name": "沪股通"
+        },
+        {
+          "code": "BK0918",
+          "name": "特高压"
+        },
+        {
+          "code": "BK1643",
+          "name": "小盘股"
+        },
+        {
+          "code": "BK1647",
+          "name": "电网概念"
+        },
+        {
+          "code": "BK1667",
+          "name": "小盘成长"
+        }
+      ],
+      "industry": {
+        "code": "BK0457",
+        "name": "电网设备"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SH603538",
+      "name": "美诺华",
+      "concepts": [
+        {
+          "code": "BK0528",
+          "name": "转债标的"
+        },
+        {
+          "code": "BK0535",
+          "name": "QFII重仓"
+        },
+        {
+          "code": "BK0552",
+          "name": "机构重仓"
+        },
+        {
+          "code": "BK0600",
+          "name": "参股新三板"
+        },
+        {
+          "code": "BK0707",
+          "name": "沪股通"
+        },
+        {
+          "code": "BK0812",
+          "name": "贬值受益"
+        },
+        {
+          "code": "BK0939",
+          "name": "辅助生殖"
+        },
+        {
+          "code": "BK0993",
+          "name": "宠物经济"
+        },
+        {
+          "code": "BK1078",
+          "name": "肝炎概念"
+        },
+        {
+          "code": "BK1146",
+          "name": "减肥药"
+        },
+        {
+          "code": "BK1174",
+          "name": "合成生物"
+        },
+        {
+          "code": "BK1632",
+          "name": "昨日高换手"
+        },
+        {
+          "code": "BK1633",
+          "name": "昨日高振幅"
+        },
+        {
+          "code": "BK1638",
+          "name": "最近多板"
+        },
+        {
+          "code": "BK1657",
+          "name": "病原体防治"
+        },
+        {
+          "code": "BK1674",
+          "name": "近期新高"
+        },
+        {
+          "code": "BK1676",
+          "name": "百日新高"
+        },
+        {
+          "code": "BK1677",
+          "name": "2025年报预增"
+        }
+      ],
+      "industry": {
+        "code": "BK0465",
+        "name": "化学制药"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SH603618",
+      "name": "杭电股份",
+      "concepts": [
+        {
+          "code": "BK0535",
+          "name": "QFII重仓"
+        },
+        {
+          "code": "BK0552",
+          "name": "机构重仓"
+        },
+        {
+          "code": "BK0574",
+          "name": "锂电池概念"
+        },
+        {
+          "code": "BK0595",
+          "name": "风能"
+        },
+        {
+          "code": "BK0617",
+          "name": "石墨烯"
+        },
+        {
+          "code": "BK0707",
+          "name": "沪股通"
+        },
+        {
+          "code": "BK0714",
+          "name": "5G概念"
+        },
+        {
+          "code": "BK0918",
+          "name": "特高压"
+        },
+        {
+          "code": "BK0966",
+          "name": "碳交易"
+        },
+        {
+          "code": "BK1003",
+          "name": "抽水蓄能"
+        },
+        {
+          "code": "BK1136",
+          "name": "光通信模块"
+        },
+        {
+          "code": "BK1632",
+          "name": "昨日高换手"
+        },
+        {
+          "code": "BK1633",
+          "name": "昨日高振幅"
+        },
+        {
+          "code": "BK1638",
+          "name": "最近多板"
+        },
+        {
+          "code": "BK1647",
+          "name": "电网概念"
+        },
+        {
+          "code": "BK1648",
+          "name": "电池技术"
+        },
+        {
+          "code": "BK1650",
+          "name": "通信技术"
+        },
+        {
+          "code": "BK1660",
+          "name": "光纤概念"
+        }
+      ],
+      "industry": {
+        "code": "BK0457",
+        "name": "电网设备"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SH603678",
+      "name": "火炬电子",
+      "concepts": [
+        {
+          "code": "BK0490",
+          "name": "军工"
+        },
+        {
+          "code": "BK0506",
+          "name": "创投"
+        },
+        {
+          "code": "BK0523",
+          "name": "新材料"
+        },
+        {
+          "code": "BK0577",
+          "name": "核能核电"
+        },
+        {
+          "code": "BK0705",
+          "name": "上证380"
+        },
+        {
+          "code": "BK0707",
+          "name": "沪股通"
+        },
+        {
+          "code": "BK0714",
+          "name": "5G概念"
+        },
+        {
+          "code": "BK0808",
+          "name": "军民融合"
+        },
+        {
+          "code": "BK0823",
+          "name": "养老金"
+        },
+        {
+          "code": "BK0833",
+          "name": "小米概念"
+        },
+        {
+          "code": "BK0867",
+          "name": "富时罗素"
+        },
+        {
+          "code": "BK0890",
+          "name": "MLCC"
+        },
+        {
+          "code": "BK0917",
+          "name": "半导体概念"
+        },
+        {
+          "code": "BK0963",
+          "name": "商业航天"
+        },
+        {
+          "code": "BK0976",
+          "name": "被动元件概念"
+        },
+        {
+          "code": "BK1005",
+          "name": "专精特新"
+        },
+        {
+          "code": "BK1643",
+          "name": "小盘股"
+        },
+        {
+          "code": "BK1650",
+          "name": "通信技术"
+        },
+        {
+          "code": "BK1668",
+          "name": "小盘价值"
+        },
+        {
+          "code": "BK1677",
+          "name": "2025年报预增"
+        }
+      ],
+      "industry": {
+        "code": "BK1233",
+        "name": "军工电子Ⅱ"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SH603698",
+      "name": "航天工程",
+      "concepts": [
+        {
+          "code": "BK0492",
+          "name": "煤化工概念"
+        },
+        {
+          "code": "BK0494",
+          "name": "节能环保"
+        },
+        {
+          "code": "BK0552",
+          "name": "机构重仓"
+        },
+        {
+          "code": "BK0683",
+          "name": "央国企改革"
+        },
+        {
+          "code": "BK0707",
+          "name": "沪股通"
+        },
+        {
+          "code": "BK0808",
+          "name": "军民融合"
+        },
+        {
+          "code": "BK0864",
+          "name": "氢能源"
+        },
+        {
+          "code": "BK0966",
+          "name": "碳交易"
+        },
+        {
+          "code": "BK0981",
+          "name": "工业气体"
+        },
+        {
+          "code": "BK1633",
+          "name": "昨日高振幅"
+        },
+        {
+          "code": "BK1643",
+          "name": "小盘股"
+        }
+      ],
+      "industry": {
+        "code": "BK0910",
+        "name": "专用设备"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SH603703",
+      "name": "盛洋科技",
+      "concepts": [
+        {
+          "code": "BK0535",
+          "name": "QFII重仓"
+        },
+        {
+          "code": "BK0714",
+          "name": "5G概念"
+        },
+        {
+          "code": "BK0963",
+          "name": "商业航天"
+        },
+        {
+          "code": "BK1168",
+          "name": "铜缆高速连接"
+        },
+        {
+          "code": "BK1650",
+          "name": "通信技术"
+        }
+      ],
+      "industry": {
+        "code": "BK1038",
+        "name": "光学光电子"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SH603738",
+      "name": "泰晶科技",
+      "concepts": [
+        {
+          "code": "BK0629",
+          "name": "北斗导航"
+        },
+        {
+          "code": "BK0704",
+          "name": "无人机"
+        },
+        {
+          "code": "BK0707",
+          "name": "沪股通"
+        },
+        {
+          "code": "BK0714",
+          "name": "5G概念"
+        },
+        {
+          "code": "BK0817",
+          "name": "昨日触板"
+        },
+        {
+          "code": "BK0854",
+          "name": "华为概念"
+        },
+        {
+          "code": "BK0884",
+          "name": "光刻机(胶)"
+        },
+        {
+          "code": "BK0976",
+          "name": "被动元件概念"
+        },
+        {
+          "code": "BK1005",
+          "name": "专精特新"
+        },
+        {
+          "code": "BK1090",
+          "name": "机器人概念"
+        },
+        {
+          "code": "BK1128",
+          "name": "CPO概念"
+        },
+        {
+          "code": "BK1136",
+          "name": "光通信模块"
+        },
+        {
+          "code": "BK1180",
+          "name": "华为海思"
+        },
+        {
+          "code": "BK1184",
+          "name": "人形机器人"
+        },
+        {
+          "code": "BK1631",
+          "name": "昨日炸板"
+        },
+        {
+          "code": "BK1632",
+          "name": "昨日高换手"
+        },
+        {
+          "code": "BK1633",
+          "name": "昨日高振幅"
+        },
+        {
+          "code": "BK1637",
+          "name": "东方财富热股"
+        },
+        {
+          "code": "BK1650",
+          "name": "通信技术"
+        },
+        {
+          "code": "BK1674",
+          "name": "近期新高"
+        },
+        {
+          "code": "BK1675",
+          "name": "历史新高"
+        },
+        {
+          "code": "BK1676",
+          "name": "百日新高"
+        }
+      ],
+      "industry": {
+        "code": "BK0459",
+        "name": "元件"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SH603757",
+      "name": "大元泵业",
+      "concepts": [
+        {
+          "code": "BK0597",
+          "name": "水利建设"
+        },
+        {
+          "code": "BK0682",
+          "name": "燃料电池概念"
+        },
+        {
+          "code": "BK0707",
+          "name": "沪股通"
+        },
+        {
+          "code": "BK0879",
+          "name": "标准普尔"
+        },
+        {
+          "code": "BK0963",
+          "name": "商业航天"
+        },
+        {
+          "code": "BK1005",
+          "name": "专精特新"
+        },
+        {
+          "code": "BK1102",
+          "name": "空气能热泵"
+        },
+        {
+          "code": "BK1138",
+          "name": "液冷概念"
+        },
+        {
+          "code": "BK1633",
+          "name": "昨日高振幅"
+        },
+        {
+          "code": "BK1648",
+          "name": "电池技术"
+        }
+      ],
+      "industry": {
+        "code": "BK0545",
+        "name": "通用设备"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SH603778",
+      "name": "国晟科技",
+      "concepts": [
+        {
+          "code": "BK0494",
+          "name": "节能环保"
+        },
+        {
+          "code": "BK0588",
+          "name": "光伏概念"
+        },
+        {
+          "code": "BK0600",
+          "name": "参股新三板"
+        },
+        {
+          "code": "BK0721",
+          "name": "PPP模式"
+        },
+        {
+          "code": "BK0908",
+          "name": "HJT电池"
+        },
+        {
+          "code": "BK0966",
+          "name": "碳交易"
+        },
+        {
+          "code": "BK1080",
+          "name": "新型城镇化"
+        },
+        {
+          "code": "BK1094",
+          "name": "钙钛矿电池"
+        },
+        {
+          "code": "BK1633",
+          "name": "昨日高振幅"
+        }
+      ],
+      "industry": {
+        "code": "BK1031",
+        "name": "光伏设备"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SH603803",
+      "name": "瑞斯康达",
+      "concepts": [
+        {
+          "code": "BK0554",
+          "name": "物联网"
+        },
+        {
+          "code": "BK0628",
+          "name": "智慧城市"
+        },
+        {
+          "code": "BK0655",
+          "name": "网络安全"
+        },
+        {
+          "code": "BK0714",
+          "name": "5G概念"
+        },
+        {
+          "code": "BK0832",
+          "name": "工业互联"
+        },
+        {
+          "code": "BK0860",
+          "name": "边缘计算"
+        },
+        {
+          "code": "BK0879",
+          "name": "标准普尔"
+        },
+        {
+          "code": "BK0891",
+          "name": "国产芯片"
+        },
+        {
+          "code": "BK0920",
+          "name": "车联网(车路云)"
+        },
+        {
+          "code": "BK0964",
+          "name": "6G概念"
+        },
+        {
+          "code": "BK1047",
+          "name": "数据安全"
+        },
+        {
+          "code": "BK1080",
+          "name": "新型城镇化"
+        },
+        {
+          "code": "BK1088",
+          "name": "F5G概念"
+        },
+        {
+          "code": "BK1128",
+          "name": "CPO概念"
+        },
+        {
+          "code": "BK1134",
+          "name": "算力概念"
+        },
+        {
+          "code": "BK1633",
+          "name": "昨日高振幅"
+        },
+        {
+          "code": "BK1650",
+          "name": "通信技术"
+        }
+      ],
+      "industry": {
+        "code": "BK0448",
+        "name": "通信设备"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SH603823",
+      "name": "百合花",
+      "concepts": [
+        {
+          "code": "BK0574",
+          "name": "锂电池概念"
+        },
+        {
+          "code": "BK0707",
+          "name": "沪股通"
+        },
+        {
+          "code": "BK1648",
+          "name": "电池技术"
+        }
+      ],
+      "industry": {
+        "code": "BK0538",
+        "name": "化学制品"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SH603980",
+      "name": "吉华集团",
+      "concepts": [
+        {
+          "code": "BK0512",
+          "name": "化工原料"
+        },
+        {
+          "code": "BK0894",
+          "name": "阿兹海默"
+        },
+        {
+          "code": "BK1672",
+          "name": "破发股"
+        },
+        {
+          "code": "BK1678",
+          "name": "2025年报预减"
+        }
+      ],
+      "industry": {
+        "code": "BK0538",
+        "name": "化学制品"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SH605100",
+      "name": "华丰股份",
+      "concepts": [
+        {
+          "code": "BK0922",
+          "name": "数据中心"
+        },
+        {
+          "code": "BK0968",
+          "name": "固态电池"
+        },
+        {
+          "code": "BK1014",
+          "name": "发电机概念"
+        },
+        {
+          "code": "BK1648",
+          "name": "电池技术"
+        },
+        {
+          "code": "BK1678",
+          "name": "2025年报预减"
+        }
+      ],
+      "industry": {
+        "code": "BK0545",
+        "name": "通用设备"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SH605111",
+      "name": "新洁能",
+      "concepts": [
+        {
+          "code": "BK0554",
+          "name": "物联网"
+        },
+        {
+          "code": "BK0588",
+          "name": "光伏概念"
+        },
+        {
+          "code": "BK0700",
+          "name": "充电桩"
+        },
+        {
+          "code": "BK0704",
+          "name": "无人机"
+        },
+        {
+          "code": "BK0705",
+          "name": "上证380"
+        },
+        {
+          "code": "BK0707",
+          "name": "沪股通"
+        },
+        {
+          "code": "BK0802",
+          "name": "无人驾驶"
+        },
+        {
+          "code": "BK0823",
+          "name": "养老金"
+        },
+        {
+          "code": "BK0891",
+          "name": "国产芯片"
+        },
+        {
+          "code": "BK0900",
+          "name": "新能源车"
+        },
+        {
+          "code": "BK0917",
+          "name": "半导体概念"
+        },
+        {
+          "code": "BK0952",
+          "name": "第三代半导体"
+        },
+        {
+          "code": "BK0969",
+          "name": "汽车芯片"
+        },
+        {
+          "code": "BK0977",
+          "name": "碳化硅"
+        },
+        {
+          "code": "BK1005",
+          "name": "专精特新"
+        },
+        {
+          "code": "BK1048",
+          "name": "IGBT概念"
+        },
+        {
+          "code": "BK1090",
+          "name": "机器人概念"
+        },
+        {
+          "code": "BK1134",
+          "name": "算力概念"
+        },
+        {
+          "code": "BK1643",
+          "name": "小盘股"
+        },
+        {
+          "code": "BK1673",
+          "name": "破增发价股"
+        }
+      ],
+      "industry": {
+        "code": "BK1036",
+        "name": "半导体"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SH605136",
+      "name": "丽人丽妆",
+      "concepts": [
+        {
+          "code": "BK0506",
+          "name": "创投"
+        },
+        {
+          "code": "BK0665",
+          "name": "电商概念"
+        },
+        {
+          "code": "BK0689",
+          "name": "阿里概念"
+        },
+        {
+          "code": "BK0825",
+          "name": "新零售"
+        },
+        {
+          "code": "BK0834",
+          "name": "乡村振兴"
+        },
+        {
+          "code": "BK0974",
+          "name": "化妆品概念"
+        },
+        {
+          "code": "BK1001",
+          "name": "内贸流通"
+        },
+        {
+          "code": "BK1025",
+          "name": "预制菜概念"
+        },
+        {
+          "code": "BK1115",
+          "name": "跨境电商"
+        },
+        {
+          "code": "BK1187",
+          "name": "小红书概念"
+        },
+        {
+          "code": "BK1672",
+          "name": "破发股"
+        }
+      ],
+      "industry": {
+        "code": "BK1268",
+        "name": "互联网电商"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SH605318",
+      "name": "法狮龙",
+      "concepts": [
+        {
+          "code": "BK0680",
+          "name": "智能家居"
+        }
+      ],
+      "industry": {
+        "code": "BK0476",
+        "name": "装修建材"
+      },
+      "timestamp": 1786978882820
+    },
+    {
+      "code": "SH605598",
+      "name": "上海港湾",
+      "concepts": [
+        {
+          "code": "BK0425",
+          "name": "工程建设"
+        },
+        {
+          "code": "BK0552",
+          "name": "机构重仓"
+        },
+        {
+          "code": "BK0707",
+          "name": "沪股通"
+        },
+        {
+          "code": "BK0712",
+          "name": "一带一路"
+        },
+        {
+          "code": "BK0963",
+          "name": "商业航天"
+        },
+        {
+          "code": "BK1094",
+          "name": "钙钛矿电池"
+        }
+      ],
+      "industry": {
+        "code": "BK1248",
+        "name": "专业工程"
+      },
+      "timestamp": 1786978882820
+    }
+  ]
+}
