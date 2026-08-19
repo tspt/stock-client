@@ -3,7 +3,9 @@
  */
 
 import { useEffect, useState, useMemo, useRef, useCallback, useLayoutEffect } from 'react';
-import { Layout, Card, Button, Space, Progress, Select, Collapse, App, InputNumber, Dropdown, Alert, Tag, Tooltip, Badge, Popover, Checkbox, Spin } from 'antd';
+import { Layout, Card, Button, Space, Progress, Select, Collapse, App, InputNumber, Dropdown, Alert, Tag, Tooltip, Badge, Popover, Checkbox, Spin, DatePicker } from 'antd';
+import type { Dayjs } from 'dayjs';
+import dayjs from 'dayjs';
 import {
   RocketOutlined,
   StopOutlined,
@@ -518,6 +520,12 @@ export function OpportunityPage() {
     [...INITIAL_FILTER_STATE.excludedExactNames]
   );
   const [enableShortTermNameFilter, setEnableShortTermNameFilter] = useState<boolean>(true);
+
+  /** 截止日 YYYY-MM-DD；空=实时一键分析 */
+  const [asOfDate, setAsOfDate] = useState<string | null>(null);
+  /** 一键分析成功且无失败后，递增以触发自动「添加到记录」（等筛选完成） */
+  const [autoAddToRecordToken, setAutoAddToRecordToken] = useState(0);
+  const lastAutoAddToRecordTokenRef = useRef(0);
   const [excludedShortTermNames, setExcludedShortTermNames] = useState<string[]>(
     [...OPPORTUNITY_DEFAULT_NAME_FILTERS.excludedShortTermNames]
   );
@@ -1180,6 +1188,44 @@ export function OpportunityPage() {
       conceptSectorInvert,
     });
 
+  // 一键分析无失败：筛选完成后自动「添加到记录」（与手动按钮同一批筛选结果）
+  useEffect(() => {
+    if (autoAddToRecordToken === 0) return;
+    if (autoAddToRecordToken === lastAutoAddToRecordTokenRef.current) return;
+    if (loading || filteringAnalysisData) return;
+
+    lastAutoAddToRecordTokenRef.current = autoAddToRecordToken;
+
+    const {
+      errors: currentErrors,
+      analysisTimestamp: ts,
+    } = useOpportunityStore.getState();
+    if (currentErrors.length > 0) {
+      return;
+    }
+    if (filteredAnalysisData.length === 0) {
+      message.info('分析完成且无失败，但当前筛选结果为空，未自动添加到记录');
+      return;
+    }
+
+    void (async () => {
+      try {
+        await addStocksToTodayRecord(filteredAnalysisData, ts || undefined);
+        const dateStr = ts ? new Date(ts).toLocaleDateString('zh-CN') : '今天';
+        message.success(`已自动将 ${filteredAnalysisData.length} 只股票添加到 ${dateStr} 的记录`);
+      } catch (error) {
+        message.error('自动添加到记录失败');
+        logger.error('自动添加到记录失败:', error);
+      }
+    })();
+  }, [
+    autoAddToRecordToken,
+    loading,
+    filteringAnalysisData,
+    filteredAnalysisData,
+    message,
+  ]);
+
   // 打印反选后的股票信息
   useEffect(() => {
     const hasIndustryFilter = industrySectors && industrySectors.length > 0;
@@ -1224,6 +1270,7 @@ export function OpportunityPage() {
     const s = INITIAL_FILTER_STATE;
     setSelectedMarket([...s.selectedMarket]);
     setNameType(s.nameType);
+    setAsOfDate(null);
     useOpportunityStore.setState({
       currentPeriod: INITIAL_OPPORTUNITY_QUERY.currentPeriod,
       currentCount: INITIAL_OPPORTUNITY_QUERY.currentCount,
@@ -1301,31 +1348,66 @@ export function OpportunityPage() {
       return;
     }
 
+    if (asOfDate && currentPeriod !== 'day') {
+      message.warning('截止日模式仅支持日K周期');
+      return;
+    }
+
     // 清空 AI 缓存，防止跨周期数据污染
     clearAICache();
-
-    // 清空内存缓存，强制从 API 获取最新数据，确保不同电脑结果一致
-    apiCache.clear();
-    logger.info('[机会分析] 已清空内存缓存，将获取最新数据');
 
     // 清空 store 中的 K 线数据缓存和分析结果
     useOpportunityStore.getState().clearData();
     logger.info('[机会分析] 已清空 store 中的缓存数据');
 
-    // 清空 IndexedDB 中的旧数据，确保使用最新数据
-    try {
-      await Promise.all([
-        clearStockHistory(),
-        clearOpportunityData(),
-      ]);
-      logger.info('[机会分析] 已清空 IndexedDB 中的股票历史数据和分析结果');
-    } catch (error) {
-      logger.warn('[机会分析] 清空 IndexedDB 失败:', error);
-      // 继续执行分析，不阻断流程
+    if (asOfDate) {
+      // 截止日：保留本地日K/详情，优先截断复用；仅清分析结果缓存
+      apiCache.clear();
+      try {
+        await clearOpportunityData();
+        logger.info(`[机会分析] 截止日模式 asOf=${asOfDate}，保留 IndexedDB 股票历史`);
+      } catch (error) {
+        logger.warn('[机会分析] 清空机会分析结果失败:', error);
+      }
+      message.info('截止日模式：市值/换手/股本为近似值；本地K线足够时不重新拉取');
+    } else {
+      // 实时：清空内存与 IndexedDB，强制拉最新
+      apiCache.clear();
+      logger.info('[机会分析] 已清空内存缓存，将获取最新数据');
+      try {
+        await Promise.all([
+          clearStockHistory(),
+          clearOpportunityData(),
+        ]);
+        logger.info('[机会分析] 已清空 IndexedDB 中的股票历史数据和分析结果');
+      } catch (error) {
+        logger.warn('[机会分析] 清空 IndexedDB 失败:', error);
+      }
     }
 
-    // 直接开始分析，不需要保存筛选条件（已通过useEffect自动保存）
-    await startAnalysis(currentPeriod, filteredStocks, currentCount, aiVersion);
+    await startAnalysis(
+      currentPeriod,
+      filteredStocks,
+      currentCount,
+      aiVersion,
+      asOfDate || undefined
+    );
+
+    const {
+      errors: analyzeErrors,
+      analysisData: analyzed,
+    } = useOpportunityStore.getState();
+    const successCount = analyzed.filter((item) => !item.error).length;
+    if (analyzeErrors.length > 0) {
+      message.warning(
+        `分析有 ${analyzeErrors.length} 只失败，未自动添加到记录（可重试失败后手动添加）`
+      );
+      return;
+    }
+    if (successCount === 0) {
+      return;
+    }
+    setAutoAddToRecordToken((token) => token + 1);
   };
 
   const handleCancel = () => {
@@ -1600,6 +1682,23 @@ export function OpportunityPage() {
                 useOpportunityStore.setState({ currentCount: next });
                 if (analysisData.length > 0) {
                   message.info('count已更改，请重新分析');
+                }
+              }}
+            />
+          </Space.Compact>
+          <Space.Compact className={styles.spaceCompact}>
+            <span className={styles.label}>截止日：</span>
+            <DatePicker
+              allowClear
+              value={asOfDate ? dayjs(asOfDate) : null}
+              disabled={loading || currentPeriod !== 'day'}
+              disabledDate={(current: Dayjs) => !!(current && current.isAfter(dayjs(), 'day'))}
+              style={{ width: 140 }}
+              placeholder="实时"
+              onChange={(date: Dayjs | null) => {
+                setAsOfDate(date ? date.format('YYYY-MM-DD') : null);
+                if (analysisData.length > 0) {
+                  message.info('截止日已更改，请重新分析');
                 }
               }}
             />
@@ -2008,6 +2107,7 @@ export function OpportunityPage() {
               {analysisTimestamp && (
                 <span style={{ fontSize: 12, color: 'var(--ant-color-text-secondary)', marginLeft: 8 }}>
                   🕐 分析时间：{new Date(analysisTimestamp).toLocaleString('zh-CN')}
+                  {asOfDate ? `（截止日 ${asOfDate}，市值/换手/股本近似）` : ''}
                 </span>
               )}
             </div>

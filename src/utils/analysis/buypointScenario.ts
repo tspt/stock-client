@@ -1,5 +1,6 @@
 import type { KLineData } from '@/types/stock';
 import type { StockHistoryRecord } from '@/utils/storage/opportunityIndexedDB';
+import { formatKLineDate, truncateKLinesToAsOfDate } from '@/utils/analysis/asOfKline';
 
 export type ScenarioId =
   | 'limit_up_trend'
@@ -358,14 +359,23 @@ export function scanHistoricalBuyPoints(
 
 export function scanLatestScenarioSignals(
   histories: StockHistoryRecord[],
-  options: { highLiftOnly?: boolean } = {}
+  options: { highLiftOnly?: boolean; asOfDate?: string } = {}
 ): LatestScenarioSignal[] {
   const highLiftOnly = options.highLiftOnly ?? true;
+  const asOfDate = options.asOfDate;
   const signals: LatestScenarioSignal[] = [];
 
   histories.forEach((history) => {
-    const lines = history.dailyLines || [];
+    let lines = history.dailyLines || [];
     if (lines.length < 2) return;
+
+    if (asOfDate) {
+      const truncated = truncateKLinesToAsOfDate(lines, asOfDate);
+      if (truncated.length < 2) return;
+      // 截止日当天无 K 线（停牌/缺数据）则跳过
+      if (formatKLineDate(truncated[truncated.length - 1].time) !== asOfDate) return;
+      lines = truncated;
+    }
 
     const index = lines.length - 1;
     const classified = classifyOneDay(lines, index);

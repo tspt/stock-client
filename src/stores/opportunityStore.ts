@@ -53,12 +53,15 @@ interface OpportunityState {
 
   // 一键分析时使用的 AI 版本（与失败重试共用）
   analysisAiVersion: 'v1' | 'v2' | 'v3' | 'v4' | 'v5' | 'v6' | 'v7';
+  /** 截止日 YYYY-MM-DD；空表示实时模式 */
+  analysisAsOfDate: string | null;
 
   startAnalysis: (
     period: KLinePeriod,
     stocks: StockInfo[],
     count: number,
-    aiVersion?: 'v1' | 'v2' | 'v3' | 'v4' | 'v5' | 'v6' | 'v7'
+    aiVersion?: 'v1' | 'v2' | 'v3' | 'v4' | 'v5' | 'v6' | 'v7',
+    asOfDate?: string
   ) => Promise<void>;
   cancelAnalysis: () => void;
   retryFailedStocks: () => Promise<void>;
@@ -121,13 +124,15 @@ export const useOpportunityStore = create<OpportunityState>((set, get) => ({
   analysisTimestamp: null,
   // AI 版本默认为 v6
   analysisAiVersion: 'v6',
+  analysisAsOfDate: null,
 
-  startAnalysis: async (period, stocks, count, aiVersion) => {
+  startAnalysis: async (period, stocks, count, aiVersion, asOfDate) => {
     if (stocks.length === 0) {
       return;
     }
 
     const ver = aiVersion ?? get().analysisAiVersion;
+    const asOf = asOfDate || undefined;
 
     set({
       loading: true,
@@ -136,6 +141,7 @@ export const useOpportunityStore = create<OpportunityState>((set, get) => ({
       currentPeriod: period,
       currentCount: count,
       analysisAiVersion: ver,
+      analysisAsOfDate: asOf ?? null,
     });
 
     let cancelled = false;
@@ -148,6 +154,7 @@ export const useOpportunityStore = create<OpportunityState>((set, get) => ({
           }
         },
         aiVersion: ver,
+        asOfDate: asOf,
       });
 
       // 包装一层：既调用service取消，也能阻止后续进度回调更新UI
@@ -194,13 +201,22 @@ export const useOpportunityStore = create<OpportunityState>((set, get) => ({
         error: err.error.message,
       }));
 
+      // 截止日模式：分析时间戳落在截止日收盘，便于「添加到记录」
+      let analysisTimestamp = Date.now();
+      if (asOf) {
+        const parts = asOf.split('-').map((x) => parseInt(x, 10));
+        if (parts.length === 3 && parts.every((n) => !isNaN(n))) {
+          analysisTimestamp = new Date(parts[0], parts[1] - 1, parts[2], 15, 0, 0).getTime();
+        }
+      }
+
       set({
         analysisData: results,
         loading: false,
         errors: formattedErrors,
         cancelFn: null,
         klineDataCache: newCache,
-        analysisTimestamp: Date.now(),
+        analysisTimestamp,
       });
     } catch (error) {
       logger.error('机会分析失败:', error);
@@ -218,8 +234,15 @@ export const useOpportunityStore = create<OpportunityState>((set, get) => ({
 
   retryFailedStocks: async () => {
     const state = get();
-    const { errors, currentPeriod, currentCount, analysisData, klineDataCache, analysisAiVersion } =
-      state;
+    const {
+      errors,
+      currentPeriod,
+      currentCount,
+      analysisData,
+      klineDataCache,
+      analysisAiVersion,
+      analysisAsOfDate,
+    } = state;
 
     if (errors.length === 0) {
       return;
@@ -251,6 +274,7 @@ export const useOpportunityStore = create<OpportunityState>((set, get) => ({
             }
           },
           aiVersion: analysisAiVersion,
+          asOfDate: analysisAsOfDate || undefined,
         }
       );
 

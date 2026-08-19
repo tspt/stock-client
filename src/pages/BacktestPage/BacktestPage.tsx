@@ -26,7 +26,10 @@ import {
   InputNumber,
   Dropdown,
   Tooltip,
+  DatePicker,
 } from 'antd';
+import type { Dayjs } from 'dayjs';
+import dayjs from 'dayjs';
 import type { ColumnsType } from 'antd/es/table';
 import { DatabaseOutlined, DownOutlined, ExportOutlined, InfoCircleOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons';
 import {
@@ -48,6 +51,7 @@ import {
 import {
   buildTrackedLatestSignals,
   getTrackingStatus,
+  normalizeDateKey,
   type TrackedLatestSignal,
   type TrackingStatus,
 } from '@/utils/analysis/latestSignalTracking';
@@ -156,6 +160,8 @@ export function BacktestPage() {
   const [activeTab, setActiveTab] = useState('latest');
   const [tablePageSize, setTablePageSize] = useState(100);
   const [tableScrollY, setTableScrollY] = useState(360);
+  /** 扫描最新的截止日 YYYY-MM-DD；空=用各股日K最后一根 */
+  const [asOfDate, setAsOfDate] = useState<string | null>(null);
   const tableAreaRef = useRef<HTMLDivElement>(null);
 
   const normalizeStockCode = useCallback((code: string): string => {
@@ -324,14 +330,68 @@ export function BacktestPage() {
   const handleScanLatestSignals = async () => {
     try {
       setScanningLatest(true);
-      message.info('正在扫描最新交易日高价值场景...');
+      if (asOfDate) {
+        message.info(`正在按截止日 ${asOfDate} 扫描高价值场景（缺当日K的股票将跳过）...`);
+      } else {
+        message.info('正在扫描最新交易日高价值场景...');
+      }
       const { histories } = await readFilteredHistories();
-      const signals = scanLatestScenarioSignals(histories, { highLiftOnly: true }).sort((a, b) => {
+      const signals = scanLatestScenarioSignals(histories, {
+        highLiftOnly: true,
+        asOfDate: asOfDate || undefined,
+      }).sort((a, b) => {
         if ((b.lift || 0) !== (a.lift || 0)) return (b.lift || 0) - (a.lift || 0);
         return a.name.localeCompare(b.name, 'zh-CN');
       });
       setLatestSignals(signals);
-      message.success(`最新交易日扫描完成，命中 ${signals.length} 只`);
+      message.success(
+        asOfDate
+          ? `截止日 ${asOfDate} 扫描完成，命中 ${signals.length} 只`
+          : `最新交易日扫描完成，命中 ${signals.length} 只`
+      );
+
+      // 扫描完成后自动导出 JSON（全量命中，不受当前场景筛选影响）
+      if (signals.length === 0) {
+        return;
+      }
+      if (!window.electronAPI?.exportBacktestSignalsFile) {
+        message.warning('扫描完成，但自动导出 JSON 不可用（需在 Electron 环境中运行）');
+        return;
+      }
+      try {
+        setExportingResults(true);
+        const data = signals.map((item) => ({
+          ...item,
+          industry: item.industry || industryMapping.get(normalizeStockCode(item.code)) || null,
+          concepts: conceptMapping.get(normalizeStockCode(item.code)) || [],
+        }));
+        const fileBaseName = resolveLatestExportDate(
+          signals,
+          asOfDate || latestDateSummary.dominantDate
+        );
+        const meta = {
+          tab: 'latest' as const,
+          autoExport: true,
+          asOfDate: asOfDate || null,
+          searchText: '',
+          scenarioFilter: 'all',
+          excludeST,
+          latestDate: latestDateSummary.dominantDate || null,
+          fileBaseName,
+        };
+        const filePath = await exportBacktestSignalsToJson({
+          kind: 'latest',
+          data,
+          fileBaseName,
+          meta,
+        });
+        message.success(`已自动导出 JSON ${data.length} 条到 ${filePath}`);
+      } catch (exportError) {
+        logger.error('[BacktestPage] 扫描最新后自动导出 JSON 失败:', exportError);
+        message.error('自动导出 JSON 失败: ' + (exportError as Error).message);
+      } finally {
+        setExportingResults(false);
+      }
     } catch (error) {
       logger.error('[BacktestPage] 扫描最新交易日失败:', error);
       message.error('扫描最新交易日失败: ' + (error as Error).message);
@@ -675,12 +735,14 @@ export function BacktestPage() {
 
     try {
       const exportTime = new Date().toLocaleString('zh-CN');
-      const filterSummary = `最新信号日期: ${latestDateKey}\n导出时间: ${exportTime}\n当前筛选后最新信号股票: ${stocks.length} 只`;
+      const signalDate = normalizeDateKey(latestDateKey);
+      const filterSummary = `最新信号日期: ${signalDate}\n导出时间: ${exportTime}\n当前筛选后最新信号股票: ${stocks.length} 只`;
       await exportStockNamesToPng(names, {
         fileNamePrefix: '买点追踪_最新信号股票',
         filterSummary,
+        dateStamp: signalDate,
       });
-      message.success('最新信号日期股票已导出为图片');
+      message.success(`最新信号日期股票已导出为图片（${signalDate}）`);
     } catch (error) {
       logger.error('[BacktestPage] 导出买点追踪最新信号股票失败:', error);
       message.error('导出最新信号股票失败: ' + (error as Error).message);
@@ -1013,6 +1075,17 @@ export function BacktestPage() {
             >
               扫描历史
             </Button>
+            <DatePicker
+              allowClear
+              value={asOfDate ? dayjs(asOfDate) : null}
+              disabled={scanningLatest || scanningHistory}
+              disabledDate={(current: Dayjs) => !!(current && current.isAfter(dayjs(), 'day'))}
+              style={{ width: 140 }}
+              placeholder="截止日(最新)"
+              onChange={(date: Dayjs | null) => {
+                setAsOfDate(date ? date.format('YYYY-MM-DD') : null);
+              }}
+            />
             <Button
               icon={<SearchOutlined />}
               loading={scanningLatest}

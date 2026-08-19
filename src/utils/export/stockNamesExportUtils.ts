@@ -31,7 +31,7 @@ function padRowsFromColumns(cols: string[][]): string[][] {
  */
 export async function exportStockNamesToExcel(
   names: string[],
-  options?: { maxPerColumn?: number; fileNamePrefix?: string }
+  options?: { maxPerColumn?: number; fileNamePrefix?: string; dateStamp?: string }
 ): Promise<void> {
   const maxPerColumn = options?.maxPerColumn ?? DEFAULT_MAX_PER_COLUMN;
   const cols = splitNamesIntoColumns(names, maxPerColumn);
@@ -52,8 +52,16 @@ export async function exportStockNamesToExcel(
   });
 
   const prefix = options?.fileNamePrefix ?? '股票名称';
-  const dateStr = new Date().toISOString().slice(0, 10);
+  const dateStr = options?.dateStamp || localDateStamp();
   triggerDownload(blob, `${prefix}_${dateStr}.xlsx`);
+}
+
+function localDateStamp(): string {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
 }
 
 /**
@@ -61,7 +69,13 @@ export async function exportStockNamesToExcel(
  */
 export function exportStockNamesToPng(
   names: string[],
-  options?: { maxPerColumn?: number; fileNamePrefix?: string; filterSummary?: string }
+  options?: {
+    maxPerColumn?: number;
+    fileNamePrefix?: string;
+    filterSummary?: string;
+    /** 文件名日期，默认当天（本地）；买点追踪应传信号日 */
+    dateStamp?: string;
+  }
 ): Promise<void> {
   const maxPerColumn = options?.maxPerColumn ?? DEFAULT_MAX_PER_COLUMN;
   const cols = splitNamesIntoColumns(names, maxPerColumn);
@@ -207,7 +221,7 @@ export function exportStockNamesToPng(
   }
 
   const prefix = options?.fileNamePrefix ?? '股票名称';
-  const dateStr = new Date().toISOString().slice(0, 10);
+  const dateStr = options?.dateStamp || localDateStamp();
   const filename = `${prefix}_${dateStr}.png`;
 
   return new Promise((resolve, reject) => {
