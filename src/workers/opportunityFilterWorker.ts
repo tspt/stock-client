@@ -27,6 +27,7 @@ import type {
   OpportunityFilterWorkerMessage,
   OpportunityFilterWorkerResponse,
 } from './opportunityFilterWorkerTypes';
+import { normalizeStockName } from '@/utils/format/format';
 
 let cancelledThroughRequestId = 0;
 const YIELD_EVERY_ITEMS = 40;
@@ -521,6 +522,16 @@ async function runFilterTask(
   const sharpMoveFlatThreshold =
     typeof rawFlat === 'number' && Number.isFinite(rawFlat) && rawFlat > 0 ? rawFlat : 3;
 
+  const excludedNameKeywords = (filters.excludedNameKeywords ?? [])
+    .map(normalizeStockName)
+    .filter(Boolean);
+  const excludedExactNameSet = new Set(
+    (filters.excludedExactNames ?? []).map(normalizeStockName).filter(Boolean)
+  );
+  const excludedShortTermNameSet = new Set(
+    (filters.excludedShortTermNames ?? []).map(normalizeStockName).filter(Boolean)
+  );
+
   /** 启用横盘且勾选至少一种类型时按类型过滤；启用但未选任何类型则视为不按类型过滤（与其它条件照常组合） */
   const consolidationTypesSet =
     filters.consolidationFilterEnabled && filters.consolidationTypes.length > 0
@@ -796,14 +807,15 @@ async function runFilterTask(
         }
       }
 
+      const normalizedName = normalizeStockName(nextItem.name || '');
+
       // 名称包含过滤
       if (
         filters.enableNameKeywordFilter !== false &&
-        filters.excludedNameKeywords &&
-        filters.excludedNameKeywords.length > 0
+        excludedNameKeywords.length > 0
       ) {
-        const hasExcludedKeyword = filters.excludedNameKeywords.some((keyword) =>
-          nextItem.name.includes(keyword)
+        const hasExcludedKeyword = excludedNameKeywords.some((keyword) =>
+          normalizedName.includes(keyword)
         );
         if (hasExcludedKeyword) {
           continue;
@@ -813,10 +825,9 @@ async function runFilterTask(
       // 名称完全匹配过滤
       if (
         filters.enableExactNameFilter !== false &&
-        filters.excludedExactNames &&
-        filters.excludedExactNames.length > 0
+        excludedExactNameSet.size > 0
       ) {
-        if (filters.excludedExactNames.includes(nextItem.name)) {
+        if (excludedExactNameSet.has(normalizedName)) {
           continue;
         }
       }
@@ -824,10 +835,9 @@ async function runFilterTask(
       // 短期排除股票名称过滤
       if (
         filters.enableShortTermNameFilter !== false &&
-        filters.excludedShortTermNames &&
-        filters.excludedShortTermNames.length > 0
+        excludedShortTermNameSet.size > 0
       ) {
-        if (filters.excludedShortTermNames.includes(nextItem.name)) {
+        if (excludedShortTermNameSet.has(normalizedName)) {
           continue;
         }
       }

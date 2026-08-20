@@ -15,6 +15,7 @@ import {
   OPPORTUNITY_DEFAULT_LIMIT_MOVES,
 } from '@/utils/config/opportunityAnalysisDefaults';
 import { logger } from '../business/logger';
+import { normalizeStockNameList } from '../format/format';
 
 export const OPPORTUNITY_FILTER_PREFS_KEY = 'opportunity_filter_prefs';
 
@@ -275,15 +276,15 @@ export function loadOpportunityFilterPrefs(): OpportunityFilterPrefs | null {
       aiRiskScoreRange: parseRange(p.aiRiskScoreRange),
       enableNameKeywordFilter: p.enableNameKeywordFilter === false ? false : true,
       excludedNameKeywords: Array.isArray(p.excludedNameKeywords)
-        ? p.excludedNameKeywords.filter((item: any) => typeof item === 'string')
+        ? normalizeStockNameList(p.excludedNameKeywords.filter((item: any) => typeof item === 'string'))
         : [...OPPORTUNITY_DEFAULT_NAME_FILTERS.excludedNameKeywords],
       enableExactNameFilter: p.enableExactNameFilter === false ? false : true,
       excludedExactNames: Array.isArray(p.excludedExactNames)
-        ? p.excludedExactNames.filter((item: any) => typeof item === 'string')
+        ? normalizeStockNameList(p.excludedExactNames.filter((item: any) => typeof item === 'string'))
         : [...OPPORTUNITY_DEFAULT_NAME_FILTERS.excludedExactNames],
       enableShortTermNameFilter: p.enableShortTermNameFilter === false ? false : true,
       excludedShortTermNames: Array.isArray(p.excludedShortTermNames)
-        ? p.excludedShortTermNames.filter((item: any) => typeof item === 'string')
+        ? normalizeStockNameList(p.excludedShortTermNames.filter((item: any) => typeof item === 'string'))
         : [...OPPORTUNITY_DEFAULT_NAME_FILTERS.excludedShortTermNames],
       nameFilterVisible: p.nameFilterVisible === false ? false : true,
     };

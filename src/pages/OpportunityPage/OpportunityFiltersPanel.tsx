@@ -8,6 +8,7 @@ import { Button, Drawer, Space, Collapse, InputNumber, Checkbox, Select } from '
 import { FilterOutlined } from '@ant-design/icons';
 import type { ConsolidationType } from '@/types/stock';
 import { PatternTooltip } from '@/components/PatternTooltip/PatternTooltip';
+import { normalizeStockNameList } from '@/utils/format/format';
 import styles from './OpportunityPage.module.css';
 
 const ALL_FILTER_PANEL_KEYS = ['data', 'aiAnalysis', 'consolidation', 'trendLine', 'sharpMove', 'nameFilter'] as const;
@@ -959,7 +960,7 @@ export function OpportunityFiltersPanel({
                         <Select
                           mode="tags"
                           value={excludedNameKeywords}
-                          onChange={(values) => setExcludedNameKeywords(values as string[])}
+                          onChange={(values) => setExcludedNameKeywords(normalizeStockNameList(values as string[]))}
                           style={{ width: '100%' }}
                           placeholder="输入关键词，按回车添加"
                           options={[]}
@@ -986,7 +987,7 @@ export function OpportunityFiltersPanel({
                         <Select
                           mode="tags"
                           value={excludedExactNames}
-                          onChange={(values) => setExcludedExactNames(values as string[])}
+                          onChange={(values) => setExcludedExactNames(normalizeStockNameList(values as string[]))}
                           style={{ width: '100%' }}
                           placeholder="输入完整股票名称，按回车添加"
                           options={[]}
@@ -1013,7 +1014,7 @@ export function OpportunityFiltersPanel({
                         <Select
                           mode="tags"
                           value={excludedShortTermNames}
-                          onChange={(values) => setExcludedShortTermNames(values as string[])}
+                          onChange={(values) => setExcludedShortTermNames(normalizeStockNameList(values as string[]))}
                           style={{ width: '100%' }}
                           placeholder="输入完整股票名称，按回车添加"
                           options={[]}

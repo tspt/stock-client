@@ -67,6 +67,27 @@ export function formatAmountInBillion(amount: number): string {
 }
 
 /**
+ * 去掉股票名称中的空白（含半角/全角空格），用于名称过滤匹配。
+ * 例如「三 力 士」「三　力　士」与「三力士」视为同一名称。
+ */
+export function normalizeStockName(name: string): string {
+  return name.replace(/[\s\u00A0\u3000]/g, '');
+}
+
+/** 对名称/关键词列表去空白并去重，空串丢弃 */
+export function normalizeStockNameList(names: string[]): string[] {
+  const result: string[] = [];
+  const seen = new Set<string>();
+  for (const name of names) {
+    const normalized = normalizeStockName(name);
+    if (!normalized || seen.has(normalized)) continue;
+    seen.add(normalized);
+    result.push(normalized);
+  }
+  return result;
+}
+
+/**
  * 统一股票代码格式（转换为 SH600000 或 SZ000001 格式）
  */
 export function normalizeStockCode(code: string): string {
