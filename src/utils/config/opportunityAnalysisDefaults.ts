@@ -27,7 +27,7 @@ export const OPPORTUNITY_DEFAULT_LIMIT_MOVES = {
   /** 涨停/跌停统计周期 */
   period: 30,
   /** 默认涨停次数 */
-  minLimitUpCount: 1,
+  minLimitUpCount: null,
 } as const;
 
 /** 行业板块筛选默认配置 */
