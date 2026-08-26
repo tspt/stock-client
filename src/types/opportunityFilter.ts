@@ -95,6 +95,8 @@ export interface OpportunityFilterSnapshot {
   industrySectorInvert?: boolean;
   /** 概念板块反选 */
   conceptSectorInvert?: boolean;
+  /** 股票名称类型：全部 / ST / 非ST（基于分析结果最新名称二次过滤） */
+  nameType?: 'all' | 'st' | 'non_st';
   /** 名称筛选 - 是否启用名称包含过滤 */
   enableNameKeywordFilter?: boolean;
   /** 名称包含过滤 - 排除包含这些关键词的股票名称 */

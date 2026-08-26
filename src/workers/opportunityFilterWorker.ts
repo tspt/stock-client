@@ -809,6 +809,20 @@ async function runFilterTask(
 
       const normalizedName = normalizeStockName(nextItem.name || '');
 
+      // 名称类型二次过滤（基于分析结果最新名称，弥补本地股票列表名称滞后）
+      const nameType = filters.nameType ?? 'all';
+      if (nameType === 'st' || nameType === 'non_st') {
+        const isST = (nextItem.name || '').includes('ST');
+        if (nameType === 'st' && !isST) {
+          mergeSkippedReason(skippedMap, item.code, item.name, '名称类型：非ST');
+          continue;
+        }
+        if (nameType === 'non_st' && isST) {
+          mergeSkippedReason(skippedMap, item.code, item.name, '名称类型：ST');
+          continue;
+        }
+      }
+
       // 名称包含过滤
       if (
         filters.enableNameKeywordFilter !== false &&

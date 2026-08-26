@@ -1,20 +1,74 @@
 {
-  "exportedAt": "2026-08-19T15:38:41.052Z",
+  "exportedAt": "2026-08-26T08:02:44.768Z",
   "kind": "latest",
   "kindLabel": "最新交易日命中",
-  "count": 74,
+  "count": 76,
   "fileBaseName": "2026-08-19",
   "meta": {
     "tab": "latest",
     "autoExport": true,
-    "asOfDate": null,
+    "asOfDate": "2026-08-19",
     "searchText": "",
     "scenarioFilter": "all",
     "excludeST": true,
-    "latestDate": "2026/08/19",
+    "latestDate": "2026/08/26",
     "fileBaseName": "2026-08-19"
   },
   "items": [
+    {
+      "scenario": "limit_up_trend",
+      "scenarioName": "连板/强趋势",
+      "matchedRule": "近5日近似涨停根数=3≥2",
+      "features": {
+        "dayReturn": -10.02,
+        "volumeRatio": 2.36,
+        "lowerShadowRatio": 0,
+        "bodyRatio": 0.622,
+        "pullbackFromHigh20": 19.04,
+        "ret3": -11.01,
+        "ret10": 24.31,
+        "ret20": 36.03,
+        "limitUpCount5": 3,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "code": "SZ002172",
+      "name": "澳洋健康",
+      "industry": {
+        "code": "BK0727",
+        "name": "医疗服务"
+      },
+      "date": "2026/08/19",
+      "timestamp": 1787068800000,
+      "close": 4.04,
+      "lift": 3.18,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d5": null,
+        "d10": null
+      },
+      "concepts": [
+        {
+          "code": "BK0806",
+          "name": "精准医疗"
+        },
+        {
+          "code": "BK0889",
+          "name": "医美概念"
+        },
+        {
+          "code": "BK0939",
+          "name": "辅助生殖"
+        },
+        {
+          "code": "BK0996",
+          "name": "毛发医疗"
+        }
+      ]
+    },
     {
       "scenario": "limit_up_trend",
       "scenarioName": "连板/强趋势",
@@ -50,20 +104,7 @@
         "d5": null,
         "d10": null
       },
-      "concepts": [
-        {
-          "code": "BK0574",
-          "name": "锂电池概念"
-        },
-        {
-          "code": "BK0707",
-          "name": "沪股通"
-        },
-        {
-          "code": "BK1648",
-          "name": "电池技术"
-        }
-      ]
+      "concepts": []
     },
     {
       "scenario": "limit_up_trend",
@@ -102,88 +143,28 @@
       },
       "concepts": [
         {
-          "code": "BK0490",
-          "name": "军工"
-        },
-        {
           "code": "BK0641",
           "name": "智能穿戴"
-        },
-        {
-          "code": "BK0707",
-          "name": "沪股通"
         },
         {
           "code": "BK0714",
           "name": "5G概念"
         },
         {
-          "code": "BK0802",
-          "name": "无人驾驶"
-        },
-        {
-          "code": "BK0833",
-          "name": "小米概念"
-        },
-        {
-          "code": "BK0854",
-          "name": "华为概念"
-        },
-        {
           "code": "BK0877",
           "name": "PCB"
-        },
-        {
-          "code": "BK0900",
-          "name": "新能源车"
         },
         {
           "code": "BK0902",
           "name": "MiniLED"
         },
         {
-          "code": "BK0921",
-          "name": "卫星互联网"
-        },
-        {
-          "code": "BK0922",
-          "name": "数据中心"
-        },
-        {
-          "code": "BK0952",
-          "name": "第三代半导体"
-        },
-        {
-          "code": "BK0963",
-          "name": "商业航天"
-        },
-        {
-          "code": "BK1002",
-          "name": "激光雷达"
-        },
-        {
           "code": "BK1048",
           "name": "IGBT概念"
         },
         {
-          "code": "BK1136",
-          "name": "光通信模块"
-        },
-        {
-          "code": "BK1633",
-          "name": "昨日高振幅"
-        },
-        {
           "code": "BK1646",
           "name": "消费电子概念"
-        },
-        {
-          "code": "BK1650",
-          "name": "通信技术"
-        },
-        {
-          "code": "BK1679",
-          "name": "2025年报扭亏"
         }
       ]
     },
@@ -232,40 +213,12 @@
           "name": "智能家居"
         },
         {
-          "code": "BK0683",
-          "name": "央国企改革"
-        },
-        {
           "code": "BK0700",
           "name": "充电桩"
         },
         {
-          "code": "BK0707",
-          "name": "沪股通"
-        },
-        {
           "code": "BK0714",
           "name": "5G概念"
-        },
-        {
-          "code": "BK0802",
-          "name": "无人驾驶"
-        },
-        {
-          "code": "BK0854",
-          "name": "华为概念"
-        },
-        {
-          "code": "BK0867",
-          "name": "富时罗素"
-        },
-        {
-          "code": "BK0879",
-          "name": "标准普尔"
-        },
-        {
-          "code": "BK0905",
-          "name": "传感器"
         },
         {
           "code": "BK0915",
@@ -276,28 +229,8 @@
           "name": "半导体概念"
         },
         {
-          "code": "BK1088",
-          "name": "F5G概念"
-        },
-        {
           "code": "BK1124",
           "name": "毫米波概念"
-        },
-        {
-          "code": "BK1180",
-          "name": "华为海思"
-        },
-        {
-          "code": "BK1633",
-          "name": "昨日高振幅"
-        },
-        {
-          "code": "BK1650",
-          "name": "通信技术"
-        },
-        {
-          "code": "BK1679",
-          "name": "2025年报扭亏"
         }
       ]
     },
@@ -336,14 +269,47 @@
         "d5": null,
         "d10": null
       },
+      "concepts": []
+    },
+    {
+      "scenario": "limit_up_trend",
+      "scenarioName": "连板/强趋势",
+      "matchedRule": "近5日近似涨停根数=2≥2",
+      "features": {
+        "dayReturn": 2.09,
+        "volumeRatio": 2.17,
+        "lowerShadowRatio": 0.222,
+        "bodyRatio": 0.475,
+        "pullbackFromHigh20": 12.56,
+        "ret3": 5.83,
+        "ret10": 23.66,
+        "ret20": 29.82,
+        "limitUpCount5": 2,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "code": "SZ002907",
+      "name": "华森制药",
+      "industry": {
+        "code": "BK1040",
+        "name": "中药Ⅱ"
+      },
+      "date": "2026/08/19",
+      "timestamp": 1787068800000,
+      "close": 16.15,
+      "lift": 3.18,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d5": null,
+        "d10": null
+      },
       "concepts": [
         {
-          "code": "BK0707",
-          "name": "沪股通"
-        },
-        {
-          "code": "BK0888",
-          "name": "农业种植"
+          "code": "BK1056",
+          "name": "幽门螺杆菌概念"
         }
       ]
     },
@@ -384,44 +350,12 @@
       },
       "concepts": [
         {
-          "code": "BK0506",
-          "name": "创投"
-        },
-        {
           "code": "BK0514",
           "name": "参股券商"
         },
         {
-          "code": "BK0525",
-          "name": "参股银行"
-        },
-        {
-          "code": "BK0594",
-          "name": "长江三角"
-        },
-        {
-          "code": "BK0683",
-          "name": "央国企改革"
-        },
-        {
-          "code": "BK0800",
-          "name": "人工智能"
-        },
-        {
-          "code": "BK0804",
-          "name": "深股通"
-        },
-        {
           "code": "BK0839",
           "name": "知识产权"
-        },
-        {
-          "code": "BK0867",
-          "name": "富时罗素"
-        },
-        {
-          "code": "BK0879",
-          "name": "标准普尔"
         }
       ]
     },
@@ -462,28 +396,8 @@
       },
       "concepts": [
         {
-          "code": "BK0535",
-          "name": "QFII重仓"
-        },
-        {
-          "code": "BK0574",
-          "name": "锂电池概念"
-        },
-        {
-          "code": "BK0707",
-          "name": "沪股通"
-        },
-        {
           "code": "BK0714",
           "name": "5G概念"
-        },
-        {
-          "code": "BK0852",
-          "name": "冷链物流"
-        },
-        {
-          "code": "BK0854",
-          "name": "华为概念"
         },
         {
           "code": "BK0877",
@@ -492,26 +406,6 @@
         {
           "code": "BK0917",
           "name": "半导体概念"
-        },
-        {
-          "code": "BK0968",
-          "name": "固态电池"
-        },
-        {
-          "code": "BK1633",
-          "name": "昨日高振幅"
-        },
-        {
-          "code": "BK1648",
-          "name": "电池技术"
-        },
-        {
-          "code": "BK1650",
-          "name": "通信技术"
-        },
-        {
-          "code": "BK1679",
-          "name": "2025年报扭亏"
         }
       ]
     },
@@ -552,60 +446,58 @@
       },
       "concepts": [
         {
-          "code": "BK0594",
-          "name": "长江三角"
-        },
-        {
-          "code": "BK0665",
-          "name": "电商概念"
-        },
-        {
-          "code": "BK0721",
-          "name": "PPP模式"
-        },
-        {
-          "code": "BK0804",
-          "name": "深股通"
-        },
-        {
-          "code": "BK0867",
-          "name": "富时罗素"
-        },
-        {
-          "code": "BK0879",
-          "name": "标准普尔"
-        },
-        {
           "code": "BK0917",
           "name": "半导体概念"
         },
         {
-          "code": "BK0945",
-          "name": "装配建筑"
-        },
-        {
-          "code": "BK0952",
-          "name": "第三代半导体"
-        },
-        {
-          "code": "BK0963",
-          "name": "商业航天"
-        },
-        {
           "code": "BK1112",
           "name": "破净股"
+        }
+      ]
+    },
+    {
+      "scenario": "limit_up_trend",
+      "scenarioName": "连板/强趋势",
+      "matchedRule": "近5日近似涨停根数=2≥2",
+      "features": {
+        "dayReturn": -6.83,
+        "volumeRatio": 0.87,
+        "lowerShadowRatio": 0.337,
+        "bodyRatio": 0.255,
+        "pullbackFromHigh20": 6.83,
+        "ret3": 10.8,
+        "ret10": 81.9,
+        "ret20": 89.32,
+        "limitUpCount5": 2,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "code": "SH600272",
+      "name": "开开实业",
+      "industry": {
+        "code": "BK1042",
+        "name": "医药商业"
+      },
+      "date": "2026/08/19",
+      "timestamp": 1787068800000,
+      "close": 19.5,
+      "lift": 3.18,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d5": null,
+        "d10": null
+      },
+      "concepts": [
+        {
+          "code": "BK0672",
+          "name": "沪企改革"
         },
         {
-          "code": "BK1632",
-          "name": "昨日高换手"
-        },
-        {
-          "code": "BK1633",
-          "name": "昨日高振幅"
-        },
-        {
-          "code": "BK1637",
-          "name": "东方财富热股"
+          "code": "BK1147",
+          "name": "SPD概念"
         }
       ]
     },
@@ -646,20 +538,8 @@
       },
       "concepts": [
         {
-          "code": "BK0535",
-          "name": "QFII重仓"
-        },
-        {
-          "code": "BK0552",
-          "name": "机构重仓"
-        },
-        {
           "code": "BK1155",
           "name": "小米汽车"
-        },
-        {
-          "code": "BK1158",
-          "name": "微盘股"
         }
       ]
     },
@@ -700,40 +580,8 @@
       },
       "concepts": [
         {
-          "code": "BK0494",
-          "name": "节能环保"
-        },
-        {
-          "code": "BK0581",
-          "name": "智能电网"
-        },
-        {
-          "code": "BK0594",
-          "name": "长江三角"
-        },
-        {
-          "code": "BK0722",
-          "name": "虚拟现实"
-        },
-        {
-          "code": "BK0800",
-          "name": "人工智能"
-        },
-        {
-          "code": "BK0804",
-          "name": "深股通"
-        },
-        {
-          "code": "BK0861",
-          "name": "数字孪生"
-        },
-        {
           "code": "BK0918",
           "name": "特高压"
-        },
-        {
-          "code": "BK1647",
-          "name": "电网概念"
         }
       ]
     },
@@ -772,56 +620,7 @@
         "d5": null,
         "d10": null
       },
-      "concepts": [
-        {
-          "code": "BK0490",
-          "name": "军工"
-        },
-        {
-          "code": "BK0494",
-          "name": "节能环保"
-        },
-        {
-          "code": "BK0534",
-          "name": "成渝特区"
-        },
-        {
-          "code": "BK0567",
-          "name": "股权激励"
-        },
-        {
-          "code": "BK0590",
-          "name": "西部大开发"
-        },
-        {
-          "code": "BK0804",
-          "name": "深股通"
-        },
-        {
-          "code": "BK0814",
-          "name": "大飞机"
-        },
-        {
-          "code": "BK0867",
-          "name": "富时罗素"
-        },
-        {
-          "code": "BK0963",
-          "name": "商业航天"
-        },
-        {
-          "code": "BK1166",
-          "name": "低空经济"
-        },
-        {
-          "code": "BK1643",
-          "name": "小盘股"
-        },
-        {
-          "code": "BK1678",
-          "name": "2025年报预减"
-        }
-      ]
+      "concepts": []
     },
     {
       "scenario": "limit_up_trend",
@@ -858,32 +657,7 @@
         "d5": null,
         "d10": null
       },
-      "concepts": [
-        {
-          "code": "BK0628",
-          "name": "智慧城市"
-        },
-        {
-          "code": "BK0800",
-          "name": "人工智能"
-        },
-        {
-          "code": "BK0963",
-          "name": "商业航天"
-        },
-        {
-          "code": "BK1005",
-          "name": "专精特新"
-        },
-        {
-          "code": "BK1104",
-          "name": "信创"
-        },
-        {
-          "code": "BK1629",
-          "name": "AI应用"
-        }
-      ]
+      "concepts": []
     },
     {
       "scenario": "limit_up_trend",
@@ -922,24 +696,12 @@
       },
       "concepts": [
         {
-          "code": "BK0554",
-          "name": "物联网"
-        },
-        {
           "code": "BK0677",
           "name": "粤港自贸"
         },
         {
           "code": "BK0700",
           "name": "充电桩"
-        },
-        {
-          "code": "BK0804",
-          "name": "深股通"
-        },
-        {
-          "code": "BK0854",
-          "name": "华为概念"
         }
       ]
     },
@@ -980,16 +742,8 @@
       },
       "concepts": [
         {
-          "code": "BK0498",
-          "name": "AB股"
-        },
-        {
           "code": "BK0549",
           "name": "深圳特区"
-        },
-        {
-          "code": "BK0552",
-          "name": "机构重仓"
         }
       ]
     },
@@ -1030,28 +784,8 @@
       },
       "concepts": [
         {
-          "code": "BK0498",
-          "name": "AB股"
-        },
-        {
           "code": "BK0514",
           "name": "参股券商"
-        },
-        {
-          "code": "BK0525",
-          "name": "参股银行"
-        },
-        {
-          "code": "BK0594",
-          "name": "长江三角"
-        },
-        {
-          "code": "BK0615",
-          "name": "中药概念"
-        },
-        {
-          "code": "BK1673",
-          "name": "破增发价股"
         }
       ]
     },
@@ -1092,16 +826,8 @@
       },
       "concepts": [
         {
-          "code": "BK0535",
-          "name": "QFII重仓"
-        },
-        {
           "code": "BK0614",
           "name": "食品安全"
-        },
-        {
-          "code": "BK0817",
-          "name": "昨日触板"
         },
         {
           "code": "BK0895",
@@ -1110,18 +836,6 @@
         {
           "code": "BK1174",
           "name": "合成生物"
-        },
-        {
-          "code": "BK1631",
-          "name": "昨日炸板"
-        },
-        {
-          "code": "BK1633",
-          "name": "昨日高振幅"
-        },
-        {
-          "code": "BK1677",
-          "name": "2025年报预增"
         }
       ]
     },
@@ -1162,40 +876,12 @@
       },
       "concepts": [
         {
-          "code": "BK0523",
-          "name": "新材料"
-        },
-        {
-          "code": "BK0588",
-          "name": "光伏概念"
-        },
-        {
-          "code": "BK0600",
-          "name": "参股新三板"
-        },
-        {
-          "code": "BK0854",
-          "name": "华为概念"
-        },
-        {
           "code": "BK0893",
           "name": "无线耳机"
         },
         {
-          "code": "BK0940",
-          "name": "网红经济"
-        },
-        {
-          "code": "BK1005",
-          "name": "专精特新"
-        },
-        {
           "code": "BK1646",
           "name": "消费电子概念"
-        },
-        {
-          "code": "BK1673",
-          "name": "破增发价股"
         }
       ]
     },
@@ -1236,84 +922,16 @@
       },
       "concepts": [
         {
-          "code": "BK0490",
-          "name": "军工"
-        },
-        {
-          "code": "BK0523",
-          "name": "新材料"
-        },
-        {
-          "code": "BK0534",
-          "name": "成渝特区"
-        },
-        {
-          "code": "BK0590",
-          "name": "西部大开发"
-        },
-        {
           "code": "BK0592",
           "name": "铁路基建"
-        },
-        {
-          "code": "BK0600",
-          "name": "参股新三板"
-        },
-        {
-          "code": "BK0704",
-          "name": "无人机"
-        },
-        {
-          "code": "BK0707",
-          "name": "沪股通"
         },
         {
           "code": "BK0714",
           "name": "5G概念"
         },
         {
-          "code": "BK0808",
-          "name": "军民融合"
-        },
-        {
-          "code": "BK0854",
-          "name": "华为概念"
-        },
-        {
           "code": "BK0884",
           "name": "光刻机(胶)"
-        },
-        {
-          "code": "BK0891",
-          "name": "国产芯片"
-        },
-        {
-          "code": "BK0952",
-          "name": "第三代半导体"
-        },
-        {
-          "code": "BK1163",
-          "name": "可控核聚变"
-        },
-        {
-          "code": "BK1188",
-          "name": "DeepSeek概念"
-        },
-        {
-          "code": "BK1643",
-          "name": "小盘股"
-        },
-        {
-          "code": "BK1650",
-          "name": "通信技术"
-        },
-        {
-          "code": "BK1667",
-          "name": "小盘成长"
-        },
-        {
-          "code": "BK1677",
-          "name": "2025年报预增"
         }
       ]
     },
@@ -1354,44 +972,12 @@
       },
       "concepts": [
         {
-          "code": "BK0552",
-          "name": "机构重仓"
-        },
-        {
-          "code": "BK0804",
-          "name": "深股通"
-        },
-        {
-          "code": "BK0879",
-          "name": "标准普尔"
-        },
-        {
           "code": "BK0895",
           "name": "维生素"
         },
         {
           "code": "BK1078",
           "name": "肝炎概念"
-        },
-        {
-          "code": "BK1106",
-          "name": "创新药"
-        },
-        {
-          "code": "BK1633",
-          "name": "昨日高振幅"
-        },
-        {
-          "code": "BK1657",
-          "name": "病原体防治"
-        },
-        {
-          "code": "BK1677",
-          "name": "2025年报预增"
-        },
-        {
-          "code": "BK1680",
-          "name": "2026—季报预增"
         }
       ]
     },
@@ -1430,20 +1016,7 @@
         "d5": null,
         "d10": null
       },
-      "concepts": [
-        {
-          "code": "BK0525",
-          "name": "参股银行"
-        },
-        {
-          "code": "BK0535",
-          "name": "QFII重仓"
-        },
-        {
-          "code": "BK1005",
-          "name": "专精特新"
-        }
-      ]
+      "concepts": []
     },
     {
       "scenario": "limit_up_trend",
@@ -1480,32 +1053,7 @@
         "d5": null,
         "d10": null
       },
-      "concepts": [
-        {
-          "code": "BK0812",
-          "name": "贬值受益"
-        },
-        {
-          "code": "BK0900",
-          "name": "新能源车"
-        },
-        {
-          "code": "BK1005",
-          "name": "专精特新"
-        },
-        {
-          "code": "BK1090",
-          "name": "机器人概念"
-        },
-        {
-          "code": "BK1673",
-          "name": "破增发价股"
-        },
-        {
-          "code": "BK1677",
-          "name": "2025年报预增"
-        }
-      ]
+      "concepts": []
     },
     {
       "scenario": "limit_up_trend",
@@ -1544,150 +1092,16 @@
       },
       "concepts": [
         {
-          "code": "BK0490",
-          "name": "军工"
-        },
-        {
-          "code": "BK0568",
-          "name": "深成500"
-        },
-        {
-          "code": "BK0683",
-          "name": "央国企改革"
-        },
-        {
-          "code": "BK0701",
-          "name": "中证500"
-        },
-        {
           "code": "BK0714",
           "name": "5G概念"
-        },
-        {
-          "code": "BK0804",
-          "name": "深股通"
-        },
-        {
-          "code": "BK0854",
-          "name": "华为概念"
         },
         {
           "code": "BK0917",
           "name": "半导体概念"
         },
         {
-          "code": "BK0921",
-          "name": "卫星互联网"
-        },
-        {
-          "code": "BK0952",
-          "name": "第三代半导体"
-        },
-        {
-          "code": "BK1005",
-          "name": "专精特新"
-        },
-        {
           "code": "BK1048",
           "name": "IGBT概念"
-        },
-        {
-          "code": "BK1059",
-          "name": "百元股"
-        },
-        {
-          "code": "BK1136",
-          "name": "光通信模块"
-        },
-        {
-          "code": "BK1650",
-          "name": "通信技术"
-        },
-        {
-          "code": "BK1664",
-          "name": "中盘股"
-        },
-        {
-          "code": "BK1669",
-          "name": "中盘成长"
-        }
-      ]
-    },
-    {
-      "scenario": "volume_breakout",
-      "scenarioName": "放量突破续涨",
-      "matchedRule": "接近/突破近20日高点且量比=1.62≥1.5且当日涨幅=3.9%≥2%",
-      "features": {
-        "dayReturn": 3.88,
-        "volumeRatio": 1.62,
-        "lowerShadowRatio": 0.218,
-        "bodyRatio": 0.68,
-        "pullbackFromHigh20": 0.65,
-        "ret3": 11.9,
-        "ret10": 6.81,
-        "ret20": 18.09,
-        "limitUpCount5": 0,
-        "nearHigh20": true,
-        "aboveMa10": true,
-        "nearMa20": false
-      },
-      "code": "SH603129",
-      "name": "春风动力",
-      "industry": {
-        "code": "BK1263",
-        "name": "摩托车及其他"
-      },
-      "date": "2026/08/19",
-      "timestamp": 1787068800000,
-      "close": 318.9,
-      "lift": 1.847,
-      "returns": {
-        "d1": null,
-        "d2": null,
-        "d3": null,
-        "d5": null,
-        "d10": null
-      },
-      "concepts": [
-        {
-          "code": "BK0429",
-          "name": "交运设备"
-        },
-        {
-          "code": "BK0701",
-          "name": "中证500"
-        },
-        {
-          "code": "BK0705",
-          "name": "上证380"
-        },
-        {
-          "code": "BK0707",
-          "name": "沪股通"
-        },
-        {
-          "code": "BK0708",
-          "name": "体育产业"
-        },
-        {
-          "code": "BK0823",
-          "name": "养老金"
-        },
-        {
-          "code": "BK0867",
-          "name": "富时罗素"
-        },
-        {
-          "code": "BK1059",
-          "name": "百元股"
-        },
-        {
-          "code": "BK1664",
-          "name": "中盘股"
-        },
-        {
-          "code": "BK1669",
-          "name": "中盘成长"
         }
       ]
     },
@@ -1726,68 +1140,7 @@
         "d5": null,
         "d10": null
       },
-      "concepts": [
-        {
-          "code": "BK0574",
-          "name": "锂电池概念"
-        },
-        {
-          "code": "BK0707",
-          "name": "沪股通"
-        },
-        {
-          "code": "BK0815",
-          "name": "昨日涨停"
-        },
-        {
-          "code": "BK0835",
-          "name": "独角兽"
-        },
-        {
-          "code": "BK0879",
-          "name": "标准普尔"
-        },
-        {
-          "code": "BK0968",
-          "name": "固态电池"
-        },
-        {
-          "code": "BK0989",
-          "name": "储能概念"
-        },
-        {
-          "code": "BK1050",
-          "name": "昨日涨停_含一字"
-        },
-        {
-          "code": "BK1630",
-          "name": "昨日首板"
-        },
-        {
-          "code": "BK1633",
-          "name": "昨日高振幅"
-        },
-        {
-          "code": "BK1637",
-          "name": "东方财富热股"
-        },
-        {
-          "code": "BK1638",
-          "name": "最近多板"
-        },
-        {
-          "code": "BK1643",
-          "name": "小盘股"
-        },
-        {
-          "code": "BK1648",
-          "name": "电池技术"
-        },
-        {
-          "code": "BK1677",
-          "name": "2025年报预增"
-        }
-      ]
+      "concepts": []
     },
     {
       "scenario": "volume_breakout",
@@ -1826,40 +1179,8 @@
       },
       "concepts": [
         {
-          "code": "BK0494",
-          "name": "节能环保"
-        },
-        {
-          "code": "BK0574",
-          "name": "锂电池概念"
-        },
-        {
-          "code": "BK0577",
-          "name": "核能核电"
-        },
-        {
           "code": "BK0623",
           "name": "海洋经济"
-        },
-        {
-          "code": "BK0683",
-          "name": "央国企改革"
-        },
-        {
-          "code": "BK0864",
-          "name": "氢能源"
-        },
-        {
-          "code": "BK1158",
-          "name": "微盘股"
-        },
-        {
-          "code": "BK1644",
-          "name": "微盘精选"
-        },
-        {
-          "code": "BK1648",
-          "name": "电池技术"
         }
       ]
     },
@@ -1902,10 +1223,6 @@
         {
           "code": "BK0501",
           "name": "次新股"
-        },
-        {
-          "code": "BK0552",
-          "name": "机构重仓"
         }
       ]
     },
@@ -1946,44 +1263,12 @@
       },
       "concepts": [
         {
-          "code": "BK0523",
-          "name": "新材料"
-        },
-        {
-          "code": "BK0535",
-          "name": "QFII重仓"
-        },
-        {
-          "code": "BK0588",
-          "name": "光伏概念"
-        },
-        {
-          "code": "BK0594",
-          "name": "长江三角"
-        },
-        {
-          "code": "BK0804",
-          "name": "深股通"
-        },
-        {
-          "code": "BK0945",
-          "name": "装配建筑"
-        },
-        {
           "code": "BK1011",
           "name": "环氧丙烷"
         },
         {
           "code": "BK1076",
           "name": "建筑节能"
-        },
-        {
-          "code": "BK1633",
-          "name": "昨日高振幅"
-        },
-        {
-          "code": "BK1678",
-          "name": "2025年报预减"
         }
       ]
     },
@@ -2024,24 +1309,8 @@
       },
       "concepts": [
         {
-          "code": "BK0552",
-          "name": "机构重仓"
-        },
-        {
           "code": "BK0677",
           "name": "粤港自贸"
-        },
-        {
-          "code": "BK0683",
-          "name": "央国企改革"
-        },
-        {
-          "code": "BK0804",
-          "name": "深股通"
-        },
-        {
-          "code": "BK0825",
-          "name": "新零售"
         },
         {
           "code": "BK0938",
@@ -2050,10 +1319,6 @@
         {
           "code": "BK1073",
           "name": "啤酒概念"
-        },
-        {
-          "code": "BK1678",
-          "name": "2025年报预减"
         }
       ]
     },
@@ -2094,32 +1359,8 @@
       },
       "concepts": [
         {
-          "code": "BK0552",
-          "name": "机构重仓"
-        },
-        {
-          "code": "BK0594",
-          "name": "长江三角"
-        },
-        {
-          "code": "BK0683",
-          "name": "央国企改革"
-        },
-        {
-          "code": "BK0712",
-          "name": "一带一路"
-        },
-        {
           "code": "BK0730",
           "name": "农药兽药"
-        },
-        {
-          "code": "BK0804",
-          "name": "深股通"
-        },
-        {
-          "code": "BK0879",
-          "name": "标准普尔"
         },
         {
           "code": "BK0950",
@@ -2164,102 +1405,8 @@
       },
       "concepts": [
         {
-          "code": "BK0519",
-          "name": "稀缺资源"
-        },
-        {
-          "code": "BK0574",
-          "name": "锂电池概念"
-        },
-        {
-          "code": "BK0590",
-          "name": "西部大开发"
-        },
-        {
-          "code": "BK0683",
-          "name": "央国企改革"
-        },
-        {
-          "code": "BK0695",
-          "name": "小金属概念"
-        },
-        {
-          "code": "BK0707",
-          "name": "沪股通"
-        },
-        {
-          "code": "BK0968",
-          "name": "固态电池"
-        },
-        {
           "code": "BK1175",
           "name": "玻璃基板"
-        },
-        {
-          "code": "BK1648",
-          "name": "电池技术"
-        }
-      ]
-    },
-    {
-      "scenario": "volume_breakout",
-      "scenarioName": "放量突破续涨",
-      "matchedRule": "接近/突破近20日高点且量比=2.53≥1.5且当日涨幅=10.1%≥2%",
-      "features": {
-        "dayReturn": 10.05,
-        "volumeRatio": 2.53,
-        "lowerShadowRatio": 0.094,
-        "bodyRatio": 0.906,
-        "pullbackFromHigh20": 0,
-        "ret3": 9.25,
-        "ret10": 11.97,
-        "ret20": 30.14,
-        "limitUpCount5": 1,
-        "nearHigh20": true,
-        "aboveMa10": true,
-        "nearMa20": false
-      },
-      "code": "SH600984",
-      "name": "建设机械",
-      "industry": {
-        "code": "BK0739",
-        "name": "工程机械"
-      },
-      "date": "2026/08/10",
-      "timestamp": 1786291200000,
-      "close": 4.49,
-      "lift": 1.847,
-      "returns": {
-        "d1": null,
-        "d2": null,
-        "d3": null,
-        "d5": null,
-        "d10": null
-      },
-      "concepts": [
-        {
-          "code": "BK0590",
-          "name": "西部大开发"
-        },
-        {
-          "code": "BK0683",
-          "name": "央国企改革"
-        },
-        {
-          "code": "BK0712",
-          "name": "一带一路"
-        },
-        {
-          "code": "BK0867",
-          "name": "富时罗素"
-        },
-        {
-          "code": "BK0991",
-          "name": "工程机械概念"
-        },
-        {
-          "code": "BK1633",
-          "name": "昨日高振幅"
         }
       ]
     },
@@ -2300,52 +1447,12 @@
       },
       "concepts": [
         {
-          "code": "BK0501",
-          "name": "次新股"
-        },
-        {
           "code": "BK0592",
           "name": "铁路基建"
         },
         {
-          "code": "BK0595",
-          "name": "风能"
-        },
-        {
-          "code": "BK0814",
-          "name": "大飞机"
-        },
-        {
-          "code": "BK0900",
-          "name": "新能源车"
-        },
-        {
-          "code": "BK0963",
-          "name": "商业航天"
-        },
-        {
-          "code": "BK0991",
-          "name": "工程机械概念"
-        },
-        {
-          "code": "BK1005",
-          "name": "专精特新"
-        },
-        {
-          "code": "BK1059",
-          "name": "百元股"
-        },
-        {
           "code": "BK1089",
           "name": "汽车热管理"
-        },
-        {
-          "code": "BK1100",
-          "name": "减速器"
-        },
-        {
-          "code": "BK1633",
-          "name": "昨日高振幅"
         }
       ]
     },
@@ -2386,40 +1493,12 @@
       },
       "concepts": [
         {
-          "code": "BK0492",
-          "name": "煤化工概念"
-        },
-        {
-          "code": "BK0707",
-          "name": "沪股通"
-        },
-        {
-          "code": "BK0864",
-          "name": "氢能源"
-        },
-        {
-          "code": "BK0867",
-          "name": "富时罗素"
-        },
-        {
-          "code": "BK0879",
-          "name": "标准普尔"
-        },
-        {
           "code": "BK1112",
           "name": "破净股"
         },
         {
           "code": "BK1635",
           "name": "长期破净"
-        },
-        {
-          "code": "BK1672",
-          "name": "破发股"
-        },
-        {
-          "code": "BK1679",
-          "name": "2025年报扭亏"
         }
       ]
     },
@@ -2464,44 +1543,12 @@
           "name": "转债标的"
         },
         {
-          "code": "BK0578",
-          "name": "稀土永磁"
-        },
-        {
-          "code": "BK0644",
-          "name": "特斯拉概念"
-        },
-        {
           "code": "BK0666",
           "name": "苹果概念"
         },
         {
-          "code": "BK0704",
-          "name": "无人机"
-        },
-        {
-          "code": "BK0707",
-          "name": "沪股通"
-        },
-        {
-          "code": "BK0800",
-          "name": "人工智能"
-        },
-        {
-          "code": "BK0900",
-          "name": "新能源车"
-        },
-        {
           "code": "BK0918",
           "name": "特高压"
-        },
-        {
-          "code": "BK1090",
-          "name": "机器人概念"
-        },
-        {
-          "code": "BK1134",
-          "name": "算力概念"
         },
         {
           "code": "BK1138",
@@ -2516,36 +1563,8 @@
           "name": "小米汽车"
         },
         {
-          "code": "BK1156",
-          "name": "PEEK材料概念"
-        },
-        {
-          "code": "BK1163",
-          "name": "可控核聚变"
-        },
-        {
           "code": "BK1168",
           "name": "铜缆高速连接"
-        },
-        {
-          "code": "BK1184",
-          "name": "人形机器人"
-        },
-        {
-          "code": "BK1643",
-          "name": "小盘股"
-        },
-        {
-          "code": "BK1647",
-          "name": "电网概念"
-        },
-        {
-          "code": "BK1668",
-          "name": "小盘价值"
-        },
-        {
-          "code": "BK1677",
-          "name": "2025年报预增"
         }
       ]
     },
@@ -2586,110 +1605,12 @@
       },
       "concepts": [
         {
-          "code": "BK0506",
-          "name": "创投"
-        },
-        {
           "code": "BK0514",
           "name": "参股券商"
         },
         {
-          "code": "BK0552",
-          "name": "机构重仓"
-        },
-        {
-          "code": "BK0600",
-          "name": "参股新三板"
-        },
-        {
-          "code": "BK0683",
-          "name": "央国企改革"
-        },
-        {
-          "code": "BK0707",
-          "name": "沪股通"
-        },
-        {
-          "code": "BK0808",
-          "name": "军民融合"
-        },
-        {
-          "code": "BK0817",
-          "name": "昨日触板"
-        },
-        {
           "code": "BK0938",
           "name": "代糖概念"
-        },
-        {
-          "code": "BK1631",
-          "name": "昨日炸板"
-        },
-        {
-          "code": "BK1633",
-          "name": "昨日高振幅"
-        },
-        {
-          "code": "BK1643",
-          "name": "小盘股"
-        },
-        {
-          "code": "BK1672",
-          "name": "破发股"
-        }
-      ]
-    },
-    {
-      "scenario": "volume_breakout",
-      "scenarioName": "放量突破续涨",
-      "matchedRule": "接近/突破近20日高点且量比=2.00≥1.5且当日涨幅=10.1%≥2%",
-      "features": {
-        "dayReturn": 10.07,
-        "volumeRatio": 2,
-        "lowerShadowRatio": 0,
-        "bodyRatio": 0,
-        "pullbackFromHigh20": 0,
-        "ret3": 13.82,
-        "ret10": 18.28,
-        "ret20": 27.31,
-        "limitUpCount5": 1,
-        "nearHigh20": true,
-        "aboveMa10": true,
-        "nearMa20": false
-      },
-      "code": "SZ002333",
-      "name": "罗普斯金",
-      "industry": {
-        "code": "BK0476",
-        "name": "装修建材"
-      },
-      "date": "2026/08/19",
-      "timestamp": 1787068800000,
-      "close": 6.34,
-      "lift": 1.847,
-      "returns": {
-        "d1": null,
-        "d2": null,
-        "d3": null,
-        "d5": null,
-        "d10": null
-      },
-      "concepts": [
-        {
-          "code": "BK0588",
-          "name": "光伏概念"
-        },
-        {
-          "code": "BK0594",
-          "name": "长江三角"
-        },
-        {
-          "code": "BK1179",
-          "name": "房屋检测"
-        },
-        {
-          "code": "BK1672",
-          "name": "破发股"
         }
       ]
     },
@@ -2734,14 +1655,6 @@
           "name": "油气设服"
         },
         {
-          "code": "BK0712",
-          "name": "一带一路"
-        },
-        {
-          "code": "BK1005",
-          "name": "专精特新"
-        },
-        {
           "code": "BK1649",
           "name": "油气资源"
         }
@@ -2750,30 +1663,30 @@
     {
       "scenario": "volume_breakout",
       "scenarioName": "放量突破续涨",
-      "matchedRule": "接近/突破近20日高点且量比=1.74≥1.5且当日涨幅=4.3%≥2%",
+      "matchedRule": "接近/突破近20日高点且量比=2.59≥1.5且当日涨幅=6.5%≥2%",
       "features": {
-        "dayReturn": 4.31,
-        "volumeRatio": 1.74,
-        "lowerShadowRatio": 0.166,
-        "bodyRatio": 0.626,
-        "pullbackFromHigh20": 1.31,
-        "ret3": 7.82,
-        "ret10": 7.95,
-        "ret20": 13.74,
+        "dayReturn": 6.5,
+        "volumeRatio": 2.59,
+        "lowerShadowRatio": 0.012,
+        "bodyRatio": 0.875,
+        "pullbackFromHigh20": 1.12,
+        "ret3": 11.11,
+        "ret10": 12.61,
+        "ret20": 18.98,
         "limitUpCount5": 0,
         "nearHigh20": true,
         "aboveMa10": true,
         "nearMa20": false
       },
-      "code": "SH603737",
-      "name": "三棵树",
+      "code": "SH600547",
+      "name": "山东黄金",
       "industry": {
-        "code": "BK0476",
-        "name": "装修建材"
+        "code": "BK0732",
+        "name": "贵金属"
       },
       "date": "2026/08/19",
       "timestamp": 1787068800000,
-      "close": 25.66,
+      "close": 32.6,
       "lift": 1.847,
       "returns": {
         "d1": null,
@@ -2784,36 +1697,28 @@
       },
       "concepts": [
         {
-          "code": "BK0701",
-          "name": "中证500"
+          "code": "BK0499",
+          "name": "AH股"
         },
         {
-          "code": "BK0705",
-          "name": "上证380"
+          "code": "BK0612",
+          "name": "上证180_"
         },
         {
-          "code": "BK0707",
-          "name": "沪股通"
+          "code": "BK0718",
+          "name": "证金持股"
         },
         {
-          "code": "BK0867",
-          "name": "富时罗素"
+          "code": "BK1639",
+          "name": "周期股"
         },
         {
-          "code": "BK0879",
-          "name": "标准普尔"
+          "code": "BK1661",
+          "name": "行业龙头"
         },
         {
-          "code": "BK1664",
-          "name": "中盘股"
-        },
-        {
-          "code": "BK1669",
-          "name": "中盘成长"
-        },
-        {
-          "code": "BK1677",
-          "name": "2025年报预增"
+          "code": "BK1663",
+          "name": "大盘股"
         }
       ]
     },
@@ -2854,40 +1759,8 @@
       },
       "concepts": [
         {
-          "code": "BK0523",
-          "name": "新材料"
-        },
-        {
           "code": "BK0528",
           "name": "转债标的"
-        },
-        {
-          "code": "BK0574",
-          "name": "锂电池概念"
-        },
-        {
-          "code": "BK0804",
-          "name": "深股通"
-        },
-        {
-          "code": "BK0968",
-          "name": "固态电池"
-        },
-        {
-          "code": "BK0989",
-          "name": "储能概念"
-        },
-        {
-          "code": "BK1005",
-          "name": "专精特新"
-        },
-        {
-          "code": "BK1643",
-          "name": "小盘股"
-        },
-        {
-          "code": "BK1648",
-          "name": "电池技术"
         }
       ]
     },
@@ -2932,88 +1805,20 @@
           "name": "转债标的"
         },
         {
-          "code": "BK0581",
-          "name": "智能电网"
-        },
-        {
-          "code": "BK0588",
-          "name": "光伏概念"
-        },
-        {
-          "code": "BK0595",
-          "name": "风能"
-        },
-        {
-          "code": "BK0701",
-          "name": "中证500"
-        },
-        {
-          "code": "BK0705",
-          "name": "上证380"
-        },
-        {
-          "code": "BK0707",
-          "name": "沪股通"
-        },
-        {
-          "code": "BK0821",
-          "name": "MSCI中国"
-        },
-        {
-          "code": "BK0891",
-          "name": "国产芯片"
-        },
-        {
-          "code": "BK0900",
-          "name": "新能源车"
-        },
-        {
           "code": "BK0917",
           "name": "半导体概念"
-        },
-        {
-          "code": "BK0922",
-          "name": "数据中心"
-        },
-        {
-          "code": "BK0952",
-          "name": "第三代半导体"
-        },
-        {
-          "code": "BK0977",
-          "name": "碳化硅"
         },
         {
           "code": "BK1000",
           "name": "宁组合"
         },
         {
-          "code": "BK1005",
-          "name": "专精特新"
-        },
-        {
           "code": "BK1048",
           "name": "IGBT概念"
         },
         {
-          "code": "BK1059",
-          "name": "百元股"
-        },
-        {
           "code": "BK1144",
           "name": "高压快充"
-        },
-        {
-          "code": "BK1157",
-          "name": "飞行汽车(eVTOL)"
-        },
-        {
-          "code": "BK1643",
-          "name": "小盘股"
-        },
-        {
-          "code": "BK1673",
-          "name": "破增发价股"
         }
       ]
     },
@@ -3054,70 +1859,8 @@
       },
       "concepts": [
         {
-          "code": "BK1158",
-          "name": "微盘股"
-        }
-      ]
-    },
-    {
-      "scenario": "volume_breakout",
-      "scenarioName": "放量突破续涨",
-      "matchedRule": "接近/突破近20日高点且量比=5.43≥1.5且当日涨幅=3.9%≥2%",
-      "features": {
-        "dayReturn": 3.92,
-        "volumeRatio": 5.43,
-        "lowerShadowRatio": 0.624,
-        "bodyRatio": 0.131,
-        "pullbackFromHigh20": 2.2,
-        "ret3": 16.06,
-        "ret10": 13.36,
-        "ret20": 14.97,
-        "limitUpCount5": 1,
-        "nearHigh20": true,
-        "aboveMa10": true,
-        "nearMa20": false
-      },
-      "code": "SH603406",
-      "name": "天富龙",
-      "industry": {
-        "code": "BK0471",
-        "name": "化学纤维"
-      },
-      "date": "2026/08/19",
-      "timestamp": 1787068800000,
-      "close": 30.72,
-      "lift": 1.847,
-      "returns": {
-        "d1": null,
-        "d2": null,
-        "d3": null,
-        "d5": null,
-        "d10": null
-      },
-      "concepts": [
-        {
-          "code": "BK0494",
-          "name": "节能环保"
-        },
-        {
-          "code": "BK0501",
-          "name": "次新股"
-        },
-        {
-          "code": "BK0525",
-          "name": "参股银行"
-        },
-        {
-          "code": "BK0664",
-          "name": "婴童概念"
-        },
-        {
-          "code": "BK1643",
-          "name": "小盘股"
-        },
-        {
-          "code": "BK1667",
-          "name": "小盘成长"
+          "code": "BK1644",
+          "name": "微盘精选"
         }
       ]
     },
@@ -3160,14 +1903,6 @@
         {
           "code": "BK0676",
           "name": "独家药品"
-        },
-        {
-          "code": "BK0707",
-          "name": "沪股通"
-        },
-        {
-          "code": "BK1656",
-          "name": "特色药"
         }
       ]
     },
@@ -3208,36 +1943,8 @@
       },
       "concepts": [
         {
-          "code": "BK0490",
-          "name": "军工"
-        },
-        {
-          "code": "BK0534",
-          "name": "成渝特区"
-        },
-        {
-          "code": "BK0552",
-          "name": "机构重仓"
-        },
-        {
-          "code": "BK0590",
-          "name": "西部大开发"
-        },
-        {
           "code": "BK0617",
           "name": "石墨烯"
-        },
-        {
-          "code": "BK0683",
-          "name": "央国企改革"
-        },
-        {
-          "code": "BK0712",
-          "name": "一带一路"
-        },
-        {
-          "code": "BK0864",
-          "name": "氢能源"
         }
       ]
     },
@@ -3276,34 +1983,93 @@
         "d5": null,
         "d10": null
       },
+      "concepts": []
+    },
+    {
+      "scenario": "volume_breakout",
+      "scenarioName": "放量突破续涨",
+      "matchedRule": "接近/突破近20日高点且量比=5.43≥1.5且当日涨幅=3.9%≥2%",
+      "features": {
+        "dayReturn": 3.92,
+        "volumeRatio": 5.43,
+        "lowerShadowRatio": 0.624,
+        "bodyRatio": 0.131,
+        "pullbackFromHigh20": 2.2,
+        "ret3": 16.06,
+        "ret10": 13.36,
+        "ret20": 14.97,
+        "limitUpCount5": 1,
+        "nearHigh20": true,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "code": "SH603406",
+      "name": "XD天富龙",
+      "industry": {
+        "code": "BK0471",
+        "name": "化学纤维"
+      },
+      "date": "2026/08/19",
+      "timestamp": 1787068800000,
+      "close": 30.72,
+      "lift": 1.847,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d5": null,
+        "d10": null
+      },
       "concepts": [
         {
-          "code": "BK0498",
-          "name": "AB股"
+          "code": "BK0501",
+          "name": "次新股"
+        }
+      ]
+    },
+    {
+      "scenario": "soft_breakout",
+      "scenarioName": "温和过前高",
+      "matchedRule": "近20日高且量比=1.13∈[1.0,1.5)且当日涨幅=10.1%≥1%",
+      "features": {
+        "dayReturn": 10.07,
+        "volumeRatio": 1.13,
+        "lowerShadowRatio": 0.043,
+        "bodyRatio": 0.957,
+        "pullbackFromHigh20": 0,
+        "ret3": 15.03,
+        "ret10": 20.29,
+        "ret20": 25.48,
+        "limitUpCount5": 1,
+        "nearHigh20": true,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "code": "SZ002412",
+      "name": "汉森制药",
+      "industry": {
+        "code": "BK1040",
+        "name": "中药Ⅱ"
+      },
+      "date": "2026/08/19",
+      "timestamp": 1787068800000,
+      "close": 8.42,
+      "lift": 1.814,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d5": null,
+        "d10": null
+      },
+      "concepts": [
+        {
+          "code": "BK1056",
+          "name": "幽门螺杆菌概念"
         },
         {
-          "code": "BK0590",
-          "name": "西部大开发"
-        },
-        {
-          "code": "BK0594",
-          "name": "长江三角"
-        },
-        {
-          "code": "BK0707",
-          "name": "沪股通"
-        },
-        {
-          "code": "BK1643",
-          "name": "小盘股"
-        },
-        {
-          "code": "BK1667",
-          "name": "小盘成长"
-        },
-        {
-          "code": "BK1679",
-          "name": "2025年报扭亏"
+          "code": "BK1078",
+          "name": "肝炎概念"
         }
       ]
     },
@@ -3344,20 +2110,12 @@
       },
       "concepts": [
         {
-          "code": "BK0552",
-          "name": "机构重仓"
-        },
-        {
           "code": "BK0708",
           "name": "体育产业"
         },
         {
           "code": "BK1071",
           "name": "跨境支付"
-        },
-        {
-          "code": "BK1115",
-          "name": "跨境电商"
         }
       ]
     },
@@ -3402,36 +2160,12 @@
           "name": "AH股"
         },
         {
-          "code": "BK0500",
-          "name": "HS300_"
-        },
-        {
-          "code": "BK0505",
-          "name": "中字头"
-        },
-        {
-          "code": "BK0579",
-          "name": "云计算"
-        },
-        {
           "code": "BK0611",
           "name": "上证50_"
         },
         {
           "code": "BK0612",
           "name": "上证180_"
-        },
-        {
-          "code": "BK0655",
-          "name": "网络安全"
-        },
-        {
-          "code": "BK0683",
-          "name": "央国企改革"
-        },
-        {
-          "code": "BK0707",
-          "name": "沪股通"
         },
         {
           "code": "BK0710",
@@ -3442,40 +2176,8 @@
           "name": "5G概念"
         },
         {
-          "code": "BK0800",
-          "name": "人工智能"
-        },
-        {
-          "code": "BK0821",
-          "name": "MSCI中国"
-        },
-        {
-          "code": "BK0860",
-          "name": "边缘计算"
-        },
-        {
-          "code": "BK0921",
-          "name": "卫星互联网"
-        },
-        {
-          "code": "BK0922",
-          "name": "数据中心"
-        },
-        {
-          "code": "BK1134",
-          "name": "算力概念"
-        },
-        {
-          "code": "BK1139",
-          "name": "中特估"
-        },
-        {
           "code": "BK1640",
           "name": "价值股"
-        },
-        {
-          "code": "BK1650",
-          "name": "通信技术"
         },
         {
           "code": "BK1662",
@@ -3494,30 +2196,30 @@
     {
       "scenario": "trend_continuation",
       "scenarioName": "趋势中继",
-      "matchedRule": "近3日累计=5.0%∈[5,20)且当日不跌",
+      "matchedRule": "近3日累计=7.4%∈[5,20)且当日不跌",
       "features": {
-        "dayReturn": 0.68,
-        "volumeRatio": 1.71,
-        "lowerShadowRatio": 0.189,
-        "bodyRatio": 0.27,
-        "pullbackFromHigh20": 2.31,
-        "ret3": 5.05,
-        "ret10": 0.42,
-        "ret20": 5.24,
+        "dayReturn": 1.21,
+        "volumeRatio": 1.03,
+        "lowerShadowRatio": 0.046,
+        "bodyRatio": 0.632,
+        "pullbackFromHigh20": 7.11,
+        "ret3": 7.39,
+        "ret10": 4.6,
+        "ret20": 11.77,
         "limitUpCount5": 0,
         "nearHigh20": false,
         "aboveMa10": true,
-        "nearMa20": true
+        "nearMa20": false
       },
-      "code": "SZ002271",
-      "name": "东方雨虹",
+      "code": "SH600988",
+      "name": "赤峰黄金",
       "industry": {
-        "code": "BK0476",
-        "name": "装修建材"
+        "code": "BK0732",
+        "name": "贵金属"
       },
       "date": "2026/08/19",
       "timestamp": 1787068800000,
-      "close": 11.86,
+      "close": 42.72,
       "lift": 1.577,
       "returns": {
         "d1": null,
@@ -3528,100 +2230,12 @@
       },
       "concepts": [
         {
-          "code": "BK0523",
-          "name": "新材料"
+          "code": "BK0499",
+          "name": "AH股"
         },
         {
-          "code": "BK0535",
-          "name": "QFII重仓"
-        },
-        {
-          "code": "BK0568",
-          "name": "深成500"
-        },
-        {
-          "code": "BK0592",
-          "name": "铁路基建"
-        },
-        {
-          "code": "BK0597",
-          "name": "水利建设"
-        },
-        {
-          "code": "BK0601",
-          "name": "海工装备"
-        },
-        {
-          "code": "BK0604",
-          "name": "参股保险"
-        },
-        {
-          "code": "BK0665",
-          "name": "电商概念"
-        },
-        {
-          "code": "BK0701",
-          "name": "中证500"
-        },
-        {
-          "code": "BK0724",
-          "name": "海绵城市"
-        },
-        {
-          "code": "BK0804",
-          "name": "深股通"
-        },
-        {
-          "code": "BK0813",
-          "name": "雄安新区"
-        },
-        {
-          "code": "BK0821",
-          "name": "MSCI中国"
-        },
-        {
-          "code": "BK0867",
-          "name": "富时罗素"
-        },
-        {
-          "code": "BK0879",
-          "name": "标准普尔"
-        },
-        {
-          "code": "BK0945",
-          "name": "装配建筑"
-        },
-        {
-          "code": "BK0989",
-          "name": "储能概念"
-        },
-        {
-          "code": "BK0999",
-          "name": "茅指数"
-        },
-        {
-          "code": "BK1058",
-          "name": "地下管网"
-        },
-        {
-          "code": "BK1179",
-          "name": "房屋检测"
-        },
-        {
-          "code": "BK1185",
-          "name": "冰雪经济"
-        },
-        {
-          "code": "BK1664",
-          "name": "中盘股"
-        },
-        {
-          "code": "BK1670",
-          "name": "中盘价值"
-        },
-        {
-          "code": "BK1673",
-          "name": "破增发价股"
+          "code": "BK1663",
+          "name": "大盘股"
         }
       ]
     },
@@ -3662,14 +2276,6 @@
       },
       "concepts": [
         {
-          "code": "BK0668",
-          "name": "医疗器械概念"
-        },
-        {
-          "code": "BK0675",
-          "name": "病毒防治"
-        },
-        {
           "code": "BK0889",
           "name": "医美概念"
         },
@@ -3682,20 +2288,50 @@
           "name": "宠物经济"
         },
         {
-          "code": "BK1106",
-          "name": "创新药"
-        },
-        {
-          "code": "BK1652",
-          "name": "新消费"
-        },
-        {
           "code": "BK1655",
           "name": "零售概念"
-        },
+        }
+      ]
+    },
+    {
+      "scenario": "trend_continuation",
+      "scenarioName": "趋势中继",
+      "matchedRule": "近3日累计=12.0%∈[5,20)且当日不跌",
+      "features": {
+        "dayReturn": 1.44,
+        "volumeRatio": 2.61,
+        "lowerShadowRatio": 0.162,
+        "bodyRatio": 0.757,
+        "pullbackFromHigh20": 7.49,
+        "ret3": 12.02,
+        "ret10": 15.15,
+        "ret20": 33.51,
+        "limitUpCount5": 1,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "code": "SH600281",
+      "name": "华阳新材",
+      "industry": {
+        "code": "BK1027",
+        "name": "小金属"
+      },
+      "date": "2026/08/19",
+      "timestamp": 1787068800000,
+      "close": 4.94,
+      "lift": 1.577,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d5": null,
+        "d10": null
+      },
+      "concepts": [
         {
-          "code": "BK1657",
-          "name": "病原体防治"
+          "code": "BK0909",
+          "name": "降解塑料"
         }
       ]
     },
@@ -3735,26 +2371,6 @@
         "d10": null
       },
       "concepts": [
-        {
-          "code": "BK0494",
-          "name": "节能环保"
-        },
-        {
-          "code": "BK0523",
-          "name": "新材料"
-        },
-        {
-          "code": "BK0683",
-          "name": "央国企改革"
-        },
-        {
-          "code": "BK0707",
-          "name": "沪股通"
-        },
-        {
-          "code": "BK0879",
-          "name": "标准普尔"
-        },
         {
           "code": "BK1023",
           "name": "培育钻石"
@@ -3806,56 +2422,8 @@
           "name": "AH股"
         },
         {
-          "code": "BK0568",
-          "name": "深成500"
-        },
-        {
-          "code": "BK0590",
-          "name": "西部大开发"
-        },
-        {
-          "code": "BK0595",
-          "name": "风能"
-        },
-        {
-          "code": "BK0701",
-          "name": "中证500"
-        },
-        {
-          "code": "BK0712",
-          "name": "一带一路"
-        },
-        {
-          "code": "BK0804",
-          "name": "深股通"
-        },
-        {
-          "code": "BK0821",
-          "name": "MSCI中国"
-        },
-        {
-          "code": "BK0864",
-          "name": "氢能源"
-        },
-        {
-          "code": "BK0867",
-          "name": "富时罗素"
-        },
-        {
-          "code": "BK0879",
-          "name": "标准普尔"
-        },
-        {
           "code": "BK0918",
           "name": "特高压"
-        },
-        {
-          "code": "BK0963",
-          "name": "商业航天"
-        },
-        {
-          "code": "BK0989",
-          "name": "储能概念"
         },
         {
           "code": "BK1003",
@@ -3910,118 +2478,7 @@
         "d5": null,
         "d10": null
       },
-      "concepts": [
-        {
-          "code": "BK0492",
-          "name": "煤化工概念"
-        },
-        {
-          "code": "BK0512",
-          "name": "化工原料"
-        },
-        {
-          "code": "BK1010",
-          "name": "磷化工"
-        },
-        {
-          "code": "BK1633",
-          "name": "昨日高振幅"
-        }
-      ]
-    },
-    {
-      "scenario": "trend_continuation",
-      "scenarioName": "趋势中继",
-      "matchedRule": "近3日累计=6.7%∈[5,20)且当日不跌",
-      "features": {
-        "dayReturn": 2.72,
-        "volumeRatio": 1.22,
-        "lowerShadowRatio": 0.441,
-        "bodyRatio": 0.356,
-        "pullbackFromHigh20": 7.48,
-        "ret3": 6.72,
-        "ret10": -4.12,
-        "ret20": 6.48,
-        "limitUpCount5": 0,
-        "nearHigh20": false,
-        "aboveMa10": true,
-        "nearMa20": true
-      },
-      "code": "SH603766",
-      "name": "隆鑫通用",
-      "industry": {
-        "code": "BK1263",
-        "name": "摩托车及其他"
-      },
-      "date": "2026/08/19",
-      "timestamp": 1787068800000,
-      "close": 13.97,
-      "lift": 1.577,
-      "returns": {
-        "d1": null,
-        "d2": null,
-        "d3": null,
-        "d5": null,
-        "d10": null
-      },
-      "concepts": [
-        {
-          "code": "BK0429",
-          "name": "交运设备"
-        },
-        {
-          "code": "BK0552",
-          "name": "机构重仓"
-        },
-        {
-          "code": "BK0590",
-          "name": "西部大开发"
-        },
-        {
-          "code": "BK0700",
-          "name": "充电桩"
-        },
-        {
-          "code": "BK0701",
-          "name": "中证500"
-        },
-        {
-          "code": "BK0707",
-          "name": "沪股通"
-        },
-        {
-          "code": "BK0867",
-          "name": "富时罗素"
-        },
-        {
-          "code": "BK0879",
-          "name": "标准普尔"
-        },
-        {
-          "code": "BK0924",
-          "name": "地摊经济"
-        },
-        {
-          "code": "BK1014",
-          "name": "发电机概念"
-        },
-        {
-          "code": "BK1079",
-          "name": "户外露营"
-        },
-        {
-          "code": "BK1198",
-          "name": "2025三季报预增"
-        },
-        {
-          "code": "BK1664",
-          "name": "中盘股"
-        },
-        {
-          "code": "BK1677",
-          "name": "2025年报预增"
-        }
-      ]
+      "concepts": []
     },
     {
       "scenario": "trend_continuation",
@@ -4060,68 +2517,16 @@
       },
       "concepts": [
         {
-          "code": "BK0523",
-          "name": "新材料"
-        },
-        {
           "code": "BK0528",
           "name": "转债标的"
-        },
-        {
-          "code": "BK0804",
-          "name": "深股通"
-        },
-        {
-          "code": "BK0815",
-          "name": "昨日涨停"
-        },
-        {
-          "code": "BK0823",
-          "name": "养老金"
         },
         {
           "code": "BK0866",
           "name": "人造肉"
         },
         {
-          "code": "BK1005",
-          "name": "专精特新"
-        },
-        {
-          "code": "BK1050",
-          "name": "昨日涨停_含一字"
-        },
-        {
           "code": "BK1076",
           "name": "建筑节能"
-        },
-        {
-          "code": "BK1630",
-          "name": "昨日首板"
-        },
-        {
-          "code": "BK1633",
-          "name": "昨日高振幅"
-        },
-        {
-          "code": "BK1637",
-          "name": "东方财富热股"
-        },
-        {
-          "code": "BK1638",
-          "name": "最近多板"
-        },
-        {
-          "code": "BK1674",
-          "name": "近期新高"
-        },
-        {
-          "code": "BK1676",
-          "name": "百日新高"
-        },
-        {
-          "code": "BK1680",
-          "name": "2026—季报预增"
         }
       ]
     },
@@ -4162,44 +2567,8 @@
       },
       "concepts": [
         {
-          "code": "BK0568",
-          "name": "深成500"
-        },
-        {
-          "code": "BK0669",
-          "name": "生态农业"
-        },
-        {
-          "code": "BK0701",
-          "name": "中证500"
-        },
-        {
-          "code": "BK0712",
-          "name": "一带一路"
-        },
-        {
-          "code": "BK0804",
-          "name": "深股通"
-        },
-        {
-          "code": "BK0821",
-          "name": "MSCI中国"
-        },
-        {
           "code": "BK1109",
           "name": "供销社概念"
-        },
-        {
-          "code": "BK1664",
-          "name": "中盘股"
-        },
-        {
-          "code": "BK1669",
-          "name": "中盘成长"
-        },
-        {
-          "code": "BK1677",
-          "name": "2025年报预增"
         }
       ]
     },
@@ -4239,14 +2608,6 @@
         "d10": null
       },
       "concepts": [
-        {
-          "code": "BK0707",
-          "name": "沪股通"
-        },
-        {
-          "code": "BK0823",
-          "name": "养老金"
-        },
         {
           "code": "BK0924",
           "name": "地摊经济"
@@ -4294,32 +2655,8 @@
           "name": "新能源"
         },
         {
-          "code": "BK0523",
-          "name": "新材料"
-        },
-        {
-          "code": "BK0578",
-          "name": "稀土永磁"
-        },
-        {
           "code": "BK0619",
           "name": "3D打印"
-        },
-        {
-          "code": "BK0668",
-          "name": "医疗器械概念"
-        },
-        {
-          "code": "BK0683",
-          "name": "央国企改革"
-        },
-        {
-          "code": "BK0695",
-          "name": "小金属概念"
-        },
-        {
-          "code": "BK0707",
-          "name": "沪股通"
         },
         {
           "code": "BK0714",
@@ -4330,32 +2667,8 @@
           "name": "OLED"
         },
         {
-          "code": "BK0854",
-          "name": "华为概念"
-        },
-        {
-          "code": "BK0867",
-          "name": "富时罗素"
-        },
-        {
-          "code": "BK0879",
-          "name": "标准普尔"
-        },
-        {
-          "code": "BK0891",
-          "name": "国产芯片"
-        },
-        {
-          "code": "BK0905",
-          "name": "传感器"
-        },
-        {
           "code": "BK0917",
           "name": "半导体概念"
-        },
-        {
-          "code": "BK0932",
-          "name": "尾气治理"
         },
         {
           "code": "BK0935",
@@ -4366,28 +2679,8 @@
           "name": "存储芯片"
         },
         {
-          "code": "BK1198",
-          "name": "2025三季报预增"
-        },
-        {
-          "code": "BK1633",
-          "name": "昨日高振幅"
-        },
-        {
-          "code": "BK1637",
-          "name": "东方财富热股"
-        },
-        {
-          "code": "BK1643",
-          "name": "小盘股"
-        },
-        {
-          "code": "BK1650",
-          "name": "通信技术"
-        },
-        {
-          "code": "BK1677",
-          "name": "2025年报预增"
+          "code": "BK1675",
+          "name": "历史新高"
         }
       ]
     },
@@ -4426,28 +2719,7 @@
         "d5": null,
         "d10": null
       },
-      "concepts": [
-        {
-          "code": "BK0494",
-          "name": "节能环保"
-        },
-        {
-          "code": "BK0721",
-          "name": "PPP模式"
-        },
-        {
-          "code": "BK0804",
-          "name": "深股通"
-        },
-        {
-          "code": "BK0823",
-          "name": "养老金"
-        },
-        {
-          "code": "BK1633",
-          "name": "昨日高振幅"
-        }
-      ]
+      "concepts": []
     },
     {
       "scenario": "trend_continuation",
@@ -4486,30 +2758,6 @@
       },
       "concepts": [
         {
-          "code": "BK0506",
-          "name": "创投"
-        },
-        {
-          "code": "BK0525",
-          "name": "参股银行"
-        },
-        {
-          "code": "BK0535",
-          "name": "QFII重仓"
-        },
-        {
-          "code": "BK0552",
-          "name": "机构重仓"
-        },
-        {
-          "code": "BK0574",
-          "name": "锂电池概念"
-        },
-        {
-          "code": "BK0594",
-          "name": "长江三角"
-        },
-        {
           "code": "BK0700",
           "name": "充电桩"
         },
@@ -4518,24 +2766,8 @@
           "name": "体育产业"
         },
         {
-          "code": "BK0804",
-          "name": "深股通"
-        },
-        {
           "code": "BK0917",
           "name": "半导体概念"
-        },
-        {
-          "code": "BK0977",
-          "name": "碳化硅"
-        },
-        {
-          "code": "BK1648",
-          "name": "电池技术"
-        },
-        {
-          "code": "BK1677",
-          "name": "2025年报预增"
         }
       ]
     },
@@ -4574,88 +2806,7 @@
         "d5": null,
         "d10": null
       },
-      "concepts": [
-        {
-          "code": "BK0505",
-          "name": "中字头"
-        },
-        {
-          "code": "BK0655",
-          "name": "网络安全"
-        },
-        {
-          "code": "BK0683",
-          "name": "央国企改革"
-        },
-        {
-          "code": "BK0696",
-          "name": "国产软件"
-        },
-        {
-          "code": "BK0701",
-          "name": "中证500"
-        },
-        {
-          "code": "BK0705",
-          "name": "上证380"
-        },
-        {
-          "code": "BK0707",
-          "name": "沪股通"
-        },
-        {
-          "code": "BK0821",
-          "name": "MSCI中国"
-        },
-        {
-          "code": "BK0823",
-          "name": "养老金"
-        },
-        {
-          "code": "BK0834",
-          "name": "乡村振兴"
-        },
-        {
-          "code": "BK0867",
-          "name": "富时罗素"
-        },
-        {
-          "code": "BK0879",
-          "name": "标准普尔"
-        },
-        {
-          "code": "BK1013",
-          "name": "华为欧拉"
-        },
-        {
-          "code": "BK1047",
-          "name": "数据安全"
-        },
-        {
-          "code": "BK1075",
-          "name": "电子身份证"
-        },
-        {
-          "code": "BK1104",
-          "name": "信创"
-        },
-        {
-          "code": "BK1176",
-          "name": "财税数字化"
-        },
-        {
-          "code": "BK1188",
-          "name": "DeepSeek概念"
-        },
-        {
-          "code": "BK1664",
-          "name": "中盘股"
-        },
-        {
-          "code": "BK1669",
-          "name": "中盘成长"
-        }
-      ]
+      "concepts": []
     },
     {
       "scenario": "trend_continuation",
@@ -4694,20 +2845,8 @@
       },
       "concepts": [
         {
-          "code": "BK0704",
-          "name": "无人机"
-        },
-        {
-          "code": "BK0712",
-          "name": "一带一路"
-        },
-        {
           "code": "BK0730",
           "name": "农药兽药"
-        },
-        {
-          "code": "BK1001",
-          "name": "内贸流通"
         },
         {
           "code": "BK1109",
@@ -4752,16 +2891,8 @@
       },
       "concepts": [
         {
-          "code": "BK0552",
-          "name": "机构重仓"
-        },
-        {
           "code": "BK0730",
           "name": "农药兽药"
-        },
-        {
-          "code": "BK0888",
-          "name": "农业种植"
         },
         {
           "code": "BK0950",
@@ -4770,10 +2901,6 @@
         {
           "code": "BK1109",
           "name": "供销社概念"
-        },
-        {
-          "code": "BK1158",
-          "name": "微盘股"
         }
       ]
     },
@@ -4812,36 +2939,7 @@
         "d5": null,
         "d10": null
       },
-      "concepts": [
-        {
-          "code": "BK0534",
-          "name": "成渝特区"
-        },
-        {
-          "code": "BK0590",
-          "name": "西部大开发"
-        },
-        {
-          "code": "BK0668",
-          "name": "医疗器械概念"
-        },
-        {
-          "code": "BK0675",
-          "name": "病毒防治"
-        },
-        {
-          "code": "BK0852",
-          "name": "冷链物流"
-        },
-        {
-          "code": "BK0906",
-          "name": "流感"
-        },
-        {
-          "code": "BK1657",
-          "name": "病原体防治"
-        }
-      ]
+      "concepts": []
     },
     {
       "scenario": "volume_mid_thrust",
@@ -4882,22 +2980,6 @@
         {
           "code": "BK0566",
           "name": "滨海新区"
-        },
-        {
-          "code": "BK0574",
-          "name": "锂电池概念"
-        },
-        {
-          "code": "BK0588",
-          "name": "光伏概念"
-        },
-        {
-          "code": "BK0968",
-          "name": "固态电池"
-        },
-        {
-          "code": "BK1648",
-          "name": "电池技术"
         }
       ]
     },
@@ -4938,36 +3020,12 @@
       },
       "concepts": [
         {
-          "code": "BK0568",
-          "name": "深成500"
-        },
-        {
-          "code": "BK0615",
-          "name": "中药概念"
-        },
-        {
           "code": "BK0676",
           "name": "独家药品"
         },
         {
-          "code": "BK0698",
-          "name": "免疫治疗"
-        },
-        {
-          "code": "BK0804",
-          "name": "深股通"
-        },
-        {
           "code": "BK0806",
           "name": "精准医疗"
-        },
-        {
-          "code": "BK0867",
-          "name": "富时罗素"
-        },
-        {
-          "code": "BK0879",
-          "name": "标准普尔"
         },
         {
           "code": "BK0894",
@@ -4978,32 +3036,8 @@
           "name": "肝素概念"
         },
         {
-          "code": "BK1005",
-          "name": "专精特新"
-        },
-        {
           "code": "BK1056",
           "name": "幽门螺杆菌概念"
-        },
-        {
-          "code": "BK1643",
-          "name": "小盘股"
-        },
-        {
-          "code": "BK1656",
-          "name": "特色药"
-        },
-        {
-          "code": "BK1657",
-          "name": "病原体防治"
-        },
-        {
-          "code": "BK1659",
-          "name": "精准诊断"
-        },
-        {
-          "code": "BK1668",
-          "name": "小盘价值"
         }
       ]
     },
@@ -5048,18 +3082,6 @@
           "name": "AH股"
         },
         {
-          "code": "BK0500",
-          "name": "HS300_"
-        },
-        {
-          "code": "BK0552",
-          "name": "机构重仓"
-        },
-        {
-          "code": "BK0588",
-          "name": "光伏概念"
-        },
-        {
           "code": "BK0610",
           "name": "央视50_"
         },
@@ -5068,32 +3090,8 @@
           "name": "上证180_"
         },
         {
-          "code": "BK0644",
-          "name": "特斯拉概念"
-        },
-        {
-          "code": "BK0707",
-          "name": "沪股通"
-        },
-        {
           "code": "BK0718",
           "name": "证金持股"
-        },
-        {
-          "code": "BK0812",
-          "name": "贬值受益"
-        },
-        {
-          "code": "BK0821",
-          "name": "MSCI中国"
-        },
-        {
-          "code": "BK0867",
-          "name": "富时罗素"
-        },
-        {
-          "code": "BK0879",
-          "name": "标准普尔"
         },
         {
           "code": "BK1155",
@@ -5150,16 +3148,8 @@
       },
       "concepts": [
         {
-          "code": "BK0590",
-          "name": "西部大开发"
-        },
-        {
           "code": "BK0730",
           "name": "农药兽药"
-        },
-        {
-          "code": "BK0804",
-          "name": "深股通"
         }
       ]
     },
@@ -5202,18 +3192,6 @@
         {
           "code": "BK0501",
           "name": "次新股"
-        },
-        {
-          "code": "BK0804",
-          "name": "深股通"
-        },
-        {
-          "code": "BK1643",
-          "name": "小盘股"
-        },
-        {
-          "code": "BK1667",
-          "name": "小盘成长"
         }
       ]
     },
@@ -5254,52 +3232,8 @@
       },
       "concepts": [
         {
-          "code": "BK0554",
-          "name": "物联网"
-        },
-        {
-          "code": "BK0581",
-          "name": "智能电网"
-        },
-        {
           "code": "BK0700",
           "name": "充电桩"
-        },
-        {
-          "code": "BK0705",
-          "name": "上证380"
-        },
-        {
-          "code": "BK0707",
-          "name": "沪股通"
-        },
-        {
-          "code": "BK0712",
-          "name": "一带一路"
-        },
-        {
-          "code": "BK0823",
-          "name": "养老金"
-        },
-        {
-          "code": "BK0867",
-          "name": "富时罗素"
-        },
-        {
-          "code": "BK0879",
-          "name": "标准普尔"
-        },
-        {
-          "code": "BK1643",
-          "name": "小盘股"
-        },
-        {
-          "code": "BK1647",
-          "name": "电网概念"
-        },
-        {
-          "code": "BK1668",
-          "name": "小盘价值"
         }
       ]
     },
@@ -5340,64 +3274,54 @@
       },
       "concepts": [
         {
-          "code": "BK0494",
-          "name": "节能环保"
-        },
-        {
-          "code": "BK0506",
-          "name": "创投"
-        },
-        {
-          "code": "BK0683",
-          "name": "央国企改革"
-        },
-        {
-          "code": "BK0705",
-          "name": "上证380"
-        },
-        {
-          "code": "BK0707",
-          "name": "沪股通"
-        },
-        {
-          "code": "BK0721",
-          "name": "PPP模式"
-        },
-        {
-          "code": "BK0823",
-          "name": "养老金"
-        },
-        {
           "code": "BK0843",
           "name": "天然气"
         },
         {
-          "code": "BK0867",
-          "name": "富时罗素"
-        },
-        {
-          "code": "BK0873",
-          "name": "垃圾分类"
-        },
-        {
-          "code": "BK0879",
-          "name": "标准普尔"
-        },
-        {
-          "code": "BK0966",
-          "name": "碳交易"
-        },
-        {
-          "code": "BK1643",
-          "name": "小盘股"
-        },
-        {
           "code": "BK1649",
           "name": "油气资源"
-        },
+        }
+      ]
+    },
+    {
+      "scenario": "volume_mid_thrust",
+      "scenarioName": "中部放量启动",
+      "matchedRule": "未近20日高且量比=2.16≥1.5且当日涨幅=3.5%≥2%",
+      "features": {
+        "dayReturn": 3.46,
+        "volumeRatio": 2.16,
+        "lowerShadowRatio": 0.019,
+        "bodyRatio": 0.733,
+        "pullbackFromHigh20": 9.8,
+        "ret3": 1.35,
+        "ret10": -5.26,
+        "ret20": -9.57,
+        "limitUpCount5": 0,
+        "nearHigh20": false,
+        "aboveMa10": false,
+        "nearMa20": true
+      },
+      "code": "SH600566",
+      "name": "济川药业",
+      "industry": {
+        "code": "BK1040",
+        "name": "中药Ⅱ"
+      },
+      "date": "2026/08/19",
+      "timestamp": 1787068800000,
+      "close": 24.84,
+      "lift": 1.298,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d5": null,
+        "d10": null
+      },
+      "concepts": [
         {
-          "code": "BK1668",
-          "name": "小盘价值"
+          "code": "BK1640",
+          "name": "价值股"
         }
       ]
     },
@@ -5438,40 +3362,12 @@
       },
       "concepts": [
         {
-          "code": "BK0525",
-          "name": "参股银行"
-        },
-        {
           "code": "BK0528",
           "name": "转债标的"
         },
         {
-          "code": "BK0707",
-          "name": "沪股通"
-        },
-        {
-          "code": "BK0712",
-          "name": "一带一路"
-        },
-        {
-          "code": "BK0813",
-          "name": "雄安新区"
-        },
-        {
-          "code": "BK0922",
-          "name": "数据中心"
-        },
-        {
-          "code": "BK0945",
-          "name": "装配建筑"
-        },
-        {
           "code": "BK1112",
           "name": "破净股"
-        },
-        {
-          "code": "BK1673",
-          "name": "破增发价股"
         }
       ]
     },
@@ -5511,10 +3407,6 @@
         "d10": null
       },
       "concepts": [
-        {
-          "code": "BK0590",
-          "name": "西部大开发"
-        },
         {
           "code": "BK0730",
           "name": "农药兽药"
@@ -5558,72 +3450,24 @@
       },
       "concepts": [
         {
-          "code": "BK0500",
-          "name": "HS300_"
-        },
-        {
-          "code": "BK0552",
-          "name": "机构重仓"
-        },
-        {
-          "code": "BK0574",
-          "name": "锂电池概念"
-        },
-        {
           "code": "BK0592",
           "name": "铁路基建"
-        },
-        {
-          "code": "BK0604",
-          "name": "参股保险"
-        },
-        {
-          "code": "BK0705",
-          "name": "上证380"
-        },
-        {
-          "code": "BK0707",
-          "name": "沪股通"
         },
         {
           "code": "BK0718",
           "name": "证金持股"
         },
         {
-          "code": "BK0814",
-          "name": "大飞机"
-        },
-        {
-          "code": "BK0821",
-          "name": "MSCI中国"
-        },
-        {
-          "code": "BK0867",
-          "name": "富时罗素"
-        },
-        {
-          "code": "BK0879",
-          "name": "标准普尔"
-        },
-        {
-          "code": "BK0900",
-          "name": "新能源车"
-        },
-        {
           "code": "BK1640",
           "name": "价值股"
         },
         {
-          "code": "BK1648",
-          "name": "电池技术"
+          "code": "BK1663",
+          "name": "大盘股"
         },
         {
-          "code": "BK1664",
-          "name": "中盘股"
-        },
-        {
-          "code": "BK1670",
-          "name": "中盘价值"
+          "code": "BK1666",
+          "name": "大盘价值"
         }
       ]
     },
@@ -5664,66 +3508,38 @@
       },
       "concepts": [
         {
-          "code": "BK0498",
-          "name": "AB股"
-        },
-        {
-          "code": "BK0547",
-          "name": "黄金概念"
-        },
-        {
           "code": "BK0549",
           "name": "深圳特区"
-        },
-        {
-          "code": "BK0683",
-          "name": "央国企改革"
-        },
-        {
-          "code": "BK0804",
-          "name": "深股通"
-        },
-        {
-          "code": "BK0867",
-          "name": "富时罗素"
-        },
-        {
-          "code": "BK0879",
-          "name": "标准普尔"
-        },
-        {
-          "code": "BK1001",
-          "name": "内贸流通"
         }
       ]
     },
     {
       "scenario": "volume_mid_thrust",
       "scenarioName": "中部放量启动",
-      "matchedRule": "未近20日高且量比=2.48≥1.5且当日涨幅=4.7%≥2%",
+      "matchedRule": "未近20日高且量比=1.69≥1.5且当日涨幅=3.4%≥2%",
       "features": {
-        "dayReturn": 4.68,
-        "volumeRatio": 2.48,
+        "dayReturn": 3.37,
+        "volumeRatio": 1.69,
         "lowerShadowRatio": 0,
-        "bodyRatio": 0.705,
-        "pullbackFromHigh20": 7.29,
-        "ret3": 4.18,
-        "ret10": 1.17,
-        "ret20": 3.35,
+        "bodyRatio": 0.971,
+        "pullbackFromHigh20": 4.35,
+        "ret3": 5.21,
+        "ret10": 9.19,
+        "ret20": 22.95,
         "limitUpCount5": 0,
         "nearHigh20": false,
         "aboveMa10": true,
-        "nearMa20": true
+        "nearMa20": false
       },
-      "code": "SZ002043",
-      "name": "兔 宝 宝",
+      "code": "SH601069",
+      "name": "西部黄金",
       "industry": {
-        "code": "BK0476",
-        "name": "装修建材"
+        "code": "BK0732",
+        "name": "贵金属"
       },
       "date": "2026/08/19",
       "timestamp": 1787068800000,
-      "close": 12.97,
+      "close": 29.46,
       "lift": 1.298,
       "returns": {
         "d1": null,
@@ -5732,36 +3548,7 @@
         "d5": null,
         "d10": null
       },
-      "concepts": [
-        {
-          "code": "BK0594",
-          "name": "长江三角"
-        },
-        {
-          "code": "BK0665",
-          "name": "电商概念"
-        },
-        {
-          "code": "BK0680",
-          "name": "智能家居"
-        },
-        {
-          "code": "BK0804",
-          "name": "深股通"
-        },
-        {
-          "code": "BK0823",
-          "name": "养老金"
-        },
-        {
-          "code": "BK0867",
-          "name": "富时罗素"
-        },
-        {
-          "code": "BK1641",
-          "name": "红利股"
-        }
-      ]
+      "concepts": []
     }
   ]
 }
