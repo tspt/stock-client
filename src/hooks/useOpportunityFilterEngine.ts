@@ -4,6 +4,13 @@ import type { FilterSkippedItem, OpportunityFilterSnapshot } from '@/types/oppor
 import type { OpportunityFilterWorkerResponse } from '@/workers/opportunityFilterWorkerTypes';
 
 function passLightFilters(item: StockOpportunityData, filters: OpportunityFilterSnapshot): boolean {
+  const nameType = filters.nameType ?? 'all';
+  if (nameType === 'st' || nameType === 'non_st') {
+    const isST = (item.name || '').includes('ST');
+    if (nameType === 'st' && !isST) return false;
+    if (nameType === 'non_st' && isST) return false;
+  }
+
   if (filters.priceRange.min !== undefined && item.price < filters.priceRange.min) return false;
   if (filters.priceRange.max !== undefined && item.price > filters.priceRange.max) return false;
 

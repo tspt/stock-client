@@ -1108,6 +1108,7 @@ export function OpportunityPage() {
       conceptSectors,
       industrySectorInvert,
       conceptSectorInvert,
+      nameType: nameType as 'all' | 'st' | 'non_st',
       enableNameKeywordFilter,
       excludedNameKeywords,
       enableExactNameFilter,
@@ -1168,6 +1169,7 @@ export function OpportunityPage() {
       conceptSectors,
       industrySectorInvert,
       conceptSectorInvert,
+      nameType,
       enableNameKeywordFilter,
       excludedNameKeywords,
       enableExactNameFilter,
@@ -1588,7 +1590,7 @@ export function OpportunityPage() {
               onChange={(value: string) => {
                 setNameType(value);
                 if (analysisData.length > 0) {
-                  message.info('名称类型已更改，请重新分析');
+                  message.info('名称类型会立即作用于当前结果；若要缩小分析池请重新分析');
                 }
               }}
               options={NAME_TYPE_OPTIONS}

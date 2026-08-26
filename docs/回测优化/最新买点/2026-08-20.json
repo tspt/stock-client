@@ -1,20 +1,74 @@
 {
-  "exportedAt": "2026-08-20T10:25:21.856Z",
+  "exportedAt": "2026-08-26T08:02:39.055Z",
   "kind": "latest",
   "kindLabel": "最新交易日命中",
-  "count": 157,
+  "count": 189,
   "fileBaseName": "2026-08-20",
   "meta": {
     "tab": "latest",
     "autoExport": true,
-    "asOfDate": null,
+    "asOfDate": "2026-08-20",
     "searchText": "",
     "scenarioFilter": "all",
     "excludeST": true,
-    "latestDate": "2026/08/20",
+    "latestDate": "2026/08/26",
     "fileBaseName": "2026-08-20"
   },
   "items": [
+    {
+      "scenario": "limit_up_trend",
+      "scenarioName": "连板/强趋势",
+      "matchedRule": "近5日近似涨停根数=3≥2",
+      "features": {
+        "dayReturn": 9.9,
+        "volumeRatio": 1.53,
+        "lowerShadowRatio": 0.403,
+        "bodyRatio": 0.597,
+        "pullbackFromHigh20": 11.02,
+        "ret3": -11.02,
+        "ret10": 36.62,
+        "ret20": 44.16,
+        "limitUpCount5": 3,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "code": "SZ002172",
+      "name": "澳洋健康",
+      "industry": {
+        "code": "BK0727",
+        "name": "医疗服务"
+      },
+      "date": "2026/08/20",
+      "timestamp": 1787155200000,
+      "close": 4.44,
+      "lift": 3.18,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d5": null,
+        "d10": null
+      },
+      "concepts": [
+        {
+          "code": "BK0806",
+          "name": "精准医疗"
+        },
+        {
+          "code": "BK0889",
+          "name": "医美概念"
+        },
+        {
+          "code": "BK0939",
+          "name": "辅助生殖"
+        },
+        {
+          "code": "BK0996",
+          "name": "毛发医疗"
+        }
+      ]
+    },
     {
       "scenario": "limit_up_trend",
       "scenarioName": "连板/强趋势",
@@ -304,6 +358,52 @@
     {
       "scenario": "limit_up_trend",
       "scenarioName": "连板/强趋势",
+      "matchedRule": "近5日近似涨停根数=2≥2",
+      "features": {
+        "dayReturn": 9.98,
+        "volumeRatio": 0.14,
+        "lowerShadowRatio": 0,
+        "bodyRatio": 0,
+        "pullbackFromHigh20": 0,
+        "ret3": 23.3,
+        "ret10": 32.29,
+        "ret20": 25.47,
+        "limitUpCount5": 2,
+        "nearHigh20": true,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "code": "SZ002412",
+      "name": "汉森制药",
+      "industry": {
+        "code": "BK1040",
+        "name": "中药Ⅱ"
+      },
+      "date": "2026/08/20",
+      "timestamp": 1787155200000,
+      "close": 9.26,
+      "lift": 3.18,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d5": null,
+        "d10": null
+      },
+      "concepts": [
+        {
+          "code": "BK1056",
+          "name": "幽门螺杆菌概念"
+        },
+        {
+          "code": "BK1078",
+          "name": "肝炎概念"
+        }
+      ]
+    },
+    {
+      "scenario": "limit_up_trend",
+      "scenarioName": "连板/强趋势",
       "matchedRule": "近5日近似涨停根数=3≥2",
       "features": {
         "dayReturn": 5.66,
@@ -337,6 +437,48 @@
         "d10": null
       },
       "concepts": []
+    },
+    {
+      "scenario": "limit_up_trend",
+      "scenarioName": "连板/强趋势",
+      "matchedRule": "近5日近似涨停根数=2≥2",
+      "features": {
+        "dayReturn": -6.19,
+        "volumeRatio": 1.26,
+        "lowerShadowRatio": 0.217,
+        "bodyRatio": 0.689,
+        "pullbackFromHigh20": 17.98,
+        "ret3": -9.77,
+        "ret10": 16.54,
+        "ret20": 19.95,
+        "limitUpCount5": 2,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "code": "SZ002907",
+      "name": "华森制药",
+      "industry": {
+        "code": "BK1040",
+        "name": "中药Ⅱ"
+      },
+      "date": "2026/08/20",
+      "timestamp": 1787155200000,
+      "close": 15.15,
+      "lift": 3.18,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d5": null,
+        "d10": null
+      },
+      "concepts": [
+        {
+          "code": "BK1056",
+          "name": "幽门螺杆菌概念"
+        }
+      ]
     },
     {
       "scenario": "limit_up_trend",
@@ -523,6 +665,52 @@
         {
           "code": "BK1635",
           "name": "长期破净"
+        }
+      ]
+    },
+    {
+      "scenario": "limit_up_trend",
+      "scenarioName": "连板/强趋势",
+      "matchedRule": "近5日近似涨停根数=2≥2",
+      "features": {
+        "dayReturn": -6,
+        "volumeRatio": 0.93,
+        "lowerShadowRatio": 0.167,
+        "bodyRatio": 0.833,
+        "pullbackFromHigh20": 12.42,
+        "ret3": -3.68,
+        "ret10": 55.47,
+        "ret20": 74.57,
+        "limitUpCount5": 2,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "code": "SH600272",
+      "name": "开开实业",
+      "industry": {
+        "code": "BK1042",
+        "name": "医药商业"
+      },
+      "date": "2026/08/20",
+      "timestamp": 1787155200000,
+      "close": 18.33,
+      "lift": 3.18,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d5": null,
+        "d10": null
+      },
+      "concepts": [
+        {
+          "code": "BK0672",
+          "name": "沪企改革"
+        },
+        {
+          "code": "BK1147",
+          "name": "SPD概念"
         }
       ]
     },
@@ -1179,6 +1367,43 @@
     {
       "scenario": "volume_breakout",
       "scenarioName": "放量突破续涨",
+      "matchedRule": "接近/突破近20日高点且量比=1.53≥1.5且当日涨幅=2.6%≥2%",
+      "features": {
+        "dayReturn": 2.65,
+        "volumeRatio": 1.53,
+        "lowerShadowRatio": 0.134,
+        "bodyRatio": 0.47,
+        "pullbackFromHigh20": 1.66,
+        "ret3": 6.18,
+        "ret10": 9.03,
+        "ret20": 8.45,
+        "limitUpCount5": 0,
+        "nearHigh20": true,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "code": "SH603658",
+      "name": "安图生物",
+      "industry": {
+        "code": "BK1041",
+        "name": "医疗器械"
+      },
+      "date": "2026/08/20",
+      "timestamp": 1787155200000,
+      "close": 34.9,
+      "lift": 1.847,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d5": null,
+        "d10": null
+      },
+      "concepts": []
+    },
+    {
+      "scenario": "volume_breakout",
+      "scenarioName": "放量突破续涨",
       "matchedRule": "接近/突破近20日高点且量比=2.09≥1.5且当日涨幅=10.0%≥2%",
       "features": {
         "dayReturn": 9.99,
@@ -1269,6 +1494,94 @@
         {
           "code": "BK1174",
           "name": "合成生物"
+        }
+      ]
+    },
+    {
+      "scenario": "volume_breakout",
+      "scenarioName": "放量突破续涨",
+      "matchedRule": "接近/突破近20日高点且量比=1.82≥1.5且当日涨幅=4.0%≥2%",
+      "features": {
+        "dayReturn": 4.05,
+        "volumeRatio": 1.82,
+        "lowerShadowRatio": 0,
+        "bodyRatio": 0.609,
+        "pullbackFromHigh20": 1.64,
+        "ret3": 0.56,
+        "ret10": 4.93,
+        "ret20": 2.47,
+        "limitUpCount5": 0,
+        "nearHigh20": true,
+        "aboveMa10": true,
+        "nearMa20": true
+      },
+      "code": "SH603858",
+      "name": "步长制药",
+      "industry": {
+        "code": "BK1040",
+        "name": "中药Ⅱ"
+      },
+      "date": "2026/08/20",
+      "timestamp": 1787155200000,
+      "close": 16.19,
+      "lift": 1.847,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d5": null,
+        "d10": null
+      },
+      "concepts": [
+        {
+          "code": "BK0889",
+          "name": "医美概念"
+        }
+      ]
+    },
+    {
+      "scenario": "volume_breakout",
+      "scenarioName": "放量突破续涨",
+      "matchedRule": "接近/突破近20日高点且量比=1.78≥1.5且当日涨幅=7.9%≥2%",
+      "features": {
+        "dayReturn": 7.91,
+        "volumeRatio": 1.78,
+        "lowerShadowRatio": 0.184,
+        "bodyRatio": 0.451,
+        "pullbackFromHigh20": 1.89,
+        "ret3": 13.05,
+        "ret10": 11.62,
+        "ret20": 18.72,
+        "limitUpCount5": 0,
+        "nearHigh20": true,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "code": "SH600988",
+      "name": "赤峰黄金",
+      "industry": {
+        "code": "BK0732",
+        "name": "贵金属"
+      },
+      "date": "2026/08/20",
+      "timestamp": 1787155200000,
+      "close": 46.1,
+      "lift": 1.847,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d5": null,
+        "d10": null
+      },
+      "concepts": [
+        {
+          "code": "BK0499",
+          "name": "AH股"
+        },
+        {
+          "code": "BK1663",
+          "name": "大盘股"
         }
       ]
     },
@@ -1631,6 +1944,43 @@
     {
       "scenario": "volume_breakout",
       "scenarioName": "放量突破续涨",
+      "matchedRule": "接近/突破近20日高点且量比=1.52≥1.5且当日涨幅=2.6%≥2%",
+      "features": {
+        "dayReturn": 2.56,
+        "volumeRatio": 1.52,
+        "lowerShadowRatio": 0,
+        "bodyRatio": 0.958,
+        "pullbackFromHigh20": 0.07,
+        "ret3": 2.25,
+        "ret10": 3.5,
+        "ret20": 3.18,
+        "limitUpCount5": 0,
+        "nearHigh20": true,
+        "aboveMa10": true,
+        "nearMa20": true
+      },
+      "code": "SZ002275",
+      "name": "桂林三金",
+      "industry": {
+        "code": "BK1040",
+        "name": "中药Ⅱ"
+      },
+      "date": "2026/08/20",
+      "timestamp": 1787155200000,
+      "close": 13.62,
+      "lift": 1.847,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d5": null,
+        "d10": null
+      },
+      "concepts": []
+    },
+    {
+      "scenario": "volume_breakout",
+      "scenarioName": "放量突破续涨",
       "matchedRule": "接近/突破近20日高点且量比=1.51≥1.5且当日涨幅=3.3%≥2%",
       "features": {
         "dayReturn": 3.31,
@@ -1655,6 +2005,43 @@
       "date": "2026/08/20",
       "timestamp": 1787155200000,
       "close": 19.97,
+      "lift": 1.847,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d5": null,
+        "d10": null
+      },
+      "concepts": []
+    },
+    {
+      "scenario": "volume_breakout",
+      "scenarioName": "放量突破续涨",
+      "matchedRule": "接近/突破近20日高点且量比=2.01≥1.5且当日涨幅=4.8%≥2%",
+      "features": {
+        "dayReturn": 4.75,
+        "volumeRatio": 2.01,
+        "lowerShadowRatio": 0.194,
+        "bodyRatio": 0.139,
+        "pullbackFromHigh20": 3.1,
+        "ret3": 3.81,
+        "ret10": 7.91,
+        "ret20": 13.29,
+        "limitUpCount5": 0,
+        "nearHigh20": true,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "code": "SZ002237",
+      "name": "恒邦股份",
+      "industry": {
+        "code": "BK0732",
+        "name": "贵金属"
+      },
+      "date": "2026/08/20",
+      "timestamp": 1787155200000,
+      "close": 15,
       "lift": 1.847,
       "returns": {
         "d1": null,
@@ -1856,6 +2243,52 @@
     {
       "scenario": "volume_breakout",
       "scenarioName": "放量突破续涨",
+      "matchedRule": "接近/突破近20日高点且量比=1.80≥1.5且当日涨幅=4.3%≥2%",
+      "features": {
+        "dayReturn": 4.32,
+        "volumeRatio": 1.8,
+        "lowerShadowRatio": 0,
+        "bodyRatio": 0.844,
+        "pullbackFromHigh20": 0.72,
+        "ret3": 2.77,
+        "ret10": 7.58,
+        "ret20": 9.91,
+        "limitUpCount5": 0,
+        "nearHigh20": true,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "code": "SH603387",
+      "name": "基蛋生物",
+      "industry": {
+        "code": "BK1041",
+        "name": "医疗器械"
+      },
+      "date": "2026/08/20",
+      "timestamp": 1787155200000,
+      "close": 9.65,
+      "lift": 1.847,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d5": null,
+        "d10": null
+      },
+      "concepts": [
+        {
+          "code": "BK0806",
+          "name": "精准医疗"
+        },
+        {
+          "code": "BK1056",
+          "name": "幽门螺杆菌概念"
+        }
+      ]
+    },
+    {
+      "scenario": "volume_breakout",
+      "scenarioName": "放量突破续涨",
       "matchedRule": "接近/突破近20日高点且量比=1.65≥1.5且当日涨幅=3.4%≥2%",
       "features": {
         "dayReturn": 3.37,
@@ -1935,43 +2368,6 @@
     {
       "scenario": "volume_breakout",
       "scenarioName": "放量突破续涨",
-      "matchedRule": "接近/突破近20日高点且量比=2.53≥1.5且当日涨幅=10.1%≥2%",
-      "features": {
-        "dayReturn": 10.05,
-        "volumeRatio": 2.53,
-        "lowerShadowRatio": 0.094,
-        "bodyRatio": 0.906,
-        "pullbackFromHigh20": 0,
-        "ret3": 9.25,
-        "ret10": 11.97,
-        "ret20": 30.14,
-        "limitUpCount5": 1,
-        "nearHigh20": true,
-        "aboveMa10": true,
-        "nearMa20": false
-      },
-      "code": "SH600984",
-      "name": "建设机械",
-      "industry": {
-        "code": "BK0739",
-        "name": "工程机械"
-      },
-      "date": "2026/08/10",
-      "timestamp": 1786291200000,
-      "close": 4.49,
-      "lift": 1.847,
-      "returns": {
-        "d1": null,
-        "d2": null,
-        "d3": null,
-        "d5": null,
-        "d10": null
-      },
-      "concepts": []
-    },
-    {
-      "scenario": "volume_breakout",
-      "scenarioName": "放量突破续涨",
       "matchedRule": "接近/突破近20日高点且量比=3.12≥1.5且当日涨幅=5.6%≥2%",
       "features": {
         "dayReturn": 5.57,
@@ -2008,6 +2404,56 @@
         {
           "code": "BK0944",
           "name": "肝素概念"
+        }
+      ]
+    },
+    {
+      "scenario": "volume_breakout",
+      "scenarioName": "放量突破续涨",
+      "matchedRule": "接近/突破近20日高点且量比=2.70≥1.5且当日涨幅=5.5%≥2%",
+      "features": {
+        "dayReturn": 5.45,
+        "volumeRatio": 2.7,
+        "lowerShadowRatio": 0,
+        "bodyRatio": 0.432,
+        "pullbackFromHigh20": 4.13,
+        "ret3": 2.65,
+        "ret10": 11.11,
+        "ret20": 18.61,
+        "limitUpCount5": 0,
+        "nearHigh20": true,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "code": "SZ002022",
+      "name": "科华生物",
+      "industry": {
+        "code": "BK1041",
+        "name": "医疗器械"
+      },
+      "date": "2026/08/20",
+      "timestamp": 1787155200000,
+      "close": 5.8,
+      "lift": 1.847,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d5": null,
+        "d10": null
+      },
+      "concepts": [
+        {
+          "code": "BK0528",
+          "name": "转债标的"
+        },
+        {
+          "code": "BK0803",
+          "name": "股权转让"
+        },
+        {
+          "code": "BK0806",
+          "name": "精准医疗"
         }
       ]
     },
@@ -2139,6 +2585,56 @@
         "d10": null
       },
       "concepts": []
+    },
+    {
+      "scenario": "volume_breakout",
+      "scenarioName": "放量突破续涨",
+      "matchedRule": "接近/突破近20日高点且量比=2.87≥1.5且当日涨幅=4.6%≥2%",
+      "features": {
+        "dayReturn": 4.58,
+        "volumeRatio": 2.87,
+        "lowerShadowRatio": 0.022,
+        "bodyRatio": 0.622,
+        "pullbackFromHigh20": 1.44,
+        "ret3": 1.76,
+        "ret10": 2.24,
+        "ret20": 0.46,
+        "limitUpCount5": 0,
+        "nearHigh20": true,
+        "aboveMa10": true,
+        "nearMa20": true
+      },
+      "code": "SH600739",
+      "name": "辽宁成大",
+      "industry": {
+        "code": "BK1044",
+        "name": "生物制品"
+      },
+      "date": "2026/08/20",
+      "timestamp": 1787155200000,
+      "close": 10.96,
+      "lift": 1.847,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d5": null,
+        "d10": null
+      },
+      "concepts": [
+        {
+          "code": "BK0514",
+          "name": "参股券商"
+        },
+        {
+          "code": "BK1112",
+          "name": "破净股"
+        },
+        {
+          "code": "BK1635",
+          "name": "长期破净"
+        }
+      ]
     },
     {
       "scenario": "volume_breakout",
@@ -2335,6 +2831,64 @@
     {
       "scenario": "volume_breakout",
       "scenarioName": "放量突破续涨",
+      "matchedRule": "接近/突破近20日高点且量比=1.69≥1.5且当日涨幅=3.5%≥2%",
+      "features": {
+        "dayReturn": 3.5,
+        "volumeRatio": 1.69,
+        "lowerShadowRatio": 0,
+        "bodyRatio": 0.875,
+        "pullbackFromHigh20": 0.35,
+        "ret3": 2.74,
+        "ret10": 5.44,
+        "ret20": 4.66,
+        "limitUpCount5": 0,
+        "nearHigh20": true,
+        "aboveMa10": true,
+        "nearMa20": true
+      },
+      "code": "SZ000650",
+      "name": "仁和药业",
+      "industry": {
+        "code": "BK1040",
+        "name": "中药Ⅱ"
+      },
+      "date": "2026/08/20",
+      "timestamp": 1787155200000,
+      "close": 5.62,
+      "lift": 1.847,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d5": null,
+        "d10": null
+      },
+      "concepts": [
+        {
+          "code": "BK0676",
+          "name": "独家药品"
+        },
+        {
+          "code": "BK0974",
+          "name": "化妆品概念"
+        },
+        {
+          "code": "BK1078",
+          "name": "肝炎概念"
+        },
+        {
+          "code": "BK1178",
+          "name": "AI眼镜"
+        },
+        {
+          "code": "BK1640",
+          "name": "价值股"
+        }
+      ]
+    },
+    {
+      "scenario": "volume_breakout",
+      "scenarioName": "放量突破续涨",
       "matchedRule": "接近/突破近20日高点且量比=3.09≥1.5且当日涨幅=10.0%≥2%",
       "features": {
         "dayReturn": 10.01,
@@ -2460,6 +3014,110 @@
         "d10": null
       },
       "concepts": []
+    },
+    {
+      "scenario": "volume_breakout",
+      "scenarioName": "放量突破续涨",
+      "matchedRule": "接近/突破近20日高点且量比=2.02≥1.5且当日涨幅=8.6%≥2%",
+      "features": {
+        "dayReturn": 8.59,
+        "volumeRatio": 2.02,
+        "lowerShadowRatio": 0.124,
+        "bodyRatio": 0.629,
+        "pullbackFromHigh20": 1.28,
+        "ret3": 17.61,
+        "ret10": 18.16,
+        "ret20": 29.1,
+        "limitUpCount5": 0,
+        "nearHigh20": true,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "code": "SH600547",
+      "name": "山东黄金",
+      "industry": {
+        "code": "BK0732",
+        "name": "贵金属"
+      },
+      "date": "2026/08/20",
+      "timestamp": 1787155200000,
+      "close": 35.4,
+      "lift": 1.847,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d5": null,
+        "d10": null
+      },
+      "concepts": [
+        {
+          "code": "BK0499",
+          "name": "AH股"
+        },
+        {
+          "code": "BK0612",
+          "name": "上证180_"
+        },
+        {
+          "code": "BK0718",
+          "name": "证金持股"
+        },
+        {
+          "code": "BK1639",
+          "name": "周期股"
+        },
+        {
+          "code": "BK1661",
+          "name": "行业龙头"
+        },
+        {
+          "code": "BK1663",
+          "name": "大盘股"
+        }
+      ]
+    },
+    {
+      "scenario": "volume_breakout",
+      "scenarioName": "放量突破续涨",
+      "matchedRule": "接近/突破近20日高点且量比=1.78≥1.5且当日涨幅=4.1%≥2%",
+      "features": {
+        "dayReturn": 4.1,
+        "volumeRatio": 1.78,
+        "lowerShadowRatio": 0.231,
+        "bodyRatio": 0.28,
+        "pullbackFromHigh20": 3.79,
+        "ret3": 3.64,
+        "ret10": 9.58,
+        "ret20": 22.31,
+        "limitUpCount5": 0,
+        "nearHigh20": true,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "code": "SZ000975",
+      "name": "山金国际",
+      "industry": {
+        "code": "BK0732",
+        "name": "贵金属"
+      },
+      "date": "2026/08/20",
+      "timestamp": 1787155200000,
+      "close": 27.9,
+      "lift": 1.847,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d5": null,
+        "d10": null
+      },
+      "concepts": [
+        {
+          "code": "BK1663",
+          "name": "大盘股"
+        }
+      ]
     },
     {
       "scenario": "volume_breakout",
@@ -2601,6 +3259,52 @@
     {
       "scenario": "volume_breakout",
       "scenarioName": "放量突破续涨",
+      "matchedRule": "接近/突破近20日高点且量比=1.70≥1.5且当日涨幅=10.0%≥2%",
+      "features": {
+        "dayReturn": 10,
+        "volumeRatio": 1.7,
+        "lowerShadowRatio": 0,
+        "bodyRatio": 1,
+        "pullbackFromHigh20": 0,
+        "ret3": 5.34,
+        "ret10": 9.01,
+        "ret20": 11.63,
+        "limitUpCount5": 1,
+        "nearHigh20": true,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "code": "SZ002880",
+      "name": "卫光生物",
+      "industry": {
+        "code": "BK1044",
+        "name": "生物制品"
+      },
+      "date": "2026/08/20",
+      "timestamp": 1787155200000,
+      "close": 21.89,
+      "lift": 1.847,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d5": null,
+        "d10": null
+      },
+      "concepts": [
+        {
+          "code": "BK0549",
+          "name": "深圳特区"
+        },
+        {
+          "code": "BK1174",
+          "name": "合成生物"
+        }
+      ]
+    },
+    {
+      "scenario": "volume_breakout",
+      "scenarioName": "放量突破续涨",
       "matchedRule": "接近/突破近20日高点且量比=2.30≥1.5且当日涨幅=3.7%≥2%",
       "features": {
         "dayReturn": 3.66,
@@ -2637,6 +3341,131 @@
         {
           "code": "BK0895",
           "name": "维生素"
+        }
+      ]
+    },
+    {
+      "scenario": "volume_breakout",
+      "scenarioName": "放量突破续涨",
+      "matchedRule": "接近/突破近20日高点且量比=1.67≥1.5且当日涨幅=4.9%≥2%",
+      "features": {
+        "dayReturn": 4.89,
+        "volumeRatio": 1.67,
+        "lowerShadowRatio": 0.299,
+        "bodyRatio": 0.066,
+        "pullbackFromHigh20": 3.65,
+        "ret3": 8.8,
+        "ret10": 8.04,
+        "ret20": 28.32,
+        "limitUpCount5": 0,
+        "nearHigh20": true,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "code": "SH601069",
+      "name": "西部黄金",
+      "industry": {
+        "code": "BK0732",
+        "name": "贵金属"
+      },
+      "date": "2026/08/20",
+      "timestamp": 1787155200000,
+      "close": 30.9,
+      "lift": 1.847,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d5": null,
+        "d10": null
+      },
+      "concepts": []
+    },
+    {
+      "scenario": "volume_breakout",
+      "scenarioName": "放量突破续涨",
+      "matchedRule": "接近/突破近20日高点且量比=2.55≥1.5且当日涨幅=10.0%≥2%",
+      "features": {
+        "dayReturn": 10.01,
+        "volumeRatio": 2.55,
+        "lowerShadowRatio": 0.17,
+        "bodyRatio": 0.83,
+        "pullbackFromHigh20": 0,
+        "ret3": 7.14,
+        "ret10": 10.42,
+        "ret20": 8.7,
+        "limitUpCount5": 1,
+        "nearHigh20": true,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "code": "SH600211",
+      "name": "西藏药业",
+      "industry": {
+        "code": "BK1044",
+        "name": "生物制品"
+      },
+      "date": "2026/08/20",
+      "timestamp": 1787155200000,
+      "close": 41.86,
+      "lift": 1.847,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d5": null,
+        "d10": null
+      },
+      "concepts": [
+        {
+          "code": "BK0676",
+          "name": "独家药品"
+        }
+      ]
+    },
+    {
+      "scenario": "volume_breakout",
+      "scenarioName": "放量突破续涨",
+      "matchedRule": "接近/突破近20日高点且量比=1.91≥1.5且当日涨幅=5.3%≥2%",
+      "features": {
+        "dayReturn": 5.27,
+        "volumeRatio": 1.91,
+        "lowerShadowRatio": 0.042,
+        "bodyRatio": 0.833,
+        "pullbackFromHigh20": 0.52,
+        "ret3": 2.18,
+        "ret10": 6.89,
+        "ret20": 2.6,
+        "limitUpCount5": 0,
+        "nearHigh20": true,
+        "aboveMa10": true,
+        "nearMa20": true
+      },
+      "code": "SZ002603",
+      "name": "以岭药业",
+      "industry": {
+        "code": "BK1040",
+        "name": "中药Ⅱ"
+      },
+      "date": "2026/08/20",
+      "timestamp": 1787155200000,
+      "close": 17.38,
+      "lift": 1.847,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d5": null,
+        "d10": null
+      },
+      "concepts": [
+        {
+          "code": "BK0641",
+          "name": "智能穿戴"
+        },
+        {
+          "code": "BK0676",
+          "name": "独家药品"
         }
       ]
     },
@@ -2867,30 +3696,92 @@
     {
       "scenario": "soft_breakout",
       "scenarioName": "温和过前高",
-      "matchedRule": "近20日高且量比=1.06∈[1.0,1.5)且当日涨幅=2.9%≥1%",
+      "matchedRule": "近20日高且量比=1.31∈[1.0,1.5)且当日涨幅=9.9%≥1%",
       "features": {
-        "dayReturn": 2.87,
-        "volumeRatio": 1.06,
-        "lowerShadowRatio": 0.045,
-        "bodyRatio": 0.955,
+        "dayReturn": 9.94,
+        "volumeRatio": 1.31,
+        "lowerShadowRatio": 0.04,
+        "bodyRatio": 0.96,
         "pullbackFromHigh20": 0,
-        "ret3": 2.64,
-        "ret10": 6.26,
-        "ret20": 17.51,
-        "limitUpCount5": 0,
+        "ret3": 4.37,
+        "ret10": 7.18,
+        "ret20": 12.64,
+        "limitUpCount5": 1,
         "nearHigh20": true,
         "aboveMa10": true,
         "nearMa20": false
       },
-      "code": "SZ002679",
-      "name": "福建金森",
+      "code": "SZ002030",
+      "name": "达安基因",
       "industry": {
-        "code": "BK1255",
-        "name": "林业Ⅱ"
+        "code": "BK1041",
+        "name": "医疗器械"
       },
       "date": "2026/08/20",
       "timestamp": 1787155200000,
-      "close": 9.33,
+      "close": 5.97,
+      "lift": 1.814,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d5": null,
+        "d10": null
+      },
+      "concepts": [
+        {
+          "code": "BK0614",
+          "name": "食品安全"
+        },
+        {
+          "code": "BK0718",
+          "name": "证金持股"
+        },
+        {
+          "code": "BK0806",
+          "name": "精准医疗"
+        },
+        {
+          "code": "BK0939",
+          "name": "辅助生殖"
+        },
+        {
+          "code": "BK1056",
+          "name": "幽门螺杆菌概念"
+        },
+        {
+          "code": "BK1078",
+          "name": "肝炎概念"
+        }
+      ]
+    },
+    {
+      "scenario": "soft_breakout",
+      "scenarioName": "温和过前高",
+      "matchedRule": "近20日高且量比=1.21∈[1.0,1.5)且当日涨幅=10.0%≥1%",
+      "features": {
+        "dayReturn": 9.99,
+        "volumeRatio": 1.21,
+        "lowerShadowRatio": 0.071,
+        "bodyRatio": 0.929,
+        "pullbackFromHigh20": 0,
+        "ret3": 6.25,
+        "ret10": 12.28,
+        "ret20": 21.73,
+        "limitUpCount5": 1,
+        "nearHigh20": true,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "code": "SZ000590",
+      "name": "古汉医药",
+      "industry": {
+        "code": "BK1040",
+        "name": "中药Ⅱ"
+      },
+      "date": "2026/08/20",
+      "timestamp": 1787155200000,
+      "close": 9.69,
       "lift": 1.814,
       "returns": {
         "d1": null,
@@ -2946,43 +3837,6 @@
           "name": "中俄贸易概念"
         }
       ]
-    },
-    {
-      "scenario": "soft_breakout",
-      "scenarioName": "温和过前高",
-      "matchedRule": "近20日高且量比=1.10∈[1.0,1.5)且当日涨幅=1.7%≥1%",
-      "features": {
-        "dayReturn": 1.68,
-        "volumeRatio": 1.1,
-        "lowerShadowRatio": 0.286,
-        "bodyRatio": 0.5,
-        "pullbackFromHigh20": 0.61,
-        "ret3": 0.21,
-        "ret10": 3.63,
-        "ret20": 12.27,
-        "limitUpCount5": 0,
-        "nearHigh20": true,
-        "aboveMa10": true,
-        "nearMa20": true
-      },
-      "code": "SZ000619",
-      "name": "海螺新材",
-      "industry": {
-        "code": "BK0476",
-        "name": "装修建材"
-      },
-      "date": "2026/08/20",
-      "timestamp": 1787155200000,
-      "close": 4.85,
-      "lift": 1.814,
-      "returns": {
-        "d1": null,
-        "d2": null,
-        "d3": null,
-        "d5": null,
-        "d10": null
-      },
-      "concepts": []
     },
     {
       "scenario": "soft_breakout",
@@ -3250,30 +4104,30 @@
     {
       "scenario": "soft_breakout",
       "scenarioName": "温和过前高",
-      "matchedRule": "近20日高且量比=1.20∈[1.0,1.5)且当日涨幅=3.0%≥1%",
+      "matchedRule": "近20日高且量比=1.11∈[1.0,1.5)且当日涨幅=2.4%≥1%",
       "features": {
-        "dayReturn": 3.02,
-        "volumeRatio": 1.2,
-        "lowerShadowRatio": 0.25,
-        "bodyRatio": 0.75,
-        "pullbackFromHigh20": 0.83,
-        "ret3": 0,
-        "ret10": 5.29,
-        "ret20": 17.16,
+        "dayReturn": 2.42,
+        "volumeRatio": 1.11,
+        "lowerShadowRatio": 0.316,
+        "bodyRatio": 0.211,
+        "pullbackFromHigh20": 1.23,
+        "ret3": 1.12,
+        "ret10": 8.11,
+        "ret20": 6.82,
         "limitUpCount5": 0,
         "nearHigh20": true,
         "aboveMa10": true,
-        "nearMa20": false
+        "nearMa20": true
       },
-      "code": "SZ002247",
-      "name": "聚力文化",
+      "code": "SZ002349",
+      "name": "精华制药",
       "industry": {
-        "code": "BK0476",
-        "name": "装修建材"
+        "code": "BK1040",
+        "name": "中药Ⅱ"
       },
       "date": "2026/08/20",
       "timestamp": 1787155200000,
-      "close": 2.39,
+      "close": 7.2,
       "lift": 1.814,
       "returns": {
         "d1": null,
@@ -3284,8 +4138,50 @@
       },
       "concepts": [
         {
-          "code": "BK1053",
-          "name": "低价股"
+          "code": "BK0925",
+          "name": "北交所概念"
+        }
+      ]
+    },
+    {
+      "scenario": "soft_breakout",
+      "scenarioName": "温和过前高",
+      "matchedRule": "近20日高且量比=1.45∈[1.0,1.5)且当日涨幅=3.2%≥1%",
+      "features": {
+        "dayReturn": 3.22,
+        "volumeRatio": 1.45,
+        "lowerShadowRatio": 0,
+        "bodyRatio": 0.923,
+        "pullbackFromHigh20": 0.9,
+        "ret3": 1.32,
+        "ret10": 5.19,
+        "ret20": 6.5,
+        "limitUpCount5": 0,
+        "nearHigh20": true,
+        "aboveMa10": true,
+        "nearMa20": true
+      },
+      "code": "SH603987",
+      "name": "康德莱",
+      "industry": {
+        "code": "BK1041",
+        "name": "医疗器械"
+      },
+      "date": "2026/08/20",
+      "timestamp": 1787155200000,
+      "close": 7.7,
+      "lift": 1.814,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d5": null,
+        "d10": null
+      },
+      "concepts": [
+        {
+          "code": "BK0889",
+          "name": "医美概念"
         }
       ]
     },
@@ -3507,6 +4403,48 @@
         {
           "code": "BK1644",
           "name": "微盘精选"
+        }
+      ]
+    },
+    {
+      "scenario": "soft_breakout",
+      "scenarioName": "温和过前高",
+      "matchedRule": "近20日高且量比=1.40∈[1.0,1.5)且当日涨幅=1.8%≥1%",
+      "features": {
+        "dayReturn": 1.82,
+        "volumeRatio": 1.4,
+        "lowerShadowRatio": 0.095,
+        "bodyRatio": 0.619,
+        "pullbackFromHigh20": 0.59,
+        "ret3": 0.9,
+        "ret10": 3.71,
+        "ret20": 4.46,
+        "limitUpCount5": 0,
+        "nearHigh20": true,
+        "aboveMa10": true,
+        "nearMa20": true
+      },
+      "code": "SH600479",
+      "name": "千金药业",
+      "industry": {
+        "code": "BK1040",
+        "name": "中药Ⅱ"
+      },
+      "date": "2026/08/20",
+      "timestamp": 1787155200000,
+      "close": 10.07,
+      "lift": 1.814,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d5": null,
+        "d10": null
+      },
+      "concepts": [
+        {
+          "code": "BK1078",
+          "name": "肝炎概念"
         }
       ]
     },
@@ -3926,6 +4864,134 @@
     {
       "scenario": "soft_breakout",
       "scenarioName": "温和过前高",
+      "matchedRule": "近20日高且量比=1.41∈[1.0,1.5)且当日涨幅=2.4%≥1%",
+      "features": {
+        "dayReturn": 2.38,
+        "volumeRatio": 1.41,
+        "lowerShadowRatio": 0.253,
+        "bodyRatio": 0.406,
+        "pullbackFromHigh20": 3.28,
+        "ret3": 0.61,
+        "ret10": 17.66,
+        "ret20": 31.74,
+        "limitUpCount5": 0,
+        "nearHigh20": true,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "code": "SH603259",
+      "name": "药明康德",
+      "industry": {
+        "code": "BK0727",
+        "name": "医疗服务"
+      },
+      "date": "2026/08/20",
+      "timestamp": 1787155200000,
+      "close": 167.9,
+      "lift": 1.814,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d5": null,
+        "d10": null
+      },
+      "concepts": [
+        {
+          "code": "BK0499",
+          "name": "AH股"
+        },
+        {
+          "code": "BK0611",
+          "name": "上证50_"
+        },
+        {
+          "code": "BK0612",
+          "name": "上证180_"
+        },
+        {
+          "code": "BK0899",
+          "name": "CRO"
+        },
+        {
+          "code": "BK0986",
+          "name": "CAR-T细胞疗法"
+        },
+        {
+          "code": "BK0999",
+          "name": "茅指数"
+        },
+        {
+          "code": "BK1000",
+          "name": "宁组合"
+        },
+        {
+          "code": "BK1661",
+          "name": "行业龙头"
+        },
+        {
+          "code": "BK1662",
+          "name": "权重股"
+        },
+        {
+          "code": "BK1663",
+          "name": "大盘股"
+        }
+      ]
+    },
+    {
+      "scenario": "soft_breakout",
+      "scenarioName": "温和过前高",
+      "matchedRule": "近20日高且量比=1.30∈[1.0,1.5)且当日涨幅=2.8%≥1%",
+      "features": {
+        "dayReturn": 2.78,
+        "volumeRatio": 1.3,
+        "lowerShadowRatio": 0,
+        "bodyRatio": 1,
+        "pullbackFromHigh20": 0,
+        "ret3": 2.18,
+        "ret10": 8.5,
+        "ret20": 9.69,
+        "limitUpCount5": 0,
+        "nearHigh20": true,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "code": "SZ002566",
+      "name": "益盛药业",
+      "industry": {
+        "code": "BK1040",
+        "name": "中药Ⅱ"
+      },
+      "date": "2026/08/20",
+      "timestamp": 1787155200000,
+      "close": 7.02,
+      "lift": 1.814,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d5": null,
+        "d10": null
+      },
+      "concepts": [
+        {
+          "code": "BK0974",
+          "name": "化妆品概念"
+        },
+        {
+          "code": "BK0996",
+          "name": "毛发医疗"
+        },
+        {
+          "code": "BK1644",
+          "name": "微盘精选"
+        }
+      ]
+    },
+    {
+      "scenario": "soft_breakout",
+      "scenarioName": "温和过前高",
       "matchedRule": "近20日高且量比=1.22∈[1.0,1.5)且当日涨幅=2.4%≥1%",
       "features": {
         "dayReturn": 2.37,
@@ -4179,6 +5245,80 @@
     {
       "scenario": "trend_continuation",
       "scenarioName": "趋势中继",
+      "matchedRule": "近3日累计=5.9%∈[5,20)且当日不跌",
+      "features": {
+        "dayReturn": 10.01,
+        "volumeRatio": 1.12,
+        "lowerShadowRatio": 0.21,
+        "bodyRatio": 0.79,
+        "pullbackFromHigh20": 4.11,
+        "ret3": 5.89,
+        "ret10": 9.74,
+        "ret20": 15.99,
+        "limitUpCount5": 1,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "code": "SH603882",
+      "name": "金域医学",
+      "industry": {
+        "code": "BK0727",
+        "name": "医疗服务"
+      },
+      "date": "2026/08/20",
+      "timestamp": 1787155200000,
+      "close": 30.76,
+      "lift": 1.577,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d5": null,
+        "d10": null
+      },
+      "concepts": []
+    },
+    {
+      "scenario": "trend_continuation",
+      "scenarioName": "趋势中继",
+      "matchedRule": "近3日累计=5.1%∈[5,20)且当日不跌",
+      "features": {
+        "dayReturn": 10,
+        "volumeRatio": 1,
+        "lowerShadowRatio": 1,
+        "bodyRatio": 0,
+        "pullbackFromHigh20": 0,
+        "ret3": 5.08,
+        "ret10": 11.64,
+        "ret20": 4.16,
+        "limitUpCount5": 1,
+        "nearHigh20": true,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "code": "SH603590",
+      "name": "康辰药业",
+      "industry": {
+        "code": "BK1044",
+        "name": "生物制品"
+      },
+      "date": "2026/08/20",
+      "timestamp": 1787155200000,
+      "close": 34.33,
+      "lift": 1.577,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d5": null,
+        "d10": null
+      },
+      "concepts": []
+    },
+    {
+      "scenario": "trend_continuation",
+      "scenarioName": "趋势中继",
       "matchedRule": "近3日累计=6.5%∈[5,20)且当日不跌",
       "features": {
         "dayReturn": 10.02,
@@ -4217,6 +5357,43 @@
           "name": "中俄贸易概念"
         }
       ]
+    },
+    {
+      "scenario": "trend_continuation",
+      "scenarioName": "趋势中继",
+      "matchedRule": "近3日累计=9.6%∈[5,20)且当日不跌",
+      "features": {
+        "dayReturn": 5.94,
+        "volumeRatio": 1.28,
+        "lowerShadowRatio": 0.318,
+        "bodyRatio": 0.136,
+        "pullbackFromHigh20": 7.38,
+        "ret3": 9.58,
+        "ret10": 18.02,
+        "ret20": 47.91,
+        "limitUpCount5": 0,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "code": "SZ000506",
+      "name": "招金黄金",
+      "industry": {
+        "code": "BK0732",
+        "name": "贵金属"
+      },
+      "date": "2026/08/20",
+      "timestamp": 1787155200000,
+      "close": 19.45,
+      "lift": 1.577,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d5": null,
+        "d10": null
+      },
+      "concepts": []
     },
     {
       "scenario": "trend_continuation",
@@ -4405,30 +5582,30 @@
     {
       "scenario": "volume_mid_thrust",
       "scenarioName": "中部放量启动",
-      "matchedRule": "未近20日高且量比=1.62≥1.5且当日涨幅=2.0%≥2%",
+      "matchedRule": "未近20日高且量比=1.63≥1.5且当日涨幅=2.1%≥2%",
       "features": {
-        "dayReturn": 2.05,
-        "volumeRatio": 1.62,
-        "lowerShadowRatio": 0.076,
-        "bodyRatio": 0.678,
-        "pullbackFromHigh20": 6.39,
-        "ret3": 0.67,
-        "ret10": 1.15,
-        "ret20": -2.34,
+        "dayReturn": 2.14,
+        "volumeRatio": 1.63,
+        "lowerShadowRatio": 0.07,
+        "bodyRatio": 0.837,
+        "pullbackFromHigh20": 4.06,
+        "ret3": 1.37,
+        "ret10": 0.56,
+        "ret20": -1.78,
         "limitUpCount5": 0,
         "nearHigh20": false,
         "aboveMa10": true,
         "nearMa20": true
       },
-      "code": "SZ002594",
-      "name": "比亚迪",
+      "code": "SH600332",
+      "name": "白云山",
       "industry": {
-        "code": "BK1262",
-        "name": "乘用车"
+        "code": "BK1040",
+        "name": "中药Ⅱ"
       },
       "date": "2026/08/20",
       "timestamp": 1787155200000,
-      "close": 90.48,
+      "close": 21.51,
       "lift": 1.298,
       "returns": {
         "d1": null,
@@ -4439,76 +5616,16 @@
       },
       "concepts": [
         {
-          "code": "BK0493",
-          "name": "新能源"
-        },
-        {
           "code": "BK0499",
           "name": "AH股"
         },
         {
-          "code": "BK0549",
-          "name": "深圳特区"
+          "code": "BK0872",
+          "name": "青蒿素"
         },
         {
-          "code": "BK0700",
-          "name": "充电桩"
-        },
-        {
-          "code": "BK0811",
-          "name": "超级品牌"
-        },
-        {
-          "code": "BK0917",
-          "name": "半导体概念"
-        },
-        {
-          "code": "BK0920",
-          "name": "车联网(车路云)"
-        },
-        {
-          "code": "BK0951",
-          "name": "刀片电池"
-        },
-        {
-          "code": "BK0960",
-          "name": "无线充电"
-        },
-        {
-          "code": "BK0999",
-          "name": "茅指数"
-        },
-        {
-          "code": "BK1000",
-          "name": "宁组合"
-        },
-        {
-          "code": "BK1029",
-          "name": "汽车整车"
-        },
-        {
-          "code": "BK1048",
-          "name": "IGBT概念"
-        },
-        {
-          "code": "BK1155",
-          "name": "小米汽车"
-        },
-        {
-          "code": "BK1639",
-          "name": "周期股"
-        },
-        {
-          "code": "BK1661",
-          "name": "行业龙头"
-        },
-        {
-          "code": "BK1662",
-          "name": "权重股"
-        },
-        {
-          "code": "BK1663",
-          "name": "大盘股"
+          "code": "BK1112",
+          "name": "破净股"
         }
       ]
     },
@@ -4888,80 +6005,6 @@
         {
           "code": "BK1098",
           "name": "生物质能发电"
-        }
-      ]
-    },
-    {
-      "scenario": "volume_mid_thrust",
-      "scenarioName": "中部放量启动",
-      "matchedRule": "未近20日高且量比=3.60≥1.5且当日涨幅=8.0%≥2%",
-      "features": {
-        "dayReturn": 7.98,
-        "volumeRatio": 3.6,
-        "lowerShadowRatio": 0,
-        "bodyRatio": 0.851,
-        "pullbackFromHigh20": 3.05,
-        "ret3": 5.25,
-        "ret10": 2.85,
-        "ret20": 2.66,
-        "limitUpCount5": 0,
-        "nearHigh20": false,
-        "aboveMa10": true,
-        "nearMa20": true
-      },
-      "code": "SH601238",
-      "name": "广汽集团",
-      "industry": {
-        "code": "BK1262",
-        "name": "乘用车"
-      },
-      "date": "2026/08/20",
-      "timestamp": 1787155200000,
-      "close": 5.41,
-      "lift": 1.298,
-      "returns": {
-        "d1": null,
-        "d2": null,
-        "d3": null,
-        "d5": null,
-        "d10": null
-      },
-      "concepts": [
-        {
-          "code": "BK0499",
-          "name": "AH股"
-        },
-        {
-          "code": "BK0612",
-          "name": "上证180_"
-        },
-        {
-          "code": "BK0617",
-          "name": "石墨烯"
-        },
-        {
-          "code": "BK0920",
-          "name": "车联网(车路云)"
-        },
-        {
-          "code": "BK1029",
-          "name": "汽车整车"
-        },
-        {
-          "code": "BK1112",
-          "name": "破净股"
-        },
-        {
-          "code": "BK1635",
-          "name": "长期破净"
-        },
-        {
-          "code": "BK1639",
-          "name": "周期股"
-        },
-        {
-          "code": "BK1663",
-          "name": "大盘股"
         }
       ]
     },
@@ -5377,30 +6420,30 @@
     {
       "scenario": "volume_mid_thrust",
       "scenarioName": "中部放量启动",
-      "matchedRule": "未近20日高且量比=1.75≥1.5且当日涨幅=4.8%≥2%",
+      "matchedRule": "未近20日高且量比=3.62≥1.5且当日涨幅=3.8%≥2%",
       "features": {
-        "dayReturn": 4.84,
-        "volumeRatio": 1.75,
-        "lowerShadowRatio": 0.111,
-        "bodyRatio": 0.654,
-        "pullbackFromHigh20": 6.77,
-        "ret3": 0.87,
-        "ret10": -1.11,
-        "ret20": 8.06,
+        "dayReturn": 3.83,
+        "volumeRatio": 3.62,
+        "lowerShadowRatio": 0.085,
+        "bodyRatio": 0.064,
+        "pullbackFromHigh20": 3.08,
+        "ret3": 2.73,
+        "ret10": 3.2,
+        "ret20": 3.36,
         "limitUpCount5": 0,
         "nearHigh20": false,
-        "aboveMa10": false,
+        "aboveMa10": true,
         "nearMa20": true
       },
-      "code": "SZ002791",
-      "name": "坚朗五金",
+      "code": "SZ002007",
+      "name": "华兰生物",
       "industry": {
-        "code": "BK0476",
-        "name": "装修建材"
+        "code": "BK1044",
+        "name": "生物制品"
       },
       "date": "2026/08/20",
       "timestamp": 1787155200000,
-      "close": 15.15,
+      "close": 13.54,
       "lift": 1.298,
       "returns": {
         "d1": null,
@@ -5550,6 +6593,110 @@
         {
           "code": "BK1071",
           "name": "跨境支付"
+        }
+      ]
+    },
+    {
+      "scenario": "volume_mid_thrust",
+      "scenarioName": "中部放量启动",
+      "matchedRule": "未近20日高且量比=1.96≥1.5且当日涨幅=6.9%≥2%",
+      "features": {
+        "dayReturn": 6.92,
+        "volumeRatio": 1.96,
+        "lowerShadowRatio": 0.352,
+        "bodyRatio": 0.196,
+        "pullbackFromHigh20": 2.98,
+        "ret3": 2.98,
+        "ret10": 16.48,
+        "ret20": 11.53,
+        "limitUpCount5": 0,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "code": "SZ002821",
+      "name": "凯莱英",
+      "industry": {
+        "code": "BK0727",
+        "name": "医疗服务"
+      },
+      "date": "2026/08/20",
+      "timestamp": 1787155200000,
+      "close": 182.4,
+      "lift": 1.298,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d5": null,
+        "d10": null
+      },
+      "concepts": [
+        {
+          "code": "BK0499",
+          "name": "AH股"
+        },
+        {
+          "code": "BK0872",
+          "name": "青蒿素"
+        },
+        {
+          "code": "BK0899",
+          "name": "CRO"
+        },
+        {
+          "code": "BK1000",
+          "name": "宁组合"
+        },
+        {
+          "code": "BK1174",
+          "name": "合成生物"
+        }
+      ]
+    },
+    {
+      "scenario": "volume_mid_thrust",
+      "scenarioName": "中部放量启动",
+      "matchedRule": "未近20日高且量比=2.39≥1.5且当日涨幅=2.4%≥2%",
+      "features": {
+        "dayReturn": 2.42,
+        "volumeRatio": 2.39,
+        "lowerShadowRatio": 0.167,
+        "bodyRatio": 0.833,
+        "pullbackFromHigh20": 4.47,
+        "ret3": 0.63,
+        "ret10": 6.65,
+        "ret20": 4.66,
+        "limitUpCount5": 0,
+        "nearHigh20": false,
+        "aboveMa10": false,
+        "nearMa20": true
+      },
+      "code": "SZ002773",
+      "name": "康弘药业",
+      "industry": {
+        "code": "BK1044",
+        "name": "生物制品"
+      },
+      "date": "2026/08/20",
+      "timestamp": 1787155200000,
+      "close": 22.45,
+      "lift": 1.298,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d5": null,
+        "d10": null
+      },
+      "concepts": [
+        {
+          "code": "BK0894",
+          "name": "阿兹海默"
+        },
+        {
+          "code": "BK1174",
+          "name": "合成生物"
         }
       ]
     },
@@ -5980,6 +7127,52 @@
     {
       "scenario": "volume_mid_thrust",
       "scenarioName": "中部放量启动",
+      "matchedRule": "未近20日高且量比=1.69≥1.5且当日涨幅=6.7%≥2%",
+      "features": {
+        "dayReturn": 6.71,
+        "volumeRatio": 1.69,
+        "lowerShadowRatio": 0,
+        "bodyRatio": 0.754,
+        "pullbackFromHigh20": 9.69,
+        "ret3": 1.17,
+        "ret10": -1.24,
+        "ret20": 12.76,
+        "limitUpCount5": 0,
+        "nearHigh20": false,
+        "aboveMa10": false,
+        "nearMa20": true
+      },
+      "code": "SH603108",
+      "name": "润达医疗",
+      "industry": {
+        "code": "BK0727",
+        "name": "医疗服务"
+      },
+      "date": "2026/08/20",
+      "timestamp": 1787155200000,
+      "close": 10.34,
+      "lift": 1.298,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d5": null,
+        "d10": null
+      },
+      "concepts": [
+        {
+          "code": "BK0528",
+          "name": "转债标的"
+        },
+        {
+          "code": "BK1147",
+          "name": "SPD概念"
+        }
+      ]
+    },
+    {
+      "scenario": "volume_mid_thrust",
+      "scenarioName": "中部放量启动",
       "matchedRule": "未近20日高且量比=1.51≥1.5且当日涨幅=10.0%≥2%",
       "features": {
         "dayReturn": 10,
@@ -6018,6 +7211,80 @@
           "name": "社区团购"
         }
       ]
+    },
+    {
+      "scenario": "volume_mid_thrust",
+      "scenarioName": "中部放量启动",
+      "matchedRule": "未近20日高且量比=1.81≥1.5且当日涨幅=2.9%≥2%",
+      "features": {
+        "dayReturn": 2.86,
+        "volumeRatio": 1.81,
+        "lowerShadowRatio": 0,
+        "bodyRatio": 0.615,
+        "pullbackFromHigh20": 4.73,
+        "ret3": 1.62,
+        "ret10": 2.65,
+        "ret20": -1.76,
+        "limitUpCount5": 0,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": true
+      },
+      "code": "SZ002252",
+      "name": "上海莱士",
+      "industry": {
+        "code": "BK1044",
+        "name": "生物制品"
+      },
+      "date": "2026/08/20",
+      "timestamp": 1787155200000,
+      "close": 5.03,
+      "lift": 1.298,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d5": null,
+        "d10": null
+      },
+      "concepts": []
+    },
+    {
+      "scenario": "volume_mid_thrust",
+      "scenarioName": "中部放量启动",
+      "matchedRule": "未近20日高且量比=1.67≥1.5且当日涨幅=6.4%≥2%",
+      "features": {
+        "dayReturn": 6.36,
+        "volumeRatio": 1.67,
+        "lowerShadowRatio": 0.403,
+        "bodyRatio": 0.021,
+        "pullbackFromHigh20": 15.38,
+        "ret3": 0.18,
+        "ret10": 6.33,
+        "ret20": 34.03,
+        "limitUpCount5": 0,
+        "nearHigh20": false,
+        "aboveMa10": false,
+        "nearMa20": false
+      },
+      "code": "SZ000603",
+      "name": "盛达资源",
+      "industry": {
+        "code": "BK0732",
+        "name": "贵金属"
+      },
+      "date": "2026/08/20",
+      "timestamp": 1787155200000,
+      "close": 33.28,
+      "lift": 1.298,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d5": null,
+        "d10": null
+      },
+      "concepts": []
     },
     {
       "scenario": "volume_mid_thrust",
@@ -6118,30 +7385,30 @@
     {
       "scenario": "volume_mid_thrust",
       "scenarioName": "中部放量启动",
-      "matchedRule": "未近20日高且量比=1.59≥1.5且当日涨幅=4.6%≥2%",
+      "matchedRule": "未近20日高且量比=1.58≥1.5且当日涨幅=2.3%≥2%",
       "features": {
-        "dayReturn": 4.57,
-        "volumeRatio": 1.59,
-        "lowerShadowRatio": 0.333,
-        "bodyRatio": 0.233,
-        "pullbackFromHigh20": 3.56,
-        "ret3": -0.93,
-        "ret10": 0.95,
-        "ret20": 9.28,
+        "dayReturn": 2.3,
+        "volumeRatio": 1.58,
+        "lowerShadowRatio": 0.162,
+        "bodyRatio": 0.295,
+        "pullbackFromHigh20": 7.87,
+        "ret3": 1.34,
+        "ret10": 7.91,
+        "ret20": 20.64,
         "limitUpCount5": 0,
         "nearHigh20": false,
         "aboveMa10": true,
-        "nearMa20": true
+        "nearMa20": false
       },
-      "code": "SH600458",
-      "name": "时代新材",
+      "code": "SZ001337",
+      "name": "四川黄金",
       "industry": {
-        "code": "BK1236",
-        "name": "轨交设备Ⅱ"
+        "code": "BK0732",
+        "name": "贵金属"
       },
       "date": "2026/08/20",
       "timestamp": 1787155200000,
-      "close": 11.66,
+      "close": 48.57,
       "lift": 1.298,
       "returns": {
         "d1": null,
@@ -6150,16 +7417,44 @@
         "d5": null,
         "d10": null
       },
-      "concepts": [
-        {
-          "code": "BK0592",
-          "name": "铁路基建"
-        },
-        {
-          "code": "BK1082",
-          "name": "噪声防治"
-        }
-      ]
+      "concepts": []
+    },
+    {
+      "scenario": "volume_mid_thrust",
+      "scenarioName": "中部放量启动",
+      "matchedRule": "未近20日高且量比=2.80≥1.5且当日涨幅=3.5%≥2%",
+      "features": {
+        "dayReturn": 3.5,
+        "volumeRatio": 2.8,
+        "lowerShadowRatio": 0.038,
+        "bodyRatio": 0.481,
+        "pullbackFromHigh20": 2.31,
+        "ret3": 2.09,
+        "ret10": 3.67,
+        "ret20": 2.25,
+        "limitUpCount5": 0,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": true
+      },
+      "code": "SH600161",
+      "name": "天坛生物",
+      "industry": {
+        "code": "BK1044",
+        "name": "生物制品"
+      },
+      "date": "2026/08/20",
+      "timestamp": 1787155200000,
+      "close": 12.7,
+      "lift": 1.298,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d5": null,
+        "d10": null
+      },
+      "concepts": []
     },
     {
       "scenario": "volume_mid_thrust",
@@ -6214,30 +7509,30 @@
     {
       "scenario": "volume_mid_thrust",
       "scenarioName": "中部放量启动",
-      "matchedRule": "未近20日高且量比=1.93≥1.5且当日涨幅=4.9%≥2%",
+      "matchedRule": "未近20日高且量比=1.91≥1.5且当日涨幅=6.0%≥2%",
       "features": {
-        "dayReturn": 4.86,
-        "volumeRatio": 1.93,
-        "lowerShadowRatio": 0.247,
-        "bodyRatio": 0.718,
-        "pullbackFromHigh20": 2.79,
-        "ret3": 8.28,
-        "ret10": 7.51,
-        "ret20": 11.48,
+        "dayReturn": 5.97,
+        "volumeRatio": 1.91,
+        "lowerShadowRatio": 0.053,
+        "bodyRatio": 0.76,
+        "pullbackFromHigh20": 6.48,
+        "ret3": 1.32,
+        "ret10": 0.26,
+        "ret20": 10.11,
         "limitUpCount5": 0,
         "nearHigh20": false,
         "aboveMa10": true,
-        "nearMa20": false
+        "nearMa20": true
       },
-      "code": "SZ002043",
-      "name": "兔 宝 宝",
+      "code": "SH600055",
+      "name": "万东医疗",
       "industry": {
-        "code": "BK0476",
-        "name": "装修建材"
+        "code": "BK1041",
+        "name": "医疗器械"
       },
       "date": "2026/08/20",
       "timestamp": 1787155200000,
-      "close": 13.6,
+      "close": 11.54,
       "lift": 1.298,
       "returns": {
         "d1": null,
@@ -6246,16 +7541,7 @@
         "d5": null,
         "d10": null
       },
-      "concepts": [
-        {
-          "code": "BK0680",
-          "name": "智能家居"
-        },
-        {
-          "code": "BK1641",
-          "name": "红利股"
-        }
-      ]
+      "concepts": []
     },
     {
       "scenario": "volume_mid_thrust",
@@ -6687,6 +7973,43 @@
     {
       "scenario": "volume_mid_thrust",
       "scenarioName": "中部放量启动",
+      "matchedRule": "未近20日高且量比=1.54≥1.5且当日涨幅=7.2%≥2%",
+      "features": {
+        "dayReturn": 7.23,
+        "volumeRatio": 1.54,
+        "lowerShadowRatio": 0.152,
+        "bodyRatio": 0.185,
+        "pullbackFromHigh20": 7.75,
+        "ret3": -2.33,
+        "ret10": 2.61,
+        "ret20": 14.8,
+        "limitUpCount5": 0,
+        "nearHigh20": false,
+        "aboveMa10": false,
+        "nearMa20": false
+      },
+      "code": "SZ000426",
+      "name": "兴业银锡",
+      "industry": {
+        "code": "BK0732",
+        "name": "贵金属"
+      },
+      "date": "2026/08/20",
+      "timestamp": 1787155200000,
+      "close": 38.56,
+      "lift": 1.298,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d5": null,
+        "d10": null
+      },
+      "concepts": []
+    },
+    {
+      "scenario": "volume_mid_thrust",
+      "scenarioName": "中部放量启动",
       "matchedRule": "未近20日高且量比=1.86≥1.5且当日涨幅=5.3%≥2%",
       "features": {
         "dayReturn": 5.31,
@@ -6871,30 +8194,30 @@
     {
       "scenario": "volume_mid_thrust",
       "scenarioName": "中部放量启动",
-      "matchedRule": "未近20日高且量比=2.21≥1.5且当日涨幅=5.5%≥2%",
+      "matchedRule": "未近20日高且量比=1.85≥1.5且当日涨幅=4.1%≥2%",
       "features": {
-        "dayReturn": 5.47,
-        "volumeRatio": 2.21,
-        "lowerShadowRatio": 0,
-        "bodyRatio": 0.582,
-        "pullbackFromHigh20": 7.17,
-        "ret3": -6.39,
-        "ret10": -1.77,
-        "ret20": 6.06,
+        "dayReturn": 4.13,
+        "volumeRatio": 1.85,
+        "lowerShadowRatio": 0.36,
+        "bodyRatio": 0.327,
+        "pullbackFromHigh20": 7.36,
+        "ret3": -0.27,
+        "ret10": 12.18,
+        "ret20": 7.58,
         "limitUpCount5": 0,
         "nearHigh20": false,
-        "aboveMa10": false,
+        "aboveMa10": true,
         "nearMa20": true
       },
-      "code": "SZ001324",
-      "name": "长青科技",
+      "code": "SZ000661",
+      "name": "长春高新",
       "industry": {
-        "code": "BK1236",
-        "name": "轨交设备Ⅱ"
+        "code": "BK1044",
+        "name": "生物制品"
       },
       "date": "2026/08/20",
       "timestamp": 1787155200000,
-      "close": 18.9,
+      "close": 84.3,
       "lift": 1.298,
       "returns": {
         "d1": null,
@@ -6905,12 +8228,66 @@
       },
       "concepts": [
         {
-          "code": "BK0429",
-          "name": "交运设备"
+          "code": "BK0718",
+          "name": "证金持股"
         },
         {
-          "code": "BK1076",
-          "name": "建筑节能"
+          "code": "BK0838",
+          "name": "东北振兴"
+        },
+        {
+          "code": "BK0939",
+          "name": "辅助生殖"
+        }
+      ]
+    },
+    {
+      "scenario": "volume_mid_thrust",
+      "scenarioName": "中部放量启动",
+      "matchedRule": "未近20日高且量比=1.53≥1.5且当日涨幅=5.6%≥2%",
+      "features": {
+        "dayReturn": 5.56,
+        "volumeRatio": 1.53,
+        "lowerShadowRatio": 0.473,
+        "bodyRatio": 0.108,
+        "pullbackFromHigh20": 5.19,
+        "ret3": -1.7,
+        "ret10": 13.64,
+        "ret20": 8.41,
+        "limitUpCount5": 0,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "code": "SH603127",
+      "name": "昭衍新药",
+      "industry": {
+        "code": "BK0727",
+        "name": "医疗服务"
+      },
+      "date": "2026/08/20",
+      "timestamp": 1787155200000,
+      "close": 52.57,
+      "lift": 1.298,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d5": null,
+        "d10": null
+      },
+      "concepts": [
+        {
+          "code": "BK0499",
+          "name": "AH股"
+        },
+        {
+          "code": "BK0899",
+          "name": "CRO"
+        },
+        {
+          "code": "BK1000",
+          "name": "宁组合"
         }
       ]
     },
@@ -6991,52 +8368,6 @@
     {
       "scenario": "volume_mid_thrust",
       "scenarioName": "中部放量启动",
-      "matchedRule": "未近20日高且量比=1.72≥1.5且当日涨幅=3.0%≥2%",
-      "features": {
-        "dayReturn": 2.96,
-        "volumeRatio": 1.72,
-        "lowerShadowRatio": 0.064,
-        "bodyRatio": 0.569,
-        "pullbackFromHigh20": 8.17,
-        "ret3": 2.81,
-        "ret10": -0.5,
-        "ret20": -3.39,
-        "limitUpCount5": 0,
-        "nearHigh20": false,
-        "aboveMa10": true,
-        "nearMa20": true
-      },
-      "code": "SZ000951",
-      "name": "中国重汽",
-      "industry": {
-        "code": "BK1264",
-        "name": "商用车"
-      },
-      "date": "2026/08/20",
-      "timestamp": 1787155200000,
-      "close": 21.93,
-      "lift": 1.298,
-      "returns": {
-        "d1": null,
-        "d2": null,
-        "d3": null,
-        "d5": null,
-        "d10": null
-      },
-      "concepts": [
-        {
-          "code": "BK1029",
-          "name": "汽车整车"
-        },
-        {
-          "code": "BK1640",
-          "name": "价值股"
-        }
-      ]
-    },
-    {
-      "scenario": "volume_mid_thrust",
-      "scenarioName": "中部放量启动",
       "matchedRule": "未近20日高且量比=2.55≥1.5且当日涨幅=4.2%≥2%",
       "features": {
         "dayReturn": 4.18,
@@ -7077,6 +8408,56 @@
         {
           "code": "BK1112",
           "name": "破净股"
+        }
+      ]
+    },
+    {
+      "scenario": "volume_mid_thrust",
+      "scenarioName": "中部放量启动",
+      "matchedRule": "未近20日高且量比=1.70≥1.5且当日涨幅=4.7%≥2%",
+      "features": {
+        "dayReturn": 4.68,
+        "volumeRatio": 1.7,
+        "lowerShadowRatio": 0.264,
+        "bodyRatio": 0.021,
+        "pullbackFromHigh20": 3.76,
+        "ret3": 3.49,
+        "ret10": 5.02,
+        "ret20": 17.46,
+        "limitUpCount5": 0,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "code": "SH600489",
+      "name": "中金黄金",
+      "industry": {
+        "code": "BK0732",
+        "name": "贵金属"
+      },
+      "date": "2026/08/20",
+      "timestamp": 1787155200000,
+      "close": 26.37,
+      "lift": 1.298,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d5": null,
+        "d10": null
+      },
+      "concepts": [
+        {
+          "code": "BK0612",
+          "name": "上证180_"
+        },
+        {
+          "code": "BK1639",
+          "name": "周期股"
+        },
+        {
+          "code": "BK1663",
+          "name": "大盘股"
         }
       ]
     },
