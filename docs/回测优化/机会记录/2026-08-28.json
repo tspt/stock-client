@@ -1,0 +1,91 @@
+{
+  "version": "1.0",
+  "kind": "opportunity-record",
+  "date": "2026-08-28",
+  "createdAt": 1787900048825,
+  "updatedAt": 1787900048825,
+  "stocks": [
+    {
+      "code": "SZ002349",
+      "name": "精华制药",
+      "concepts": [
+        {
+          "code": "BK0925",
+          "name": "北交所概念"
+        }
+      ],
+      "industry": {
+        "code": "BK1040",
+        "name": "中药Ⅱ"
+      },
+      "timestamp": 1787900048824
+    },
+    {
+      "code": "SH600594",
+      "name": "益佰制药",
+      "concepts": [
+        {
+          "code": "BK0676",
+          "name": "独家药品"
+        },
+        {
+          "code": "BK0889",
+          "name": "医美概念"
+        }
+      ],
+      "industry": {
+        "code": "BK1040",
+        "name": "中药Ⅱ"
+      },
+      "timestamp": 1787900048824
+    },
+    {
+      "code": "SH600721",
+      "name": "百花医药",
+      "concepts": [
+        {
+          "code": "BK0899",
+          "name": "CRO"
+        },
+        {
+          "code": "BK1078",
+          "name": "肝炎概念"
+        }
+      ],
+      "industry": {
+        "code": "BK0727",
+        "name": "医疗服务"
+      },
+      "timestamp": 1787900048824
+    },
+    {
+      "code": "SH600771",
+      "name": "广誉远",
+      "concepts": [
+        {
+          "code": "BK0676",
+          "name": "独家药品"
+        },
+        {
+          "code": "BK0894",
+          "name": "阿兹海默"
+        }
+      ],
+      "industry": {
+        "code": "BK1040",
+        "name": "中药Ⅱ"
+      },
+      "timestamp": 1787900048825
+    },
+    {
+      "code": "SH603520",
+      "name": "司太立",
+      "concepts": [],
+      "industry": {
+        "code": "BK0465",
+        "name": "化学制药"
+      },
+      "timestamp": 1787900048825
+    }
+  ]
+}

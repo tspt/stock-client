@@ -214,6 +214,17 @@
   border-radius: 6px;
 }
 
+.trackingStatsHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.trackingStatsHeader :global(.ant-btn-link) {
+  padding-inline: 0;
+}
+
 .trackingStatsRow {
   margin-bottom: 4px;
 }

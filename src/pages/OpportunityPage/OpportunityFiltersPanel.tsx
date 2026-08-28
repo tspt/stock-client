@@ -9,6 +9,7 @@ import { FilterOutlined } from '@ant-design/icons';
 import type { ConsolidationType } from '@/types/stock';
 import { PatternTooltip } from '@/components/PatternTooltip/PatternTooltip';
 import { normalizeStockNameList } from '@/utils/format/format';
+import { OPPORTUNITY_INDUSTRY_GROUPS } from '@/utils/config/opportunityAnalysisDefaults';
 import styles from './OpportunityPage.module.css';
 
 const ALL_FILTER_PANEL_KEYS = ['data', 'aiAnalysis', 'consolidation', 'trendLine', 'sharpMove', 'nameFilter'] as const;
@@ -947,6 +948,45 @@ export function OpportunityFiltersPanel({
                 label: '名称筛选',
                 children: (
                   <div className={styles.filterContent}>
+                    <div className={styles.filterRow} style={{ marginBottom: 16, alignItems: 'flex-start' }}>
+                      <div className={styles.filterItem} style={{ flex: '0 0 160px', justifyContent: 'flex-start' }}>
+                        <span className={styles.filterLabel} style={{ whiteSpace: 'nowrap' }}>行业分组：</span>
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <Select
+                          mode="multiple"
+                          allowClear
+                          placeholder="请选择行业分组"
+                          value={OPPORTUNITY_INDUSTRY_GROUPS.filter((group) => {
+                            const selected = industrySectors ?? [];
+                            return group.codes.every((code) => selected.includes(code));
+                          }).map((group) => group.label)}
+                          onChange={(labels: string[]) => {
+                            const selected = industrySectors ?? [];
+                            const groupedCodeSet = new Set(OPPORTUNITY_INDUSTRY_GROUPS.flatMap((group) => [...group.codes]));
+                            const kept = selected.filter((code) => !groupedCodeSet.has(code));
+                            const added = OPPORTUNITY_INDUSTRY_GROUPS
+                              .filter((group) => labels.includes(group.label))
+                              .flatMap((group) => [...group.codes]);
+                            setIndustrySectors([...new Set([...kept, ...added])]);
+                          }}
+                          options={OPPORTUNITY_INDUSTRY_GROUPS.map((group) => ({
+                            label: group.label,
+                            value: group.label,
+                          }))}
+                          style={{ flex: 1, minWidth: 0 }}
+                          maxTagCount="responsive"
+                        />
+                        <Checkbox
+                          checked={industrySectorInvert}
+                          onChange={(e) => setIndustrySectorInvert?.(e.target.checked)}
+                          style={{ whiteSpace: 'nowrap' }}
+                          disabled={!setIndustrySectorInvert || (industrySectors ?? []).length === 0}
+                        >
+                          排除选中
+                        </Checkbox>
+                      </div>
+                    </div>
                     <div className={styles.filterRow} style={{ marginBottom: 16, alignItems: 'flex-start' }}>
                       <div className={styles.filterItem} style={{ flex: '0 0 160px', justifyContent: 'flex-start' }}>
                         <Checkbox

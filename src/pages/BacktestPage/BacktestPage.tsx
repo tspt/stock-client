@@ -143,17 +143,20 @@ export function BacktestPage() {
   const [latestSignals, setLatestSignals] = useState<LatestScenarioSignal[]>([]);
   const [historyScenarioFilter, setHistoryScenarioFilter] = useState<string>('all');
   const [latestScenarioFilter, setLatestScenarioFilter] = useState<string>('all');
+  const [latestOnlyHighOdds, setLatestOnlyHighOdds] = useState(true);
   const [trackingScenarioFilter, setTrackingScenarioFilter] = useState<string>('all');
-  const [trackingDateRange, setTrackingDateRange] = useState<string>('recent5');
+  const [trackingOnlyHighOdds, setTrackingOnlyHighOdds] = useState(true);
+  const [trackingDateRange, setTrackingDateRange] = useState<string>('today');
   const [trackingStatusFilter, setTrackingStatusFilter] = useState<TrackingStatus[]>([
     'tracking',
     'passed',
   ]);
-  const [trackingOnlyOpportunity, setTrackingOnlyOpportunity] = useState(true);
+  const [trackingOnlyOpportunity, setTrackingOnlyOpportunity] = useState(false);
   const [trackingThreshold, setTrackingThreshold] = useState(5);
   const [trackingMinHitCount, setTrackingMinHitCount] = useState(3);
   const [trackingRows, setTrackingRows] = useState<TrackedLatestSignal[]>([]);
   const [loadingTracking, setLoadingTracking] = useState(false);
+  const [trackingStatsCollapsed, setTrackingStatsCollapsed] = useState(true);
   const [showAddTrackingLatestModal, setShowAddTrackingLatestModal] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [latestDateSummary, setLatestDateSummary] = useState({ dominantDate: '', dominantCount: 0 });
@@ -340,6 +343,7 @@ export function BacktestPage() {
         highLiftOnly: true,
         asOfDate: asOfDate || undefined,
       }).sort((a, b) => {
+        if ((b.oddsScore || 0) !== (a.oddsScore || 0)) return (b.oddsScore || 0) - (a.oddsScore || 0);
         if ((b.lift || 0) !== (a.lift || 0)) return (b.lift || 0) - (a.lift || 0);
         return a.name.localeCompare(b.name, 'zh-CN');
       });
@@ -455,13 +459,14 @@ export function BacktestPage() {
     return latestSignals.filter((item) => {
       const scenarioMatch =
         latestScenarioFilter === 'all' || item.scenario === latestScenarioFilter;
+      const oddsMatch = !latestOnlyHighOdds || item.oddsTier === 'S' || item.oddsTier === 'A';
       const keywordMatch =
         !keyword ||
         item.name.toLowerCase().includes(keyword) ||
         item.code.toLowerCase().includes(keyword);
-      return scenarioMatch && keywordMatch;
+      return scenarioMatch && oddsMatch && keywordMatch;
     });
-  }, [latestScenarioFilter, latestSignals, searchText]);
+  }, [latestOnlyHighOdds, latestScenarioFilter, latestSignals, searchText]);
 
   const trackedRowsWithStatus = useMemo(() => {
     return trackingRows.map((row) => ({
@@ -479,22 +484,30 @@ export function BacktestPage() {
       .sort()
       .reverse();
     const dateLimit =
-      trackingDateRange === 'recent5' ? 5 : trackingDateRange === 'recent10' ? 10 : sortedDates.length;
+      trackingDateRange === 'today'
+        ? 1
+        : trackingDateRange === 'recent5'
+          ? 5
+          : trackingDateRange === 'recent10'
+            ? 10
+            : sortedDates.length;
     const allowedDates = new Set(sortedDates.slice(0, dateLimit));
 
     return trackedRowsWithStatus.filter((item) => {
       const dateMatch = trackingDateRange === 'all' || allowedDates.has(item.signalDateKey);
       const scenarioMatch =
         trackingScenarioFilter === 'all' || item.scenario === trackingScenarioFilter;
+      const oddsMatch = !trackingOnlyHighOdds || item.oddsTier === 'S' || item.oddsTier === 'A';
       const opportunityMatch = !trackingOnlyOpportunity || item.opportunityRecordHit;
       const keywordMatch =
         !keyword ||
         item.name.toLowerCase().includes(keyword) ||
         item.code.toLowerCase().includes(keyword);
-      return dateMatch && scenarioMatch && opportunityMatch && keywordMatch;
+      return dateMatch && scenarioMatch && oddsMatch && opportunityMatch && keywordMatch;
     });
   }, [
     searchText,
+    trackingOnlyHighOdds,
     trackedRowsWithStatus,
     trackingDateRange,
     trackingOnlyOpportunity,
@@ -803,6 +816,9 @@ export function BacktestPage() {
   };
 
   function pickPreferredTrackingRow(current: TrackedLatestSignal, next: TrackedLatestSignal) {
+    if ((next.oddsScore || 0) !== (current.oddsScore || 0)) {
+      return (next.oddsScore || 0) > (current.oddsScore || 0) ? next : current;
+    }
     if ((next.lift || 0) !== (current.lift || 0)) {
       return (next.lift || 0) > (current.lift || 0) ? next : current;
     }
@@ -819,6 +835,12 @@ export function BacktestPage() {
     if (status === 'passed') return <Tag color="red">已达标</Tag>;
     if (status === 'failed') return <Tag>未达标</Tag>;
     return <Tag color="blue">验证中</Tag>;
+  };
+
+  const renderOddsTier = (tier?: LatestScenarioSignal['oddsTier']) => {
+    if (!tier) return <Tag>未知</Tag>;
+    const colorMap = { S: 'red', A: 'volcano', B: 'blue', C: 'default' } as const;
+    return <Tag color={colorMap[tier]}>{tier}</Tag>;
   };
 
   const getRuleShortLabel = (rule: string): string => {
@@ -911,24 +933,44 @@ export function BacktestPage() {
     {
       title: '股票号码',
       dataIndex: 'code',
-      width: 100,
+      width: 80,
       fixed: 'left',
     },
     {
       title: '股票名称',
       dataIndex: 'name',
-      width: 100,
+      width: 80,
       fixed: 'left',
     },
     { title: '数据日期', dataIndex: 'date', width: 110 },
+    { title: '收盘价', dataIndex: 'close', width: 90 },
+    {
+      title: '赔率档',
+      dataIndex: 'oddsTier',
+      width: 80,
+      sorter: (a, b) => (a.oddsScore || 0) - (b.oddsScore || 0),
+      render: (tier) => renderOddsTier(tier),
+    },
+    {
+      title: '赔率分',
+      dataIndex: 'oddsScore',
+      width: 80,
+      defaultSortOrder: 'descend',
+      sorter: (a, b) => (a.oddsScore || 0) - (b.oddsScore || 0),
+    },
+    {
+      title: '赔率说明',
+      dataIndex: 'oddsReason',
+      ellipsis: true,
+      width: 180,
+    },
+    { title: 'lift', dataIndex: 'lift', width: 80, render: (v) => v?.toFixed(2) },
     {
       title: '场景',
       dataIndex: 'scenarioName',
-      width: 150,
+      width: 100,
       render: (_, record) => <Tag color="red">{record.scenarioName}</Tag>,
     },
-    { title: '收盘价', dataIndex: 'close', width: 90 },
-    { title: 'lift', dataIndex: 'lift', width: 80, render: (v) => v?.toFixed(2) },
     { title: '1日', width: 80, sorter: (a, b) => compareReturn(a.returns, b.returns, 'd1'), render: (_, record) => renderReturn(record.returns, 'd1') },
     { title: '2日', width: 80, sorter: (a, b) => compareReturn(a.returns, b.returns, 'd2'), render: (_, record) => renderReturn(record.returns, 'd2') },
     { title: '3日', width: 80, sorter: (a, b) => compareReturn(a.returns, b.returns, 'd3'), render: (_, record) => renderReturn(record.returns, 'd3') },
@@ -948,24 +990,43 @@ export function BacktestPage() {
     {
       title: '股票号码',
       dataIndex: 'code',
-      width: 100,
+      width: 80,
       fixed: 'left',
     },
     {
       title: '股票名称',
       dataIndex: 'name',
-      width: 100,
+      width: 80,
       fixed: 'left',
     },
     { title: '信号日期', dataIndex: 'signalDate', width: 110, sorter: (a, b) => a.timestamp - b.timestamp },
+    { title: '收盘价', dataIndex: 'close', width: 90 },
+    {
+      title: '赔率档',
+      dataIndex: 'oddsTier',
+      width: 80,
+      sorter: (a, b) => (a.oddsScore || 0) - (b.oddsScore || 0),
+      render: (tier) => renderOddsTier(tier),
+    },
+    {
+      title: '赔率分',
+      dataIndex: 'oddsScore',
+      width: 80,
+      sorter: (a, b) => (a.oddsScore || 0) - (b.oddsScore || 0),
+    },
+    {
+      title: '赔率说明',
+      dataIndex: 'oddsReason',
+      ellipsis: true,
+      width: 180,
+    },
+    { title: 'lift', dataIndex: 'lift', width: 80, render: (v) => v?.toFixed(2) },
     {
       title: '场景',
       dataIndex: 'scenarioName',
-      width: 150,
+      width: 100,
       render: (_, record) => <Tag color={highLiftIds.has(record.scenario) ? 'red' : 'blue'}>{record.scenarioName}</Tag>,
     },
-    { title: '收盘价', dataIndex: 'close', width: 90 },
-    { title: 'lift', dataIndex: 'lift', width: 80, render: (v) => v?.toFixed(2) },
     { title: '1日', width: 80, sorter: (a, b) => compareReturn(a.trackedReturns, b.trackedReturns, 'd1'), render: (_, record) => renderReturn(record.trackedReturns, 'd1') },
     { title: '2日', width: 80, sorter: (a, b) => compareReturn(a.trackedReturns, b.trackedReturns, 'd2'), render: (_, record) => renderReturn(record.trackedReturns, 'd2') },
     { title: '3日', width: 80, sorter: (a, b) => compareReturn(a.trackedReturns, b.trackedReturns, 'd3'), render: (_, record) => renderReturn(record.trackedReturns, 'd3') },
@@ -1020,7 +1081,7 @@ export function BacktestPage() {
       : activeTab === 'tracking'
         ? filteredTrackingRows
         : filteredHistorySignals;
-  const activeScrollX = activeTab === 'latest' ? 1800 : activeTab === 'tracking' ? 2140 : 1800;
+  const activeScrollX = activeTab === 'latest' ? 2260 : activeTab === 'tracking' ? 2600 : 1800;
 
   return (
     <Layout className={styles.backtestPage}>
@@ -1129,6 +1190,7 @@ export function BacktestPage() {
                         <div>历史好买点和最新日场景都直接读取 IndexedDB stockHistory；如果机会分析更新了 K 线，点击顶部扫描按钮即可用最新数据重算。</div>
                         <div>历史好买点规则：买入收盘后 1/2/3/5/10 日累计收益中至少 3 项 &gt; 5%。</div>
                         <div>最新交易日只展示 lift&gt;1 的高价值场景，未来收益尚未发生时对应列为空。</div>
+                        <div>赔率分会综合场景、当日强弱、量价结构和位置关系，对最新日命中做“赔率优先”排序。</div>
                       </div>
                     }
                   >
@@ -1184,16 +1246,24 @@ export function BacktestPage() {
             <div className={styles.tabToolbar}>
               <div className={styles.tabToolbarLeft}>
                 {activeTab === 'latest' ? (
-                  <Select
-                    value={latestScenarioFilter}
-                    options={[
-                      { label: '全部高价值场景', value: 'all' },
-                      ...HIGH_LIFT_SCENARIOS.map((s) => ({ label: s.name, value: s.id })),
-                    ]}
-                    onChange={setLatestScenarioFilter}
-                    style={{ width: 200 }}
-                    size="small"
-                  />
+                  <>
+                    <Select
+                      value={latestScenarioFilter}
+                      options={[
+                        { label: '全部高价值场景', value: 'all' },
+                        ...HIGH_LIFT_SCENARIOS.map((s) => ({ label: s.name, value: s.id })),
+                      ]}
+                      onChange={setLatestScenarioFilter}
+                      style={{ width: 200 }}
+                      size="small"
+                    />
+                    <Checkbox
+                      checked={latestOnlyHighOdds}
+                      onChange={(e) => setLatestOnlyHighOdds(e.target.checked)}
+                    >
+                      仅S/A档
+                    </Checkbox>
+                  </>
                 ) : activeTab === 'tracking' ? (
                   <>
                     <Checkbox
@@ -1205,6 +1275,7 @@ export function BacktestPage() {
                     <Select
                       value={trackingDateRange}
                       options={[
+                        { label: '今天', value: 'today' },
                         { label: '最近5日', value: 'recent5' },
                         { label: '最近10日', value: 'recent10' },
                         { label: '全部日期', value: 'all' },
@@ -1223,6 +1294,12 @@ export function BacktestPage() {
                       style={{ width: 160 }}
                       size="small"
                     />
+                    <Checkbox
+                      checked={trackingOnlyHighOdds}
+                      onChange={(e) => setTrackingOnlyHighOdds(e.target.checked)}
+                    >
+                      仅S/A档
+                    </Checkbox>
                     <Select
                       mode="multiple"
                       value={trackingStatusFilter}
@@ -1301,94 +1378,108 @@ export function BacktestPage() {
 
             {activeTab === 'tracking' && (
               <div className={styles.trackingStatsPanel}>
-                <Row gutter={[16, 8]} className={styles.trackingStatsRow}>
-                  <Col>
-                    <Statistic title="当前展示" value={trackingStats.total} />
-                  </Col>
-                  <Col>
-                    <Statistic title="已达标" value={trackingStats.passed} />
-                  </Col>
-                  <Col>
-                    <Statistic title="验证中" value={trackingStats.tracking} />
-                  </Col>
-                  <Col>
-                    <Statistic title="未达标" value={trackingStats.failed} />
-                  </Col>
-                  <Col>
-                    <Statistic
-                      title="已验证达标率"
-                      value={trackingStats.passRate == null ? '-' : `${trackingStats.passRate}%`}
-                    />
-                  </Col>
-                  <Col>
-                    <Statistic
-                      title="平均最大收益"
-                      value={
-                        trackingStats.avgMaxReturn == null ? '-' : `${trackingStats.avgMaxReturn}%`
-                      }
-                    />
-                  </Col>
-                </Row>
-                {trackingStats.scenarios.length > 0 && (
-                  <div className={styles.trackingAnalysisBlock}>
-                    <Text type="secondary">场景统计：</Text>
-                    <Space wrap size={[4, 4]} className={styles.trackingScenarioStats}>
-                      {trackingStats.scenarios.map((item) => (
-                        <Tag key={item.name} color="blue">
-                          {item.name}: {item.total} / 达标 {item.passed}
-                          {item.passRate != null ? ` / ${item.passRate}%` : ''}
-                        </Tag>
-                      ))}
-                    </Space>
-                  </div>
-                )}
-                {trackingAnalysisStats.failedRules.length > 0 && (
-                  <div className={styles.trackingAnalysisBlock}>
-                    <Text type="secondary">失败样本 Top：</Text>
-                    <Space wrap size={[4, 4]}>
-                      {trackingAnalysisStats.failedRules.map((item) => (
-                        <Tag
-                          key={`${item.scenarioName}-${item.matchedRule}`}
-                          color="default"
-                          title={item.matchedRule}
-                        >
-                          {item.scenarioName}｜{getRuleShortLabel(item.matchedRule)}: 失败 {item.failed} / {item.total}
-                        </Tag>
-                      ))}
-                    </Space>
-                  </div>
-                )}
-                {trackingAnalysisStats.ruleStats.length > 0 && (
-                  <div className={styles.trackingAnalysisBlock}>
-                    <Text type="secondary">规则胜率 Top：</Text>
-                    <Space wrap size={[4, 4]}>
-                      {trackingAnalysisStats.ruleStats.map((item) => (
-                        <Tag
-                          key={`${item.scenarioName}-${item.matchedRule}`}
-                          color={item.passRate != null && item.passRate >= 50 ? 'red' : 'blue'}
-                          title={item.matchedRule}
-                        >
-                          {item.scenarioName}｜{getRuleShortLabel(item.matchedRule)}:{' '}
-                          {item.passRate == null ? '待验证' : `${item.passRate}%`}
-                          （{item.passed}/{item.verified}）
-                        </Tag>
-                      ))}
-                    </Space>
-                  </div>
-                )}
-                {trackingAnalysisStats.parameterStats.length > 0 && (
-                  <div className={styles.trackingAnalysisBlock}>
-                    <Text type="secondary">参数回测：</Text>
-                    <Space wrap size={[4, 4]}>
-                      {trackingAnalysisStats.parameterStats.map((item) => (
-                        <Tag key={`${item.threshold}-${item.minHitCount}`} color="purple">
-                          {item.threshold}% / {item.minHitCount}中：
-                          {item.passRate == null ? '待验证' : `${item.passRate}%`}
-                          （{item.passed}/{item.verified}）
-                        </Tag>
-                      ))}
-                    </Space>
-                  </div>
+                <div className={styles.trackingStatsHeader}>
+                  <Text type="secondary">追踪统计</Text>
+                  <Button
+                    type="link"
+                    size="small"
+                    onClick={() => setTrackingStatsCollapsed((collapsed) => !collapsed)}
+                  >
+                    {trackingStatsCollapsed ? '展开' : '收起'}
+                  </Button>
+                </div>
+                {!trackingStatsCollapsed && (
+                  <>
+                    <Row gutter={[16, 8]} className={styles.trackingStatsRow}>
+                      <Col>
+                        <Statistic title="当前展示" value={trackingStats.total} />
+                      </Col>
+                      <Col>
+                        <Statistic title="已达标" value={trackingStats.passed} />
+                      </Col>
+                      <Col>
+                        <Statistic title="验证中" value={trackingStats.tracking} />
+                      </Col>
+                      <Col>
+                        <Statistic title="未达标" value={trackingStats.failed} />
+                      </Col>
+                      <Col>
+                        <Statistic
+                          title="已验证达标率"
+                          value={trackingStats.passRate == null ? '-' : `${trackingStats.passRate}%`}
+                        />
+                      </Col>
+                      <Col>
+                        <Statistic
+                          title="平均最大收益"
+                          value={
+                            trackingStats.avgMaxReturn == null ? '-' : `${trackingStats.avgMaxReturn}%`
+                          }
+                        />
+                      </Col>
+                    </Row>
+                    {trackingStats.scenarios.length > 0 && (
+                      <div className={styles.trackingAnalysisBlock}>
+                        <Text type="secondary">场景统计：</Text>
+                        <Space wrap size={[4, 4]} className={styles.trackingScenarioStats}>
+                          {trackingStats.scenarios.map((item) => (
+                            <Tag key={item.name} color="blue">
+                              {item.name}: {item.total} / 达标 {item.passed}
+                              {item.passRate != null ? ` / ${item.passRate}%` : ''}
+                            </Tag>
+                          ))}
+                        </Space>
+                      </div>
+                    )}
+                    {trackingAnalysisStats.failedRules.length > 0 && (
+                      <div className={styles.trackingAnalysisBlock}>
+                        <Text type="secondary">失败样本 Top：</Text>
+                        <Space wrap size={[4, 4]}>
+                          {trackingAnalysisStats.failedRules.map((item) => (
+                            <Tag
+                              key={`${item.scenarioName}-${item.matchedRule}`}
+                              color="default"
+                              title={item.matchedRule}
+                            >
+                              {item.scenarioName}｜{getRuleShortLabel(item.matchedRule)}: 失败 {item.failed} / {item.total}
+                            </Tag>
+                          ))}
+                        </Space>
+                      </div>
+                    )}
+                    {trackingAnalysisStats.ruleStats.length > 0 && (
+                      <div className={styles.trackingAnalysisBlock}>
+                        <Text type="secondary">规则胜率 Top：</Text>
+                        <Space wrap size={[4, 4]}>
+                          {trackingAnalysisStats.ruleStats.map((item) => (
+                            <Tag
+                              key={`${item.scenarioName}-${item.matchedRule}`}
+                              color={item.passRate != null && item.passRate >= 50 ? 'red' : 'blue'}
+                              title={item.matchedRule}
+                            >
+                              {item.scenarioName}｜{getRuleShortLabel(item.matchedRule)}:{' '}
+                              {item.passRate == null ? '待验证' : `${item.passRate}%`}
+                              （{item.passed}/{item.verified}）
+                            </Tag>
+                          ))}
+                        </Space>
+                      </div>
+                    )}
+                    {trackingAnalysisStats.parameterStats.length > 0 && (
+                      <div className={styles.trackingAnalysisBlock}>
+                        <Text type="secondary">参数回测：</Text>
+                        <Space wrap size={[4, 4]}>
+                          {trackingAnalysisStats.parameterStats.map((item) => (
+                            <Tag key={`${item.threshold}-${item.minHitCount}`} color="purple">
+                              {item.threshold}% / {item.minHitCount}中：
+                              {item.passRate == null ? '待验证' : `${item.passRate}%`}
+                              （{item.passed}/{item.verified}）
+                            </Tag>
+                          ))}
+                        </Space>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             )}

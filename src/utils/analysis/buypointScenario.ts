@@ -24,7 +24,9 @@ export interface ScenarioFeatures {
   dayReturn?: number;
   volumeRatio?: number | null;
   lowerShadowRatio?: number;
+  upperShadowRatio?: number;
   bodyRatio?: number;
+  closeStrength?: number;
   pullbackFromHigh20?: number | null;
   ret3?: number | null;
   ret10?: number | null;
@@ -69,6 +71,9 @@ export interface LatestScenarioSignal extends ClassifiedScenario {
   timestamp: number;
   close: number;
   lift?: number;
+  oddsScore?: number;
+  oddsTier?: 'S' | 'A' | 'B' | 'C';
+  oddsReason?: string;
   returns: ReturnSnapshot;
 }
 
@@ -95,6 +100,19 @@ export const HIGH_LIFT_SCENARIOS: ScenarioDefinition[] = [
 
 export const HIGH_LIFT_IDS = new Set(HIGH_LIFT_SCENARIOS.map((s) => s.id));
 
+const SCENARIO_ODDS_BASE: Record<ScenarioId, number> = {
+  limit_up_trend: 70,
+  trend_continuation: 64,
+  volume_mid_thrust: 48,
+  volume_breakout: 26,
+  soft_breakout: 18,
+  pullback_stabilize: 52,
+  pullback_with_volume: 48,
+  oversold_bounce: 45,
+  weak_base: 38,
+  other: 20,
+};
+
 const HORIZONS: Array<{ key: keyof ReturnSnapshot; days: number }> = [
   { key: 'd1', days: 1 },
   { key: 'd2', days: 2 },
@@ -118,6 +136,156 @@ function mean(values: number[]): number | null {
 
 function toPercent(n: number): number {
   return Number((n * 100).toFixed(2));
+}
+
+function clampScore(score: number): number {
+  return Math.max(0, Math.min(100, Math.round(score)));
+}
+
+function resolveOddsTier(score: number): 'S' | 'A' | 'B' | 'C' {
+  if (score >= 88) return 'S';
+  if (score >= 74) return 'A';
+  if (score >= 58) return 'B';
+  return 'C';
+}
+
+function pushReason(reasons: string[], text: string): void {
+  if (!reasons.includes(text)) {
+    reasons.push(text);
+  }
+}
+
+export function getLatestSignalOdds(classified: ClassifiedScenario): Pick<
+  LatestScenarioSignal,
+  'oddsScore' | 'oddsTier' | 'oddsReason'
+> {
+  const features = classified.features || {};
+  let score = SCENARIO_ODDS_BASE[classified.scenario] ?? 20;
+  const reasons: string[] = [];
+
+  const dayReturn = features.dayReturn;
+  if (dayReturn != null) {
+    if (dayReturn >= 7) {
+      score += 18;
+      pushReason(reasons, '当日动能很强');
+    } else if (dayReturn >= 5) {
+      score += 13;
+      pushReason(reasons, '当日动能偏强');
+    } else if (dayReturn >= 2) {
+      score += 7;
+      pushReason(reasons, '当日延续上涨');
+    } else if (dayReturn < 0) {
+      score -= 16;
+      pushReason(reasons, '当日转弱');
+    } else {
+      score -= 6;
+      pushReason(reasons, '当日动能一般');
+    }
+  }
+
+  if (features.aboveMa10 === true) {
+    score += 4;
+    pushReason(reasons, '仍站在10日线之上');
+  } else if (features.aboveMa10 === false) {
+    score -= 12;
+    pushReason(reasons, '跌回10日线下');
+  }
+
+  if (features.nearHigh20 === true) {
+    if (classified.scenario === 'soft_breakout' || classified.scenario === 'volume_breakout') {
+      score -= 12;
+      pushReason(reasons, '接近前高但容易追高');
+    } else {
+      score += 2;
+      pushReason(reasons, '处于相对强势位置');
+    }
+  } else if (
+    features.nearHigh20 === false &&
+    (classified.scenario === 'limit_up_trend' || classified.scenario === 'trend_continuation')
+  ) {
+    score += 8;
+    pushReason(reasons, '不贴前高，仍有上攻空间');
+  }
+
+  const volumeRatio = features.volumeRatio;
+  if (volumeRatio != null) {
+    if (classified.scenario === 'soft_breakout') {
+      if (volumeRatio >= 1 && volumeRatio < 1.5) {
+        score -= 8;
+        pushReason(reasons, '温和放量突破赔率偏低');
+      } else if (volumeRatio >= 1.5) {
+        score -= 4;
+      }
+    } else if (classified.scenario === 'volume_breakout') {
+      if (volumeRatio >= 1.5 && volumeRatio < 2.5) {
+        score -= 7;
+        pushReason(reasons, '突破放量但承接一般');
+      } else if (volumeRatio >= 2.5) {
+        score -= 3;
+      }
+    } else if (classified.scenario === 'volume_mid_thrust') {
+      if (volumeRatio >= 1.5 && volumeRatio < 2.5) {
+        score += 4;
+        pushReason(reasons, '中部放量启动较健康');
+      } else if (volumeRatio >= 2.5) {
+        score -= 5;
+        pushReason(reasons, '放量过猛需防分歧');
+      }
+    } else if (classified.scenario === 'limit_up_trend' || classified.scenario === 'trend_continuation') {
+      if (volumeRatio < 1) {
+        score += 8;
+        pushReason(reasons, '缩量延续更利于赔率');
+      } else if (volumeRatio >= 2.5) {
+        score -= 4;
+        pushReason(reasons, '爆量后次日分歧风险偏高');
+      }
+    }
+  }
+
+  const closeStrength = features.closeStrength;
+  if (closeStrength != null) {
+    if (closeStrength >= 0.75) {
+      score += 6;
+      pushReason(reasons, '收盘靠近日内高位');
+    } else if (closeStrength <= 0.45) {
+      score -= 8;
+      pushReason(reasons, '收盘偏弱');
+    }
+  }
+
+  const upperShadowRatio = features.upperShadowRatio;
+  if (upperShadowRatio != null && upperShadowRatio >= 0.35) {
+    score -= 8;
+    pushReason(reasons, '上影较重');
+  }
+
+  const limitUpCount5 = features.limitUpCount5;
+  if (classified.scenario === 'limit_up_trend' && typeof limitUpCount5 === 'number') {
+    if (limitUpCount5 >= 3) {
+      score += 6;
+      pushReason(reasons, '短线连板强度足够');
+    } else if (limitUpCount5 === 2 && dayReturn != null && dayReturn < 0) {
+      score -= 10;
+      pushReason(reasons, '连板后转弱');
+    }
+  }
+
+  const ret3 = features.ret3;
+  if (classified.scenario === 'trend_continuation' && ret3 != null) {
+    if (ret3 >= 10) {
+      score += 6;
+      pushReason(reasons, '3日趋势斜率较强');
+    } else if (ret3 < 7) {
+      score -= 4;
+      pushReason(reasons, '3日趋势强度偏弱');
+    }
+  }
+
+  const oddsScore = clampScore(score);
+  const oddsTier = resolveOddsTier(oddsScore);
+  const oddsReason = reasons.slice(0, 3).join(' / ') || '场景基础赔率';
+
+  return { oddsScore, oddsTier, oddsReason };
 }
 
 export function calculateFutureReturns(lines: KLineData[], index: number): ReturnSnapshot {
@@ -159,7 +327,9 @@ export function classifyOneDay(lines: KLineData[], i: number): ClassifiedScenari
   const dayReturn = prevClose > 0 ? (close - prevClose) / prevClose : 0;
   const range = high - low;
   const lowerShadowRatio = range > 0 ? (Math.min(open, close) - low) / range : 0;
+  const upperShadowRatio = range > 0 ? (high - Math.max(open, close)) / range : 0;
   const bodyRatio = range > 0 ? Math.abs(close - open) / range : 0;
+  const closeStrength = range > 0 ? (close - low) / range : 0;
   const volMa5 = mean(
     lines.slice(Math.max(0, i - 5), i).map((item) => item.volume || 0)
   );
@@ -196,7 +366,9 @@ export function classifyOneDay(lines: KLineData[], i: number): ClassifiedScenari
     dayReturn: toPercent(dayReturn),
     volumeRatio: volumeRatio == null ? null : Number(volumeRatio.toFixed(2)),
     lowerShadowRatio: Number(lowerShadowRatio.toFixed(3)),
+    upperShadowRatio: Number(upperShadowRatio.toFixed(3)),
     bodyRatio: Number(bodyRatio.toFixed(3)),
+    closeStrength: Number(closeStrength.toFixed(3)),
     pullbackFromHigh20: pullbackFromHigh20 == null ? null : toPercent(pullbackFromHigh20),
     ret3: ret3 == null ? null : toPercent(ret3),
     ret10: ret10 == null ? null : toPercent(ret10),
@@ -381,9 +553,11 @@ export function scanLatestScenarioSignals(
     const classified = classifyOneDay(lines, index);
     const highLift = HIGH_LIFT_SCENARIOS.find((s) => s.id === classified.scenario);
     if (highLiftOnly && !highLift) return;
+    const odds = getLatestSignalOdds(classified);
 
     signals.push({
       ...classified,
+      ...odds,
       code: history.code,
       name: history.name,
       industry: history.industry || null,

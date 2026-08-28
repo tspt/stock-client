@@ -2,6 +2,7 @@ import type {
   LatestScenarioSignal,
   ReturnSnapshot,
 } from '@/utils/analysis/buypointScenario';
+import { getLatestSignalOdds } from '@/utils/analysis/buypointScenario';
 import type { StockRecord } from '@/types/stock';
 import type { StockHistoryRecord } from '@/utils/storage/opportunityIndexedDB';
 
@@ -143,9 +144,18 @@ export function buildTrackedLatestSignals(
         !!recordCodes && (recordCodes.has(signal.code) || recordCodes.has(pureCode(signal.code)));
       const trackedReturns = calculateFutureReturns(historyMap.get(signal.code) || historyMap.get(pureCode(signal.code)), signal);
       const stat = getTrackingStatus(trackedReturns, options);
+      const odds =
+        signal.oddsScore != null && signal.oddsTier && signal.oddsReason
+          ? {
+              oddsScore: signal.oddsScore,
+              oddsTier: signal.oddsTier,
+              oddsReason: signal.oddsReason,
+            }
+          : getLatestSignalOdds(signal);
 
       return [{
         ...signal,
+        ...odds,
         sourceFile: file.fileName,
         signalDate: signal.date,
         signalDateKey,
@@ -157,6 +167,7 @@ export function buildTrackedLatestSignals(
   });
 
   return rows.sort((a, b) => {
+    if ((b.oddsScore || 0) !== (a.oddsScore || 0)) return (b.oddsScore || 0) - (a.oddsScore || 0);
     if (a.timestamp !== b.timestamp) return b.timestamp - a.timestamp;
     return (b.lift || 0) - (a.lift || 0);
   });

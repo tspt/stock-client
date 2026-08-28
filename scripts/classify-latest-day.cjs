@@ -15,6 +15,7 @@ const {
   HIGH_LIFT_IDS,
   fmtDate,
   classifyOneDay,
+  getLatestSignalOdds,
 } = require('./lib/buypoint-scenario-lib.cjs');
 
 const ROOT = path.join(__dirname, '..');
@@ -50,6 +51,7 @@ function main() {
   const files = fs.readdirSync(STOCK_DIR).filter((f) => f.endsWith('.json'));
   const hits = [];
   const byScenario = {};
+  const byOddsTier = { S: 0, A: 0, B: 0, C: 0 };
   for (const s of HIGH_LIFT_SCENARIOS) byScenario[s.id] = 0;
 
   let scanned = 0;
@@ -84,6 +86,7 @@ function main() {
     if (!latestDate || date > latestDate) latestDate = date;
 
     if (!HIGH_LIFT_IDS.has(cls.scenario)) continue;
+    const odds = getLatestSignalOdds(cls);
 
     const item = {
       code,
@@ -95,11 +98,15 @@ function main() {
       scenarioName: cls.scenarioName,
       matchedRule: cls.matchedRule,
       features: cls.features,
+      oddsScore: odds.oddsScore,
+      oddsTier: odds.oddsTier,
+      oddsReason: odds.oddsReason,
       lift:
         HIGH_LIFT_SCENARIOS.find((s) => s.id === cls.scenario)?.lift ?? null,
     };
     hits.push(item);
     byScenario[cls.scenario]++;
+    byOddsTier[odds.oddsTier]++;
 
     const payload = {
       ...item,
@@ -124,6 +131,7 @@ function main() {
   }
 
   hits.sort((a, b) => {
+    if ((b.oddsScore || 0) !== (a.oddsScore || 0)) return (b.oddsScore || 0) - (a.oddsScore || 0);
     if (b.lift !== a.lift) return (b.lift || 0) - (a.lift || 0);
     return a.name.localeCompare(b.name, 'zh');
   });
@@ -141,6 +149,7 @@ function main() {
     hitCount: hits.length,
     hitRate: scanned ? Number(((hits.length / scanned) * 100).toFixed(2)) : 0,
     byScenario,
+    byOddsTier,
   };
 
   fs.writeFileSync(path.join(OUT_ROOT, 'summary.json'), JSON.stringify(summary, null, 2), 'utf8');
@@ -155,6 +164,8 @@ function main() {
         code: h.code,
         date: h.date,
         scenario: h.scenarioName,
+        oddsTier: h.oddsTier,
+        oddsScore: h.oddsScore,
         lift: h.lift,
         dayRet: h.features?.dayReturn,
         volR: h.features?.volumeRatio,
