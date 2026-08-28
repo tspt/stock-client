@@ -64,6 +64,7 @@ import {
 } from '@/utils/export/backtestExportUtils';
 import { exportStockNamesToPng } from '@/utils/export/stockNamesExportUtils';
 import { logger } from '@/utils/business/logger';
+import { OPPORTUNITY_INDUSTRY_GROUPS } from '@/utils/config/opportunityAnalysisDefaults';
 import styles from './BacktestPage.module.css';
 
 const { Header, Content } = Layout;
@@ -76,6 +77,17 @@ type SectorInfo = { code: string; name: string };
 
 function isSTStock(name: string): boolean {
   return name.includes('ST');
+}
+
+function matchIndustryGroupFilter(
+  industryCode: string | undefined,
+  selectedCodes: Set<string>,
+  invert: boolean
+): boolean {
+  if (selectedCodes.size === 0) return true;
+  const hasIndustry = !!industryCode && selectedCodes.has(industryCode);
+  if (invert) return !hasIndustry;
+  return hasIndustry;
 }
 
 function filterHistories(histories: StockHistoryRecord[], excludeST: boolean): StockHistoryRecord[] {
@@ -152,6 +164,8 @@ export function BacktestPage() {
     'passed',
   ]);
   const [trackingOnlyOpportunity, setTrackingOnlyOpportunity] = useState(false);
+  const [trackingIndustryGroupLabels, setTrackingIndustryGroupLabels] = useState<string[]>([]);
+  const [trackingIndustryInvert, setTrackingIndustryInvert] = useState(true);
   const [trackingThreshold, setTrackingThreshold] = useState(5);
   const [trackingMinHitCount, setTrackingMinHitCount] = useState(3);
   const [trackingRows, setTrackingRows] = useState<TrackedLatestSignal[]>([]);
@@ -478,6 +492,15 @@ export function BacktestPage() {
     }));
   }, [trackingMinHitCount, trackingRows, trackingThreshold]);
 
+  const trackingIndustryCodes = useMemo(() => {
+    const labels = new Set(trackingIndustryGroupLabels);
+    return new Set(
+      OPPORTUNITY_INDUSTRY_GROUPS.filter((group) => labels.has(group.label)).flatMap((group) => [
+        ...group.codes,
+      ])
+    );
+  }, [trackingIndustryGroupLabels]);
+
   const trackingAnalysisRows = useMemo(() => {
     const keyword = searchText.trim().toLowerCase();
     const sortedDates = Array.from(new Set(trackedRowsWithStatus.map((item) => item.signalDateKey)))
@@ -499,14 +522,25 @@ export function BacktestPage() {
         trackingScenarioFilter === 'all' || item.scenario === trackingScenarioFilter;
       const oddsMatch = !trackingOnlyHighOdds || item.oddsTier === 'S' || item.oddsTier === 'A';
       const opportunityMatch = !trackingOnlyOpportunity || item.opportunityRecordHit;
+      const industryCode =
+        item.industry?.code || industryMapping.get(normalizeStockCode(item.code))?.code;
+      const industryMatch = matchIndustryGroupFilter(
+        industryCode,
+        trackingIndustryCodes,
+        trackingIndustryInvert
+      );
       const keywordMatch =
         !keyword ||
         item.name.toLowerCase().includes(keyword) ||
         item.code.toLowerCase().includes(keyword);
-      return dateMatch && scenarioMatch && oddsMatch && opportunityMatch && keywordMatch;
+      return dateMatch && scenarioMatch && oddsMatch && opportunityMatch && industryMatch && keywordMatch;
     });
   }, [
+    industryMapping,
+    normalizeStockCode,
     searchText,
+    trackingIndustryCodes,
+    trackingIndustryInvert,
     trackingOnlyHighOdds,
     trackedRowsWithStatus,
     trackingDateRange,
@@ -859,6 +893,15 @@ export function BacktestPage() {
     return record.industry || industryMapping.get(normalizeStockCode(record.code)) || null;
   };
 
+  const compareIndustry = (
+    a: { code: string; industry?: SectorInfo | null },
+    b: { code: string; industry?: SectorInfo | null }
+  ) => {
+    const nameA = getRecordIndustry(a)?.name || '';
+    const nameB = getRecordIndustry(b)?.name || '';
+    return nameA.localeCompare(nameB, 'zh-CN');
+  };
+
   const getRecordConcepts = (record: { code: string; concepts?: SectorInfo[] }) => {
     return record.concepts || conceptMapping.get(normalizeStockCode(record.code)) || [];
   };
@@ -912,6 +955,13 @@ export function BacktestPage() {
         </Tag>
       ),
     },
+    {
+      title: '所属行业',
+      width: 120,
+      sorter: compareIndustry,
+      showSorterTooltip: { title: '按所属行业排序' },
+      render: renderIndustry,
+    },
     { title: '买入价', dataIndex: 'entryPrice', width: 90 },
     { title: '命中项', dataIndex: 'hitCount', width: 80 },
     { title: '1日', width: 80, sorter: (a, b) => compareReturn(a.returns, b.returns, 'd1'), render: (_, record) => renderReturn(record.returns, 'd1') },
@@ -919,7 +969,6 @@ export function BacktestPage() {
     { title: '3日', width: 80, sorter: (a, b) => compareReturn(a.returns, b.returns, 'd3'), render: (_, record) => renderReturn(record.returns, 'd3') },
     { title: '5日', width: 80, sorter: (a, b) => compareReturn(a.returns, b.returns, 'd5'), render: (_, record) => renderReturn(record.returns, 'd5') },
     { title: '两周', width: 80, sorter: (a, b) => compareReturn(a.returns, b.returns, 'd10'), render: (_, record) => renderReturn(record.returns, 'd10') },
-    { title: '所属行业', width: 120, render: renderIndustry },
     { title: '所属概念', width: 360, render: renderConcepts },
     {
       title: '命中规则',
@@ -971,12 +1020,18 @@ export function BacktestPage() {
       width: 100,
       render: (_, record) => <Tag color="red">{record.scenarioName}</Tag>,
     },
+    {
+      title: '所属行业',
+      width: 120,
+      sorter: compareIndustry,
+      showSorterTooltip: { title: '按所属行业排序' },
+      render: renderIndustry,
+    },
     { title: '1日', width: 80, sorter: (a, b) => compareReturn(a.returns, b.returns, 'd1'), render: (_, record) => renderReturn(record.returns, 'd1') },
     { title: '2日', width: 80, sorter: (a, b) => compareReturn(a.returns, b.returns, 'd2'), render: (_, record) => renderReturn(record.returns, 'd2') },
     { title: '3日', width: 80, sorter: (a, b) => compareReturn(a.returns, b.returns, 'd3'), render: (_, record) => renderReturn(record.returns, 'd3') },
     { title: '5日', width: 80, sorter: (a, b) => compareReturn(a.returns, b.returns, 'd5'), render: (_, record) => renderReturn(record.returns, 'd5') },
     { title: '两周', width: 80, sorter: (a, b) => compareReturn(a.returns, b.returns, 'd10'), render: (_, record) => renderReturn(record.returns, 'd10') },
-    { title: '所属行业', width: 120, render: renderIndustry },
     { title: '所属概念', width: 360, render: renderConcepts },
     {
       title: '命中规则',
@@ -1027,6 +1082,13 @@ export function BacktestPage() {
       width: 100,
       render: (_, record) => <Tag color={highLiftIds.has(record.scenario) ? 'red' : 'blue'}>{record.scenarioName}</Tag>,
     },
+    {
+      title: '所属行业',
+      width: 120,
+      sorter: compareIndustry,
+      showSorterTooltip: { title: '按所属行业排序' },
+      render: renderIndustry,
+    },
     { title: '1日', width: 80, sorter: (a, b) => compareReturn(a.trackedReturns, b.trackedReturns, 'd1'), render: (_, record) => renderReturn(record.trackedReturns, 'd1') },
     { title: '2日', width: 80, sorter: (a, b) => compareReturn(a.trackedReturns, b.trackedReturns, 'd2'), render: (_, record) => renderReturn(record.trackedReturns, 'd2') },
     { title: '3日', width: 80, sorter: (a, b) => compareReturn(a.trackedReturns, b.trackedReturns, 'd3'), render: (_, record) => renderReturn(record.trackedReturns, 'd3') },
@@ -1041,7 +1103,6 @@ export function BacktestPage() {
       width: 90,
       render: (hit) => <Tag color={hit ? 'green' : 'default'}>{hit ? '是' : '否'}</Tag>,
     },
-    { title: '所属行业', width: 120, render: renderIndustry },
     { title: '所属概念', width: 360, render: renderConcepts },
     {
       title: '命中规则',
@@ -1294,6 +1355,27 @@ export function BacktestPage() {
                       style={{ width: 160 }}
                       size="small"
                     />
+                    <Select
+                      mode="multiple"
+                      allowClear
+                      placeholder="行业分组"
+                      value={trackingIndustryGroupLabels}
+                      options={OPPORTUNITY_INDUSTRY_GROUPS.map((group) => ({
+                        label: group.label,
+                        value: group.label,
+                      }))}
+                      onChange={setTrackingIndustryGroupLabels}
+                      style={{ minWidth: 180, maxWidth: 280 }}
+                      maxTagCount="responsive"
+                      size="small"
+                    />
+                    <Checkbox
+                      checked={trackingIndustryInvert}
+                      onChange={(e) => setTrackingIndustryInvert(e.target.checked)}
+                      disabled={trackingIndustryGroupLabels.length === 0}
+                    >
+                      排除选中
+                    </Checkbox>
                     <Checkbox
                       checked={trackingOnlyHighOdds}
                       onChange={(e) => setTrackingOnlyHighOdds(e.target.checked)}
