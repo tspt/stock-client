@@ -13,10 +13,31 @@ import type { BillboardStockData, StatisticsCycle, BillboardResponse } from '@/t
 
 const BASE_URL = 'https://datacenter-web.eastmoney.com/api/data/v1/get';
 
+/** 龙虎榜主排序字段 */
+export type BillboardSortBy = 'LATEST_TDATE' | 'BILLBOARD_TIMES';
+
 interface FetchBillboardParams {
   statisticsCycle: StatisticsCycle;
   pageNumber?: number;
   pageSize?: number;
+  /** 主排序字段，默认最新上榜 */
+  sortBy?: BillboardSortBy;
+}
+
+/**
+ * 根据主排序字段构建接口 sortColumns / sortTypes
+ */
+function buildSortParams(sortBy: BillboardSortBy): { sortColumns: string; sortTypes: string } {
+  if (sortBy === 'LATEST_TDATE') {
+    return {
+      sortColumns: 'LATEST_TDATE,BILLBOARD_TIMES,SECURITY_CODE',
+      sortTypes: '-1,-1,1',
+    };
+  }
+  return {
+    sortColumns: 'BILLBOARD_TIMES,LATEST_TDATE,SECURITY_CODE',
+    sortTypes: '-1,-1,1',
+  };
 }
 
 /**
@@ -29,7 +50,12 @@ export async function fetchBillboardData(
   params: FetchBillboardParams,
   forceRefresh: boolean = false
 ): Promise<{ data: BillboardStockData[]; total: number; pages: number }> {
-  const { statisticsCycle, pageNumber = 1, pageSize = 50 } = params;
+  const {
+    statisticsCycle,
+    pageNumber = 1,
+    pageSize = 50,
+    sortBy = 'LATEST_TDATE',
+  } = params;
 
   // 仅在第一页时尝试使用缓存
   if (pageNumber === 1 && !forceRefresh) {
@@ -59,10 +85,12 @@ export async function fetchBillboardData(
       throw new Error('没有可用的东方财富Cookie，请先在Cookie管理页面添加');
     }
 
+    const { sortColumns, sortTypes } = buildSortParams(sortBy);
+
     // 构建请求URL
     const url = new URL(BASE_URL);
-    url.searchParams.set('sortColumns', 'BILLBOARD_TIMES,LATEST_TDATE,SECURITY_CODE');
-    url.searchParams.set('sortTypes', '-1,-1,1');
+    url.searchParams.set('sortColumns', sortColumns);
+    url.searchParams.set('sortTypes', sortTypes);
     url.searchParams.set('pageSize', pageSize.toString());
     url.searchParams.set('pageNumber', pageNumber.toString());
     url.searchParams.set('reportName', 'RPT_BILLBOARD_TRADEALLNEW');
@@ -76,6 +104,7 @@ export async function fetchBillboardData(
       statisticsCycle,
       pageNumber,
       pageSize,
+      sortBy,
     });
 
     // 发送请求（使用统一的UA和Cookie）
@@ -144,7 +173,8 @@ export async function fetchBillboardData(
  * @param amount 金额（元）
  * @returns 格式化后的金额字符串
  */
-export function formatAmount(amount: number): string {
+export function formatAmount(amount: number | null | undefined): string {
+  if (amount == null || Number.isNaN(amount)) return '-';
   if (amount === 0) return '0';
 
   const absAmount = Math.abs(amount);
@@ -166,7 +196,8 @@ export function formatAmount(amount: number): string {
  * @param value 百分比值
  * @returns 格式化后的百分比字符串
  */
-export function formatPercent(value: number): string {
+export function formatPercent(value: number | null | undefined): string {
+  if (value == null || Number.isNaN(value)) return '-';
   if (value === 0) return '0.00%';
   const sign = value > 0 ? '+' : '';
   return `${sign}${value.toFixed(2)}%`;

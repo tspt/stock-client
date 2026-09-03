@@ -99,6 +99,7 @@ export const OPPORTUNITY_DEFAULT_INDUSTRY_SECTORS = {
     // 'BK1280', // 食品加工
     // 'BK1281', // 休闲食品
     // 'BK1282', // 饮料乳品
+    // 其他
     // 'BK0420', // 航空机场
     // 'BK0421', // 铁路公路
     // 'BK0422', // 物流

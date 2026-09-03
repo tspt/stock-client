@@ -7,6 +7,7 @@ import { Layout, Select, Button, Table, Empty, Spin, App, Space, Typography, Tag
 import { ReloadOutlined, TrophyOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { fetchBillboardData, formatAmount, formatPercent, formatDate } from '@/services/hot/billboard-service';
+import type { BillboardSortBy } from '@/services/hot/billboard-service';
 import { clearBillboardCacheByCycle } from '@/utils/storage/billboardIndexedDB';
 import type { BillboardStockData, StatisticsCycle } from '@/types/billboard';
 import { STATISTICS_CYCLE_OPTIONS } from '@/types/billboard';
@@ -18,11 +19,18 @@ const { Text } = Typography;
 
 const PAGE_SIZE = 50;
 
+/** 表头 columnKey -> 接口主排序字段 */
+const COLUMN_SORT_MAP: Record<string, BillboardSortBy> = {
+  latestDate: 'LATEST_TDATE',
+  billboardTimes: 'BILLBOARD_TIMES',
+};
+
 export function BillboardPage() {
   const { message } = App.useApp();
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<BillboardStockData[]>([]);
   const [statisticsCycle, setStatisticsCycle] = useState<StatisticsCycle>('02'); // 默认近三个月
+  const [sortBy, setSortBy] = useState<BillboardSortBy>('LATEST_TDATE');
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: PAGE_SIZE,
@@ -30,19 +38,27 @@ export function BillboardPage() {
   });
   const hasLoadedRef = React.useRef(false);
 
-  // 加载数据
-  const loadData = useCallback(async (page: number = 1, forceRefresh: boolean = false) => {
+  // 加载数据（可覆盖周期 / 排序，避免 setState 闭包滞后）
+  const loadData = useCallback(async (
+    page: number = 1,
+    forceRefresh: boolean = false,
+    overrides?: { sortBy?: BillboardSortBy; statisticsCycle?: StatisticsCycle }
+  ) => {
+    const activeSortBy = overrides?.sortBy ?? sortBy;
+    const activeCycle = overrides?.statisticsCycle ?? statisticsCycle;
+
     setLoading(true);
     try {
       // 如果是强制刷新且是第一页，先清除缓存
       if (forceRefresh && page === 1) {
-        await clearBillboardCacheByCycle(statisticsCycle);
+        await clearBillboardCacheByCycle(activeCycle);
       }
 
       const result = await fetchBillboardData({
-        statisticsCycle,
+        statisticsCycle: activeCycle,
         pageNumber: page,
         pageSize: PAGE_SIZE,
+        sortBy: activeSortBy,
       }, forceRefresh);
 
       setData(result.data);
@@ -63,7 +79,7 @@ export function BillboardPage() {
     } finally {
       setLoading(false);
     }
-  }, [statisticsCycle, message]);
+  }, [statisticsCycle, sortBy, message]);
 
   // 初始加载（防止 React.StrictMode 下重复执行）
   useEffect(() => {
@@ -77,8 +93,8 @@ export function BillboardPage() {
   const handleCycleChange = (value: StatisticsCycle) => {
     setStatisticsCycle(value);
     setPagination((prev) => ({ ...prev, current: 1 }));
-    // 切换周期时不强制刷新，优先使用缓存
-    // loadData 会通过 useEffect 自动触发
+    // 切换周期时不强制刷新，优先使用缓存；显式传入新周期避免闭包滞后
+    loadData(1, false, { statisticsCycle: value });
   };
 
   // 刷新数据（强制重新请求）
@@ -86,8 +102,19 @@ export function BillboardPage() {
     loadData(pagination.current, true);
   };
 
-  // 分页变化
-  const handleTableChange = (newPagination: any) => {
+  // 分页 / 排序变化（排序走服务端，换排序作废该周期缓存）
+  const handleTableChange = (newPagination: any, _filters: any, sorter: any) => {
+    const sorterResult = Array.isArray(sorter) ? sorter[0] : sorter;
+    const columnKey = sorterResult?.columnKey as string | undefined;
+    const nextSortBy = columnKey ? COLUMN_SORT_MAP[columnKey] : undefined;
+
+    if (nextSortBy && nextSortBy !== sortBy) {
+      setSortBy(nextSortBy);
+      setPagination((prev) => ({ ...prev, current: 1 }));
+      loadData(1, true, { sortBy: nextSortBy });
+      return;
+    }
+
     if (newPagination.current !== pagination.current) {
       loadData(newPagination.current);
     }
@@ -116,6 +143,10 @@ export function BillboardPage() {
       dataIndex: 'LATEST_TDATE',
       key: 'latestDate',
       width: 110,
+      sorter: true,
+      sortDirections: ['descend'],
+      sortOrder: sortBy === 'LATEST_TDATE' ? 'descend' : undefined,
+      showSorterTooltip: false,
       render: (text: string) => <Text>{formatDate(text)}</Text>,
     },
     {
@@ -123,8 +154,10 @@ export function BillboardPage() {
       dataIndex: 'BILLBOARD_TIMES',
       key: 'billboardTimes',
       width: 100,
-      sorter: (a, b) => a.BILLBOARD_TIMES - b.BILLBOARD_TIMES,
-      defaultSortOrder: 'descend',
+      sorter: true,
+      sortDirections: ['descend'],
+      sortOrder: sortBy === 'BILLBOARD_TIMES' ? 'descend' : undefined,
+      showSorterTooltip: false,
       render: (value: number) => (
         <Tag color="purple" style={{ fontWeight: 600 }}>
           {value}次
@@ -192,7 +225,9 @@ export function BillboardPage() {
       dataIndex: 'CLOSE_PRICE',
       key: 'closePrice',
       width: 100,
-      render: (value: number) => <Text>{value.toFixed(2)}</Text>,
+      render: (value: number | null) => (
+        <Text>{value == null || Number.isNaN(value) ? '-' : value.toFixed(2)}</Text>
+      ),
     },
     {
       title: '近1月',
