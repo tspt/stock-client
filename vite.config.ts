@@ -63,6 +63,10 @@ export default defineConfig(({ mode }) => {
             });
           },
         },
+        '/api/ths-hot': {
+          target: 'http://localhost:3000',
+          changeOrigin: false,
+        },
       },
     },
     base: './',

@@ -113,6 +113,17 @@ export interface ElectronAPI {
     error?: string;
   }>;
 
+  /** 写入热门榜到 docs/回测优化/热门榜 */
+  writeHotRankFile: (payload: {
+    fileBaseName: string;
+    content: string;
+    period?: 'hour' | 'day';
+  }) => Promise<{
+    success: boolean;
+    filePath?: string;
+    error?: string;
+  }>;
+
   /** 监听Cookie获取进度 */
   onCookieFetchProgress: (
     callback: (progress: {

@@ -108,6 +108,11 @@ const PROXY_CONFIG: Record<string, { target: string; referer: string; origin: st
     referer: process.env.VITE_EASTMONEY_REFERER!,
     origin: process.env.VITE_EASTMONEY_ORIGIN!,
   },
+  '/api/ths-hot': {
+    target: 'https://dq.10jqka.com.cn',
+    referer: 'https://eq.10jqka.com.cn/',
+    origin: 'https://eq.10jqka.com.cn',
+  },
 };
 
 /**

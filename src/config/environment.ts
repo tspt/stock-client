@@ -38,4 +38,7 @@ export const API_BASE = {
 
   // 同花顺iFinD
   THS: useLocalProxy ? 'http://127.0.0.1:3000/api/ths' : 'https://basic.10jqka.com.cn',
+
+  // 同花顺热股榜（dq.10jqka.com.cn）
+  THS_HOT: useLocalProxy ? 'http://127.0.0.1:3000/api/ths-hot' : 'https://dq.10jqka.com.cn',
 };

@@ -97,6 +97,11 @@ try {
       return ipcRenderer.invoke('clear-opportunity-record-files');
     },
 
+    // 热门榜：写入 docs/回测优化/热门榜/{YYYY-MM-DD}.json
+    writeHotRankFile: (payload: { fileBaseName: string; content: string; period?: 'hour' | 'day' }) => {
+      return ipcRenderer.invoke('write-hot-rank-file', payload);
+    },
+
     // 监听Cookie获取进度
     onCookieFetchProgress: (callback: (progress: any) => void) => {
       const listener = (_event: any, progress: any) => callback(progress);

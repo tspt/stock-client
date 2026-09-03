@@ -101,6 +101,11 @@ const PROXY_CONFIG = {
         referer: process.env.VITE_EASTMONEY_REFERER,
         origin: process.env.VITE_EASTMONEY_ORIGIN,
     },
+    '/api/ths-hot': {
+        target: 'https://dq.10jqka.com.cn',
+        referer: 'https://eq.10jqka.com.cn/',
+        origin: 'https://eq.10jqka.com.cn',
+    },
 };
 /**
  * push2 行情接口与页面一致需带 wbp2u=|0|0|0|web；缺省时服务端常直接断连，浏览器侧表现为

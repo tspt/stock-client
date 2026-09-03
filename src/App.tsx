@@ -30,6 +30,7 @@ const IndustrySectorPage = lazy(() => import('@/pages/IndustrySectorPage/Industr
 const ConceptSectorPage = lazy(() => import('@/pages/ConceptSectorPage/ConceptSectorPage').then((m) => ({ default: m.ConceptSectorPage })));
 const SectorConstituentsPage = lazy(() => import('@/pages/SectorConstituentsPage/SectorConstituentsPage').then((m) => ({ default: m.SectorConstituentsPage })));
 const BillboardPage = lazy(() => import('@/pages/BillboardPage/BillboardPage').then((m) => ({ default: m.BillboardPage })));
+const HotRankPage = lazy(() => import('@/pages/HotRankPage/HotRankPage').then((m) => ({ default: m.HotRankPage })));
 const CookieManagerPage = lazy(() => import('@/pages/CookieManagerPage/CookieManagerPage').then((m) => ({ default: m.CookieManagerPage })));
 const DataManagerPage = lazy(() => import('@/pages/DataManagerPage/DataManagerPage').then((m) => ({ default: m.DataManagerPage })));
 const BacktestPage = lazy(() => import('@/pages/BacktestPage/BacktestPage').then((m) => ({ default: m.BacktestPage })));
@@ -277,6 +278,28 @@ function AppContent() {
                         >
                           <div className={styles.sectorLayout}>
                             <BillboardPage />
+                          </div>
+                        </Suspense>
+                      ),
+                    },
+                    {
+                      key: 'hot-rank',
+                      label: (
+                        <span>
+                          <FireOutlined className={styles.mgr6} />
+                          热门榜
+                        </span>
+                      ),
+                      children: (
+                        <Suspense
+                          fallback={
+                            <div className={styles.suspenseFallback}>
+                              <Spin size="large" />
+                            </div>
+                          }
+                        >
+                          <div className={styles.sectorLayout}>
+                            <HotRankPage />
                           </div>
                         </Suspense>
                       ),

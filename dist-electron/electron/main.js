@@ -839,6 +839,73 @@ function setupIpcHandlers() {
             return { success: false, error: errorMessage, deletedCount: 0 };
         }
     });
+    function getHotRankDir() {
+        if (isDev) {
+            return join(app.getAppPath(), 'docs', '回测优化', '热门榜');
+        }
+        const exeDir = join(app.getPath('exe'), '..');
+        return join(exeDir, 'docs', '回测优化', '热门榜');
+    }
+    function ensureHotRankDir() {
+        const targetDir = getHotRankDir();
+        if (!existsSync(targetDir)) {
+            mkdirSync(targetDir, { recursive: true });
+            mainLog(`[主进程] 创建目录: ${targetDir}`);
+        }
+        return targetDir;
+    }
+    /**
+     * 写入热门榜到 docs/回测优化/热门榜/{YYYY-MM-DD}.json
+     */
+    ipcMain.handle('write-hot-rank-file', async (_event, payload) => {
+        try {
+            const { fileBaseName, content, period } = payload;
+            if (!fileBaseName || !OPPORTUNITY_RECORD_DATE_PATTERN.test(fileBaseName)) {
+                return { success: false, error: '非法文件名，需为 YYYY-MM-DD 格式' };
+            }
+            const targetDir = ensureHotRankDir();
+            const filePath = join(targetDir, `${fileBaseName}.json`);
+            let toWrite = String(content);
+            if (period === 'hour' || period === 'day') {
+                const items = JSON.parse(String(content));
+                let existing = {};
+                if (existsSync(filePath)) {
+                    try {
+                        existing = JSON.parse(readFileSync(filePath, 'utf-8'));
+                    }
+                    catch {
+                        existing = {};
+                    }
+                }
+                const now = Date.now();
+                const existingHour = Array.isArray(existing.hour)
+                    ? existing.hour
+                    : Array.isArray(existing.items)
+                        ? existing.items
+                        : [];
+                const existingDay = Array.isArray(existing.day) ? existing.day : [];
+                const createdAt = typeof existing.createdAt === 'number' ? existing.createdAt : now;
+                toWrite = JSON.stringify({
+                    version: '1.1',
+                    kind: 'hot-rank',
+                    date: fileBaseName,
+                    createdAt,
+                    updatedAt: now,
+                    source: 'ths',
+                    hour: period === 'hour' ? items : existingHour,
+                    day: period === 'day' ? items : existingDay,
+                }, null, 2);
+            }
+            writeFileSync(filePath, toWrite, 'utf-8');
+            mainLog(`[主进程] 热门榜已保存: ${filePath}`);
+            return { success: true, filePath };
+        }
+        catch (error) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            mainLog(`[主进程] 保存热门榜失败: ${errorMessage}`, true);
+            return { success: false, error: errorMessage };
+        }
+    });
 }
 // 应用准备就绪
 app.whenReady().then(async () => {
