@@ -97,9 +97,14 @@ try {
       return ipcRenderer.invoke('clear-opportunity-record-files');
     },
 
-    // 热门榜：写入 docs/回测优化/热门榜/{YYYY-MM-DD}.json
+    // 热门榜：写入 docs/回测优化/热门榜/{YYYY-MM-DD}.json 或 {YYYY-MM-DD}_{HH}.json
     writeHotRankFile: (payload: { fileBaseName: string; content: string; period?: 'hour' | 'day' }) => {
       return ipcRenderer.invoke('write-hot-rank-file', payload);
+    },
+
+    // 热门榜：读取 24 小时文件 docs/回测优化/热门榜/{YYYY-MM-DD}.json
+    readHotRankDayFile: (date: string) => {
+      return ipcRenderer.invoke('read-hot-rank-day-file', date);
     },
 
     // 监听Cookie获取进度

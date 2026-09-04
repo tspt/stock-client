@@ -53,7 +53,7 @@ export async function fetchBillboardData(
   const {
     statisticsCycle,
     pageNumber = 1,
-    pageSize = 50,
+    pageSize = 100,
     sortBy = 'LATEST_TDATE',
   } = params;
 

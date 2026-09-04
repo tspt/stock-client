@@ -55,6 +55,11 @@ import {
   type TrackedLatestSignal,
   type TrackingStatus,
 } from '@/utils/analysis/latestSignalTracking';
+import { fetchThsHotRank } from '@/services/hot/ths-hot-rank-service';
+import {
+  getLocalDateString,
+  readHotRankDayCodes,
+} from '@/utils/storage/hotRankFiles';
 import {
   exportBacktestSignalsToExcel,
   exportBacktestSignalsToJson,
@@ -164,6 +169,7 @@ export function BacktestPage() {
     'passed',
   ]);
   const [trackingOnlyOpportunity, setTrackingOnlyOpportunity] = useState(false);
+  const [trackingOnlyHotRank, setTrackingOnlyHotRank] = useState(false);
   const [trackingIndustryGroupLabels, setTrackingIndustryGroupLabels] = useState<string[]>([]);
   const [trackingIndustryInvert, setTrackingIndustryInvert] = useState(true);
   const [trackingThreshold, setTrackingThreshold] = useState(5);
@@ -439,12 +445,52 @@ export function BacktestPage() {
         return;
       }
 
+      const todayKey = getLocalDateString();
+      const signalDates = Array.from(
+        new Set(
+          files.flatMap((file) => {
+            const fileDateKey = normalizeDateKey(file.fileBaseName);
+            const items = Array.isArray(file.content?.items) ? file.content.items : [];
+            return items
+              .map((item: { date?: string }) => normalizeDateKey(item.date || ''))
+              .filter((dateKey: string) => dateKey && dateKey === fileDateKey);
+          })
+        )
+      );
+
+      const hotRankCodeMap = new Map<string, Set<string>>();
+      for (const dateKey of signalDates) {
+        try {
+          let codes = await readHotRankDayCodes(dateKey);
+          if (codes == null && dateKey === todayKey) {
+            try {
+              await fetchThsHotRank('day');
+              codes = await readHotRankDayCodes(dateKey);
+            } catch (fetchError) {
+              logger.warn('[BacktestPage] 当天热门榜补数失败:', fetchError);
+              message.warning('当天热门榜拉取失败，热门榜标记可能为空');
+              codes = new Set();
+            }
+          }
+          hotRankCodeMap.set(dateKey, codes ?? new Set());
+        } catch (readError) {
+          logger.warn('[BacktestPage] 读取热门榜失败:', { dateKey, readError });
+          hotRankCodeMap.set(dateKey, new Set());
+        }
+      }
+
       const histories = filterHistories(await getStocksHistory([]), excludeST);
       const records = await getAllStockRecords();
-      const rows = buildTrackedLatestSignals(files, histories, records, {
-        threshold: trackingThreshold,
-        minHitCount: trackingMinHitCount,
-      });
+      const rows = buildTrackedLatestSignals(
+        files,
+        histories,
+        records,
+        {
+          threshold: trackingThreshold,
+          minHitCount: trackingMinHitCount,
+        },
+        hotRankCodeMap
+      );
       setTrackingRows(rows);
       message.success(`买点追踪已更新，共读取 ${files.length} 个文件、${rows.length} 条信号`);
     } catch (error) {
@@ -522,6 +568,7 @@ export function BacktestPage() {
         trackingScenarioFilter === 'all' || item.scenario === trackingScenarioFilter;
       const oddsMatch = !trackingOnlyHighOdds || item.oddsTier === 'S' || item.oddsTier === 'A';
       const opportunityMatch = !trackingOnlyOpportunity || item.opportunityRecordHit;
+      const hotRankMatch = !trackingOnlyHotRank || item.hotRankHit;
       const industryCode =
         item.industry?.code || industryMapping.get(normalizeStockCode(item.code))?.code;
       const industryMatch = matchIndustryGroupFilter(
@@ -533,7 +580,15 @@ export function BacktestPage() {
         !keyword ||
         item.name.toLowerCase().includes(keyword) ||
         item.code.toLowerCase().includes(keyword);
-      return dateMatch && scenarioMatch && oddsMatch && opportunityMatch && industryMatch && keywordMatch;
+      return (
+        dateMatch &&
+        scenarioMatch &&
+        oddsMatch &&
+        opportunityMatch &&
+        hotRankMatch &&
+        industryMatch &&
+        keywordMatch
+      );
     });
   }, [
     industryMapping,
@@ -544,6 +599,7 @@ export function BacktestPage() {
     trackingOnlyHighOdds,
     trackedRowsWithStatus,
     trackingDateRange,
+    trackingOnlyHotRank,
     trackingOnlyOpportunity,
     trackingScenarioFilter,
   ]);
@@ -1103,6 +1159,12 @@ export function BacktestPage() {
       width: 90,
       render: (hit) => <Tag color={hit ? 'green' : 'default'}>{hit ? '是' : '否'}</Tag>,
     },
+    {
+      title: '热门榜',
+      dataIndex: 'hotRankHit',
+      width: 80,
+      render: (hit) => <Tag color={hit ? 'green' : 'default'}>{hit ? '是' : '否'}</Tag>,
+    },
     { title: '所属概念', width: 360, render: renderConcepts },
     {
       title: '命中规则',
@@ -1142,7 +1204,7 @@ export function BacktestPage() {
       : activeTab === 'tracking'
         ? filteredTrackingRows
         : filteredHistorySignals;
-  const activeScrollX = activeTab === 'latest' ? 2260 : activeTab === 'tracking' ? 2600 : 1800;
+  const activeScrollX = activeTab === 'latest' ? 2260 : activeTab === 'tracking' ? 2680 : 1800;
 
   return (
     <Layout className={styles.backtestPage}>
@@ -1332,6 +1394,12 @@ export function BacktestPage() {
                       onChange={(e) => setTrackingOnlyOpportunity(e.target.checked)}
                     >
                       仅机会交集
+                    </Checkbox>
+                    <Checkbox
+                      checked={trackingOnlyHotRank}
+                      onChange={(e) => setTrackingOnlyHotRank(e.target.checked)}
+                    >
+                      仅热门榜
                     </Checkbox>
                     <Select
                       value={trackingDateRange}

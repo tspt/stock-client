@@ -68,9 +68,13 @@ try {
         clearOpportunityRecordFiles: () => {
             return electron_1.ipcRenderer.invoke('clear-opportunity-record-files');
         },
-        // 热门榜：写入 docs/回测优化/热门榜/{YYYY-MM-DD}.json
+        // 热门榜：写入 docs/回测优化/热门榜/{YYYY-MM-DD}.json 或 {YYYY-MM-DD}_{HH}.json
         writeHotRankFile: (payload) => {
             return electron_1.ipcRenderer.invoke('write-hot-rank-file', payload);
+        },
+        // 热门榜：读取 24 小时文件 docs/回测优化/热门榜/{YYYY-MM-DD}.json
+        readHotRankDayFile: (date) => {
+            return electron_1.ipcRenderer.invoke('read-hot-rank-day-file', date);
         },
         // 监听Cookie获取进度
         onCookieFetchProgress: (callback) => {

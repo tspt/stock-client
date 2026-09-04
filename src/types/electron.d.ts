@@ -113,13 +113,22 @@ export interface ElectronAPI {
     error?: string;
   }>;
 
-  /** 写入热门榜到 docs/回测优化/热门榜 */
+  /** 写入热门榜：YYYY-MM-DD（24小时）或 YYYY-MM-DD_HH（1小时） */
   writeHotRankFile: (payload: {
     fileBaseName: string;
     content: string;
     period?: 'hour' | 'day';
   }) => Promise<{
     success: boolean;
+    filePath?: string;
+    error?: string;
+  }>;
+
+  /** 读取 24 小时热门榜 docs/回测优化/热门榜/{YYYY-MM-DD}.json */
+  readHotRankDayFile: (date: string) => Promise<{
+    success: boolean;
+    exists?: boolean;
+    content?: any;
     filePath?: string;
     error?: string;
   }>;

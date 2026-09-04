@@ -46,6 +46,8 @@ export interface ThsHotRankFilePayload {
   createdAt: number;
   updatedAt: number;
   source: 'ths';
+  /** hour | day，分文件保存后标识周期 */
+  period?: ThsHotRankPeriod;
   /** @deprecated 兼容仅小时榜时期的文件 */
   items?: ThsHotRankItem[];
   hour?: ThsHotRankItem[];

@@ -22,6 +22,7 @@ export interface TrackedLatestSignal extends LatestScenarioSignal {
   signalDate: string;
   signalDateKey: string;
   opportunityRecordHit: boolean;
+  hotRankHit: boolean;
   trackedReturns: ReturnSnapshot;
   occurredCount: number;
   hitCount: number;
@@ -126,7 +127,8 @@ export function buildTrackedLatestSignals(
   files: LatestBuyPointFile[],
   histories: StockHistoryRecord[],
   records: StockRecord[],
-  options: TrackingOptions
+  options: TrackingOptions,
+  hotRankCodeMap: Map<string, Set<string>> = new Map()
 ): TrackedLatestSignal[] {
   const historyMap = new Map<string, StockHistoryRecord>();
   histories.forEach((history) => addCodeKey(historyMap, history));
@@ -142,6 +144,9 @@ export function buildTrackedLatestSignals(
       const recordCodes = recordMap.get(fileDateKey);
       const opportunityRecordHit =
         !!recordCodes && (recordCodes.has(signal.code) || recordCodes.has(pureCode(signal.code)));
+      const hotCodes = hotRankCodeMap.get(signalDateKey);
+      const hotRankHit =
+        !!hotCodes && (hotCodes.has(signal.code) || hotCodes.has(pureCode(signal.code)));
       const trackedReturns = calculateFutureReturns(historyMap.get(signal.code) || historyMap.get(pureCode(signal.code)), signal);
       const stat = getTrackingStatus(trackedReturns, options);
       const odds =
@@ -160,6 +165,7 @@ export function buildTrackedLatestSignals(
         signalDate: signal.date,
         signalDateKey,
         opportunityRecordHit,
+        hotRankHit,
         trackedReturns,
         ...stat,
       }];

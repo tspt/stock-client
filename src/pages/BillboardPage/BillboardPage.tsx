@@ -17,7 +17,7 @@ import styles from './BillboardPage.module.css';
 const { Header, Content } = Layout;
 const { Text } = Typography;
 
-const PAGE_SIZE = 50;
+const PAGE_SIZE = 100;
 
 /** 表头 columnKey -> 接口主排序字段 */
 const COLUMN_SORT_MAP: Record<string, BillboardSortBy> = {
