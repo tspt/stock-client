@@ -198,9 +198,9 @@ export const OpportunityTable = memo(function OpportunityTable({ data, columns, 
         else if (signal.type === 'STRONG_SELL') { color = '#f5222d'; text = '🔴 强烈卖出'; }
 
         return (
-          <div>
+          <div className={styles.tradingSignal}>
             <span style={{ fontWeight: 'bold', color, fontSize: '12px' }}>{text}</span>
-            <div style={{ fontSize: '10px', color: '#999' }}>{signal.reason}</div>
+            {signal.reason ? <span className={styles.tradingSignalReason}>{signal.reason}</span> : null}
           </div>
         );
       }

@@ -77,6 +77,24 @@
   color: #8c8c8c;
 }
 
+.tradingSignal {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.tradingSignalReason {
+  font-size: 10px;
+  color: #999;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .consolidationTypes {
   display: inline-flex;
   align-items: center;

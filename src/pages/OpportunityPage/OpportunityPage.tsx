@@ -3,7 +3,7 @@
  */
 
 import { useEffect, useState, useMemo, useRef, useCallback, useLayoutEffect } from 'react';
-import { Layout, Card, Button, Space, Progress, Select, Collapse, App, InputNumber, Dropdown, Alert, Tag, Tooltip, Badge, Popover, Checkbox, Spin, DatePicker } from 'antd';
+import { Layout, Card, Button, Space, Progress, Select, Collapse, App, Input, InputNumber, Dropdown, Alert, Tag, Tooltip, Badge, Popover, Checkbox, Spin, DatePicker } from 'antd';
 import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
 import {
@@ -18,6 +18,7 @@ import {
   FilterOutlined,
   ReloadOutlined,
   DatabaseOutlined,
+  SearchOutlined,
 } from '@ant-design/icons';
 import { useOpportunityStore } from '@/stores/opportunityStore';
 import { useStockStore } from '@/stores/stockStore';
@@ -309,6 +310,7 @@ export function OpportunityPage() {
 
   const [filterSkippedExpanded, setFilterSkippedExpanded] = useState(false);
   const [tableHeight, setTableHeight] = useState<number>(400); // 表格高度
+  const [tableSearchKeyword, setTableSearchKeyword] = useState<string>(''); // 表格模糊搜索关键字
   const tableCardRef = useRef<HTMLDivElement>(null); // 表格Card的引用
   const [aiAnalysisVisible, setAiAnalysisVisible] = useState(false);
   const [selectedStockForAI, setSelectedStockForAI] = useState<{ code: string; name: string } | null>(null);
@@ -1190,6 +1192,20 @@ export function OpportunityPage() {
       conceptSectorInvert,
     });
 
+  // 表格层面的股票名称/代码模糊过滤
+  const displayAnalysisData = useMemo(() => {
+    const kw = tableSearchKeyword.trim().toLowerCase();
+    if (!kw) {
+      return filteredAnalysisData;
+    }
+    return filteredAnalysisData.filter((item) => {
+      const name = (item.name || '').toLowerCase();
+      const code = (item.code || '').toLowerCase();
+      const pureCode = code.replace(/^(sh|sz|bj)/, '');
+      return name.includes(kw) || code.includes(kw) || pureCode.includes(kw);
+    });
+  }, [filteredAnalysisData, tableSearchKeyword]);
+
   // 一键分析无失败：筛选完成后自动「添加到记录」（与手动按钮同一批筛选结果）
   useEffect(() => {
     if (autoAddToRecordToken === 0) return;
@@ -1340,6 +1356,7 @@ export function OpportunityPage() {
     setExcludedExactNames([...OPPORTUNITY_DEFAULT_NAME_FILTERS.excludedExactNames]);
     setEnableShortTermNameFilter(true);
     setExcludedShortTermNames([...OPPORTUNITY_DEFAULT_NAME_FILTERS.excludedShortTermNames]);
+    setTableSearchKeyword('');
     patchSavedPrefsFiltersToDefaults();
     message.info('已恢复默认筛选条件');
   };
@@ -1426,17 +1443,17 @@ export function OpportunityPage() {
 
   // 添加到记录
   const handleAddToRecord = async () => {
-    if (filteredAnalysisData.length === 0) {
+    if (displayAnalysisData.length === 0) {
       message.warning('没有数据可添加');
       return;
     }
 
     try {
-      await addStocksToTodayRecord(filteredAnalysisData, analysisTimestamp || undefined);
+      await addStocksToTodayRecord(displayAnalysisData, analysisTimestamp || undefined);
       const dateStr = analysisTimestamp
         ? new Date(analysisTimestamp).toLocaleDateString('zh-CN')
         : '今天';
-      message.success(`已将 ${filteredAnalysisData.length} 只股票添加到 ${dateStr} 的记录`);
+      message.success(`已将 ${displayAnalysisData.length} 只股票添加到 ${dateStr} 的记录`);
     } catch (error) {
       message.error('添加到记录失败');
       logger.error('添加到记录失败:', error);
@@ -1444,14 +1461,14 @@ export function OpportunityPage() {
   };
 
   const handleExport = async (format: 'excel') => {
-    if (filteredAnalysisData.length === 0) {
+    if (displayAnalysisData.length === 0) {
       message.warning('没有数据可导出');
       return;
     }
 
     try {
       if (format === 'excel') {
-        await exportOpportunityToExcel(filteredAnalysisData, columnConfig);
+        await exportOpportunityToExcel(displayAnalysisData, columnConfig);
         message.success('Excel导出成功');
       }
     } catch (error) {
@@ -1463,11 +1480,11 @@ export function OpportunityPage() {
 
   /** 当前筛选结果中的股票名称，按列最多 20 条导出为图片或 Excel */
   const handleExportNames = async (kind: 'png' | 'excel') => {
-    if (filteredAnalysisData.length === 0) {
+    if (displayAnalysisData.length === 0) {
       message.warning('没有数据可导出');
       return;
     }
-    const names = filteredAnalysisData.map((r) => (r.name || r.code || '').trim()).filter(Boolean);
+    const names = displayAnalysisData.map((r) => (r.name || r.code || '').trim()).filter(Boolean);
     if (names.length === 0) {
       message.warning('没有可用的股票名称');
       return;
@@ -1748,14 +1765,14 @@ export function OpportunityPage() {
                   key: 'addToWatchList',
                   label: '添加到自选股',
                   icon: <DatabaseOutlined />,
-                  disabled: loading || filteredAnalysisData.length === 0,
+                  disabled: loading || displayAnalysisData.length === 0,
                 },
                 { type: 'divider' },
                 {
                   key: 'addToRecord',
                   label: '添加到记录',
                   icon: <OrderedListOutlined />,
-                  disabled: loading || filteredAnalysisData.length === 0,
+                  disabled: loading || displayAnalysisData.length === 0,
                 },
               ],
               onClick: ({ key }) => {
@@ -2016,7 +2033,11 @@ export function OpportunityPage() {
             <div className={styles.filterResult}>
               {/* 筛选结果计数 - 放在最左侧 */}
               <span style={{ fontWeight: 500, whiteSpace: 'nowrap' }}>
-                {filteredAnalysisData.length !== analysisData.length ? (
+                {tableSearchKeyword.trim() ? (
+                  <>
+                    搜索匹配：<strong>{displayAnalysisData.length}</strong> / 筛选结果：{filteredAnalysisData.length}（共 {analysisData.length} 条）
+                  </>
+                ) : filteredAnalysisData.length !== analysisData.length ? (
                   <>
                     筛选结果：<strong>{filteredAnalysisData.length}</strong> /{' '}
                     {analysisData.length} 条
@@ -2127,6 +2148,17 @@ export function OpportunityPage() {
                 <span>分析结果</span>
               </Space>
             }
+            extra={
+              <Input
+                allowClear
+                size="small"
+                prefix={<SearchOutlined />}
+                placeholder="搜索股票名称/代码"
+                value={tableSearchKeyword}
+                onChange={(e) => setTableSearchKeyword(e.target.value)}
+                style={{ width: 200 }}
+              />
+            }
           >
             {initialLoading && (
               <div
@@ -2148,7 +2180,7 @@ export function OpportunityPage() {
               </div>
             )}
             <OpportunityTable
-              data={filteredAnalysisData as StockOpportunityData[]}
+              data={displayAnalysisData as StockOpportunityData[]}
               columns={columnConfig}
               sortConfig={sortConfig}
               onSortChange={updateSortConfig}
@@ -2193,7 +2225,7 @@ export function OpportunityPage() {
 
       <AddStocksToWatchListModal
         visible={showAddToWatchListModal}
-        stocks={filteredAnalysisData}
+        stocks={displayAnalysisData}
         onClose={() => setShowAddToWatchListModal(false)}
       />
     </Layout >
