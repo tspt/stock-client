@@ -17,6 +17,7 @@ import {
   formatTurnoverRate,
   formatTotalShares,
 } from '@/utils/format/format';
+import { StockConceptTags, StockFeatureTag, StockStatusTag } from '@/components/common/Tags';
 import styles from './OpportunityTable.module.css';
 
 interface OpportunityTableProps {
@@ -75,12 +76,7 @@ export const OpportunityTable = memo(function OpportunityTable({ data, columns, 
   const formatValue = (value: any, key: string, record?: StockOpportunityData): string | number | React.ReactNode => {
     if (key === 'consolidationStatus') {
       if (!record?.consolidation) return '';
-      const isConsolidation = record.consolidation.isConsolidation;
-      return (
-        <span className={isConsolidation ? styles.consolidationYes : styles.consolidationNo}>
-          {isConsolidation ? '是' : '否'}
-        </span>
-      );
+      return <StockStatusTag status={record.consolidation.isConsolidation} />;
     }
 
     if (key === 'consolidationTypes') {
@@ -91,9 +87,7 @@ export const OpportunityTable = memo(function OpportunityTable({ data, columns, 
       return (
         <div className={styles.consolidationTypes}>
           {labels.map((label) => (
-            <span key={label} className={styles.consolidationTag}>
-              {label}
-            </span>
+            <StockFeatureTag key={label} text={label} />
           ))}
         </div>
       );
@@ -105,10 +99,7 @@ export const OpportunityTable = memo(function OpportunityTable({ data, columns, 
 
     if (key === 'trendLineStatus') {
       if (!record?.trendLine) return '';
-      const hit = record.trendLine.isHit;
-      return (
-        <span className={hit ? styles.consolidationYes : styles.consolidationNo}>{hit ? '是' : '否'}</span>
-      );
+      return <StockStatusTag status={record.trendLine.isHit} />;
     }
 
     if (key === 'trendLineReason') {
@@ -167,24 +158,24 @@ export const OpportunityTable = memo(function OpportunityTable({ data, columns, 
       case 'sharpMoveLabels': {
         const labels = record?.sharpMovePatterns?.labels;
         if (!labels || labels.length === 0) return '';
-        return labels.join('、');
+        return (
+          <div className={styles.consolidationTypes}>
+            {labels.map((label) => (
+              <StockFeatureTag key={label} text={label} />
+            ))}
+          </div>
+        );
       }
       case 'industry': {
-        return record?.industry?.name || '';
+        const industryName = record?.industry?.name;
+        if (!industryName) return '';
+        return <span style={{ fontSize: '13px' }}>{industryName}</span>;
       }
       case 'concepts': {
         if (!record?.concepts || record.concepts.length === 0) {
           return '';
         }
-        return (
-          <div className={styles.consolidationTypes}>
-            {record.concepts.map((concept) => (
-              <span key={concept.code} className={styles.consolidationTag}>
-                {concept.name}
-              </span>
-            ))}
-          </div>
-        );
+        return <StockConceptTags concepts={record.concepts} max={3} />;
       }
       case 'tradingSignal': {
         const signal = record?.tradingSignal;

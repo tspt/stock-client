@@ -4,12 +4,13 @@
  */
 
 import { useEffect, useMemo, useState } from 'react';
-import { Layout, Card, Button, Space, Table, Tabs, Spin, Empty, Tag, Typography, App, Switch, Select } from 'antd';
+import { Layout, Card, Button, Space, Table, Tabs, Spin, Empty, Typography, App, Switch, Select } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { ReloadOutlined, BarChartOutlined, TableOutlined } from '@ant-design/icons';
 import type { StockStatistics } from '@/types/stock';
 import { calculateStockStatistics, calculateTrendData } from '@/services/opportunity/recordService';
 import { StockTrendChart } from '@/components/StockTrendChart/StockTrendChart';
+import { StockConceptTags, StockIntensityTag } from '@/components/common/Tags';
 import styles from './AnalysisRecordPage.module.css';
 
 const { Header, Content } = Layout;
@@ -74,14 +75,6 @@ export function AnalysisRecordPage() {
   // 表格列定义
   const columns: ColumnsType<StockStatistics> = [
     {
-      title: '股票代码',
-      dataIndex: 'code',
-      key: 'code',
-      width: 100,
-      fixed: 'left',
-      render: (text: string) => <Text style={{ textShadow: '0 0 0.25px currentcolor' }}>{text}</Text>,
-    },
-    {
       title: '股票名称',
       dataIndex: 'name',
       key: 'name',
@@ -95,21 +88,7 @@ export function AnalysisRecordPage() {
       key: 'count',
       width: 100,
       sorter: (a, b) => a.count - b.count,
-      render: (count: number) => {
-        const isBlue = count <= 2;
-        return (
-          <span className={styles.countCell}>
-            <Tag
-              color={count > 5 ? 'red' : count > 2 ? 'orange' : undefined}
-              className={isBlue ? styles.blueTag : undefined}
-              bordered={false}
-              style={{ textShadow: '0 0 0.25px currentcolor' }}
-            >
-              {count} 次
-            </Tag>
-          </span>
-        );
-      },
+      render: (count: number) => <StockIntensityTag value={count} threshold={3} />,
     },
     {
       title: '连续天数',
@@ -122,15 +101,7 @@ export function AnalysisRecordPage() {
         if (value === 0) {
           return <span style={{ color: '#999' }}>-</span>;
         }
-        return (
-          <Tag
-            color={value >= 5 ? 'red' : value >= 3 ? 'orange' : 'green'}
-            bordered={false}
-            style={{ textShadow: '0 0 0.25px currentcolor' }}
-          >
-            {value} 天
-          </Tag>
-        );
+        return <StockIntensityTag value={value} threshold={3} />;
       },
     },
     {
@@ -145,29 +116,17 @@ export function AnalysisRecordPage() {
       dataIndex: 'industry',
       key: 'industry',
       width: 120,
-      render: (industry?: { code: string; name: string }) => industry?.name || <span style={{ color: '#999' }}>-</span>,
+      render: (industry?: { code: string; name: string }) =>
+        industry?.name ? <span style={{ fontSize: '13px' }}>{industry.name}</span> : <span style={{ color: '#999' }}>-</span>,
     },
     {
       title: '所属概念',
       dataIndex: 'concepts',
       key: 'concepts',
       ellipsis: true,
-      render: (concepts?: Array<{ code: string; name: string }>) =>
-        concepts && concepts.length > 0 ? (
-          <div className={styles.conceptTags} title={concepts.map((c) => c.name).join('、')}>
-            {concepts.map((concept) => (
-              <Tag
-                key={concept.code}
-                className={styles.blueTag}
-                style={{ textShadow: '0 0 0.25px currentcolor' }}
-              >
-                {concept.name}
-              </Tag>
-            ))}
-          </div>
-        ) : (
-          '-'
-        ),
+      render: (concepts?: Array<{ code: string; name: string }>) => (
+        <StockConceptTags concepts={concepts} max={3} />
+      ),
     },
   ];
 

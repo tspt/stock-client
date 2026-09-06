@@ -1,0 +1,271 @@
+/* 通用标签样式 - 现代无边框扁平风 (4px微圆角，柔和低饱和，深浅主题自适应) */
+
+.baseTag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  line-height: 20px;
+  height: 22px;
+  padding: 0 7px;
+  border-radius: 4px;
+  border: none !important;
+  margin-inline-end: 0 !important;
+  font-weight: 400;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+
+/* 1. 概念与板块标签（全站统一柔和蓝） */
+.conceptTag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  line-height: 20px;
+  height: 22px;
+  padding: 0 7px;
+  border-radius: 4px;
+  border: none !important;
+  margin-inline-end: 0 !important;
+  font-weight: 400;
+  white-space: nowrap;
+  box-sizing: border-box;
+  background: #e6f4ff !important;
+  color: #1677ff !important;
+}
+
+[data-theme='dark'] .conceptTag {
+  background: #111d2c !important;
+  color: #4096ff !important;
+}
+
+/* 概念超出折叠标签 (+N) */
+.conceptMoreTag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  line-height: 20px;
+  height: 22px;
+  padding: 0 5px;
+  border-radius: 4px;
+  border: none !important;
+  margin-inline-end: 0 !important;
+  font-weight: 400;
+  white-space: nowrap;
+  box-sizing: border-box;
+  background: #f0f0f0 !important;
+  color: #595959 !important;
+  cursor: pointer;
+}
+
+[data-theme='dark'] .conceptMoreTag {
+  background: #262626 !important;
+  color: #8c8c8c !important;
+}
+
+/* 概念标签容器（横向排列不换行） */
+.conceptContainer {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 100%;
+  overflow: hidden;
+  vertical-align: middle;
+}
+
+/* Tooltip 浮层中的概念列表 */
+.tooltipConceptList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  max-width: 320px;
+  padding: 4px 2px;
+}
+
+/* 2. 特征与形态标签（中性柔和冷灰，低调不干扰红绿） */
+.featureTag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  line-height: 20px;
+  height: 22px;
+  padding: 0 7px;
+  border-radius: 4px;
+  border: none !important;
+  margin-inline-end: 0 !important;
+  font-weight: 400;
+  white-space: nowrap;
+  box-sizing: border-box;
+  background: #f5f5f5 !important;
+  color: #595959 !important;
+}
+
+[data-theme='dark'] .featureTag {
+  background: #1f1f1f !important;
+  color: #8c8c8c !important;
+}
+
+/* 红色醒目风格特征标签（用于热门人气、回测赔率/场景等） */
+.tagRed {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  line-height: 20px;
+  height: 22px;
+  padding: 0 7px;
+  border-radius: 4px;
+  border: none !important;
+  margin-inline-end: 0 !important;
+  font-weight: 400;
+  white-space: nowrap;
+  box-sizing: border-box;
+  background: #fff1f0 !important;
+  color: #cf1322 !important;
+}
+
+[data-theme='dark'] .tagRed {
+  background: #2a1215 !important;
+  color: #ff4d4f !important;
+}
+
+/* 3. 频次与热度标签 */
+/* 常规/低频（微冷灰微蓝，平静不刺眼） */
+.intensityNormal {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  line-height: 20px;
+  height: 22px;
+  padding: 0 7px;
+  border-radius: 4px;
+  border: none !important;
+  margin-inline-end: 0 !important;
+  font-weight: 400;
+  white-space: nowrap;
+  box-sizing: border-box;
+  background: #f0f5ff !important;
+  color: #2f54eb !important;
+}
+
+[data-theme='dark'] .intensityNormal {
+  background: #10239e25 !important;
+  color: #597ef7 !important;
+}
+
+/* 高频/高热（柔和暖橙） */
+.intensityHigh {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  line-height: 20px;
+  height: 22px;
+  padding: 0 7px;
+  border-radius: 4px;
+  border: none !important;
+  margin-inline-end: 0 !important;
+  font-weight: 400;
+  white-space: nowrap;
+  box-sizing: border-box;
+  background: #fff7e6 !important;
+  color: #d46b08 !important;
+}
+
+[data-theme='dark'] .intensityHigh {
+  background: #2b1d11 !important;
+  color: #fa8c16 !important;
+}
+
+/* 4. 状态标签（微型 Mini Tag，高 20px） */
+.miniTag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  border: none !important;
+  margin-inline-end: 0 !important;
+  font-weight: 400;
+  white-space: nowrap;
+  box-sizing: border-box;
+  height: 20px;
+  line-height: 18px;
+  font-size: 11px;
+  padding: 0 5px;
+}
+
+/* 正向 / 达标 / 是 */
+.statusPositive {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  border: none !important;
+  margin-inline-end: 0 !important;
+  font-weight: 400;
+  white-space: nowrap;
+  box-sizing: border-box;
+  height: 20px;
+  line-height: 18px;
+  font-size: 11px;
+  padding: 0 5px;
+  background: #f6ffed !important;
+  color: #389e0d !important;
+}
+
+[data-theme='dark'] .statusPositive {
+  background: #162312 !important;
+  color: #73d13d !important;
+}
+
+/* 否定 / 未达标 / 否 */
+.statusNegative {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  border: none !important;
+  margin-inline-end: 0 !important;
+  font-weight: 400;
+  white-space: nowrap;
+  box-sizing: border-box;
+  height: 20px;
+  line-height: 18px;
+  font-size: 11px;
+  padding: 0 5px;
+  background: #f5f5f5 !important;
+  color: #8c8c8c !important;
+}
+
+[data-theme='dark'] .statusNegative {
+  background: #1f1f1f !important;
+  color: #595959 !important;
+}
+
+/* 进程中 / 验证中 */
+.statusProcessing {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  border: none !important;
+  margin-inline-end: 0 !important;
+  font-weight: 400;
+  white-space: nowrap;
+  box-sizing: border-box;
+  height: 20px;
+  line-height: 18px;
+  font-size: 11px;
+  padding: 0 5px;
+  background: #e6f4ff !important;
+  color: #0958d9 !important;
+}
+
+[data-theme='dark'] .statusProcessing {
+  background: #111d2c !important;
+  color: #4096ff !important;
+}

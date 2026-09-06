@@ -3,12 +3,13 @@
  */
 
 import React, { useCallback, useEffect, useState } from 'react';
-import { Layout, Button, Table, Empty, Spin, Typography, Tag, Select } from 'antd';
+import { Layout, Button, Table, Empty, Spin, Typography, Select } from 'antd';
 import { ReloadOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { fetchThsHotRank } from '@/services/hot/ths-hot-rank-service';
 import type { ThsHotRankItem, ThsHotRankPeriod } from '@/types/thsHotRank';
 import { logger } from '@/utils/business/logger';
+import { StockConceptTags, StockFeatureTag } from '@/components/common/Tags';
 import styles from './HotRankPage.module.css';
 
 const { Header, Content } = Layout;
@@ -99,14 +100,6 @@ export function HotRankPage() {
       fixed: 'left',
     },
     {
-      title: '股票代码',
-      dataIndex: 'code',
-      key: 'code',
-      width: 100,
-      fixed: 'left',
-      render: (text: string) => <Text style={{ textShadow: '0 0 0.25px currentcolor' }}>{text}</Text>,
-    },
-    {
       title: '股票名称',
       dataIndex: 'name',
       key: 'name',
@@ -148,22 +141,13 @@ export function HotRankPage() {
       dataIndex: 'popularityTag',
       key: 'popularityTag',
       width: 120,
-      render: (text: string) => (text ? <Tag color="orange" bordered={false} style={{ textShadow: '0 0 0.25px currentcolor' }}>{text}</Tag> : '-'),
+      render: (text: string) => (text ? <StockFeatureTag text={text} variant="red" /> : '-'),
     },
     {
       title: '概念标签',
       dataIndex: 'conceptTags',
       key: 'conceptTags',
-      render: (tags: string[]) =>
-        tags.length > 0 ? (
-          <>
-            {tags.map((tag) => (
-              <Tag key={tag} className={styles.conceptTag} style={{ textShadow: '0 0 0.25px currentcolor' }}>{tag}</Tag>
-            ))}
-          </>
-        ) : (
-          '-'
-        ),
+      render: (tags: string[]) => <StockConceptTags concepts={tags} max={3} />,
     },
   ];
 

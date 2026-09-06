@@ -3,7 +3,7 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { Layout, Select, Button, Table, Empty, Spin, App, Space, Typography, Tag } from 'antd';
+import { Layout, Select, Button, Table, Empty, Spin, App, Space, Typography } from 'antd';
 import { ReloadOutlined, TrophyOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { fetchBillboardData, formatAmount, formatPercent, formatDate } from '@/services/hot/billboard-service';
@@ -12,6 +12,7 @@ import { clearBillboardCacheByCycle } from '@/utils/storage/billboardIndexedDB';
 import type { BillboardStockData, StatisticsCycle } from '@/types/billboard';
 import { STATISTICS_CYCLE_OPTIONS } from '@/types/billboard';
 import { logger } from '@/utils/business/logger';
+import { StockIntensityTag } from '@/components/common/Tags';
 import styles from './BillboardPage.module.css';
 
 const { Header, Content } = Layout;
@@ -123,14 +124,6 @@ export function BillboardPage() {
   // 表格列定义
   const columns: ColumnsType<BillboardStockData> = [
     {
-      title: '股票代码',
-      dataIndex: 'SECURITY_CODE',
-      key: 'code',
-      width: 100,
-      fixed: 'left',
-      render: (text: string) => <Text style={{ textShadow: '0 0 0.25px currentcolor' }}>{text}</Text>,
-    },
-    {
       title: '股票名称',
       dataIndex: 'SECURITY_NAME_ABBR',
       key: 'name',
@@ -158,11 +151,7 @@ export function BillboardPage() {
       sortDirections: ['descend'],
       sortOrder: sortBy === 'BILLBOARD_TIMES' ? 'descend' : undefined,
       showSorterTooltip: false,
-      render: (value: number) => (
-        <Tag color="orange" bordered={false} style={{ textShadow: '0 0 0.25px currentcolor' }}>
-          {value}次
-        </Tag>
-      ),
+      render: (value: number) => <StockIntensityTag value={value} threshold={3} />,
     },
     {
       title: '龙虎榜成交额',
@@ -187,9 +176,7 @@ export function BillboardPage() {
       dataIndex: 'ORG_TIMES',
       key: 'orgTimes',
       width: 100,
-      render: (value: number) => (
-        <Tag className={styles.orgTag} style={{ textShadow: '0 0 0.25px currentcolor' }}>{value}次</Tag>
-      ),
+      render: (value: number) => <StockIntensityTag value={value} threshold={3} />,
     },
     {
       title: '机构成交额',

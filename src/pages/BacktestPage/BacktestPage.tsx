@@ -68,6 +68,7 @@ import {
 import { exportStockNamesToPng } from '@/utils/export/stockNamesExportUtils';
 import { logger } from '@/utils/business/logger';
 import { OPPORTUNITY_INDUSTRY_GROUPS } from '@/utils/config/opportunityAnalysisDefaults';
+import { StockConceptTags, StockFeatureTag, StockStatusTag } from '@/components/common/Tags';
 import styles from './BacktestPage.module.css';
 
 const { Header, Content } = Layout;
@@ -848,15 +849,12 @@ export function BacktestPage() {
   }
 
   const renderTrackingStatus = (status: TrackingStatus) => {
-    if (status === 'passed') return <Tag color="red">已达标</Tag>;
-    if (status === 'failed') return <Tag>未达标</Tag>;
-    return <Tag color="blue">验证中</Tag>;
+    return <StockStatusTag status={status} positiveText="已达标" negativeText="未达标" processingText="验证中" />;
   };
 
   const renderOddsTier = (tier?: LatestScenarioSignal['oddsTier']) => {
-    if (!tier) return <Tag>未知</Tag>;
-    const colorMap = { S: 'red', A: 'volcano', B: 'blue', C: 'default' } as const;
-    return <Tag color={colorMap[tier]}>{tier}</Tag>;
+    if (!tier) return <StockFeatureTag text="未知" variant="red" />;
+    return <StockFeatureTag text={tier} variant="red" />;
   };
 
   const getRuleShortLabel = (rule: string): string => {
@@ -890,34 +888,21 @@ export function BacktestPage() {
 
   const renderIndustry = (_: unknown, record: { code: string; industry?: SectorInfo | null }) => {
     const industry = getRecordIndustry(record);
-    return industry ? industry.name : <Text type="secondary">-</Text>;
+    return industry ? <span style={{ fontSize: '13px' }}>{industry.name}</span> : <Text type="secondary">-</Text>;
   };
 
   const renderConcepts = (_: unknown, record: { code: string; concepts?: SectorInfo[] }) => {
     const concepts = getRecordConcepts(record);
-    if (concepts.length === 0) return <Text type="secondary">-</Text>;
-    return (
-      <div className={styles.conceptTags}>
-        {concepts.slice(0, 3).map((concept) => (
-          <Tag key={concept.code}>{concept.name}</Tag>
-        ))}
-        {concepts.length > 3 && <Tag color="default">+{concepts.length - 3}</Tag>}
-      </div>
-    );
+    return <StockConceptTags concepts={concepts} max={3} />;
   };
 
   const historicalColumns: ColumnsType<BuyPointSignal> = [
-    {
-      title: '股票号码',
-      dataIndex: 'code',
-      width: 100,
-      fixed: 'left',
-    },
     {
       title: '股票名称',
       dataIndex: 'name',
       width: 100,
       fixed: 'left',
+      render: (text: string) => <Text style={{ color: '#1890ff', textShadow: '0 0 0.25px currentcolor' }}>{text}</Text>,
     },
     {
       title: '买点日期',
@@ -931,11 +916,7 @@ export function BacktestPage() {
       title: '场景',
       dataIndex: 'scenarioName',
       width: 150,
-      render: (_, record) => (
-        <Tag color={highLiftIds.has(record.scenario) ? 'red' : 'blue'}>
-          {record.scenarioName}
-        </Tag>
-      ),
+      render: (_, record) => <StockFeatureTag text={record.scenarioName} variant="red" />,
     },
     {
       title: '所属行业',
@@ -962,16 +943,11 @@ export function BacktestPage() {
 
   const latestColumns: ColumnsType<LatestScenarioSignal> = [
     {
-      title: '股票号码',
-      dataIndex: 'code',
-      width: 80,
-      fixed: 'left',
-    },
-    {
       title: '股票名称',
       dataIndex: 'name',
       width: 80,
       fixed: 'left',
+      render: (text: string) => <Text style={{ color: '#1890ff', textShadow: '0 0 0.25px currentcolor' }}>{text}</Text>,
     },
     { title: '数据日期', dataIndex: 'date', width: 110 },
     { title: '收盘价', dataIndex: 'close', width: 90 },
@@ -988,6 +964,7 @@ export function BacktestPage() {
       width: 80,
       defaultSortOrder: 'descend',
       sorter: (a, b) => (a.oddsScore || 0) - (b.oddsScore || 0),
+      render: (score) => (score !== undefined && score !== null ? <StockFeatureTag text={score} variant="red" /> : '-'),
     },
     {
       title: '赔率说明',
@@ -1000,7 +977,7 @@ export function BacktestPage() {
       title: '场景',
       dataIndex: 'scenarioName',
       width: 100,
-      render: (_, record) => <Tag color="red">{record.scenarioName}</Tag>,
+      render: (_, record) => <StockFeatureTag text={record.scenarioName} variant="red" />,
     },
     {
       title: '所属行业',
@@ -1025,16 +1002,11 @@ export function BacktestPage() {
 
   const trackingColumns: ColumnsType<TrackedLatestSignal> = [
     {
-      title: '股票号码',
-      dataIndex: 'code',
-      width: 80,
-      fixed: 'left',
-    },
-    {
       title: '股票名称',
       dataIndex: 'name',
       width: 80,
       fixed: 'left',
+      render: (text: string) => <Text style={{ color: '#1890ff', textShadow: '0 0 0.25px currentcolor' }}>{text}</Text>,
     },
     { title: '信号日期', dataIndex: 'signalDate', width: 110, sorter: (a, b) => a.timestamp - b.timestamp },
     { title: '收盘价', dataIndex: 'close', width: 90 },
@@ -1050,6 +1022,7 @@ export function BacktestPage() {
       dataIndex: 'oddsScore',
       width: 80,
       sorter: (a, b) => (a.oddsScore || 0) - (b.oddsScore || 0),
+      render: (score) => (score !== undefined && score !== null ? <StockFeatureTag text={score} variant="red" /> : '-'),
     },
     {
       title: '赔率说明',
@@ -1062,7 +1035,7 @@ export function BacktestPage() {
       title: '场景',
       dataIndex: 'scenarioName',
       width: 100,
-      render: (_, record) => <Tag color={highLiftIds.has(record.scenario) ? 'red' : 'blue'}>{record.scenarioName}</Tag>,
+      render: (_, record) => <StockFeatureTag text={record.scenarioName} variant="red" />,
     },
     {
       title: '所属行业',
@@ -1083,13 +1056,13 @@ export function BacktestPage() {
       title: '机会记录',
       dataIndex: 'opportunityRecordHit',
       width: 90,
-      render: (hit) => <Tag color={hit ? 'green' : 'default'}>{hit ? '是' : '否'}</Tag>,
+      render: (hit) => <StockStatusTag status={Boolean(hit)} />,
     },
     {
       title: '热门榜',
       dataIndex: 'hotRankHit',
       width: 80,
-      render: (hit) => <Tag color={hit ? 'green' : 'default'}>{hit ? '是' : '否'}</Tag>,
+      render: (hit) => <StockStatusTag status={Boolean(hit)} />,
     },
     { title: '所属概念', width: 360, render: renderConcepts },
     {
@@ -1422,9 +1395,7 @@ export function BacktestPage() {
                       size="small"
                     />
                     {scenarioStats.map((item) => (
-                      <Tag key={item.id} color={highLiftIds.has(item.id) ? 'red' : 'blue'}>
-                        {item.name}: {item.count}
-                      </Tag>
+                      <StockFeatureTag key={item.id} text={`${item.name}: ${item.count}`} />
                     ))}
                   </>
                 )}
@@ -1494,7 +1465,7 @@ export function BacktestPage() {
                           {trackingAnalysisStats.failedRules.map((item) => (
                             <Tag
                               key={`${item.scenarioName}-${item.matchedRule}`}
-                              color="default"
+                              bordered={false}
                               title={item.matchedRule}
                             >
                               {item.scenarioName}｜{getRuleShortLabel(item.matchedRule)}: 失败 {item.failed} / {item.total}
@@ -1510,7 +1481,7 @@ export function BacktestPage() {
                           {trackingAnalysisStats.ruleStats.map((item) => (
                             <Tag
                               key={`${item.scenarioName}-${item.matchedRule}`}
-                              color={item.passRate != null && item.passRate >= 50 ? 'red' : 'blue'}
+                              bordered={false}
                               title={item.matchedRule}
                             >
                               {item.scenarioName}｜{getRuleShortLabel(item.matchedRule)}:{' '}
@@ -1526,7 +1497,7 @@ export function BacktestPage() {
                         <Text type="secondary">参数回测：</Text>
                         <Space wrap size={[4, 4]}>
                           {trackingAnalysisStats.parameterStats.map((item) => (
-                            <Tag key={`${item.threshold}-${item.minHitCount}`} color="purple">
+                            <Tag key={`${item.threshold}-${item.minHitCount}`} bordered={false}>
                               {item.threshold}% / {item.minHitCount}中：
                               {item.passRate == null ? '待验证' : `${item.passRate}%`}
                               （{item.passed}/{item.verified}）

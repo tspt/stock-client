@@ -291,7 +291,7 @@ export function ConceptSectorPage() {
         const isPositive = value >= 0;
         const colorClass = isPositive ? styles.positive : styles.negative;
         return (
-          <span className={colorClass} style={{ fontWeight: 600 }}>
+          <span className={colorClass}>
             {isPositive ? '+' : ''}{value.toFixed(2)}%
           </span>
         );

@@ -54,6 +54,8 @@
 .stockName {
   font-weight: 500;
   white-space: nowrap;
+  color: #1890ff;
+  text-shadow: 0 0 0.25px currentcolor;
 }
 
 .positiveValue {
@@ -99,18 +101,8 @@
 .consolidationTypes {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   flex-wrap: nowrap;
   max-width: 100%;
   overflow: hidden;
-}
-
-.consolidationTag {
-  padding: 2px 8px;
-  border-radius: 12px;
-  background: #e6f4ff;
-  color: #1677ff;
-  white-space: nowrap;
-  line-height: 20px;
-  flex-shrink: 0;
 }

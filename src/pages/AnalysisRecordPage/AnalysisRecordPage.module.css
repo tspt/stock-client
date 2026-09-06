@@ -91,30 +91,6 @@
   font-weight: 400;
 }
 
-.countCell {
-  font-weight: 500;
-}
-
-.blueTag {
-  background: #e6f4ff;
-  color: #1677ff;
-  border: none;
-}
-
-[data-theme='dark'] .blueTag {
-  background: #111d2c;
-  color: #4096ff;
-  border: none;
-}
-
-.conceptTags {
-  display: flex;
-  flex-wrap: nowrap;
-  overflow: hidden;
-  white-space: nowrap;
-  gap: 4px;
-}
-
 .tableToolbar {
   margin-bottom: 12px;
   padding-bottom: 12px;

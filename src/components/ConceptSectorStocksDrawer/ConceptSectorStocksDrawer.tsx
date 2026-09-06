@@ -125,7 +125,7 @@ export function ConceptSectorStocksDrawer({
         const isPositive = numValue >= 0;
         const colorClass = isPositive ? styles.positive : styles.negative;
         return (
-          <span className={colorClass} style={{ fontWeight: 600 }}>
+          <span className={colorClass}>
             {isPositive ? '+' : ''}{numValue.toFixed(2)}%
           </span>
         );
