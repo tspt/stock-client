@@ -22,14 +22,13 @@ import {
   Select,
   Input,
   InputNumber,
-  Dropdown,
   Tooltip,
   DatePicker,
 } from 'antd';
 import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
 import type { ColumnsType } from 'antd/es/table';
-import { DatabaseOutlined, DownOutlined, ExportOutlined, InfoCircleOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons';
+import { DatabaseOutlined, ExportOutlined, InfoCircleOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons';
 import {
   getStocksHistory,
   type StockHistoryRecord,
@@ -42,7 +41,6 @@ import {
   scanHistoricalBuyPoints,
   scanLatestScenarioSignals,
   type BuyPointSignal,
-  type LatestScenarioSignal,
   type ReturnSnapshot,
   type ScenarioId,
 } from '@/utils/analysis/buypointScenario';
@@ -59,11 +57,8 @@ import {
   readHotRankDayCodes,
 } from '@/utils/storage/hotRankFiles';
 import {
-  exportBacktestSignalsToExcel,
   exportBacktestSignalsToJson,
-  resolveHistoryExportDate,
   resolveLatestExportDate,
-  type BacktestExportFormat,
 } from '@/utils/export/backtestExportUtils';
 import { exportStockNamesToPng } from '@/utils/export/stockNamesExportUtils';
 import { logger } from '@/utils/business/logger';
@@ -148,16 +143,12 @@ export function BacktestPage() {
   const [exportCount, setExportCount] = useState(0);
   const [excludeST, setExcludeST] = useState(true);
   const [loadingCount, setLoadingCount] = useState(false);
-  const [exportingResults, setExportingResults] = useState(false);
   const [scanningHistory, setScanningHistory] = useState(false);
   const [scanningLatest, setScanningLatest] = useState(false);
   const [industryMapping, setIndustryMapping] = useState<Map<string, SectorInfo>>(new Map());
   const [conceptMapping, setConceptMapping] = useState<Map<string, SectorInfo[]>>(new Map());
   const [historySignals, setHistorySignals] = useState<BuyPointSignal[]>([]);
-  const [latestSignals, setLatestSignals] = useState<LatestScenarioSignal[]>([]);
   const [historyScenarioFilter, setHistoryScenarioFilter] = useState<string>('all');
-  const [latestScenarioFilter, setLatestScenarioFilter] = useState<string>('all');
-  const [latestOnlyHighOdds, setLatestOnlyHighOdds] = useState(true);
   const [trackingScenarioFilter, setTrackingScenarioFilter] = useState<string>('all');
   const [trackingOnlyHighOdds, setTrackingOnlyHighOdds] = useState(true);
   const [trackingDateRange, setTrackingDateRange] = useState<string>('today');
@@ -165,8 +156,7 @@ export function BacktestPage() {
     'tracking',
     'passed',
   ]);
-  const [trackingOnlyOpportunity, setTrackingOnlyOpportunity] = useState(false);
-  const [trackingOnlyHotRank, setTrackingOnlyHotRank] = useState(false);
+  const [trackingIntersectionFilters, setTrackingIntersectionFilters] = useState<string[]>([]);
   const [trackingIndustryGroupLabels, setTrackingIndustryGroupLabels] = useState<string[]>([]);
   const [trackingIndustryInvert, setTrackingIndustryInvert] = useState(true);
   const [trackingThreshold, setTrackingThreshold] = useState(5);
@@ -177,7 +167,7 @@ export function BacktestPage() {
   const [showAddTrackingLatestModal, setShowAddTrackingLatestModal] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [latestDateSummary, setLatestDateSummary] = useState({ dominantDate: '', dominantCount: 0 });
-  const [activeTab, setActiveTab] = useState('latest');
+  const [activeTab, setActiveTab] = useState<'tracking' | 'history'>('tracking');
   const [tablePageSize, setTablePageSize] = useState(100);
   const [tableScrollY, setTableScrollY] = useState(360);
   /** 扫描最新的截止日 YYYY-MM-DD；空=用各股日K最后一根 */
@@ -282,83 +272,11 @@ export function BacktestPage() {
     }
   };
 
-  const handleScanLatestSignals = async () => {
-    try {
-      setScanningLatest(true);
-      if (asOfDate) {
-        message.info(`正在按截止日 ${asOfDate} 扫描高价值场景（缺当日K的股票将跳过）...`);
-      } else {
-        message.info('正在扫描最新交易日高价值场景...');
-      }
-      const { histories } = await readFilteredHistories();
-      const signals = scanLatestScenarioSignals(histories, {
-        highLiftOnly: true,
-        asOfDate: asOfDate || undefined,
-      }).sort((a, b) => {
-        if ((b.oddsScore || 0) !== (a.oddsScore || 0)) return (b.oddsScore || 0) - (a.oddsScore || 0);
-        if ((b.lift || 0) !== (a.lift || 0)) return (b.lift || 0) - (a.lift || 0);
-        return a.name.localeCompare(b.name, 'zh-CN');
-      });
-      setLatestSignals(signals);
-      message.success(
-        asOfDate
-          ? `截止日 ${asOfDate} 扫描完成，命中 ${signals.length} 只`
-          : `最新交易日扫描完成，命中 ${signals.length} 只`
-      );
-
-      // 扫描完成后自动导出 JSON（全量命中，不受当前场景筛选影响）
-      if (signals.length === 0) {
-        return;
-      }
-      if (!window.electronAPI?.exportBacktestSignalsFile) {
-        message.warning('扫描完成，但自动导出 JSON 不可用（需在 Electron 环境中运行）');
-        return;
-      }
-      try {
-        setExportingResults(true);
-        const data = signals.map((item) => ({
-          ...item,
-          industry: item.industry || industryMapping.get(normalizeStockCode(item.code)) || null,
-          concepts: conceptMapping.get(normalizeStockCode(item.code)) || [],
-        }));
-        const fileBaseName = resolveLatestExportDate(
-          signals,
-          asOfDate || latestDateSummary.dominantDate
-        );
-        const meta = {
-          tab: 'latest' as const,
-          autoExport: true,
-          asOfDate: asOfDate || null,
-          searchText: '',
-          scenarioFilter: 'all',
-          excludeST,
-          latestDate: latestDateSummary.dominantDate || null,
-          fileBaseName,
-        };
-        const filePath = await exportBacktestSignalsToJson({
-          kind: 'latest',
-          data,
-          fileBaseName,
-          meta,
-        });
-        message.success(`已自动导出 JSON ${data.length} 条到 ${filePath}`);
-      } catch (exportError) {
-        logger.error('[BacktestPage] 扫描最新后自动导出 JSON 失败:', exportError);
-        message.error('自动导出 JSON 失败: ' + (exportError as Error).message);
-      } finally {
-        setExportingResults(false);
-      }
-    } catch (error) {
-      logger.error('[BacktestPage] 扫描最新交易日失败:', error);
-      message.error('扫描最新交易日失败: ' + (error as Error).message);
-    } finally {
-      setScanningLatest(false);
-    }
-  };
-
-  const handleLoadTrackingRows = async () => {
+  const handleLoadTrackingRows = useCallback(async (silent = false) => {
     if (!window.electronAPI?.readLatestBuyPointFiles) {
-      message.error('读取最新买点文件不可用（需在 Electron 环境中运行并重启应用）');
+      if (!silent) {
+        message.error('读取最新买点文件不可用（需在 Electron 环境中运行并重启应用）');
+      }
       return;
     }
 
@@ -366,14 +284,18 @@ export function BacktestPage() {
       setLoadingTracking(true);
       const result = await window.electronAPI.readLatestBuyPointFiles();
       if (!result.success) {
-        message.error('读取最新买点文件失败: ' + (result.error || '未知错误'));
+        if (!silent) {
+          message.error('读取最新买点文件失败: ' + (result.error || '未知错误'));
+        }
         return;
       }
 
       const files = result.files || [];
       if (files.length === 0) {
         setTrackingRows([]);
-        message.warning('暂无最新买点文件，请先扫描并导出最新交易日命中');
+        if (!silent) {
+          message.warning('暂无最新买点文件，请先扫描并导出最新买点');
+        }
         return;
       }
 
@@ -400,7 +322,9 @@ export function BacktestPage() {
               codes = await readHotRankDayCodes(dateKey);
             } catch (fetchError) {
               logger.warn('[BacktestPage] 当天热门榜补数失败:', fetchError);
-              message.warning('当天热门榜拉取失败，热门榜标记可能为空');
+              if (!silent) {
+                message.warning('当天热门榜拉取失败，热门榜标记可能为空');
+              }
               codes = new Set();
             }
           }
@@ -424,12 +348,97 @@ export function BacktestPage() {
         hotRankCodeMap
       );
       setTrackingRows(rows);
-      message.success(`买点追踪已更新，共读取 ${files.length} 个文件、${rows.length} 条信号`);
+      if (!silent) {
+        message.success(`买点追踪已更新，共读取 ${files.length} 个文件、${rows.length} 条信号`);
+      }
     } catch (error) {
       logger.error('[BacktestPage] 更新买点追踪失败:', error);
-      message.error('更新买点追踪失败: ' + (error as Error).message);
+      if (!silent) {
+        message.error('更新买点追踪失败: ' + (error as Error).message);
+      }
     } finally {
       setLoadingTracking(false);
+    }
+  }, [excludeST, message, trackingMinHitCount, trackingThreshold]);
+
+  useEffect(() => {
+    void handleLoadTrackingRows(true);
+  }, [handleLoadTrackingRows]);
+
+  const handleScanLatestSignals = async () => {
+    try {
+      setScanningLatest(true);
+      if (asOfDate) {
+        message.info(`正在按截止日 ${asOfDate} 扫描高价值场景并更新追踪...`);
+      } else {
+        message.info('正在扫描最新交易日高价值场景并更新追踪...');
+      }
+      const { histories } = await readFilteredHistories();
+      const signals = scanLatestScenarioSignals(histories, {
+        highLiftOnly: true,
+        asOfDate: asOfDate || undefined,
+      }).sort((a, b) => {
+        if ((b.oddsScore || 0) !== (a.oddsScore || 0)) return (b.oddsScore || 0) - (a.oddsScore || 0);
+        if ((b.lift || 0) !== (a.lift || 0)) return (b.lift || 0) - (a.lift || 0);
+        return a.name.localeCompare(b.name, 'zh-CN');
+      });
+
+      if (signals.length === 0) {
+        message.info(asOfDate ? `截止日 ${asOfDate} 未扫描到高价值场景信号` : '最新交易日未扫描到高价值场景信号');
+        await handleLoadTrackingRows(true);
+        return;
+      }
+
+      if (!window.electronAPI?.exportBacktestSignalsFile) {
+        message.warning('扫描完成，但自动导出快照不可用（需在 Electron 环境中运行）');
+        await handleLoadTrackingRows(true);
+        return;
+      }
+
+      try {
+        const data = signals.map((item) => ({
+          ...item,
+          industry: item.industry || industryMapping.get(normalizeStockCode(item.code)) || null,
+          concepts: conceptMapping.get(normalizeStockCode(item.code)) || [],
+        }));
+        const fileBaseName = resolveLatestExportDate(
+          signals,
+          asOfDate || latestDateSummary.dominantDate
+        );
+        const meta = {
+          tab: 'latest' as const,
+          autoExport: true,
+          asOfDate: asOfDate || null,
+          searchText: '',
+          scenarioFilter: 'all',
+          excludeST,
+          latestDate: latestDateSummary.dominantDate || null,
+          fileBaseName,
+        };
+        const filePath = await exportBacktestSignalsToJson({
+          kind: 'latest',
+          data,
+          fileBaseName,
+          meta,
+        });
+        message.success(`已保存最新买点快照 ${data.length} 条到 ${filePath}`);
+        // 扫描并落盘后，立即联动重新读取追踪文件更新收益
+        await handleLoadTrackingRows(true);
+        message.success(
+          asOfDate
+            ? `截止日 ${asOfDate} 扫描完成并已更新买点追踪（命中 ${signals.length} 只）`
+            : `最新交易日扫描完成并已更新买点追踪（命中 ${signals.length} 只）`
+        );
+      } catch (exportError) {
+        logger.error('[BacktestPage] 扫描最新后导出快照失败:', exportError);
+        message.error('导出快照失败: ' + (exportError as Error).message);
+        await handleLoadTrackingRows(true);
+      }
+    } catch (error) {
+      logger.error('[BacktestPage] 扫描最新交易日失败:', error);
+      message.error('扫描最新交易日失败: ' + (error as Error).message);
+    } finally {
+      setScanningLatest(false);
     }
   };
 
@@ -445,20 +454,6 @@ export function BacktestPage() {
       return scenarioMatch && keywordMatch;
     });
   }, [historyScenarioFilter, historySignals, searchText]);
-
-  const filteredLatestSignals = useMemo(() => {
-    const keyword = searchText.trim().toLowerCase();
-    return latestSignals.filter((item) => {
-      const scenarioMatch =
-        latestScenarioFilter === 'all' || item.scenario === latestScenarioFilter;
-      const oddsMatch = !latestOnlyHighOdds || item.oddsTier === 'S' || item.oddsTier === 'A';
-      const keywordMatch =
-        !keyword ||
-        item.name.toLowerCase().includes(keyword) ||
-        item.code.toLowerCase().includes(keyword);
-      return scenarioMatch && oddsMatch && keywordMatch;
-    });
-  }, [latestOnlyHighOdds, latestScenarioFilter, latestSignals, searchText]);
 
   const trackedRowsWithStatus = useMemo(() => {
     return trackingRows.map((row) => ({
@@ -493,14 +488,16 @@ export function BacktestPage() {
             ? 10
             : sortedDates.length;
     const allowedDates = new Set(sortedDates.slice(0, dateLimit));
+    const onlyOpportunity = trackingIntersectionFilters.includes('opportunity');
+    const onlyHotRank = trackingIntersectionFilters.includes('hotRank');
 
     return trackedRowsWithStatus.filter((item) => {
       const dateMatch = trackingDateRange === 'all' || allowedDates.has(item.signalDateKey);
       const scenarioMatch =
         trackingScenarioFilter === 'all' || item.scenario === trackingScenarioFilter;
       const oddsMatch = !trackingOnlyHighOdds || item.oddsTier === 'S' || item.oddsTier === 'A';
-      const opportunityMatch = !trackingOnlyOpportunity || item.opportunityRecordHit;
-      const hotRankMatch = !trackingOnlyHotRank || item.hotRankHit;
+      const opportunityMatch = !onlyOpportunity || item.opportunityRecordHit;
+      const hotRankMatch = !onlyHotRank || item.hotRankHit;
       const industryCode =
         item.industry?.code || industryMapping.get(normalizeStockCode(item.code))?.code;
       const industryMatch = matchIndustryGroupFilter(
@@ -528,11 +525,10 @@ export function BacktestPage() {
     searchText,
     trackingIndustryCodes,
     trackingIndustryInvert,
+    trackingIntersectionFilters,
     trackingOnlyHighOdds,
     trackedRowsWithStatus,
     trackingDateRange,
-    trackingOnlyHotRank,
-    trackingOnlyOpportunity,
     trackingScenarioFilter,
   ]);
 
@@ -699,62 +695,6 @@ export function BacktestPage() {
     };
   }, [trackingAnalysisRows]);
 
-  const handleExportResults = async (format: BacktestExportFormat) => {
-    if (activeTab === 'tracking') {
-      message.info('买点追踪导出稍后补充，当前可先在表格筛选查看');
-      return;
-    }
-
-    const kind = activeTab === 'latest' ? 'latest' : 'history';
-    const sourceData = kind === 'latest' ? filteredLatestSignals : filteredHistorySignals;
-    const data = sourceData.map((item) => ({
-      ...item,
-      industry: getRecordIndustry(item),
-      concepts: getRecordConcepts(item),
-    }));
-
-    if (data.length === 0) {
-      message.warning('请先扫描');
-      return;
-    }
-
-    if (!window.electronAPI?.exportBacktestSignalsFile) {
-      message.error('导出到项目目录不可用（需在 Electron 环境中运行）');
-      return;
-    }
-
-    try {
-      setExportingResults(true);
-      const fileBaseName =
-        kind === 'latest'
-          ? resolveLatestExportDate(filteredLatestSignals, latestDateSummary.dominantDate)
-          : resolveHistoryExportDate(latestDateSummary.dominantDate);
-
-      const meta = {
-        tab: kind,
-        searchText: searchText.trim(),
-        scenarioFilter: kind === 'latest' ? latestScenarioFilter : historyScenarioFilter,
-        excludeST,
-        latestDate: latestDateSummary.dominantDate || null,
-        fileBaseName,
-      };
-
-      const filePath =
-        format === 'json'
-          ? await exportBacktestSignalsToJson({ kind, data, fileBaseName, meta })
-          : await exportBacktestSignalsToExcel({ kind, data, fileBaseName });
-
-      message.success(
-        `已导出${kind === 'latest' ? '最新交易日命中' : '历史好买点'} ${data.length} 条到 ${filePath}`
-      );
-    } catch (error) {
-      logger.error('[BacktestPage] 导出结果失败:', error);
-      message.error('导出结果失败: ' + (error as Error).message);
-    } finally {
-      setExportingResults(false);
-    }
-  };
-
   const handleExportTrackingLatestNames = async () => {
     const { latestDateKey, stocks } = trackingLatestSignalStocks;
     if (stocks.length === 0) {
@@ -852,7 +792,7 @@ export function BacktestPage() {
     return <StockStatusTag status={status} positiveText="已达标" negativeText="未达标" processingText="验证中" />;
   };
 
-  const renderOddsTier = (tier?: LatestScenarioSignal['oddsTier']) => {
+  const renderOddsTier = (tier?: TrackedLatestSignal['oddsTier']) => {
     if (!tier) return <StockFeatureTag text="未知" variant="red" />;
     return <StockFeatureTag text={tier} variant="red" />;
   };
@@ -941,65 +881,6 @@ export function BacktestPage() {
     },
   ];
 
-  const latestColumns: ColumnsType<LatestScenarioSignal> = [
-    {
-      title: '股票名称',
-      dataIndex: 'name',
-      width: 80,
-      fixed: 'left',
-      render: (text: string) => <Text style={{ color: '#1890ff', textShadow: '0 0 0.25px currentcolor' }}>{text}</Text>,
-    },
-    { title: '数据日期', dataIndex: 'date', width: 110 },
-    { title: '收盘价', dataIndex: 'close', width: 90 },
-    {
-      title: '赔率档',
-      dataIndex: 'oddsTier',
-      width: 80,
-      sorter: (a, b) => (a.oddsScore || 0) - (b.oddsScore || 0),
-      render: (tier) => renderOddsTier(tier),
-    },
-    {
-      title: '赔率分',
-      dataIndex: 'oddsScore',
-      width: 80,
-      defaultSortOrder: 'descend',
-      sorter: (a, b) => (a.oddsScore || 0) - (b.oddsScore || 0),
-      render: (score) => (score !== undefined && score !== null ? <StockFeatureTag text={score} variant="red" /> : '-'),
-    },
-    {
-      title: '赔率说明',
-      dataIndex: 'oddsReason',
-      ellipsis: true,
-      width: 180,
-    },
-    { title: 'lift', dataIndex: 'lift', width: 80, render: (v) => v?.toFixed(2) },
-    {
-      title: '场景',
-      dataIndex: 'scenarioName',
-      width: 100,
-      render: (_, record) => <StockFeatureTag text={record.scenarioName} variant="red" />,
-    },
-    {
-      title: '所属行业',
-      width: 120,
-      sorter: compareIndustry,
-      showSorterTooltip: { title: '按所属行业排序' },
-      render: renderIndustry,
-    },
-    { title: '1日', width: 80, sorter: (a, b) => compareReturn(a.returns, b.returns, 'd1'), render: (_, record) => renderReturn(record.returns, 'd1') },
-    { title: '2日', width: 80, sorter: (a, b) => compareReturn(a.returns, b.returns, 'd2'), render: (_, record) => renderReturn(record.returns, 'd2') },
-    { title: '3日', width: 80, sorter: (a, b) => compareReturn(a.returns, b.returns, 'd3'), render: (_, record) => renderReturn(record.returns, 'd3') },
-    { title: '5日', width: 80, sorter: (a, b) => compareReturn(a.returns, b.returns, 'd5'), render: (_, record) => renderReturn(record.returns, 'd5') },
-    { title: '两周', width: 80, sorter: (a, b) => compareReturn(a.returns, b.returns, 'd10'), render: (_, record) => renderReturn(record.returns, 'd10') },
-    { title: '所属概念', width: 360, render: renderConcepts },
-    {
-      title: '命中规则',
-      dataIndex: 'matchedRule',
-      ellipsis: true,
-      width: 280,
-    },
-  ];
-
   const trackingColumns: ColumnsType<TrackedLatestSignal> = [
     {
       title: '股票名称',
@@ -1080,30 +961,24 @@ export function BacktestPage() {
       prefix={<SearchOutlined />}
       value={searchText}
       onChange={(e) => setSearchText(e.target.value)}
-      style={{ width: 220 }}
+      style={{ width: 180 }}
       size="small"
     />
   );
 
   const activeDataLength =
-    activeTab === 'latest'
-      ? filteredLatestSignals.length
-      : activeTab === 'tracking'
-        ? filteredTrackingRows.length
-        : filteredHistorySignals.length;
+    activeTab === 'tracking'
+      ? filteredTrackingRows.length
+      : filteredHistorySignals.length;
   const activeColumns: ColumnsType<any> =
-    activeTab === 'latest'
-      ? latestColumns
-      : activeTab === 'tracking'
-        ? trackingColumns
-        : historicalColumns;
+    activeTab === 'tracking'
+      ? trackingColumns
+      : historicalColumns;
   const activeDataSource =
-    activeTab === 'latest'
-      ? filteredLatestSignals
-      : activeTab === 'tracking'
-        ? filteredTrackingRows
-        : filteredHistorySignals;
-  const activeScrollX = activeTab === 'latest' ? 2260 : activeTab === 'tracking' ? 2680 : 1800;
+    activeTab === 'tracking'
+      ? filteredTrackingRows
+      : filteredHistorySignals;
+  const activeScrollX = activeTab === 'tracking' ? 2680 : 1800;
 
   return (
     <Layout className={styles.backtestPage}>
@@ -1112,7 +987,7 @@ export function BacktestPage() {
           <div className={styles.headerLeft}>
             <h1 className={styles.pageTitle}>历史回测</h1>
             <span className={styles.pageSubtitle}>
-              历史好买点归类、最新交易日场景扫描
+              买点追踪收益验证、历史好买点归类
             </span>
           </div>
           <Space wrap className={styles.headerActions}>
@@ -1126,21 +1001,6 @@ export function BacktestPage() {
             <Button onClick={refreshHistoryCount} disabled={loadingCount} loading={loadingCount}>
               刷新统计
             </Button>
-            <Dropdown
-              menu={{
-                items: [
-                  { key: 'xlsx', label: '导出 Excel (.xlsx)' },
-                  { key: 'json', label: '导出 JSON (.json)' },
-                ],
-                onClick: ({ key }) => {
-                  void handleExportResults(key as BacktestExportFormat);
-                },
-              }}
-            >
-              <Button icon={<ExportOutlined />} loading={exportingResults}>
-                导出结果 <DownOutlined />
-              </Button>
-            </Dropdown>
             <Button
               icon={<ReloadOutlined />}
               loading={scanningHistory}
@@ -1192,7 +1052,7 @@ export function BacktestPage() {
                 <Statistic title="历史好买点" value={historySignals.length} loading={loadingCount} />
               </Col>
               <Col>
-                <Statistic title="最新日命中" value={latestSignals.length} loading={loadingCount} />
+                <Statistic title="追踪总信号" value={trackingRows.length} loading={loadingTracking} />
               </Col>
               <Col>
                 <div className={styles.compactInfo}>
@@ -1200,10 +1060,10 @@ export function BacktestPage() {
                     placement="right"
                     title={
                       <div className={styles.compactInfoTooltip}>
-                        <div>历史好买点和最新日场景都直接读取 IndexedDB stockHistory；如果机会分析更新了 K 线，点击顶部扫描按钮即可用最新数据重算。</div>
+                        <div>历史好买点与买点追踪均基于 IndexedDB stockHistory；最新交易日扫描会自动保存快照并联动更新追踪收益。</div>
                         <div>历史好买点规则：买入收盘后 1/2/3/5/10 日累计收益中至少 3 项 &gt; 5%。</div>
-                        <div>最新交易日只展示 lift&gt;1 的高价值场景，未来收益尚未发生时对应列为空。</div>
-                        <div>赔率分会综合场景、当日强弱、量价结构和位置关系，对最新日命中做“赔率优先”排序。</div>
+                        <div>最新交易日只扫描 lift&gt;1 的高价值场景，未来收益尚未发生时处于“验证中”状态。</div>
+                        <div>赔率分会综合场景、当日强弱、量价结构和位置关系，对买点信号做“赔率优先”排序。</div>
                       </div>
                     }
                   >
@@ -1224,78 +1084,61 @@ export function BacktestPage() {
               className={styles.resultTabs}
               activeKey={activeTab}
               onChange={(key) => {
-                setActiveTab(key);
+                setActiveTab(key as 'tracking' | 'history');
                 if (key === 'tracking' && trackingRows.length === 0) {
                   void handleLoadTrackingRows();
                 }
               }}
+              tabBarExtraContent={
+                activeTab === 'tracking' ? (
+                  <Space size={8}>
+                    <Button
+                      size="small"
+                      icon={<ReloadOutlined />}
+                      loading={loadingTracking}
+                      onClick={() => void handleLoadTrackingRows()}
+                    >
+                      更新收益
+                    </Button>
+                    <Button
+                      size="small"
+                      icon={<ExportOutlined />}
+                      disabled={loadingTracking || trackingLatestSignalStocks.stocks.length === 0}
+                      onClick={() => void handleExportTrackingLatestNames()}
+                    >
+                      导出名称(PNG)
+                    </Button>
+                    <Button
+                      size="small"
+                      icon={<DatabaseOutlined />}
+                      disabled={loadingTracking || trackingLatestSignalStocks.stocks.length === 0}
+                      onClick={handleAddTrackingLatestStocks}
+                    >
+                      添加最新信号
+                    </Button>
+                  </Space>
+                ) : null
+              }
               items={[
                 {
-                  key: 'latest',
-                  label: `最新交易日命中 (${filteredLatestSignals.length})`,
+                  key: 'tracking',
+                  label: `买点追踪 (${filteredTrackingRows.length})`,
                 },
                 {
                   key: 'history',
                   label: `历史好买点 (${filteredHistorySignals.length})`,
-                },
-                {
-                  key: 'tracking',
-                  label: `买点追踪 (${filteredTrackingRows.length})`,
                 },
               ]}
             />
 
             <div className={styles.tabToolbar}>
               <div className={styles.tabToolbarLeft}>
-                {activeTab === 'latest' ? (
+                {activeTab === 'tracking' ? (
                   <>
-                    <Select
-                      value={latestScenarioFilter}
-                      options={[
-                        { label: '全部高价值场景', value: 'all' },
-                        ...HIGH_LIFT_SCENARIOS.map((s) => ({ label: s.name, value: s.id })),
-                      ]}
-                      onChange={setLatestScenarioFilter}
-                      style={{ width: 200 }}
-                      size="small"
-                    />
-                    <Checkbox
-                      checked={latestOnlyHighOdds}
-                      onChange={(e) => setLatestOnlyHighOdds(e.target.checked)}
-                    >
-                      仅S/A档
-                    </Checkbox>
-                  </>
-                ) : activeTab === 'tracking' ? (
-                  <>
-                    <Checkbox
-                      checked={trackingOnlyOpportunity}
-                      onChange={(e) => setTrackingOnlyOpportunity(e.target.checked)}
-                    >
-                      仅机会交集
-                    </Checkbox>
-                    <Checkbox
-                      checked={trackingOnlyHotRank}
-                      onChange={(e) => setTrackingOnlyHotRank(e.target.checked)}
-                    >
-                      仅热门榜
-                    </Checkbox>
-                    <Select
-                      value={trackingDateRange}
-                      options={[
-                        { label: '今天', value: 'today' },
-                        { label: '最近5日', value: 'recent5' },
-                        { label: '最近10日', value: 'recent10' },
-                        { label: '全部日期', value: 'all' },
-                      ]}
-                      onChange={setTrackingDateRange}
-                      style={{ width: 110 }}
-                      size="small"
-                    />
                     <Select
                       value={trackingScenarioFilter}
                       options={[
-                        { label: '全部场景', value: 'all' },
+                        { label: '全部高价值场景', value: 'all' },
                         ...HIGH_LIFT_SCENARIOS.map((s) => ({ label: s.name, value: s.id })),
                       ]}
                       onChange={setTrackingScenarioFilter}
@@ -1323,6 +1166,32 @@ export function BacktestPage() {
                     >
                       排除选中
                     </Checkbox>
+                    <Select
+                      mode="multiple"
+                      allowClear
+                      placeholder="交集筛选"
+                      value={trackingIntersectionFilters}
+                      options={[
+                        { label: '机会交集', value: 'opportunity' },
+                        { label: '热门榜', value: 'hotRank' },
+                      ]}
+                      onChange={setTrackingIntersectionFilters}
+                      style={{ minWidth: 200, maxWidth: 260 }}
+                      maxTagCount="responsive"
+                      size="small"
+                    />
+                    <Select
+                      value={trackingDateRange}
+                      options={[
+                        { label: '今天', value: 'today' },
+                        { label: '最近5日', value: 'recent5' },
+                        { label: '最近10日', value: 'recent10' },
+                        { label: '全部日期', value: 'all' },
+                      ]}
+                      onChange={setTrackingDateRange}
+                      style={{ width: 110 }}
+                      size="small"
+                    />
                     <Checkbox
                       checked={trackingOnlyHighOdds}
                       onChange={(e) => setTrackingOnlyHighOdds(e.target.checked)}
@@ -1360,30 +1229,6 @@ export function BacktestPage() {
                       style={{ width: 100 }}
                       size="small"
                     />
-                    <Button
-                      size="small"
-                      icon={<ReloadOutlined />}
-                      loading={loadingTracking}
-                      onClick={handleLoadTrackingRows}
-                    >
-                      更新收益
-                    </Button>
-                    <Button
-                      size="small"
-                      icon={<ExportOutlined />}
-                      disabled={loadingTracking || trackingLatestSignalStocks.stocks.length === 0}
-                      onClick={() => void handleExportTrackingLatestNames()}
-                    >
-                      导出最新信号(PNG)
-                    </Button>
-                    <Button
-                      size="small"
-                      icon={<DatabaseOutlined />}
-                      disabled={loadingTracking || trackingLatestSignalStocks.stocks.length === 0}
-                      onClick={handleAddTrackingLatestStocks}
-                    >
-                      添加最新信号
-                    </Button>
                   </>
                 ) : (
                   <>
@@ -1391,7 +1236,7 @@ export function BacktestPage() {
                       value={historyScenarioFilter}
                       options={scenarioOptions}
                       onChange={setHistoryScenarioFilter}
-                      style={{ width: 220 }}
+                      style={{ width: 160 }}
                       size="small"
                     />
                     {scenarioStats.map((item) => (

@@ -208,7 +208,7 @@
 .trackingStatsPanel {
   flex-shrink: 0;
   margin-bottom: 8px;
-  padding: 8px 10px;
+  padding: 8px 0;
   background: var(--ant-color-fill-quaternary);
   border: 1px solid var(--ant-color-border-secondary);
   border-radius: 6px;

@@ -2204,7 +2204,7 @@ export function OpportunityPage() {
                 placeholder="搜索股票名称/代码"
                 value={tableSearchKeyword}
                 onChange={(e) => setTableSearchKeyword(e.target.value)}
-                style={{ width: 200 }}
+                style={{ width: 180 }}
               />
             }
           >
