@@ -1,6 +1,5 @@
 /**
  * 历史回测页面
- * - 导出 IndexedDB stockHistory 到 docs/回测优化/股票数据
  * - 基于当前 stockHistory 重新扫描历史好买点与场景
  * - 基于当前 stockHistory 扫描最新交易日高 lift 场景
  */
@@ -10,7 +9,6 @@ import {
   Layout,
   Card,
   Button,
-  Progress,
   Typography,
   App,
   Space,
@@ -149,11 +147,9 @@ export function BacktestPage() {
   const [exportCount, setExportCount] = useState(0);
   const [excludeST, setExcludeST] = useState(true);
   const [loadingCount, setLoadingCount] = useState(false);
-  const [exporting, setExporting] = useState(false);
   const [exportingResults, setExportingResults] = useState(false);
   const [scanningHistory, setScanningHistory] = useState(false);
   const [scanningLatest, setScanningLatest] = useState(false);
-  const [exportProgress, setExportProgress] = useState({ current: 0, total: 0 });
   const [industryMapping, setIndustryMapping] = useState<Map<string, SectorInfo>>(new Map());
   const [conceptMapping, setConceptMapping] = useState<Map<string, SectorInfo[]>>(new Map());
   const [historySignals, setHistorySignals] = useState<BuyPointSignal[]>([]);
@@ -264,71 +260,6 @@ export function BacktestPage() {
   useEffect(() => {
     refreshHistoryCount();
   }, [refreshHistoryCount]);
-
-  const handleExportAllKlineData = async () => {
-    if (!window.electronAPI?.batchExportKlineData) {
-      message.error('批量导出功能不可用（需在 Electron 环境中运行）');
-      return;
-    }
-
-    try {
-      setExporting(true);
-      setExportProgress({ current: 0, total: 0 });
-      message.info('正在读取 IndexedDB stockHistory...');
-
-      const { allHistories, histories } = await readFilteredHistories();
-      const skippedST = allHistories.length - histories.length;
-
-      if (allHistories.length === 0) {
-        message.warning('IndexedDB 中没有 stockHistory 数据');
-        return;
-      }
-
-      if (histories.length === 0) {
-        message.warning('筛选后没有可导出的股票');
-        return;
-      }
-
-      setExportProgress({ current: 0, total: histories.length });
-
-      const stocksData = histories.map((history, index) => {
-        const stockCode = normalizeStockCode(history.code);
-        const industry = history.industry || industryMapping.get(stockCode) || null;
-        if ((index + 1) % 50 === 0 || index + 1 === histories.length) {
-          setExportProgress({ current: index + 1, total: histories.length });
-        }
-        return {
-          code: history.code,
-          name: history.name,
-          klineData: history.dailyLines,
-          latestQuote: history.latestQuote,
-          updatedAt: history.updatedAt,
-          industry,
-        };
-      });
-
-      const skipTip = excludeST && skippedST > 0 ? `（已排除 ${skippedST} 只 ST）` : '';
-      message.info(`正在导出 ${stocksData.length} 只股票的 K 线数据${skipTip}...`);
-      const result = await window.electronAPI.batchExportKlineData(stocksData);
-
-      if (result.success) {
-        const { summary } = result;
-        message.success(
-          summary
-            ? `导出完成！总计 ${summary.total} 只，成功 ${summary.success} 只，失败 ${summary.fail} 只`
-            : '导出完成！'
-        );
-      } else {
-        message.error('导出失败: ' + (result.error || '未知错误'));
-      }
-    } catch (error) {
-      logger.error('[BacktestPage] 导出失败:', error);
-      message.error('导出失败: ' + (error as Error).message);
-    } finally {
-      setExporting(false);
-      setExportProgress({ current: 0, total: 0 });
-    }
-  };
 
   const handleScanHistoricalBuyPoints = async () => {
     try {
@@ -891,11 +822,6 @@ export function BacktestPage() {
     })).filter((item) => item.count > 0);
   }, [historySignals]);
 
-  const progressPercent =
-    exportProgress.total > 0
-      ? Math.round((exportProgress.current / exportProgress.total) * 100)
-      : 0;
-
   const renderReturn = (returns: ReturnSnapshot, key: keyof ReturnSnapshot) => {
     const value = returns[key];
     return <Text style={{ color: returnColor(value) }}>{returnText(value)}</Text>;
@@ -1213,28 +1139,19 @@ export function BacktestPage() {
           <div className={styles.headerLeft}>
             <h1 className={styles.pageTitle}>历史回测</h1>
             <span className={styles.pageSubtitle}>
-              K 线导出、历史好买点归类、最新交易日场景扫描
+              历史好买点归类、最新交易日场景扫描
             </span>
           </div>
           <Space wrap className={styles.headerActions}>
             <Checkbox
               checked={excludeST}
-              disabled={exporting || scanningHistory || scanningLatest}
+              disabled={scanningHistory || scanningLatest}
               onChange={(e) => setExcludeST(e.target.checked)}
             >
               排除ST
             </Checkbox>
             <Button onClick={refreshHistoryCount} disabled={loadingCount} loading={loadingCount}>
               刷新统计
-            </Button>
-            <Button
-              type="primary"
-              icon={<ExportOutlined />}
-              loading={exporting}
-              disabled={exportCount === 0 && !exporting}
-              onClick={handleExportAllKlineData}
-            >
-              导出K线
             </Button>
             <Dropdown
               menu={{
@@ -1290,7 +1207,7 @@ export function BacktestPage() {
                 <Statistic title="stockHistory 总数" value={totalCount} loading={loadingCount} />
               </Col>
               <Col>
-                <Statistic title="参与扫描/导出" value={exportCount} loading={loadingCount} />
+                <Statistic title="参与扫描" value={exportCount} loading={loadingCount} />
               </Col>
               <Col>
                 <Statistic title="行业映射数" value={industryMapping.size} loading={loadingCount} />
@@ -1327,17 +1244,6 @@ export function BacktestPage() {
                 </div>
               </Col>
             </Row>
-
-            {exporting && exportProgress.total > 0 && (
-              <div className={styles.exportProgress}>
-                <Progress
-                  percent={progressPercent}
-                  status="active"
-                  size="small"
-                  format={() => `${exportProgress.current}/${exportProgress.total}`}
-                />
-              </div>
-            )}
           </Card>
 
           <Card className={styles.resultCard} size="small">

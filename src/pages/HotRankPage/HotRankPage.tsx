@@ -104,7 +104,7 @@ export function HotRankPage() {
       key: 'code',
       width: 100,
       fixed: 'left',
-      render: (text: string) => <Text strong>{text}</Text>,
+      render: (text: string) => <Text style={{ textShadow: '0 0 0.25px currentcolor' }}>{text}</Text>,
     },
     {
       title: '股票名称',
@@ -112,7 +112,7 @@ export function HotRankPage() {
       key: 'name',
       width: 120,
       fixed: 'left',
-      render: (text: string) => <Text strong style={{ color: '#667eea' }}>{text}</Text>,
+      render: (text: string) => <Text style={{ color: '#1890ff', textShadow: '0 0 0.25px currentcolor' }}>{text}</Text>,
     },
     {
       title: '涨跌幅',
@@ -148,7 +148,7 @@ export function HotRankPage() {
       dataIndex: 'popularityTag',
       key: 'popularityTag',
       width: 120,
-      render: (text: string) => (text ? <Tag color="orange">{text}</Tag> : '-'),
+      render: (text: string) => (text ? <Tag color="orange" bordered={false} style={{ textShadow: '0 0 0.25px currentcolor' }}>{text}</Tag> : '-'),
     },
     {
       title: '概念标签',
@@ -158,7 +158,7 @@ export function HotRankPage() {
         tags.length > 0 ? (
           <>
             {tags.map((tag) => (
-              <Tag key={tag}>{tag}</Tag>
+              <Tag key={tag} className={styles.conceptTag} style={{ textShadow: '0 0 0.25px currentcolor' }}>{tag}</Tag>
             ))}
           </>
         ) : (

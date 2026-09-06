@@ -42,6 +42,7 @@
 
 .tableContainer :global(.ant-table-thead > tr > th) {
   white-space: nowrap;
+  font-weight: 400;
 }
 
 .opportunityTable :global(.ant-table-tbody > tr > td) {

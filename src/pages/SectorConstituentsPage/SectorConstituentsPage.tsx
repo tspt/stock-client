@@ -687,16 +687,14 @@ export function SectorConstituentsPage() {
       </div>
 
       {/* 全局筛选抽屉 */}
-      {selectedSector && (
-        <StockFilterDrawer
-          open={filterDrawerOpen}
-          onClose={handleCloseFilterDrawer}
-          stocks={selectedSector.stocks}
-          filterPrefs={filterPrefs}
-          onFilterChange={handleFilterChange}
-          onClearFilters={handleClearFilters}
-        />
-      )}
+      <StockFilterDrawer
+        open={filterDrawerOpen}
+        onClose={handleCloseFilterDrawer}
+        stocks={selectedSector?.stocks || []}
+        filterPrefs={filterPrefs}
+        onFilterChange={handleFilterChange}
+        onClearFilters={handleClearFilters}
+      />
     </Layout>
   );
 }

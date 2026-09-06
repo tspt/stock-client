@@ -79,13 +79,15 @@ export function AnalysisRecordPage() {
       key: 'code',
       width: 100,
       fixed: 'left',
+      render: (text: string) => <Text style={{ textShadow: '0 0 0.25px currentcolor' }}>{text}</Text>,
     },
     {
       title: '股票名称',
       dataIndex: 'name',
       key: 'name',
-      width: 100,
+      width: 120,
       fixed: 'left',
+      render: (text: string) => <Text style={{ color: '#1890ff', textShadow: '0 0 0.25px currentcolor' }}>{text}</Text>,
     },
     {
       title: '出现次数',
@@ -93,13 +95,21 @@ export function AnalysisRecordPage() {
       key: 'count',
       width: 100,
       sorter: (a, b) => a.count - b.count,
-      render: (count: number) => (
-        <span className={styles.countCell}>
-          <Tag color={count > 5 ? 'red' : count > 2 ? 'orange' : 'blue'}>
-            {count} 次
-          </Tag>
-        </span>
-      ),
+      render: (count: number) => {
+        const isBlue = count <= 2;
+        return (
+          <span className={styles.countCell}>
+            <Tag
+              color={count > 5 ? 'red' : count > 2 ? 'orange' : undefined}
+              className={isBlue ? styles.blueTag : undefined}
+              bordered={false}
+              style={{ textShadow: '0 0 0.25px currentcolor' }}
+            >
+              {count} 次
+            </Tag>
+          </span>
+        );
+      },
     },
     {
       title: '连续天数',
@@ -113,7 +123,11 @@ export function AnalysisRecordPage() {
           return <span style={{ color: '#999' }}>-</span>;
         }
         return (
-          <Tag color={value >= 5 ? 'red' : value >= 3 ? 'orange' : 'green'}>
+          <Tag
+            color={value >= 5 ? 'red' : value >= 3 ? 'orange' : 'green'}
+            bordered={false}
+            style={{ textShadow: '0 0 0.25px currentcolor' }}
+          >
             {value} 天
           </Tag>
         );
@@ -127,34 +141,33 @@ export function AnalysisRecordPage() {
       sorter: (a, b) => a.latestDate.localeCompare(b.latestDate),
     },
     {
-      title: '所属概念',
-      dataIndex: 'concepts',
-      key: 'concepts',
-      width: 200,
-      render: (concepts?: Array<{ code: string; name: string }>) => {
-        if (!concepts || concepts.length === 0) {
-          return <span style={{ color: '#999' }}>-</span>;
-        }
-        return (
-          <div className={styles.conceptTags}>
-            {concepts.slice(0, 3).map((concept) => (
-              <Tag key={concept.code} color="purple">
-                {concept.name}
-              </Tag>
-            ))}
-            {concepts.length > 3 && (
-              <Tag color="default">+{concepts.length - 3}</Tag>
-            )}
-          </div>
-        );
-      },
-    },
-    {
       title: '所属行业',
       dataIndex: 'industry',
       key: 'industry',
       width: 120,
       render: (industry?: { code: string; name: string }) => industry?.name || <span style={{ color: '#999' }}>-</span>,
+    },
+    {
+      title: '所属概念',
+      dataIndex: 'concepts',
+      key: 'concepts',
+      ellipsis: true,
+      render: (concepts?: Array<{ code: string; name: string }>) =>
+        concepts && concepts.length > 0 ? (
+          <div className={styles.conceptTags} title={concepts.map((c) => c.name).join('、')}>
+            {concepts.map((concept) => (
+              <Tag
+                key={concept.code}
+                className={styles.blueTag}
+                style={{ textShadow: '0 0 0.25px currentcolor' }}
+              >
+                {concept.name}
+              </Tag>
+            ))}
+          </div>
+        ) : (
+          '-'
+        ),
     },
   ];
 

@@ -14,7 +14,7 @@ const { Option } = Select;
 interface StockFilterDrawerProps {
   open: boolean;
   onClose: () => void;
-  stocks: StockSimpleInfo[];
+  stocks?: StockSimpleInfo[];
   filterPrefs: SectorFilterPrefs;
   onFilterChange: (prefs: SectorFilterPrefs) => void;
   onClearFilters: () => void;
@@ -39,7 +39,7 @@ const INITIAL_FILTER_STATE: FilterState = {
 export function StockFilterDrawer({
   open,
   onClose,
-  stocks,
+  stocks = [],
   filterPrefs,
   onFilterChange,
   onClearFilters,
@@ -199,7 +199,15 @@ export function StockFilterDrawer({
 
         {/* 筛选结果统计 */}
         <div className={styles.filterStats}>
-          当前显示: <strong>{getFilteredCount()}</strong> / {stocks.length} 只股票
+          {stocks.length > 0 ? (
+            <>
+              当前显示: <strong>{getFilteredCount()}</strong> / {stocks.length} 只股票
+            </>
+          ) : (
+            <span style={{ color: 'var(--ant-color-text-secondary)' }}>
+              未选择板块，筛选条件将在查看具体板块时生效
+            </span>
+          )}
         </div>
       </Form>
     </Drawer>

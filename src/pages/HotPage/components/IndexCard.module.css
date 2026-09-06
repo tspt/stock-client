@@ -135,7 +135,6 @@
 
 .rankUp {
   color: #ff4d4f;
-  font-weight: 600;
   font-size: 14px;
   flex: 1;
   text-align: center;
@@ -157,7 +156,6 @@
 
 .rankDown {
   color: #52c41a;
-  font-weight: 600;
   font-size: 14px;
   flex: 1;
   text-align: center;

@@ -128,7 +128,7 @@ export function BillboardPage() {
       key: 'code',
       width: 100,
       fixed: 'left',
-      render: (text: string) => <Text strong>{text}</Text>,
+      render: (text: string) => <Text style={{ textShadow: '0 0 0.25px currentcolor' }}>{text}</Text>,
     },
     {
       title: '股票名称',
@@ -136,7 +136,7 @@ export function BillboardPage() {
       key: 'name',
       width: 120,
       fixed: 'left',
-      render: (text: string) => <Text strong style={{ color: '#667eea' }}>{text}</Text>,
+      render: (text: string) => <Text style={{ color: '#1890ff', textShadow: '0 0 0.25px currentcolor' }}>{text}</Text>,
     },
     {
       title: '最新上榜',
@@ -159,7 +159,7 @@ export function BillboardPage() {
       sortOrder: sortBy === 'BILLBOARD_TIMES' ? 'descend' : undefined,
       showSorterTooltip: false,
       render: (value: number) => (
-        <Tag color="purple" style={{ fontWeight: 600 }}>
+        <Tag color="orange" bordered={false} style={{ textShadow: '0 0 0.25px currentcolor' }}>
           {value}次
         </Tag>
       ),
@@ -188,7 +188,7 @@ export function BillboardPage() {
       key: 'orgTimes',
       width: 100,
       render: (value: number) => (
-        <Tag color="blue">{value}次</Tag>
+        <Tag className={styles.orgTag} style={{ textShadow: '0 0 0.25px currentcolor' }}>{value}次</Tag>
       ),
     },
     {

@@ -266,6 +266,10 @@
   overflow: hidden;
 }
 
+.tableArea :global(.ant-table-thead > tr > th) {
+  font-weight: 400;
+}
+
 .tableArea :global(.ant-table-pagination) {
   margin-top: 4px !important;
   margin-bottom: 0 !important;

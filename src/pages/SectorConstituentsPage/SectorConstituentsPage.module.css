@@ -220,13 +220,13 @@
 }
 
 .conceptColor {
-  background: #f9f0ff;
-  color: #722ed1;
+  background: #e6f4ff;
+  color: #1677ff;
 }
 
 [data-theme='dark'] .conceptColor {
-  background: #1f132b;
-  color: #9254de;
+  background: #111d2c;
+  color: #4096ff;
 }
 
 .contentArea {

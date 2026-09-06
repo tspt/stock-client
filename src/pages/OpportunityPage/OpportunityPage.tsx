@@ -3,9 +3,7 @@
  */
 
 import { useEffect, useState, useMemo, useRef, useCallback, useLayoutEffect } from 'react';
-import { Layout, Card, Button, Space, Progress, Select, Collapse, App, Input, InputNumber, Dropdown, Alert, Tag, Tooltip, Badge, Popover, Checkbox, Spin, DatePicker } from 'antd';
-import type { Dayjs } from 'dayjs';
-import dayjs from 'dayjs';
+import { Layout, Card, Button, Space, Progress, Select, Collapse, App, Input, InputNumber, Dropdown, Alert, Tag, Tooltip, Badge, Popover, Checkbox, Spin } from 'antd';
 import {
   RocketOutlined,
   StopOutlined,
@@ -23,7 +21,7 @@ import {
 import { useOpportunityStore } from '@/stores/opportunityStore';
 import { useStockStore } from '@/stores/stockStore';
 import { apiCache } from '@/utils/storage/apiCache';
-import { clearStockHistory, clearOpportunityData } from '@/utils/storage/opportunityIndexedDB';
+import { clearStockHistory, clearOpportunityData, getStocksHistory } from '@/utils/storage/opportunityIndexedDB';
 import {
   CONSOLIDATION_TYPE_LABELS,
 } from '@/utils/analysis/consolidationAnalysis';
@@ -32,7 +30,7 @@ import { ColumnSettings } from '@/components/ColumnSettings/ColumnSettings';
 import { AIAnalysisModal } from '@/components/AIAnalysisModal';
 import { AddStocksToWatchListModal } from '@/components/AddStocksToWatchListModal/AddStocksToWatchListModal';
 import { exportOpportunityToExcel } from '@/utils/export/opportunityExportUtils';
-import { exportStockNamesToExcel, exportStockNamesToPng } from '@/utils/export/stockNamesExportUtils';
+import { exportStockNamesToPng } from '@/utils/export/stockNamesExportUtils';
 import { detectTradingSignal } from '@/utils/analysis/signalDetector';
 import { addStocksToTodayRecord } from '@/services/opportunity/recordService';
 import type { ConsolidationType, KLinePeriod, StockInfo, StockOpportunityData, KLineData } from '@/types/stock';
@@ -523,8 +521,9 @@ export function OpportunityPage() {
   );
   const [enableShortTermNameFilter, setEnableShortTermNameFilter] = useState<boolean>(true);
 
-  /** 截止日 YYYY-MM-DD；空=实时一键分析 */
-  const [asOfDate, setAsOfDate] = useState<string | null>(null);
+  /** 导出K线数据状态 */
+  const [exportingKline, setExportingKline] = useState(false);
+  const [exportKlineProgress, setExportKlineProgress] = useState({ current: 0, total: 0 });
   /** 一键分析成功且无失败后，递增以触发自动「添加到记录」（等筛选完成） */
   const [autoAddToRecordToken, setAutoAddToRecordToken] = useState(0);
   const lastAutoAddToRecordTokenRef = useRef(0);
@@ -1288,7 +1287,6 @@ export function OpportunityPage() {
     const s = INITIAL_FILTER_STATE;
     setSelectedMarket([...s.selectedMarket]);
     setNameType(s.nameType);
-    setAsOfDate(null);
     useOpportunityStore.setState({
       currentPeriod: INITIAL_OPPORTUNITY_QUERY.currentPeriod,
       currentCount: INITIAL_OPPORTUNITY_QUERY.currentCount,
@@ -1367,11 +1365,6 @@ export function OpportunityPage() {
       return;
     }
 
-    if (asOfDate && currentPeriod !== 'day') {
-      message.warning('截止日模式仅支持日K周期');
-      return;
-    }
-
     // 清空 AI 缓存，防止跨周期数据污染
     clearAICache();
 
@@ -1379,37 +1372,24 @@ export function OpportunityPage() {
     useOpportunityStore.getState().clearData();
     logger.info('[机会分析] 已清空 store 中的缓存数据');
 
-    if (asOfDate) {
-      // 截止日：保留本地日K/详情，优先截断复用；仅清分析结果缓存
-      apiCache.clear();
-      try {
-        await clearOpportunityData();
-        logger.info(`[机会分析] 截止日模式 asOf=${asOfDate}，保留 IndexedDB 股票历史`);
-      } catch (error) {
-        logger.warn('[机会分析] 清空机会分析结果失败:', error);
-      }
-      message.info('截止日模式：市值/换手/股本为近似值；本地K线足够时不重新拉取');
-    } else {
-      // 实时：清空内存与 IndexedDB，强制拉最新
-      apiCache.clear();
-      logger.info('[机会分析] 已清空内存缓存，将获取最新数据');
-      try {
-        await Promise.all([
-          clearStockHistory(),
-          clearOpportunityData(),
-        ]);
-        logger.info('[机会分析] 已清空 IndexedDB 中的股票历史数据和分析结果');
-      } catch (error) {
-        logger.warn('[机会分析] 清空 IndexedDB 失败:', error);
-      }
+    // 实时：清空内存与 IndexedDB，强制拉最新
+    apiCache.clear();
+    logger.info('[机会分析] 已清空内存缓存，将获取最新数据');
+    try {
+      await Promise.all([
+        clearStockHistory(),
+        clearOpportunityData(),
+      ]);
+      logger.info('[机会分析] 已清空 IndexedDB 中的股票历史数据和分析结果');
+    } catch (error) {
+      logger.warn('[机会分析] 清空 IndexedDB 失败:', error);
     }
 
     await startAnalysis(
       currentPeriod,
       filteredStocks,
       currentCount,
-      aiVersion,
-      asOfDate || undefined
+      aiVersion
     );
 
     const {
@@ -1478,8 +1458,8 @@ export function OpportunityPage() {
     }
   };
 
-  /** 当前筛选结果中的股票名称，按列最多 20 条导出为图片或 Excel */
-  const handleExportNames = async (kind: 'png' | 'excel') => {
+  /** 当前筛选结果中的股票名称，按列最多 20 条导出为图片 */
+  const handleExportNames = async () => {
     if (displayAnalysisData.length === 0) {
       message.warning('没有数据可导出');
       return;
@@ -1490,75 +1470,139 @@ export function OpportunityPage() {
       return;
     }
     try {
-      if (kind === 'excel') {
-        await exportStockNamesToExcel(names, { fileNamePrefix: '机会分析_股票名称' });
-        message.success('名称列表已导出为 Excel');
-      } else {
-        // 生成筛选条件摘要
-        const filterSummaryBase = buildOpportunityFilterSummary({
-          priceRange,
-          marketCapRange,
-          totalSharesRange,
-          turnoverRateRange,
-          peRatioRange,
-          kdjJRange,
-          recentLimitUpCount,
-          recentLimitDownCount,
-          limitUpPeriod,
-          limitDownPeriod,
-          consolidationFilterEnabled,
-          consolidationTypes,
-          consolidationLookback,
-          consolidationConsecutive,
-          consolidationThreshold,
-          consolidationRequireAboveMa10,
-          consolidationTypeOptions: CONSOLIDATION_TYPE_OPTIONS,
-          trendLineFilterEnabled,
-          trendLineLookback,
-          trendLineConsecutive,
-          sharpMoveFilterEnabled,
-          sharpMoveWindowBars,
-          sharpMoveMagnitude,
-          sharpMoveFlatThreshold,
-          sharpMoveOnlyDrop,
-          sharpMoveOnlyRise,
-          sharpMoveDropThenRiseLoose,
-          sharpMoveRiseThenDropLoose,
-          sharpMoveDropFlatRise,
-          sharpMoveRiseFlatDrop,
-          rsiRange,
-          aiAnalysisEnabled,
-          aiTrendUp,
-          aiTrendDown,
-          aiTrendSideways,
-          aiConfidenceRange,
-          aiRecommendScoreRange,
-          aiTechnicalScoreRange,
-          aiPatternScoreRange,
-          aiTrendScoreRange,
-          aiRiskScoreRange,
-          excludedNameKeywords,
-          excludedExactNames,
-          excludedShortTermNames,
-        });
+      // 生成筛选条件摘要
+      const filterSummaryBase = buildOpportunityFilterSummary({
+        priceRange,
+        marketCapRange,
+        totalSharesRange,
+        turnoverRateRange,
+        peRatioRange,
+        kdjJRange,
+        recentLimitUpCount,
+        recentLimitDownCount,
+        limitUpPeriod,
+        limitDownPeriod,
+        consolidationFilterEnabled,
+        consolidationTypes,
+        consolidationLookback,
+        consolidationConsecutive,
+        consolidationThreshold,
+        consolidationRequireAboveMa10,
+        consolidationTypeOptions: CONSOLIDATION_TYPE_OPTIONS,
+        trendLineFilterEnabled,
+        trendLineLookback,
+        trendLineConsecutive,
+        sharpMoveFilterEnabled,
+        sharpMoveWindowBars,
+        sharpMoveMagnitude,
+        sharpMoveFlatThreshold,
+        sharpMoveOnlyDrop,
+        sharpMoveOnlyRise,
+        sharpMoveDropThenRiseLoose,
+        sharpMoveRiseThenDropLoose,
+        sharpMoveDropFlatRise,
+        sharpMoveRiseFlatDrop,
+        rsiRange,
+        aiAnalysisEnabled,
+        aiTrendUp,
+        aiTrendDown,
+        aiTrendSideways,
+        aiConfidenceRange,
+        aiRecommendScoreRange,
+        aiTechnicalScoreRange,
+        aiPatternScoreRange,
+        aiTrendScoreRange,
+        aiRiskScoreRange,
+        excludedNameKeywords,
+        excludedExactNames,
+        excludedShortTermNames,
+      });
 
-        // 构建包含两行时间的完整文案
-        const analysisTime = analysisTimestamp
-          ? new Date(analysisTimestamp).toLocaleString('zh-CN')
-          : '未知';
-        const exportTime = new Date().toLocaleString('zh-CN');
-        const filterSummary = `分析时间: ${analysisTime}\n导出时间: ${exportTime}${filterSummaryBase ? '\n筛选条件: ' + filterSummaryBase : ''}`;
+      // 构建包含两行时间的完整文案
+      const analysisTime = analysisTimestamp
+        ? new Date(analysisTimestamp).toLocaleString('zh-CN')
+        : '未知';
+      const exportTime = new Date().toLocaleString('zh-CN');
+      const filterSummary = `分析时间: ${analysisTime}\n导出时间: ${exportTime}${filterSummaryBase ? '\n筛选条件: ' + filterSummaryBase : ''}`;
 
-        await exportStockNamesToPng(names, {
-          fileNamePrefix: '机会分析_股票名称',
-          filterSummary: filterSummary || undefined
-        });
-        message.success('名称列表已导出为图片');
-      }
+      await exportStockNamesToPng(names, {
+        fileNamePrefix: '机会分析_股票名称',
+        filterSummary: filterSummary || undefined
+      });
+      message.success('名称列表已导出为图片');
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '导出失败';
       message.error(errorMessage);
       logger.error('导出名称失败:', error);
+    }
+  };
+
+  /** 导出 IndexedDB 中的全量 K 线数据到本地文件 (docs/回测优化/股票数据) */
+  const handleExportAllKlineData = async () => {
+    if (!window.electronAPI?.batchExportKlineData) {
+      message.error('批量导出功能不可用（需在 Electron 环境中运行）');
+      return;
+    }
+
+    try {
+      setExportingKline(true);
+      setExportKlineProgress({ current: 0, total: 0 });
+      message.info('正在读取 IndexedDB stockHistory...');
+
+      const allHistories = await getStocksHistory([]);
+      if (allHistories.length === 0) {
+        message.warning('IndexedDB 中没有 stockHistory 数据');
+        return;
+      }
+
+      setExportKlineProgress({ current: 0, total: allHistories.length });
+
+      const industryByCode = new Map<string, { code: string; name: string }>();
+      allStocks.forEach((stock) => {
+        if (stock.industry) {
+          industryByCode.set(stock.code, { code: stock.industry.code, name: stock.industry.name });
+          industryByCode.set(getPureCode(stock.code), { code: stock.industry.code, name: stock.industry.name });
+        }
+      });
+
+      const stocksData = allHistories.map((history, index) => {
+        const industry =
+          history.industry ||
+          industryByCode.get(history.code) ||
+          industryByCode.get(getPureCode(history.code)) ||
+          null;
+        if ((index + 1) % 50 === 0 || index + 1 === allHistories.length) {
+          setExportKlineProgress({ current: index + 1, total: allHistories.length });
+        }
+        return {
+          code: history.code,
+          name: history.name,
+          klineData: history.dailyLines,
+          latestQuote: history.latestQuote,
+          updatedAt: history.updatedAt,
+          industry,
+        };
+      });
+
+      message.info(`正在导出 ${stocksData.length} 只股票的 K 线数据...`);
+      const result = await window.electronAPI.batchExportKlineData(stocksData);
+
+      if (result.success) {
+        const { summary } = result;
+        message.success(
+          summary
+            ? `导出完成！总计 ${summary.total} 只，成功 ${summary.success} 只，失败 ${summary.fail} 只`
+            : '导出完成！'
+        );
+      } else {
+        message.error('导出失败: ' + (result.error || '未知错误'));
+      }
+    } catch (error) {
+      logger.error('[OpportunityPage] 导出K线数据失败:', error);
+      message.error('导出失败: ' + (error as Error).message);
+    } finally {
+      setExportingKline(false);
+      setExportKlineProgress({ current: 0, total: 0 });
     }
   };
 
@@ -1705,23 +1749,6 @@ export function OpportunityPage() {
               }}
             />
           </Space.Compact>
-          <Space.Compact className={styles.spaceCompact}>
-            <span className={styles.label}>截止日：</span>
-            <DatePicker
-              allowClear
-              value={asOfDate ? dayjs(asOfDate) : null}
-              disabled={loading || currentPeriod !== 'day'}
-              disabledDate={(current: Dayjs) => !!(current && current.isAfter(dayjs(), 'day'))}
-              style={{ width: 140 }}
-              placeholder="实时"
-              onChange={(date: Dayjs | null) => {
-                setAsOfDate(date ? date.format('YYYY-MM-DD') : null);
-                if (analysisData.length > 0) {
-                  message.info('截止日已更改，请重新分析');
-                }
-              }}
-            />
-          </Space.Compact>
 
           {/* 操作按钮 */}
           <Button
@@ -1794,7 +1821,6 @@ export function OpportunityPage() {
                 { key: 'excel', label: '导出Excel' },
                 { type: 'divider' },
                 { key: 'png', label: '导出名称(PNG)' },
-                { key: 'names-xlsx', label: '导出名称(Excel)' },
                 { type: 'divider' },
                 { key: 'columns', label: '列设置', icon: <SettingOutlined /> }
               ],
@@ -1803,8 +1829,8 @@ export function OpportunityPage() {
                   setColumnSettingsVisible(true);
                 } else if (key === 'excel') {
                   void handleExport('excel');
-                } else {
-                  void handleExportNames(key === 'names-xlsx' ? 'excel' : 'png');
+                } else if (key === 'png') {
+                  void handleExportNames();
                 }
               },
             }}
@@ -1813,6 +1839,14 @@ export function OpportunityPage() {
               导出/设置 <DownOutlined />
             </Button>
           </Dropdown>
+          <Button
+            icon={<ExportOutlined />}
+            loading={exportingKline}
+            disabled={loading || exportingKline}
+            onClick={handleExportAllKlineData}
+          >
+            导出K线
+          </Button>
           <Button
             icon={<FilterOutlined />}
             onClick={() => setFilterDrawerOpen(true)}
@@ -1833,6 +1867,21 @@ export function OpportunityPage() {
               />
               <div className={styles.progressText}>
                 进度: {progress.completed} / {progress.total} (失败: {progress.failed})
+              </div>
+            </div>
+          </Card>
+        )}
+
+        {exportingKline && exportKlineProgress.total > 0 && (
+          <Card className={styles.progressCard}>
+            <div className={styles.progressInfo}>
+              <Progress
+                percent={Math.round((exportKlineProgress.current / exportKlineProgress.total) * 100)}
+                status="active"
+                format={(percent) => `${percent}%`}
+              />
+              <div className={styles.progressText}>
+                导出K线进度: {exportKlineProgress.current} / {exportKlineProgress.total}
               </div>
             </div>
           </Card>
@@ -2130,7 +2179,6 @@ export function OpportunityPage() {
               {analysisTimestamp && (
                 <span style={{ fontSize: 12, color: 'var(--ant-color-text-secondary)', marginLeft: 8 }}>
                   🕐 分析时间：{new Date(analysisTimestamp).toLocaleString('zh-CN')}
-                  {asOfDate ? `（截止日 ${asOfDate}，市值/换手/股本近似）` : ''}
                 </span>
               )}
             </div>

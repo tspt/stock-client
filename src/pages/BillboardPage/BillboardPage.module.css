@@ -104,7 +104,7 @@
 
 .tableWrapper :global(.ant-table-thead > tr > th) {
   background: #fafafa;
-  font-weight: 600;
+  font-weight: 400;
   color: #262626;
   border-bottom: 1px solid #f0f0f0;
 }
@@ -117,18 +117,28 @@
 }
 
 .tableWrapper :global(.ant-table-tbody > tr:hover > td) {
-  background: rgba(102, 126, 234, 0.05);
+  background: rgba(24, 144, 255, 0.05);
 }
 
 /* 正负数颜色 */
 .positive {
   color: #ff4d4f;
-  font-weight: 500;
 }
 
 .negative {
   color: #52c41a;
-  font-weight: 500;
+}
+
+.orgTag {
+  background: #e6f4ff;
+  color: #1677ff;
+  border: none;
+}
+
+[data-theme='dark'] .orgTag {
+  background: #111d2c;
+  color: #4096ff;
+  border: none;
 }
 
 /* 加载状态 */
