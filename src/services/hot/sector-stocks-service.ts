@@ -8,7 +8,7 @@ import { getIndustrySectorStocks } from './industry-sectors';
 import { getConceptSectorStocks } from './concept-sectors';
 import type { IndustrySectorBasicInfo, ConceptSectorBasicInfo } from '@/types/stock';
 import { logger } from '@/utils/business/logger';
-import { CACHE_TTL } from '@/utils/config/constants';
+import { CACHE_TTL, CONCEPT_SECTOR_NAME_SKIP_KEYWORDS } from '@/utils/config/constants';
 import {
   saveIndustrySectors,
   saveConceptSectors,
@@ -44,6 +44,9 @@ export interface FetchProgress {
   percent: number;
   message: string;
 }
+
+/** 成分股获取范围：全部 / 仅行业 / 仅概念 */
+export type SectorFetchScope = 'all' | 'industry' | 'concept';
 
 // ==================== 全局频次控制 ====================
 
@@ -89,6 +92,36 @@ async function throttleRequest(signal?: AbortSignal) {
  * 延迟函数
  */
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const CONCEPT_NAME_MULTI_DIGIT_RE = /\d{2,}/;
+const CONCEPT_SKIP_KEYWORDS_LOWER = CONCEPT_SECTOR_NAME_SKIP_KEYWORDS.map((k) => k.toLowerCase());
+
+/**
+ * 成分股获取时是否按名称跳过该概念板块（不请求、不记失败、不写库）
+ */
+function shouldSkipConceptSectorByName(name: string): boolean {
+  if (CONCEPT_NAME_MULTI_DIGIT_RE.test(name)) {
+    return true;
+  }
+  const lowerName = name.toLowerCase();
+  return CONCEPT_SKIP_KEYWORDS_LOWER.some((keyword) => lowerName.includes(keyword));
+}
+
+function filterConceptBasicsForFetch<T extends { name: string }>(sectors: T[]): T[] {
+  const kept: T[] = [];
+  let skipped = 0;
+  for (const sector of sectors) {
+    if (shouldSkipConceptSectorByName(sector.name)) {
+      skipped++;
+    } else {
+      kept.push(sector);
+    }
+  }
+  if (skipped > 0) {
+    logger.info(`[SectorStocks] 已按名称跳过 ${skipped} 个概念板块`);
+  }
+  return kept;
+}
 
 /**
  * 分页获取单个板块的所有成分股
@@ -155,21 +188,27 @@ async function fetchAllStocksForSector(
 }
 
 /**
- * 全量获取所有板块成分股
+ * 全量获取板块成分股
  * @param onProgress 进度回调
  * @param forceRefresh 是否强制刷新（忽略缓存）
  * @param failedSectors 之前失败的板块列表（用于重试）
+ * @param signal AbortSignal
+ * @param scope 获取范围：全部 / 仅行业 / 仅概念
  */
 export async function fetchAllSectorsStocks(
   onProgress?: (progress: FetchProgress) => void,
   forceRefresh: boolean = false,
   failedSectors: FailedSector[] = [],
-  signal?: AbortSignal
+  signal?: AbortSignal,
+  scope: SectorFetchScope = 'all'
 ): Promise<{
   industry: SectorFullData[];
   concept: SectorFullData[];
   failed: FailedSector[];
 }> {
+  const fetchIndustry = scope === 'all' || scope === 'industry';
+  const fetchConcept = scope === 'all' || scope === 'concept';
+
   // 1. 检查缓存（仅在非重试且非强制刷新时）
   if (!forceRefresh && failedSectors.length === 0) {
     try {
@@ -178,12 +217,14 @@ export async function fetchAllSectorsStocks(
         getConceptSectors(),
       ]);
 
-      // 板块成分股数据默认不过期，只要有缓存就直接使用
-      if (cachedIndustry.length > 0 && cachedConcept.length > 0) {
-        logger.info('[SectorStocks] 使用 IndexedDB 缓存数据');
+      const industryReady = !fetchIndustry || cachedIndustry.length > 0;
+      const conceptReady = !fetchConcept || cachedConcept.length > 0;
+
+      if (industryReady && conceptReady) {
+        logger.info(`[SectorStocks] 使用 IndexedDB 缓存数据 (scope=${scope})`);
         return {
-          industry: formatCachedData(cachedIndustry),
-          concept: formatCachedData(cachedConcept),
+          industry: fetchIndustry ? formatCachedData(cachedIndustry) : [],
+          concept: fetchConcept ? formatCachedData(cachedConcept) : [],
           failed: [],
         };
       }
@@ -196,21 +237,31 @@ export async function fetchAllSectorsStocks(
   let conceptBasics: ConceptSectorBasicInfo[] = [];
   const newFailed: FailedSector[] = [...failedSectors];
 
-  // 如果是重试模式，只处理失败的板块；否则获取全量列表
+  // 如果是重试模式，只处理失败的板块；否则按 scope 获取基础列表
   if (failedSectors.length > 0) {
-    industryBasics = failedSectors
-      .filter((s) => s.sectorType === 'industry')
-      .map((s) => ({ code: s.sectorCode, name: s.sectorName } as any));
-    conceptBasics = failedSectors
-      .filter((s) => s.sectorType === 'concept')
-      .map((s) => ({ code: s.sectorCode, name: s.sectorName } as any));
+    if (fetchIndustry) {
+      industryBasics = failedSectors
+        .filter((s) => s.sectorType === 'industry')
+        .map((s) => ({ code: s.sectorCode, name: s.sectorName } as any));
+    }
+    if (fetchConcept) {
+      conceptBasics = failedSectors
+        .filter((s) => s.sectorType === 'concept')
+        .map((s) => ({ code: s.sectorCode, name: s.sectorName } as any));
+    }
   } else {
-    // 串行获取基础列表，避免开局并发
-    await throttleRequest(signal);
-    industryBasics = await getUnifiedIndustryBasic();
+    if (fetchIndustry) {
+      await throttleRequest(signal);
+      industryBasics = await getUnifiedIndustryBasic();
+    }
+    if (fetchConcept) {
+      await throttleRequest(signal);
+      conceptBasics = filterConceptBasicsForFetch(await getUnifiedConceptBasic());
+    }
+  }
 
-    await throttleRequest(signal);
-    conceptBasics = await getUnifiedConceptBasic();
+  if (fetchConcept && failedSectors.length > 0) {
+    conceptBasics = filterConceptBasicsForFetch(conceptBasics);
   }
 
   const totalSectors = industryBasics.length + conceptBasics.length;
@@ -220,7 +271,7 @@ export async function fetchAllSectorsStocks(
 
   const updateProgress = (message: string) => {
     completedCount++;
-    const percent = Math.round((completedCount / totalSectors) * 100);
+    const percent = totalSectors > 0 ? Math.round((completedCount / totalSectors) * 100) : 100;
     onProgress?.({
       current: completedCount,
       total: totalSectors,
@@ -230,164 +281,172 @@ export async function fetchAllSectorsStocks(
   };
 
   // 2. 串行获取行业板块成分股
-  for (const sector of industryBasics) {
-    if (signal?.aborted) {
-      logger.info('[SectorStocks] 获取已被用户取消');
-      break;
-    }
-    updateProgress(`正在获取行业: ${sector.name}`);
-    try {
-      const stocks = await fetchAllStocksForSector(sector.code, 'industry', signal);
-      industryData.push({
-        sectorCode: sector.code,
-        sectorName: sector.name,
-        stocks,
-      });
-    } catch (error: any) {
-      if (error.name === 'AbortError') {
+  if (fetchIndustry) {
+    for (const sector of industryBasics) {
+      if (signal?.aborted) {
         logger.info('[SectorStocks] 获取已被用户取消');
-        break; // 跳出循环，执行后续的保存逻辑
+        break;
       }
-      // 如果是因为total过大而跳过板块，记录为特殊失败类型
-      if (error.message?.startsWith('SKIP_SECTOR_TOTAL_EXCEEDED')) {
-        const total = error.message.split(':')[1];
-        logger.warn(`[SectorStocks] 行业板块 ${sector.name} 因成分股数量(${total})超过500而被跳过`);
-        newFailed.push({
+      updateProgress(`正在获取行业: ${sector.name}`);
+      try {
+        const stocks = await fetchAllStocksForSector(sector.code, 'industry', signal);
+        industryData.push({
           sectorCode: sector.code,
           sectorName: sector.name,
-          sectorType: 'industry',
-          error: { type: 'SKIPPED', reason: `成分股数量(${total})超过500` },
+          stocks,
         });
-      } else {
-        logger.warn(`[SectorStocks] 行业板块 ${sector.name} 获取失败，已记录`);
-        newFailed.push({
-          sectorCode: sector.code,
-          sectorName: sector.name,
-          sectorType: 'industry',
-          error,
-        });
+      } catch (error: any) {
+        if (error.name === 'AbortError') {
+          logger.info('[SectorStocks] 获取已被用户取消');
+          break;
+        }
+        if (error.message?.startsWith('SKIP_SECTOR_TOTAL_EXCEEDED')) {
+          const total = error.message.split(':')[1];
+          logger.warn(`[SectorStocks] 行业板块 ${sector.name} 因成分股数量(${total})超过500而被跳过`);
+          newFailed.push({
+            sectorCode: sector.code,
+            sectorName: sector.name,
+            sectorType: 'industry',
+            error: { type: 'SKIPPED', reason: `成分股数量(${total})超过500` },
+          });
+        } else {
+          logger.warn(`[SectorStocks] 行业板块 ${sector.name} 获取失败，已记录`);
+          newFailed.push({
+            sectorCode: sector.code,
+            sectorName: sector.name,
+            sectorType: 'industry',
+            error,
+          });
+        }
       }
     }
-  }
 
-  // 如果已取消,保存已获取的行业板块数据
-  if (signal?.aborted && industryData.length > 0) {
-    const industryToSave: SectorWithStocks[] = industryData.map((item) => ({
-      code: item.sectorCode,
-      name: item.sectorName,
-      children: item.stocks,
-      total: item.stocks.length,
-      savedAt: Date.now(),
-    }));
+    // 如果已取消,保存已获取的行业板块数据
+    if (signal?.aborted && industryData.length > 0) {
+      const industryToSave: SectorWithStocks[] = industryData.map((item) => ({
+        code: item.sectorCode,
+        name: item.sectorName,
+        children: item.stocks,
+        total: item.stocks.length,
+        savedAt: Date.now(),
+      }));
 
-    try {
-      await saveIndustrySectors(industryToSave, false); // 全量模式(覆盖)
-      logger.info(`[SectorStocks] 已保存 ${industryData.length} 个行业板块数据到 IndexedDB`);
-    } catch (error) {
-      logger.error('[SectorStocks] 保存行业板块数据失败:', error);
+      try {
+        await saveIndustrySectors(industryToSave, false);
+        logger.info(`[SectorStocks] 已保存 ${industryData.length} 个行业板块数据到 IndexedDB`);
+      } catch (error) {
+        logger.error('[SectorStocks] 保存行业板块数据失败:', error);
+      }
     }
-  }
 
-  // 如果已取消,不再继续获取概念板块
-  if (signal?.aborted) {
-    logger.info(
-      `[SectorStocks] 全量获取已取消(行业阶段)。行业已保存: ${industryData.length}, 失败: ${newFailed.length}`
-    );
+    if (signal?.aborted) {
+      logger.info(
+        `[SectorStocks] 全量获取已取消(行业阶段)。行业已保存: ${industryData.length}, 失败: ${newFailed.length}`
+      );
 
-    return {
-      industry: industryData,
-      concept: [], // 概念板块还未开始获取
-      failed: newFailed,
-    };
+      return {
+        industry: industryData,
+        concept: [],
+        failed: newFailed,
+      };
+    }
   }
 
   // 3. 串行获取概念板块成分股
-  for (const sector of conceptBasics) {
-    if (signal?.aborted) {
-      logger.info('[SectorStocks] 获取已被用户取消');
-      break;
-    }
-    updateProgress(`正在获取概念: ${sector.name}`);
-    try {
-      const stocks = await fetchAllStocksForSector(sector.code, 'concept', signal);
-      conceptData.push({
-        sectorCode: sector.code,
-        sectorName: sector.name,
-        stocks,
-      });
-    } catch (error: any) {
-      if (error.name === 'AbortError') {
+  if (fetchConcept) {
+    for (const sector of conceptBasics) {
+      if (signal?.aborted) {
         logger.info('[SectorStocks] 获取已被用户取消');
-        break; // 跳出循环，执行后续的保存逻辑
+        break;
       }
-      // 如果是因为total过大而跳过板块，记录为特殊失败类型
-      if (error.message?.startsWith('SKIP_SECTOR_TOTAL_EXCEEDED')) {
-        const total = error.message.split(':')[1];
-        logger.warn(`[SectorStocks] 概念板块 ${sector.name} 因成分股数量(${total})超过500而被跳过`);
-        newFailed.push({
+      updateProgress(`正在获取概念: ${sector.name}`);
+      try {
+        const stocks = await fetchAllStocksForSector(sector.code, 'concept', signal);
+        conceptData.push({
           sectorCode: sector.code,
           sectorName: sector.name,
-          sectorType: 'concept',
-          error: { type: 'SKIPPED', reason: `成分股数量(${total})超过500` },
+          stocks,
         });
-      } else {
-        logger.warn(`[SectorStocks] 概念板块 ${sector.name} 获取失败，已记录`);
-        newFailed.push({
-          sectorCode: sector.code,
-          sectorName: sector.name,
-          sectorType: 'concept',
-          error,
-        });
+      } catch (error: any) {
+        if (error.name === 'AbortError') {
+          logger.info('[SectorStocks] 获取已被用户取消');
+          break;
+        }
+        if (error.message?.startsWith('SKIP_SECTOR_TOTAL_EXCEEDED')) {
+          const total = error.message.split(':')[1];
+          logger.warn(`[SectorStocks] 概念板块 ${sector.name} 因成分股数量(${total})超过500而被跳过`);
+          newFailed.push({
+            sectorCode: sector.code,
+            sectorName: sector.name,
+            sectorType: 'concept',
+            error: { type: 'SKIPPED', reason: `成分股数量(${total})超过500` },
+          });
+        } else {
+          logger.warn(`[SectorStocks] 概念板块 ${sector.name} 获取失败，已记录`);
+          newFailed.push({
+            sectorCode: sector.code,
+            sectorName: sector.name,
+            sectorType: 'concept',
+            error,
+          });
+        }
+      }
+    }
+
+    if (signal?.aborted && conceptData.length > 0) {
+      const conceptToSave: SectorWithStocks[] = conceptData.map((item) => ({
+        code: item.sectorCode,
+        name: item.sectorName,
+        children: item.stocks,
+        total: item.stocks.length,
+        savedAt: Date.now(),
+      }));
+
+      try {
+        await saveConceptSectors(conceptToSave, true);
+        logger.info(`[SectorStocks] 已保存 ${conceptData.length} 个概念板块数据到 IndexedDB`);
+      } catch (error) {
+        logger.error('[SectorStocks] 保存概念板块数据失败:', error);
       }
     }
   }
 
-  // 如果已取消,保存已获取的概念板块数据
-  if (signal?.aborted && conceptData.length > 0) {
-    const conceptToSave: SectorWithStocks[] = conceptData.map((item) => ({
-      code: item.sectorCode,
-      name: item.sectorName,
-      children: item.stocks,
-      total: item.stocks.length,
-      savedAt: Date.now(),
-    }));
-
-    try {
-      await saveConceptSectors(conceptToSave, true); // 增量模式
-      logger.info(`[SectorStocks] 已保存 ${conceptData.length} 个概念板块数据到 IndexedDB`);
-    } catch (error) {
-      logger.error('[SectorStocks] 保存概念板块数据失败:', error);
-    }
-  }
-
-  // 4. 保存缓存到 IndexedDB(仅在全量获取且无失败时更新完整缓存)
+  // 4. 保存缓存到 IndexedDB（仅当前 scope 且无失败时覆盖对应 store）
   if (failedSectors.length === 0 && newFailed.length === 0) {
-    const industryToSave: SectorWithStocks[] = industryData.map((item) => ({
-      code: item.sectorCode,
-      name: item.sectorName,
-      children: item.stocks,
-      total: item.stocks.length, // 新增:记录总数
-      savedAt: Date.now(),
-    }));
+    const saveTasks: Promise<void>[] = [];
 
-    const conceptToSave: SectorWithStocks[] = conceptData.map((item) => ({
-      code: item.sectorCode,
-      name: item.sectorName,
-      children: item.stocks,
-      total: item.stocks.length, // 新增:记录总数
-      savedAt: Date.now(),
-    }));
+    if (fetchIndustry) {
+      const industryToSave: SectorWithStocks[] = industryData.map((item) => ({
+        code: item.sectorCode,
+        name: item.sectorName,
+        children: item.stocks,
+        total: item.stocks.length,
+        savedAt: Date.now(),
+      }));
+      saveTasks.push(saveIndustrySectors(industryToSave));
+    }
+
+    if (fetchConcept) {
+      const conceptToSave: SectorWithStocks[] = conceptData.map((item) => ({
+        code: item.sectorCode,
+        name: item.sectorName,
+        children: item.stocks,
+        total: item.stocks.length,
+        savedAt: Date.now(),
+      }));
+      saveTasks.push(saveConceptSectors(conceptToSave));
+    }
 
     try {
-      await Promise.all([saveIndustrySectors(industryToSave), saveConceptSectors(conceptToSave)]);
-      logger.info('[SectorStocks] 数据已成功存入 IndexedDB');
+      await Promise.all(saveTasks);
+      logger.info(`[SectorStocks] 数据已成功存入 IndexedDB (scope=${scope})`);
     } catch (error) {
       logger.error('[SectorStocks] 存入 IndexedDB 失败:', error);
     }
   }
 
   logger.info(
-    `[SectorStocks] 获取完成。成功: ${completedCount - newFailed.length}, 失败: ${newFailed.length}`
+    `[SectorStocks] 获取完成(scope=${scope})。成功: ${completedCount - newFailed.length}, 失败: ${newFailed.length}`
   );
   return { industry: industryData, concept: conceptData, failed: newFailed };
 }
@@ -432,26 +491,37 @@ function formatCachedDataItem(s: SectorWithStocks): SectorFullData {
 }
 
 /**
- * 增量获取所有板块成分股(只获取缺失或不完整的板块)
+ * 增量获取板块成分股(只获取缺失或不完整的板块)
  * @param onProgress 进度回调
  * @param signal AbortSignal 用于取消请求
+ * @param scope 获取范围：全部 / 仅行业 / 仅概念
  */
 export async function fetchRemainingSectorsStocks(
   onProgress?: (progress: FetchProgress) => void,
-  signal?: AbortSignal
+  signal?: AbortSignal,
+  scope: SectorFetchScope = 'all'
 ): Promise<{
   industry: SectorFullData[];
   concept: SectorFullData[];
   failed: FailedSector[];
 }> {
-  logger.info('[SectorStocks] 开始增量获取模式');
+  const fetchIndustry = scope === 'all' || scope === 'industry';
+  const fetchConcept = scope === 'all' || scope === 'concept';
 
-  // 1. 获取所有板块基础信息
-  await throttleRequest(signal);
-  const industryBasics = await getUnifiedIndustryBasic();
+  logger.info(`[SectorStocks] 开始增量获取模式 (scope=${scope})`);
 
-  await throttleRequest(signal);
-  const conceptBasics = await getUnifiedConceptBasic();
+  let industryBasics: IndustrySectorBasicInfo[] = [];
+  let conceptBasics: ConceptSectorBasicInfo[] = [];
+
+  // 1. 按 scope 获取板块基础信息
+  if (fetchIndustry) {
+    await throttleRequest(signal);
+    industryBasics = await getUnifiedIndustryBasic();
+  }
+  if (fetchConcept) {
+    await throttleRequest(signal);
+    conceptBasics = filterConceptBasicsForFetch(await getUnifiedConceptBasic());
+  }
 
   // 2. 从 IndexedDB 读取已缓存的数据
   const [cachedIndustry, cachedConcept] = await Promise.all([
@@ -460,22 +530,30 @@ export async function fetchRemainingSectorsStocks(
   ]);
 
   // 3. 筛选出需要获取的板块(未缓存或不完整)
-  const industryToFetch = await getIncompleteSectors(industryBasics, cachedIndustry, 'industry');
-  const conceptToFetch = await getIncompleteSectors(conceptBasics, cachedConcept, 'concept');
+  const industryToFetch = fetchIndustry
+    ? await getIncompleteSectors(industryBasics, cachedIndustry, 'industry')
+    : [];
+  const conceptToFetch = fetchConcept
+    ? await getIncompleteSectors(conceptBasics, cachedConcept, 'concept')
+    : [];
 
-  logger.info(
-    `[SectorStocks] 需要获取的行业板块: ${industryToFetch.length}/${industryBasics.length}`
-  );
-  logger.info(
-    `[SectorStocks] 需要获取的概念板块: ${conceptToFetch.length}/${conceptBasics.length}`
-  );
+  if (fetchIndustry) {
+    logger.info(
+      `[SectorStocks] 需要获取的行业板块: ${industryToFetch.length}/${industryBasics.length}`
+    );
+  }
+  if (fetchConcept) {
+    logger.info(
+      `[SectorStocks] 需要获取的概念板块: ${conceptToFetch.length}/${conceptBasics.length}`
+    );
+  }
 
-  // 如果所有板块都已完整,直接返回缓存数据
+  // 如果范围内板块都已完整,直接返回缓存数据
   if (industryToFetch.length === 0 && conceptToFetch.length === 0) {
-    logger.info('[SectorStocks] 所有板块数据已完整,无需获取');
+    logger.info('[SectorStocks] 范围内板块数据已完整,无需获取');
     return {
-      industry: formatCachedData(cachedIndustry),
-      concept: formatCachedData(cachedConcept),
+      industry: fetchIndustry ? formatCachedData(cachedIndustry) : [],
+      concept: fetchConcept ? formatCachedData(cachedConcept) : [],
       failed: [],
     };
   }
@@ -489,7 +567,7 @@ export async function fetchRemainingSectorsStocks(
 
   const updateProgress = (message: string) => {
     completedCount++;
-    const percent = Math.round((completedCount / totalSectors) * 100);
+    const percent = totalSectors > 0 ? Math.round((completedCount / totalSectors) * 100) : 100;
     onProgress?.({
       current: completedCount,
       total: totalSectors,
@@ -499,139 +577,139 @@ export async function fetchRemainingSectorsStocks(
   };
 
   // 获取行业板块
-  for (const sector of industryToFetch) {
-    if (signal?.aborted) {
-      logger.info('[SectorStocks] 获取已被用户取消');
-      break;
-    }
-    updateProgress(`正在获取行业: ${sector.name}`);
-    try {
-      const stocks = await fetchAllStocksForSector(sector.code, 'industry', signal);
-      industryData.push({
-        sectorCode: sector.code,
-        sectorName: sector.name,
-        stocks,
-      });
-    } catch (error: any) {
-      if (error.name === 'AbortError') {
+  if (fetchIndustry) {
+    for (const sector of industryToFetch) {
+      if (signal?.aborted) {
         logger.info('[SectorStocks] 获取已被用户取消');
-        break; // 跳出循环，执行后续的保存逻辑
+        break;
       }
-      // 如果是因为total过大而跳过板块，记录为特殊失败类型
-      if (error.message?.startsWith('SKIP_SECTOR_TOTAL_EXCEEDED')) {
-        const total = error.message.split(':')[1];
-        logger.warn(`[SectorStocks] 行业板块 ${sector.name} 因成分股数量(${total})超过500而被跳过`);
-        newFailed.push({
+      updateProgress(`正在获取行业: ${sector.name}`);
+      try {
+        const stocks = await fetchAllStocksForSector(sector.code, 'industry', signal);
+        industryData.push({
           sectorCode: sector.code,
           sectorName: sector.name,
-          sectorType: 'industry',
-          error: { type: 'SKIPPED', reason: `成分股数量(${total})超过500` },
+          stocks,
         });
-      } else {
-        logger.warn(`[SectorStocks] 行业板块 ${sector.name} 获取失败`);
-        newFailed.push({
-          sectorCode: sector.code,
-          sectorName: sector.name,
-          sectorType: 'industry',
-          error,
-        });
+      } catch (error: any) {
+        if (error.name === 'AbortError') {
+          logger.info('[SectorStocks] 获取已被用户取消');
+          break;
+        }
+        if (error.message?.startsWith('SKIP_SECTOR_TOTAL_EXCEEDED')) {
+          const total = error.message.split(':')[1];
+          logger.warn(`[SectorStocks] 行业板块 ${sector.name} 因成分股数量(${total})超过500而被跳过`);
+          newFailed.push({
+            sectorCode: sector.code,
+            sectorName: sector.name,
+            sectorType: 'industry',
+            error: { type: 'SKIPPED', reason: `成分股数量(${total})超过500` },
+          });
+        } else {
+          logger.warn(`[SectorStocks] 行业板块 ${sector.name} 获取失败`);
+          newFailed.push({
+            sectorCode: sector.code,
+            sectorName: sector.name,
+            sectorType: 'industry',
+            error,
+          });
+        }
       }
     }
-  }
 
-  // 如果已取消,保存已获取的行业板块数据
-  if (signal?.aborted && industryData.length > 0) {
-    const industryToSave: SectorWithStocks[] = industryData.map((item) => ({
-      code: item.sectorCode,
-      name: item.sectorName,
-      children: item.stocks,
-      total: item.stocks.length,
-      savedAt: Date.now(),
-    }));
+    if (signal?.aborted && industryData.length > 0) {
+      const industryToSave: SectorWithStocks[] = industryData.map((item) => ({
+        code: item.sectorCode,
+        name: item.sectorName,
+        children: item.stocks,
+        total: item.stocks.length,
+        savedAt: Date.now(),
+      }));
 
-    try {
-      await saveIndustrySectors(industryToSave, true); // 增量模式
-      logger.info(`[SectorStocks] 已保存 ${industryData.length} 个行业板块数据到 IndexedDB`);
-    } catch (error) {
-      logger.error('[SectorStocks] 保存行业板块数据失败:', error);
+      try {
+        await saveIndustrySectors(industryToSave, true);
+        logger.info(`[SectorStocks] 已保存 ${industryData.length} 个行业板块数据到 IndexedDB`);
+      } catch (error) {
+        logger.error('[SectorStocks] 保存行业板块数据失败:', error);
+      }
     }
-  }
 
-  // 如果已取消,不再继续获取概念板块
-  if (signal?.aborted) {
-    const mergedIndustry = mergeSectorData(cachedIndustry, industryData);
-    logger.info(
-      `[SectorStocks] 增量获取已取消。已保存: ${industryData.length}, 失败: ${newFailed.length}`
-    );
+    if (signal?.aborted) {
+      const mergedIndustry = mergeSectorData(cachedIndustry, industryData);
+      logger.info(
+        `[SectorStocks] 增量获取已取消。已保存: ${industryData.length}, 失败: ${newFailed.length}`
+      );
 
-    return {
-      industry: mergedIndustry,
-      concept: formatCachedData(cachedConcept), // 返回原始缓存的概念数据
-      failed: newFailed,
-    };
+      return {
+        industry: mergedIndustry,
+        concept: fetchConcept ? formatCachedData(cachedConcept) : [],
+        failed: newFailed,
+      };
+    }
   }
 
   // 获取概念板块
-  for (const sector of conceptToFetch) {
-    if (signal?.aborted) {
-      logger.info('[SectorStocks] 获取已被用户取消');
-      break;
-    }
-    updateProgress(`正在获取概念: ${sector.name}`);
-    try {
-      const stocks = await fetchAllStocksForSector(sector.code, 'concept', signal);
-      conceptData.push({
-        sectorCode: sector.code,
-        sectorName: sector.name,
-        stocks,
-      });
-    } catch (error: any) {
-      if (error.name === 'AbortError') {
+  if (fetchConcept) {
+    for (const sector of conceptToFetch) {
+      if (signal?.aborted) {
         logger.info('[SectorStocks] 获取已被用户取消');
-        break; // 跳出循环，执行后续的保存逻辑
+        break;
       }
-      // 如果是因为total过大而跳过板块，记录为特殊失败类型
-      if (error.message?.startsWith('SKIP_SECTOR_TOTAL_EXCEEDED')) {
-        const total = error.message.split(':')[1];
-        logger.warn(`[SectorStocks] 概念板块 ${sector.name} 因成分股数量(${total})超过500而被跳过`);
-        newFailed.push({
+      updateProgress(`正在获取概念: ${sector.name}`);
+      try {
+        const stocks = await fetchAllStocksForSector(sector.code, 'concept', signal);
+        conceptData.push({
           sectorCode: sector.code,
           sectorName: sector.name,
-          sectorType: 'concept',
-          error: { type: 'SKIPPED', reason: `成分股数量(${total})超过500` },
+          stocks,
         });
-      } else {
-        logger.warn(`[SectorStocks] 概念板块 ${sector.name} 获取失败`);
-        newFailed.push({
-          sectorCode: sector.code,
-          sectorName: sector.name,
-          sectorType: 'concept',
-          error,
-        });
+      } catch (error: any) {
+        if (error.name === 'AbortError') {
+          logger.info('[SectorStocks] 获取已被用户取消');
+          break;
+        }
+        if (error.message?.startsWith('SKIP_SECTOR_TOTAL_EXCEEDED')) {
+          const total = error.message.split(':')[1];
+          logger.warn(`[SectorStocks] 概念板块 ${sector.name} 因成分股数量(${total})超过500而被跳过`);
+          newFailed.push({
+            sectorCode: sector.code,
+            sectorName: sector.name,
+            sectorType: 'concept',
+            error: { type: 'SKIPPED', reason: `成分股数量(${total})超过500` },
+          });
+        } else {
+          logger.warn(`[SectorStocks] 概念板块 ${sector.name} 获取失败`);
+          newFailed.push({
+            sectorCode: sector.code,
+            sectorName: sector.name,
+            sectorType: 'concept',
+            error,
+          });
+        }
+      }
+    }
+
+    if (signal?.aborted && conceptData.length > 0) {
+      const conceptToSave: SectorWithStocks[] = conceptData.map((item) => ({
+        code: item.sectorCode,
+        name: item.sectorName,
+        children: item.stocks,
+        total: item.stocks.length,
+        savedAt: Date.now(),
+      }));
+
+      try {
+        await saveConceptSectors(conceptToSave, true);
+        logger.info(`[SectorStocks] 已保存 ${conceptData.length} 个概念板块数据到 IndexedDB`);
+      } catch (error) {
+        logger.error('[SectorStocks] 保存概念板块数据失败:', error);
       }
     }
   }
 
-  // 如果已取消,保存已获取的概念板块数据
-  if (signal?.aborted && conceptData.length > 0) {
-    const conceptToSave: SectorWithStocks[] = conceptData.map((item) => ({
-      code: item.sectorCode,
-      name: item.sectorName,
-      children: item.stocks,
-      total: item.stocks.length,
-      savedAt: Date.now(),
-    }));
-
-    try {
-      await saveConceptSectors(conceptToSave, true); // 增量模式
-      logger.info(`[SectorStocks] 已保存 ${conceptData.length} 个概念板块数据到 IndexedDB`);
-    } catch (error) {
-      logger.error('[SectorStocks] 保存概念板块数据失败:', error);
-    }
-  }
-
-  // 5. 增量保存到 IndexedDB
-  if (industryData.length > 0 || conceptData.length > 0) {
+  // 5. 增量保存到 IndexedDB（只写本次拉到的类型）
+  const saveTasks: Promise<void>[] = [];
+  if (industryData.length > 0) {
     const industryToSave: SectorWithStocks[] = industryData.map((item) => ({
       code: item.sectorCode,
       name: item.sectorName,
@@ -639,7 +717,9 @@ export async function fetchRemainingSectorsStocks(
       total: item.stocks.length,
       savedAt: Date.now(),
     }));
-
+    saveTasks.push(saveIndustrySectors(industryToSave, true));
+  }
+  if (conceptData.length > 0) {
     const conceptToSave: SectorWithStocks[] = conceptData.map((item) => ({
       code: item.sectorCode,
       name: item.sectorName,
@@ -647,12 +727,12 @@ export async function fetchRemainingSectorsStocks(
       total: item.stocks.length,
       savedAt: Date.now(),
     }));
+    saveTasks.push(saveConceptSectors(conceptToSave, true));
+  }
 
+  if (saveTasks.length > 0) {
     try {
-      await Promise.all([
-        saveIndustrySectors(industryToSave, true), // 增量模式
-        saveConceptSectors(conceptToSave, true), // 增量模式
-      ]);
+      await Promise.all(saveTasks);
       logger.info('[SectorStocks] 增量数据已成功存入 IndexedDB');
     } catch (error) {
       logger.error('[SectorStocks] 存入 IndexedDB 失败:', error);
@@ -660,11 +740,11 @@ export async function fetchRemainingSectorsStocks(
   }
 
   // 6. 合并缓存数据和新获取的数据
-  const mergedIndustry = mergeSectorData(cachedIndustry, industryData);
-  const mergedConcept = mergeSectorData(cachedConcept, conceptData);
+  const mergedIndustry = fetchIndustry ? mergeSectorData(cachedIndustry, industryData) : [];
+  const mergedConcept = fetchConcept ? mergeSectorData(cachedConcept, conceptData) : [];
 
   logger.info(
-    `[SectorStocks] 增量获取完成。成功: ${completedCount - newFailed.length}, 失败: ${
+    `[SectorStocks] 增量获取完成(scope=${scope})。成功: ${completedCount - newFailed.length}, 失败: ${
       newFailed.length
     }`
   );

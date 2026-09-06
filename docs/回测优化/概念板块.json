@@ -1,0 +1,1892 @@
+[
+    {
+        "code": "BK1629",
+        "name": "AI应用",
+        "mainNetInflow": 8555132416
+    },
+    {
+        "code": "BK1111",
+        "name": "AIGC概念",
+        "mainNetInflow": 5812803328
+    },
+    {
+        "code": "BK1126",
+        "name": "ChatGPT概念",
+        "mainNetInflow": 4644528384
+    },
+    {
+        "code": "BK1151",
+        "name": "短剧互动游戏",
+        "mainNetInflow": 4365976576
+    },
+    {
+        "code": "BK0637",
+        "name": "互联网金融",
+        "mainNetInflow": 4295299584
+    },
+    {
+        "code": "BK1654",
+        "name": "文娱消费",
+        "mainNetInflow": 4200773888
+    },
+    {
+        "code": "BK0809",
+        "name": "AI智能体",
+        "mainNetInflow": 4148445952
+    },
+    {
+        "code": "BK1110",
+        "name": "Web3.0",
+        "mainNetInflow": 4093357424
+    },
+    {
+        "code": "BK1055",
+        "name": "虚拟数字人",
+        "mainNetInflow": 4091332608
+    },
+    {
+        "code": "BK1153",
+        "name": "多模态AI",
+        "mainNetInflow": 3926974464
+    },
+    {
+        "code": "BK1115",
+        "name": "跨境电商",
+        "mainNetInflow": 3676300800
+    },
+    {
+        "code": "BK1135",
+        "name": "数据要素",
+        "mainNetInflow": 3033512704
+    },
+    {
+        "code": "BK0509",
+        "name": "网络游戏",
+        "mainNetInflow": 2990739712
+    },
+    {
+        "code": "BK1172",
+        "name": "AI语料",
+        "mainNetInflow": 2906865488
+    },
+    {
+        "code": "BK1071",
+        "name": "跨境支付",
+        "mainNetInflow": 2870884864
+    },
+    {
+        "code": "BK0972",
+        "name": "快手概念",
+        "mainNetInflow": 2622418336
+    },
+    {
+        "code": "BK1118",
+        "name": "数据确权",
+        "mainNetInflow": 2564964768
+    },
+    {
+        "code": "BK0662",
+        "name": "在线教育",
+        "mainNetInflow": 2442530816
+    },
+    {
+        "code": "BK1183",
+        "name": "谷子经济",
+        "mainNetInflow": 2430740304
+    },
+    {
+        "code": "BK0835",
+        "name": "独角兽",
+        "mainNetInflow": 2345573376
+    },
+    {
+        "code": "BK0729",
+        "name": "船舶制造",
+        "mainNetInflow": 2272217648
+    },
+    {
+        "code": "BK1187",
+        "name": "小红书概念",
+        "mainNetInflow": 2260124416
+    },
+    {
+        "code": "BK0940",
+        "name": "网红经济",
+        "mainNetInflow": 2250354688
+    },
+    {
+        "code": "BK0830",
+        "name": "区块链",
+        "mainNetInflow": 2218390528
+    },
+    {
+        "code": "BK0883",
+        "name": "数字货币",
+        "mainNetInflow": 2194863104
+    },
+    {
+        "code": "BK0845",
+        "name": "百度概念",
+        "mainNetInflow": 2071193856
+    },
+    {
+        "code": "BK1671",
+        "name": "超跌股",
+        "mainNetInflow": 1916268832
+    },
+    {
+        "code": "BK0834",
+        "name": "乡村振兴",
+        "mainNetInflow": 1898472448
+    },
+    {
+        "code": "BK0447",
+        "name": "互联网服务",
+        "mainNetInflow": 1832658432
+    },
+    {
+        "code": "BK0953",
+        "name": "鸿蒙概念",
+        "mainNetInflow": 1811671808
+    },
+    {
+        "code": "BK0665",
+        "name": "电商概念",
+        "mainNetInflow": 1792200448
+    },
+    {
+        "code": "BK0937",
+        "name": "蚂蚁金服概念",
+        "mainNetInflow": 1626371840
+    },
+    {
+        "code": "BK0882",
+        "name": "猪肉概念",
+        "mainNetInflow": 1600877424
+    },
+    {
+        "code": "BK0715",
+        "name": "航母概念",
+        "mainNetInflow": 1589654272
+    },
+    {
+        "code": "BK0853",
+        "name": "电子竞技",
+        "mainNetInflow": 1449032448
+    },
+    {
+        "code": "BK0477",
+        "name": "酿酒概念",
+        "mainNetInflow": 1327670352
+    },
+    {
+        "code": "BK1653",
+        "name": "味蕾经济",
+        "mainNetInflow": 1305479936
+    },
+    {
+        "code": "BK0896",
+        "name": "白酒",
+        "mainNetInflow": 1301963728
+    },
+    {
+        "code": "BK1022",
+        "name": "职业教育",
+        "mainNetInflow": 1276478400
+    },
+    {
+        "code": "BK1169",
+        "name": "Kimi概念",
+        "mainNetInflow": 1260786544
+    },
+    {
+        "code": "BK1075",
+        "name": "电子身份证",
+        "mainNetInflow": 1251396400
+    },
+    {
+        "code": "BK1009",
+        "name": "元宇宙概念",
+        "mainNetInflow": 1205859584
+    },
+    {
+        "code": "BK1182",
+        "name": "智谱AI概念",
+        "mainNetInflow": 1199402496
+    },
+    {
+        "code": "BK0923",
+        "name": "抖音概念(字节概念)",
+        "mainNetInflow": 1009875712
+    },
+    {
+        "code": "BK1658",
+        "name": "创新医疗服务",
+        "mainNetInflow": 916275056
+    },
+    {
+        "code": "BK1047",
+        "name": "数据安全",
+        "mainNetInflow": 840576720
+    },
+    {
+        "code": "BK0875",
+        "name": "ETC",
+        "mainNetInflow": 815827472
+    },
+    {
+        "code": "BK0888",
+        "name": "农业种植",
+        "mainNetInflow": 813800512
+    },
+    {
+        "code": "BK0847",
+        "name": "影视概念",
+        "mainNetInflow": 770519792
+    },
+    {
+        "code": "BK0696",
+        "name": "国产软件",
+        "mainNetInflow": 753212672
+    },
+    {
+        "code": "BK1150",
+        "name": "新型工业化",
+        "mainNetInflow": 702091264
+    },
+    {
+        "code": "BK0822",
+        "name": "租售同权",
+        "mainNetInflow": 694767104
+    },
+    {
+        "code": "BK1190",
+        "name": "虚拟机器人",
+        "mainNetInflow": 668468816
+    },
+    {
+        "code": "BK1655",
+        "name": "零售概念",
+        "mainNetInflow": 649353792
+    },
+    {
+        "code": "BK1092",
+        "name": "麒麟电池",
+        "mainNetInflow": 618737776
+    },
+    {
+        "code": "BK1086",
+        "name": "粮食概念",
+        "mainNetInflow": 608871888
+    },
+    {
+        "code": "BK1025",
+        "name": "预制菜概念",
+        "mainNetInflow": 600257456
+    },
+    {
+        "code": "BK1186",
+        "name": "首发经济",
+        "mainNetInflow": 579725840
+    },
+    {
+        "code": "BK0839",
+        "name": "知识产权",
+        "mainNetInflow": 572823472
+    },
+    {
+        "code": "BK0886",
+        "name": "智慧政务",
+        "mainNetInflow": 569444288
+    },
+    {
+        "code": "BK1174",
+        "name": "合成生物",
+        "mainNetInflow": 555861536
+    },
+    {
+        "code": "BK0907",
+        "name": "转基因",
+        "mainNetInflow": 519636816
+    },
+    {
+        "code": "BK0933",
+        "name": "退税商店",
+        "mainNetInflow": 486524601
+    },
+    {
+        "code": "BK1147",
+        "name": "SPD概念",
+        "mainNetInflow": 485456652
+    },
+    {
+        "code": "BK1001",
+        "name": "内贸流通",
+        "mainNetInflow": 465311760
+    },
+    {
+        "code": "BK0721",
+        "name": "PPP模式",
+        "mainNetInflow": 444092064
+    },
+    {
+        "code": "BK0692",
+        "name": "旅游概念",
+        "mainNetInflow": 410814080
+    },
+    {
+        "code": "BK0808",
+        "name": "军民融合",
+        "mainNetInflow": 400192256
+    },
+    {
+        "code": "BK1073",
+        "name": "啤酒概念",
+        "mainNetInflow": 395448288
+    },
+    {
+        "code": "BK0887",
+        "name": "鸡肉概念",
+        "mainNetInflow": 391972368
+    },
+    {
+        "code": "BK0954",
+        "name": "盲盒经济",
+        "mainNetInflow": 388534960
+    },
+    {
+        "code": "BK0597",
+        "name": "水利建设",
+        "mainNetInflow": 386487632
+    },
+    {
+        "code": "BK0632",
+        "name": "土地流转",
+        "mainNetInflow": 355126992
+    },
+    {
+        "code": "BK1029",
+        "name": "汽车整车",
+        "mainNetInflow": 354930272
+    },
+    {
+        "code": "BK0623",
+        "name": "海洋经济",
+        "mainNetInflow": 344153344
+    },
+    {
+        "code": "BK0924",
+        "name": "地摊经济",
+        "mainNetInflow": 340438960
+    },
+    {
+        "code": "BK1095",
+        "name": "钒电池",
+        "mainNetInflow": 330625184
+    },
+    {
+        "code": "BK1133",
+        "name": "ERP概念",
+        "mainNetInflow": 322852304
+    },
+    {
+        "code": "BK0534",
+        "name": "成渝特区",
+        "mainNetInflow": 322352944
+    },
+    {
+        "code": "BK0957",
+        "name": "拼多多概念",
+        "mainNetInflow": 305524896
+    },
+    {
+        "code": "BK1109",
+        "name": "供销社概念",
+        "mainNetInflow": 282285744
+    },
+    {
+        "code": "BK0693",
+        "name": "基因测序",
+        "mainNetInflow": 264370608
+    },
+    {
+        "code": "BK0927",
+        "name": "免税概念",
+        "mainNetInflow": 256987184
+    },
+    {
+        "code": "BK1068",
+        "name": "净水概念",
+        "mainNetInflow": 253569840
+    },
+    {
+        "code": "BK1176",
+        "name": "财税数字化",
+        "mainNetInflow": 228382912
+    },
+    {
+        "code": "BK0958",
+        "name": "虚拟电厂",
+        "mainNetInflow": 224901184
+    },
+    {
+        "code": "BK0945",
+        "name": "装配建筑",
+        "mainNetInflow": 222535936
+    },
+    {
+        "code": "BK1087",
+        "name": "超超临界发电",
+        "mainNetInflow": 221021680
+    },
+    {
+        "code": "BK0892",
+        "name": "乳业",
+        "mainNetInflow": 212720080
+    },
+    {
+        "code": "BK0838",
+        "name": "东北振兴",
+        "mainNetInflow": 183153136
+    },
+    {
+        "code": "BK1179",
+        "name": "房屋检测",
+        "mainNetInflow": 175950096
+    },
+    {
+        "code": "BK0965",
+        "name": "社区团购",
+        "mainNetInflow": 164420816
+    },
+    {
+        "code": "BK1079",
+        "name": "户外露营",
+        "mainNetInflow": 162925697
+    },
+    {
+        "code": "BK0967",
+        "name": "水产概念",
+        "mainNetInflow": 159225648
+    },
+    {
+        "code": "BK0603",
+        "name": "页岩气",
+        "mainNetInflow": 128733872
+    },
+    {
+        "code": "BK0669",
+        "name": "生态农业",
+        "mainNetInflow": 128296144
+    },
+    {
+        "code": "BK1132",
+        "name": "MLOps概念",
+        "mainNetInflow": 127997090
+    },
+    {
+        "code": "BK0805",
+        "name": "钛白粉概念",
+        "mainNetInflow": 127599760
+    },
+    {
+        "code": "BK1013",
+        "name": "华为欧拉",
+        "mainNetInflow": 125846736
+    },
+    {
+        "code": "BK0485",
+        "name": "旅游酒店",
+        "mainNetInflow": 121584032
+    },
+    {
+        "code": "BK0955",
+        "name": "C2M概念",
+        "mainNetInflow": 111771376
+    },
+    {
+        "code": "BK0653",
+        "name": "养老概念",
+        "mainNetInflow": 111077888
+    },
+    {
+        "code": "BK1077",
+        "name": "统一大市场",
+        "mainNetInflow": 108080560
+    },
+    {
+        "code": "BK0807",
+        "name": "共享经济",
+        "mainNetInflow": 103654012
+    },
+    {
+        "code": "BK0895",
+        "name": "维生素",
+        "mainNetInflow": 96654640
+    },
+    {
+        "code": "BK1066",
+        "name": "民爆概念",
+        "mainNetInflow": 87119536
+    },
+    {
+        "code": "BK1014",
+        "name": "发电机概念",
+        "mainNetInflow": 79689088
+    },
+    {
+        "code": "BK0689",
+        "name": "阿里概念",
+        "mainNetInflow": 75442432
+    },
+    {
+        "code": "BK0733",
+        "name": "包装材料",
+        "mainNetInflow": 74881992
+    },
+    {
+        "code": "BK1143",
+        "name": "空间计算",
+        "mainNetInflow": 68800720
+    },
+    {
+        "code": "BK0664",
+        "name": "婴童概念",
+        "mainNetInflow": 62278224
+    },
+    {
+        "code": "BK0938",
+        "name": "代糖概念",
+        "mainNetInflow": 62035600
+    },
+    {
+        "code": "BK1054",
+        "name": "DRG/DIP",
+        "mainNetInflow": 58872839
+    },
+    {
+        "code": "BK1129",
+        "name": "数字水印",
+        "mainNetInflow": 52336908
+    },
+    {
+        "code": "BK0985",
+        "name": "换电概念",
+        "mainNetInflow": 51733488
+    },
+    {
+        "code": "BK1082",
+        "name": "噪声防治",
+        "mainNetInflow": 50296776
+    },
+    {
+        "code": "BK1185",
+        "name": "冰雪经济",
+        "mainNetInflow": 49275472
+    },
+    {
+        "code": "BK0894",
+        "name": "阿兹海默",
+        "mainNetInflow": 46876048
+    },
+    {
+        "code": "BK0818",
+        "name": "可燃冰",
+        "mainNetInflow": 42224429
+    },
+    {
+        "code": "BK0614",
+        "name": "食品安全",
+        "mainNetInflow": 36628384
+    },
+    {
+        "code": "BK1659",
+        "name": "精准诊断",
+        "mainNetInflow": 30975024
+    },
+    {
+        "code": "BK0959",
+        "name": "数字阅读",
+        "mainNetInflow": 22572000
+    },
+    {
+        "code": "BK0806",
+        "name": "精准医疗",
+        "mainNetInflow": 22197072
+    },
+    {
+        "code": "BK0986",
+        "name": "CAR-T细胞疗法",
+        "mainNetInflow": 21891280
+    },
+    {
+        "code": "BK1130",
+        "name": "时空大数据",
+        "mainNetInflow": 19153584
+    },
+    {
+        "code": "BK1652",
+        "name": "新消费",
+        "mainNetInflow": 18414912
+    },
+    {
+        "code": "BK0993",
+        "name": "宠物经济",
+        "mainNetInflow": 17511856
+    },
+    {
+        "code": "BK0950",
+        "name": "草甘膦",
+        "mainNetInflow": 7797888
+    },
+    {
+        "code": "BK0982",
+        "name": "电子车牌",
+        "mainNetInflow": -4409264
+    },
+    {
+        "code": "BK1074",
+        "name": "托育服务",
+        "mainNetInflow": -6640776
+    },
+    {
+        "code": "BK0979",
+        "name": "低碳冶金",
+        "mainNetInflow": -15443571
+    },
+    {
+        "code": "BK0995",
+        "name": "华为昇腾",
+        "mainNetInflow": -20438240
+    },
+    {
+        "code": "BK0868",
+        "name": "GDR",
+        "mainNetInflow": -24880224
+    },
+    {
+        "code": "BK1649",
+        "name": "油气资源",
+        "mainNetInflow": -29284272
+    },
+    {
+        "code": "BK1116",
+        "name": "抗菌面料",
+        "mainNetInflow": -31980747
+    },
+    {
+        "code": "BK0944",
+        "name": "肝素概念",
+        "mainNetInflow": -32591195
+    },
+    {
+        "code": "BK1656",
+        "name": "特色药",
+        "mainNetInflow": -36058318
+    },
+    {
+        "code": "BK0606",
+        "name": "油气设服",
+        "mainNetInflow": -36241168
+    },
+    {
+        "code": "BK0936",
+        "name": "长寿药",
+        "mainNetInflow": -37408761
+    },
+    {
+        "code": "BK1119",
+        "name": "PLC概念",
+        "mainNetInflow": -44547632
+    },
+    {
+        "code": "BK0872",
+        "name": "青蒿素",
+        "mainNetInflow": -44857752
+    },
+    {
+        "code": "BK0898",
+        "name": "胎压监测",
+        "mainNetInflow": -49389680
+    },
+    {
+        "code": "BK0492",
+        "name": "煤化工概念",
+        "mainNetInflow": -49448144
+    },
+    {
+        "code": "BK0429",
+        "name": "交运设备",
+        "mainNetInflow": -59518416
+    },
+    {
+        "code": "BK1099",
+        "name": "轮毂电机",
+        "mainNetInflow": -60065473
+    },
+    {
+        "code": "BK0914",
+        "name": "医废处理",
+        "mainNetInflow": -60469617
+    },
+    {
+        "code": "BK0698",
+        "name": "免疫治疗",
+        "mainNetInflow": -64150480
+    },
+    {
+        "code": "BK0873",
+        "name": "垃圾分类",
+        "mainNetInflow": -65996128
+    },
+    {
+        "code": "BK0730",
+        "name": "农药兽药",
+        "mainNetInflow": -69933984
+    },
+    {
+        "code": "BK0943",
+        "name": "汽车拆解",
+        "mainNetInflow": -71367546
+    },
+    {
+        "code": "BK0856",
+        "name": "工业大麻",
+        "mainNetInflow": -72615520
+    },
+    {
+        "code": "BK0974",
+        "name": "化妆品概念",
+        "mainNetInflow": -80827120
+    },
+    {
+        "code": "BK1098",
+        "name": "生物质能发电",
+        "mainNetInflow": -97213144
+    },
+    {
+        "code": "BK0470",
+        "name": "造纸印刷",
+        "mainNetInflow": -101777920
+    },
+    {
+        "code": "BK1011",
+        "name": "环氧丙烷",
+        "mainNetInflow": -102327648
+    },
+    {
+        "code": "BK0841",
+        "name": "体外诊断概念",
+        "mainNetInflow": -111837216
+    },
+    {
+        "code": "BK0480",
+        "name": "航天航空",
+        "mainNetInflow": -115848912
+    },
+    {
+        "code": "BK0990",
+        "name": "快递概念",
+        "mainNetInflow": -128303872
+    },
+    {
+        "code": "BK1661",
+        "name": "行业龙头",
+        "mainNetInflow": -131386880
+    },
+    {
+        "code": "BK1056",
+        "name": "幽门螺杆菌概念",
+        "mainNetInflow": -133974944
+    },
+    {
+        "code": "BK1131",
+        "name": "同步磁阻电机",
+        "mainNetInflow": -139091169
+    },
+    {
+        "code": "BK0643",
+        "name": "上海自贸",
+        "mainNetInflow": -140990368
+    },
+    {
+        "code": "BK0983",
+        "name": "核污染防治",
+        "mainNetInflow": -142019840
+    },
+    {
+        "code": "BK1192",
+        "name": "雅下水电概念",
+        "mainNetInflow": -142611280
+    },
+    {
+        "code": "BK0996",
+        "name": "毛发医疗",
+        "mainNetInflow": -143417040
+    },
+    {
+        "code": "BK1070",
+        "name": "土壤修复",
+        "mainNetInflow": -143734112
+    },
+    {
+        "code": "BK1058",
+        "name": "地下管网",
+        "mainNetInflow": -144667520
+    },
+    {
+        "code": "BK1121",
+        "name": "第四代半导体",
+        "mainNetInflow": -147477486
+    },
+    {
+        "code": "BK1181",
+        "name": "并购重组概念",
+        "mainNetInflow": -153773312
+    },
+    {
+        "code": "BK0992",
+        "name": "REITs概念",
+        "mainNetInflow": -160784672
+    },
+    {
+        "code": "BK0676",
+        "name": "独家药品",
+        "mainNetInflow": -163816816
+    },
+    {
+        "code": "BK0843",
+        "name": "天然气",
+        "mainNetInflow": -171931328
+    },
+    {
+        "code": "BK0991",
+        "name": "工程机械概念",
+        "mainNetInflow": -187234960
+    },
+    {
+        "code": "BK1063",
+        "name": "重组蛋白",
+        "mainNetInflow": -196812928
+    },
+    {
+        "code": "BK0708",
+        "name": "体育产业",
+        "mainNetInflow": -197421616
+    },
+    {
+        "code": "BK1103",
+        "name": "熔盐储能",
+        "mainNetInflow": -201885713
+    },
+    {
+        "code": "BK0994",
+        "name": "空间站概念",
+        "mainNetInflow": -202166000
+    },
+    {
+        "code": "BK0656",
+        "name": "智能电视",
+        "mainNetInflow": -215372560
+    },
+    {
+        "code": "BK1061",
+        "name": "数字经济",
+        "mainNetInflow": -234856192
+    },
+    {
+        "code": "BK0556",
+        "name": "移动支付",
+        "mainNetInflow": -243248640
+    },
+    {
+        "code": "BK1076",
+        "name": "建筑节能",
+        "mainNetInflow": -244156496
+    },
+    {
+        "code": "BK0870",
+        "name": "单抗概念",
+        "mainNetInflow": -246811280
+    },
+    {
+        "code": "BK0946",
+        "name": "EDA概念",
+        "mainNetInflow": -255589616
+    },
+    {
+        "code": "BK0855",
+        "name": "纳米银",
+        "mainNetInflow": -257292192
+    },
+    {
+        "code": "BK1026",
+        "name": "调味品概念",
+        "mainNetInflow": -258969936
+    },
+    {
+        "code": "BK0622",
+        "name": "地热能",
+        "mainNetInflow": -261520159
+    },
+    {
+        "code": "BK0677",
+        "name": "粤港自贸",
+        "mainNetInflow": -263791216
+    },
+    {
+        "code": "BK1102",
+        "name": "空气能热泵",
+        "mainNetInflow": -274606176
+    },
+    {
+        "code": "BK0909",
+        "name": "降解塑料",
+        "mainNetInflow": -282360528
+    },
+    {
+        "code": "BK1006",
+        "name": "碳基材料",
+        "mainNetInflow": -286665568
+    },
+    {
+        "code": "BK1024",
+        "name": "绿色电力",
+        "mainNetInflow": -287244800
+    },
+    {
+        "code": "BK0825",
+        "name": "新零售",
+        "mainNetInflow": -290071040
+    },
+    {
+        "code": "BK1003",
+        "name": "抽水蓄能",
+        "mainNetInflow": -298060448
+    },
+    {
+        "code": "BK1093",
+        "name": "汽车一体化压铸",
+        "mainNetInflow": -341832192
+    },
+    {
+        "code": "BK1049",
+        "name": "EDR概念",
+        "mainNetInflow": -348102368
+    },
+    {
+        "code": "BK1193",
+        "name": "海南自贸",
+        "mainNetInflow": -351261840
+    },
+    {
+        "code": "BK0601",
+        "name": "海工装备",
+        "mainNetInflow": -384291840
+    },
+    {
+        "code": "BK0932",
+        "name": "尾气治理",
+        "mainNetInflow": -408194688
+    },
+    {
+        "code": "BK0866",
+        "name": "人造肉",
+        "mainNetInflow": -408564208
+    },
+    {
+        "code": "BK0425",
+        "name": "工程建设",
+        "mainNetInflow": -410185296
+    },
+    {
+        "code": "BK0899",
+        "name": "CRO",
+        "mainNetInflow": -424982288
+    },
+    {
+        "code": "BK0988",
+        "name": "钠离子电池",
+        "mainNetInflow": -442122864
+    },
+    {
+        "code": "BK0812",
+        "name": "贬值受益",
+        "mainNetInflow": -447477760
+    },
+    {
+        "code": "BK0984",
+        "name": "华为汽车",
+        "mainNetInflow": -502966224
+    },
+    {
+        "code": "BK1007",
+        "name": "植物照明",
+        "mainNetInflow": -512496976
+    },
+    {
+        "code": "BK0675",
+        "name": "病毒防治",
+        "mainNetInflow": -528181056
+    },
+    {
+        "code": "BK0615",
+        "name": "中药概念",
+        "mainNetInflow": -529117264
+    },
+    {
+        "code": "BK0548",
+        "name": "生物疫苗",
+        "mainNetInflow": -544388944
+    },
+    {
+        "code": "BK1148",
+        "name": "BC电池",
+        "mainNetInflow": -550211760
+    },
+    {
+        "code": "BK0801",
+        "name": "增强现实",
+        "mainNetInflow": -555424112
+    },
+    {
+        "code": "BK0966",
+        "name": "碳交易",
+        "mainNetInflow": -569654784
+    },
+    {
+        "code": "BK1052",
+        "name": "动力电池回收",
+        "mainNetInflow": -579992432
+    },
+    {
+        "code": "BK0939",
+        "name": "辅助生殖",
+        "mainNetInflow": -590988656
+    },
+    {
+        "code": "BK0837",
+        "name": "互联网医疗",
+        "mainNetInflow": -596429152
+    },
+    {
+        "code": "BK0906",
+        "name": "流感",
+        "mainNetInflow": -599790320
+    },
+    {
+        "code": "BK0629",
+        "name": "卫星导航",
+        "mainNetInflow": -600995248
+    },
+    {
+        "code": "BK1080",
+        "name": "新型城镇化",
+        "mainNetInflow": -601721920
+    },
+    {
+        "code": "BK0861",
+        "name": "数字孪生",
+        "mainNetInflow": -613653920
+    },
+    {
+        "code": "BK1078",
+        "name": "肝炎概念",
+        "mainNetInflow": -618901728
+    },
+    {
+        "code": "BK0951",
+        "name": "刀片电池",
+        "mainNetInflow": -619934816
+    },
+    {
+        "code": "BK0699",
+        "name": "全息技术",
+        "mainNetInflow": -632584352
+    },
+    {
+        "code": "BK1113",
+        "name": "复合集流体",
+        "mainNetInflow": -633721584
+    },
+    {
+        "code": "BK1023",
+        "name": "培育钻石",
+        "mainNetInflow": -640802176
+    },
+    {
+        "code": "BK0975",
+        "name": "磁悬浮概念",
+        "mainNetInflow": -655393200
+    },
+    {
+        "code": "BK0814",
+        "name": "大飞机",
+        "mainNetInflow": -686362560
+    },
+    {
+        "code": "BK0592",
+        "name": "铁路基建",
+        "mainNetInflow": -698317296
+    },
+    {
+        "code": "BK0908",
+        "name": "HJT电池",
+        "mainNetInflow": -748987216
+    },
+    {
+        "code": "BK1146",
+        "name": "减肥药",
+        "mainNetInflow": -753252224
+    },
+    {
+        "code": "BK0706",
+        "name": "脑机接口",
+        "mainNetInflow": -756016656
+    },
+    {
+        "code": "BK0949",
+        "name": "氦气概念",
+        "mainNetInflow": -856462272
+    },
+    {
+        "code": "BK1127",
+        "name": "AI芯片",
+        "mainNetInflow": -888840192
+    },
+    {
+        "code": "BK1144",
+        "name": "高压快充",
+        "mainNetInflow": -905093296
+    },
+    {
+        "code": "BK0961",
+        "name": "有机硅概念",
+        "mainNetInflow": -907835952
+    },
+    {
+        "code": "BK1189",
+        "name": "腾讯云",
+        "mainNetInflow": -913049936
+    },
+    {
+        "code": "BK1100",
+        "name": "减速器",
+        "mainNetInflow": -928179632
+    },
+    {
+        "code": "BK0852",
+        "name": "冷链物流",
+        "mainNetInflow": -948382976
+    },
+    {
+        "code": "BK1097",
+        "name": "TOPCon电池",
+        "mainNetInflow": -972059952
+    },
+    {
+        "code": "BK1142",
+        "name": "裸眼3D",
+        "mainNetInflow": -976712240
+    },
+    {
+        "code": "BK0512",
+        "name": "化工原料",
+        "mainNetInflow": -1010788560
+    },
+    {
+        "code": "BK0998",
+        "name": "机器视觉",
+        "mainNetInflow": -1019066368
+    },
+    {
+        "code": "BK1069",
+        "name": "智慧灯杆",
+        "mainNetInflow": -1022627680
+    },
+    {
+        "code": "BK0590",
+        "name": "西部大开发",
+        "mainNetInflow": -1071886080
+    },
+    {
+        "code": "BK0880",
+        "name": "UWB概念",
+        "mainNetInflow": -1087232576
+    },
+    {
+        "code": "BK0889",
+        "name": "医美概念",
+        "mainNetInflow": -1106352976
+    },
+    {
+        "code": "BK0901",
+        "name": "3D摄像头",
+        "mainNetInflow": -1149701648
+    },
+    {
+        "code": "BK1171",
+        "name": "碳纤维",
+        "mainNetInflow": -1149755056
+    },
+    {
+        "code": "BK0577",
+        "name": "核能核电",
+        "mainNetInflow": -1185755392
+    },
+    {
+        "code": "BK1057",
+        "name": "电子纸概念",
+        "mainNetInflow": -1201105744
+    },
+    {
+        "code": "BK0881",
+        "name": "3D玻璃",
+        "mainNetInflow": -1215329776
+    },
+    {
+        "code": "BK1002",
+        "name": "激光雷达",
+        "mainNetInflow": -1233600848
+    },
+    {
+        "code": "BK1094",
+        "name": "钙钛矿电池",
+        "mainNetInflow": -1244981568
+    },
+    {
+        "code": "BK1012",
+        "name": "PVDF概念",
+        "mainNetInflow": -1265849760
+    },
+    {
+        "code": "BK1106",
+        "name": "创新药",
+        "mainNetInflow": -1269687296
+    },
+    {
+        "code": "BK1157",
+        "name": "飞行汽车(eVTOL)",
+        "mainNetInflow": -1298861312
+    },
+    {
+        "code": "BK1173",
+        "name": "锂矿概念",
+        "mainNetInflow": -1303965952
+    },
+    {
+        "code": "BK1089",
+        "name": "汽车热管理",
+        "mainNetInflow": -1337861200
+    },
+    {
+        "code": "BK1010",
+        "name": "磷化工",
+        "mainNetInflow": -1338941728
+    },
+    {
+        "code": "BK1104",
+        "name": "信创",
+        "mainNetInflow": -1392306176
+    },
+    {
+        "code": "BK1657",
+        "name": "病原体防治",
+        "mainNetInflow": -1423271360
+    },
+    {
+        "code": "BK0581",
+        "name": "智能电网",
+        "mainNetInflow": -1493869824
+    },
+    {
+        "code": "BK0493",
+        "name": "新能源",
+        "mainNetInflow": -1499377408
+    },
+    {
+        "code": "BK1753",
+        "name": "光刻胶",
+        "mainNetInflow": -1529156176
+    },
+    {
+        "code": "BK0547",
+        "name": "黄金概念",
+        "mainNetInflow": -1530259200
+    },
+    {
+        "code": "BK0802",
+        "name": "智能驾驶",
+        "mainNetInflow": -1553630720
+    },
+    {
+        "code": "BK1170",
+        "name": "AI制药（医疗）",
+        "mainNetInflow": -1588271152
+    },
+    {
+        "code": "BK0981",
+        "name": "工业气体",
+        "mainNetInflow": -1685723504
+    },
+    {
+        "code": "BK0970",
+        "name": "生物识别",
+        "mainNetInflow": -1687154544
+    },
+    {
+        "code": "BK0947",
+        "name": "屏下摄像",
+        "mainNetInflow": -1710357504
+    },
+    {
+        "code": "BK0682",
+        "name": "燃料电池概念",
+        "mainNetInflow": -1757092096
+    },
+    {
+        "code": "BK1651",
+        "name": "显示技术",
+        "mainNetInflow": -1772331312
+    },
+    {
+        "code": "BK0578",
+        "name": "稀土永磁",
+        "mainNetInflow": -1789849120
+    },
+    {
+        "code": "BK1141",
+        "name": "混合现实",
+        "mainNetInflow": -1804555008
+    },
+    {
+        "code": "BK0865",
+        "name": "电子烟",
+        "mainNetInflow": -1846276944
+    },
+    {
+        "code": "BK1188",
+        "name": "DeepSeek概念",
+        "mainNetInflow": -1883006720
+    },
+    {
+        "code": "BK0916",
+        "name": "氮化镓",
+        "mainNetInflow": -1891253104
+    },
+    {
+        "code": "BK0617",
+        "name": "石墨烯",
+        "mainNetInflow": -1948341696
+    },
+    {
+        "code": "BK0800",
+        "name": "人工智能",
+        "mainNetInflow": -1974275072
+    },
+    {
+        "code": "BK0884",
+        "name": "光刻机",
+        "mainNetInflow": -1985496576
+    },
+    {
+        "code": "BK0960",
+        "name": "无线充电",
+        "mainNetInflow": -2039000080
+    },
+    {
+        "code": "BK0679",
+        "name": "超导概念",
+        "mainNetInflow": -2042398912
+    },
+    {
+        "code": "BK0490",
+        "name": "军工",
+        "mainNetInflow": -2044987136
+    },
+    {
+        "code": "BK0921",
+        "name": "卫星互联网",
+        "mainNetInflow": -2068994816
+    },
+    {
+        "code": "BK0915",
+        "name": "WiFi",
+        "mainNetInflow": -2083371120
+    },
+    {
+        "code": "BK1156",
+        "name": "PEEK材料概念",
+        "mainNetInflow": -2089613984
+    },
+    {
+        "code": "BK1162",
+        "name": "AI手机",
+        "mainNetInflow": -2144302784
+    },
+    {
+        "code": "BK0668",
+        "name": "医疗器械概念",
+        "mainNetInflow": -2156739840
+    },
+    {
+        "code": "BK0948",
+        "name": "MicroLED",
+        "mainNetInflow": -2241465648
+    },
+    {
+        "code": "BK0918",
+        "name": "特高压",
+        "mainNetInflow": -2304830208
+    },
+    {
+        "code": "BK0976",
+        "name": "被动元件概念",
+        "mainNetInflow": -2385972976
+    },
+    {
+        "code": "BK0864",
+        "name": "氢能源",
+        "mainNetInflow": -2421933824
+    },
+    {
+        "code": "BK1155",
+        "name": "小米汽车",
+        "mainNetInflow": -2462631424
+    },
+    {
+        "code": "BK1048",
+        "name": "IGBT概念",
+        "mainNetInflow": -2470336320
+    },
+    {
+        "code": "BK0595",
+        "name": "风能",
+        "mainNetInflow": -2475475968
+    },
+    {
+        "code": "BK1004",
+        "name": "工业母机",
+        "mainNetInflow": -2479954576
+    },
+    {
+        "code": "BK1166",
+        "name": "低空经济",
+        "mainNetInflow": -2500589824
+    },
+    {
+        "code": "BK0902",
+        "name": "MiniLED",
+        "mainNetInflow": -2501228544
+    },
+    {
+        "code": "BK0722",
+        "name": "虚拟现实",
+        "mainNetInflow": -2505678848
+    },
+    {
+        "code": "BK0690",
+        "name": "氟化工概念",
+        "mainNetInflow": -2533807232
+    },
+    {
+        "code": "BK1008",
+        "name": "国资云概念",
+        "mainNetInflow": -2588651024
+    },
+    {
+        "code": "BK0897",
+        "name": "IPv6",
+        "mainNetInflow": -2669545184
+    },
+    {
+        "code": "BK1152",
+        "name": "高带宽内存",
+        "mainNetInflow": -2682933504
+    },
+    {
+        "code": "BK1647",
+        "name": "电网概念",
+        "mainNetInflow": -2708454144
+    },
+    {
+        "code": "BK0674",
+        "name": "蓝宝石",
+        "mainNetInflow": -2772969056
+    },
+    {
+        "code": "BK0528",
+        "name": "转债标的",
+        "mainNetInflow": -2800812032
+    },
+    {
+        "code": "BK1088",
+        "name": "F5G概念",
+        "mainNetInflow": -2810798080
+    },
+    {
+        "code": "BK0832",
+        "name": "工业互联网",
+        "mainNetInflow": -2820885760
+    },
+    {
+        "code": "BK1163",
+        "name": "可控核聚变",
+        "mainNetInflow": -2870657536
+    },
+    {
+        "code": "BK1177",
+        "name": "荣耀概念",
+        "mainNetInflow": -2908209664
+    },
+    {
+        "code": "BK0890",
+        "name": "MLCC",
+        "mainNetInflow": -2947759200
+    },
+    {
+        "code": "BK0580",
+        "name": "LED概念",
+        "mainNetInflow": -3001786624
+    },
+    {
+        "code": "BK0506",
+        "name": "创投",
+        "mainNetInflow": -3086594816
+    },
+    {
+        "code": "BK0700",
+        "name": "充电桩",
+        "mainNetInflow": -3103662336
+    },
+    {
+        "code": "BK0840",
+        "name": "OLED",
+        "mainNetInflow": -3155042048
+    },
+    {
+        "code": "BK0494",
+        "name": "节能环保",
+        "mainNetInflow": -3243675904
+    },
+    {
+        "code": "BK1160",
+        "name": "柔性屏(折叠屏)",
+        "mainNetInflow": -3261118976
+    },
+    {
+        "code": "BK0644",
+        "name": "特斯拉概念",
+        "mainNetInflow": -3385816064
+    },
+    {
+        "code": "BK0977",
+        "name": "碳化硅",
+        "mainNetInflow": -3455997936
+    },
+    {
+        "code": "BK0704",
+        "name": "无人机",
+        "mainNetInflow": -3577746944
+    },
+    {
+        "code": "BK0710",
+        "name": "量子科技",
+        "mainNetInflow": -3585497600
+    },
+    {
+        "code": "BK0964",
+        "name": "6G概念",
+        "mainNetInflow": -3608126448
+    },
+    {
+        "code": "BK0860",
+        "name": "边缘计算",
+        "mainNetInflow": -3630795264
+    },
+    {
+        "code": "BK0634",
+        "name": "大数据",
+        "mainNetInflow": -3662718976
+    },
+    {
+        "code": "BK1168",
+        "name": "铜缆高速连接",
+        "mainNetInflow": -3676235264
+    },
+    {
+        "code": "BK0680",
+        "name": "智能家居",
+        "mainNetInflow": -3702992384
+    },
+    {
+        "code": "BK0920",
+        "name": "车联网(车路云)",
+        "mainNetInflow": -3707728640
+    },
+    {
+        "code": "BK0989",
+        "name": "储能概念",
+        "mainNetInflow": -3774615040
+    },
+    {
+        "code": "BK1124",
+        "name": "毫米波概念",
+        "mainNetInflow": -3782766592
+    },
+    {
+        "code": "BK0712",
+        "name": "一带一路",
+        "mainNetInflow": -3842983680
+    },
+    {
+        "code": "BK0619",
+        "name": "3D打印",
+        "mainNetInflow": -3886249984
+    },
+    {
+        "code": "BK1180",
+        "name": "华为海思",
+        "mainNetInflow": -4021843552
+    },
+    {
+        "code": "BK0549",
+        "name": "深圳特区",
+        "mainNetInflow": -4133967360
+    },
+    {
+        "code": "BK0588",
+        "name": "光伏概念",
+        "mainNetInflow": -4288816896
+    },
+    {
+        "code": "BK0833",
+        "name": "小米概念",
+        "mainNetInflow": -4323811840
+    },
+    {
+        "code": "BK0519",
+        "name": "稀缺资源",
+        "mainNetInflow": -4456901120
+    },
+    {
+        "code": "BK0667",
+        "name": "安防概念",
+        "mainNetInflow": -4500955136
+    },
+    {
+        "code": "BK0579",
+        "name": "云计算",
+        "mainNetInflow": -4633484288
+    },
+    {
+        "code": "BK0628",
+        "name": "智慧城市",
+        "mainNetInflow": -4833761280
+    },
+    {
+        "code": "BK0905",
+        "name": "传感器",
+        "mainNetInflow": -4841707776
+    },
+    {
+        "code": "BK1064",
+        "name": "东数西算",
+        "mainNetInflow": -4861356800
+    },
+    {
+        "code": "BK1161",
+        "name": "英伟达概念",
+        "mainNetInflow": -4938276864
+    },
+    {
+        "code": "BK1164",
+        "name": "AIPC",
+        "mainNetInflow": -4996653056
+    },
+    {
+        "code": "BK0594",
+        "name": "长江三角",
+        "mainNetInflow": -5037156352
+    },
+    {
+        "code": "BK0859",
+        "name": "超清视频",
+        "mainNetInflow": -5490739712
+    },
+    {
+        "code": "BK0963",
+        "name": "商业航天",
+        "mainNetInflow": -5695065088
+    },
+    {
+        "code": "BK1175",
+        "name": "玻璃基板",
+        "mainNetInflow": -5735644160
+    },
+    {
+        "code": "BK0935",
+        "name": "中芯概念",
+        "mainNetInflow": -6163677952
+    },
+    {
+        "code": "BK0893",
+        "name": "无线耳机",
+        "mainNetInflow": -6350034176
+    },
+    {
+        "code": "BK0952",
+        "name": "第三代半导体",
+        "mainNetInflow": -6371912704
+    },
+    {
+        "code": "BK1134",
+        "name": "算力概念",
+        "mainNetInflow": -6420207616
+    },
+    {
+        "code": "BK1184",
+        "name": "人形机器人",
+        "mainNetInflow": -6457093376
+    },
+    {
+        "code": "BK0969",
+        "name": "汽车芯片",
+        "mainNetInflow": -6476824064
+    },
+    {
+        "code": "BK0968",
+        "name": "固态电池",
+        "mainNetInflow": -6616375296
+    },
+    {
+        "code": "BK1101",
+        "name": "先进封装",
+        "mainNetInflow": -6765218816
+    },
+    {
+        "code": "BK0655",
+        "name": "网络安全",
+        "mainNetInflow": -6907916800
+    },
+    {
+        "code": "BK0695",
+        "name": "小金属概念",
+        "mainNetInflow": -7131329536
+    },
+    {
+        "code": "BK0666",
+        "name": "苹果概念",
+        "mainNetInflow": -7804573952
+    },
+    {
+        "code": "BK1178",
+        "name": "AI眼镜",
+        "mainNetInflow": -8703499008
+    },
+    {
+        "code": "BK1660",
+        "name": "光纤概念",
+        "mainNetInflow": -9007137280
+    },
+    {
+        "code": "BK1128",
+        "name": "CPO概念",
+        "mainNetInflow": -9106372352
+    },
+    {
+        "code": "BK1136",
+        "name": "光通信模块",
+        "mainNetInflow": -9138324224
+    },
+    {
+        "code": "BK0574",
+        "name": "锂电池概念",
+        "mainNetInflow": -10060047872
+    },
+    {
+        "code": "BK0641",
+        "name": "智能穿戴",
+        "mainNetInflow": -10162277888
+    },
+    {
+        "code": "BK0877",
+        "name": "PCB",
+        "mainNetInflow": -10877384704
+    },
+    {
+        "code": "BK0900",
+        "name": "新能源车",
+        "mainNetInflow": -11814663680
+    },
+    {
+        "code": "BK1090",
+        "name": "机器人概念",
+        "mainNetInflow": -12351585024
+    },
+    {
+        "code": "BK0854",
+        "name": "华为概念",
+        "mainNetInflow": -12365756928
+    },
+    {
+        "code": "BK1646",
+        "name": "消费电子概念",
+        "mainNetInflow": -12403702528
+    },
+    {
+        "code": "BK1648",
+        "name": "电池技术",
+        "mainNetInflow": -12465099008
+    },
+    {
+        "code": "BK1005",
+        "name": "专精特新",
+        "mainNetInflow": -12614716928
+    },
+    {
+        "code": "BK0554",
+        "name": "物联网",
+        "mainNetInflow": -12624442112
+    },
+    {
+        "code": "BK0922",
+        "name": "数据中心",
+        "mainNetInflow": -13016026880
+    },
+    {
+        "code": "BK1138",
+        "name": "液冷服务器",
+        "mainNetInflow": -13287845888
+    },
+    {
+        "code": "BK0523",
+        "name": "新材料",
+        "mainNetInflow": -13883606016
+    },
+    {
+        "code": "BK0714",
+        "name": "5G概念",
+        "mainNetInflow": -15649516800
+    },
+    {
+        "code": "BK1137",
+        "name": "存储芯片",
+        "mainNetInflow": -16725873408
+    },
+    {
+        "code": "BK1650",
+        "name": "通信技术",
+        "mainNetInflow": -20077089280
+    },
+    {
+        "code": "BK0891",
+        "name": "国产芯片",
+        "mainNetInflow": -23362131712
+    },
+    {
+        "code": "BK0917",
+        "name": "半导体概念",
+        "mainNetInflow": -27327519232
+    }
+]

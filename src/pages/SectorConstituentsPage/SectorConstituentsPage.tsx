@@ -3,10 +3,11 @@
  */
 
 import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
-import { Layout, Button, Progress, Input, Typography, Empty, App, Space, Tooltip } from 'antd';
-import { RocketOutlined, LoadingOutlined, ExportOutlined, FilterOutlined, SyncOutlined, ArrowRightOutlined } from '@ant-design/icons';
+import { Layout, Button, Progress, Input, Typography, Empty, App, Space, Tooltip, Dropdown } from 'antd';
+import type { MenuProps } from 'antd';
+import { RocketOutlined, LoadingOutlined, ExportOutlined, FilterOutlined, SyncOutlined, ArrowRightOutlined, DownOutlined } from '@ant-design/icons';
 import VirtualList from 'rc-virtual-list';
-import { fetchAllSectorsStocks, fetchRemainingSectorsStocks, type SectorFullData, type FetchProgress, type FailedSector, type StockSimpleInfo } from '@/services/hot/sector-stocks-service';
+import { fetchAllSectorsStocks, fetchRemainingSectorsStocks, type SectorFullData, type FetchProgress, type FailedSector, type StockSimpleInfo, type SectorFetchScope } from '@/services/hot/sector-stocks-service';
 import { getIndustrySectors, getConceptSectors, type SectorWithStocks } from '@/utils/storage/sectorStocksIndexedDB';
 import { CACHE_TTL } from '@/utils/config/constants';
 import { logger } from '@/utils/business/logger';
@@ -229,9 +230,20 @@ export function SectorConstituentsPage() {
   };
 
   // 开始获取数据
-  const handleStartFetch = async (retryList?: FailedSector[]) => {
+  const mergeFailedSectors = (prev: FailedSector[], next: FailedSector[], scope: SectorFetchScope) => {
+    if (scope === 'all') {
+      return next;
+    }
+    const keepType = scope === 'industry' ? 'concept' : 'industry';
+    const kept = prev.filter((s) => s.sectorType === keepType);
+    const scopedFailed = next.filter((s) => s.sectorType === scope);
+    return [...kept, ...scopedFailed];
+  };
+
+  const handleStartFetch = async (retryList?: FailedSector[], scope: SectorFetchScope = 'all') => {
     setLoading(true);
     const sectorsToFetch = retryList || [];
+    const effectiveScope = retryList ? 'all' : scope;
 
     // 创建新的 AbortController
     abortControllerRef.current = new AbortController();
@@ -241,18 +253,26 @@ export function SectorConstituentsPage() {
     try {
       const result = await fetchAllSectorsStocks((p) => {
         setProgress(p);
-      }, !retryList, sectorsToFetch, signal); // 传入 signal
+      }, !retryList, sectorsToFetch, signal, effectiveScope);
 
       if (!retryList) {
-        setIndustryData(result.industry);
-        setConceptData(result.concept);
+        if (effectiveScope === 'all' || effectiveScope === 'industry') {
+          setIndustryData(result.industry);
+        }
+        if (effectiveScope === 'all' || effectiveScope === 'concept') {
+          setConceptData(result.concept);
+        }
       } else {
         // 重试模式下，合并数据
-        setIndustryData(prev => [...prev, ...result.industry]);
-        setConceptData(prev => [...prev, ...result.concept]);
+        if (result.industry.length > 0) {
+          setIndustryData((prev) => [...prev, ...result.industry]);
+        }
+        if (result.concept.length > 0) {
+          setConceptData((prev) => [...prev, ...result.concept]);
+        }
       }
 
-      setFailedSectors(result.failed);
+      setFailedSectors((prev) => mergeFailedSectors(prev, result.failed, effectiveScope));
       setProgress(null);
       if (signal.aborted) {
         message.info('已取消获取');
@@ -285,7 +305,7 @@ export function SectorConstituentsPage() {
   };
 
   // 开始增量获取数据(剩余全量获取)
-  const handleStartRemainingFetch = async () => {
+  const handleStartRemainingFetch = async (scope: SectorFetchScope = 'all') => {
     setLoading(true);
 
     // 创建新的 AbortController
@@ -297,22 +317,17 @@ export function SectorConstituentsPage() {
     try {
       const result = await fetchRemainingSectorsStocks((p) => {
         setProgress(p);
-      }, signal);
+      }, signal, scope);
 
-      // 合并数据到现有状态
-      setIndustryData((prev) => {
-        const existingCodes = new Set(prev.map((s) => s.sectorCode));
-        const newItems = result.industry.filter((s) => !existingCodes.has(s.sectorCode));
-        return [...prev, ...newItems];
-      });
+      // 剩余获取返回的是合并后的完整列表，按 scope 更新对应一侧
+      if (scope === 'all' || scope === 'industry') {
+        setIndustryData(result.industry);
+      }
+      if (scope === 'all' || scope === 'concept') {
+        setConceptData(result.concept);
+      }
 
-      setConceptData((prev) => {
-        const existingCodes = new Set(prev.map((s) => s.sectorCode));
-        const newItems = result.concept.filter((s) => !existingCodes.has(s.sectorCode));
-        return [...prev, ...newItems];
-      });
-
-      setFailedSectors(result.failed);
+      setFailedSectors((prev) => mergeFailedSectors(prev, result.failed, scope));
       setProgress(null);
 
       if (signal.aborted) {
@@ -337,6 +352,18 @@ export function SectorConstituentsPage() {
       abortControllerRef.current = null;
     }
   };
+
+  const fullFetchMenuItems: MenuProps['items'] = [
+    { key: 'all', label: '全部（行业+概念）' },
+    { key: 'industry', label: '仅行业板块' },
+    { key: 'concept', label: '仅概念板块' },
+  ];
+
+  const remainingFetchMenuItems: MenuProps['items'] = [
+    { key: 'all', label: '全部（行业+概念）' },
+    { key: 'industry', label: '仅行业板块' },
+    { key: 'concept', label: '仅概念板块' },
+  ];
 
   // 导出当前选中板块的成分股（导出筛选后的结果）
   const handleExport = () => {
@@ -463,7 +490,7 @@ export function SectorConstituentsPage() {
           <div className={styles.headerLeft}>
             <Text className={styles.pageTitle}>成分股大全</Text>
             <Text type="secondary" className={styles.pageSubtitle}>
-              一键获取所有行业与概念板块的完整成分股名单
+              可分别获取行业或概念板块的完整成分股名单
             </Text>
           </div>
           <div style={{ display: 'flex', gap: '8px' }}>
@@ -501,23 +528,31 @@ export function SectorConstituentsPage() {
                 </Button>
               )
             )}
-            <Button
-              icon={<RocketOutlined />}
-              onClick={handleStartRemainingFetch}
+                        <Dropdown.Button
+              icon={<DownOutlined />}
+              menu={{
+                items: remainingFetchMenuItems,
+                onClick: ({ key }) => handleStartRemainingFetch(key as SectorFetchScope),
+              }}
+              onClick={() => handleStartRemainingFetch('all')}
               loading={loading}
               disabled={loading}
             >
               剩余全量获取
-            </Button>
-            <Button
+            </Dropdown.Button>
+            <Dropdown.Button
               type="primary"
-              icon={loading ? <LoadingOutlined /> : <RocketOutlined />}
-              onClick={() => handleStartFetch()}
+              icon={<DownOutlined />}
+              menu={{
+                items: fullFetchMenuItems,
+                onClick: ({ key }) => handleStartFetch(undefined, key as SectorFetchScope),
+              }}
+              onClick={() => handleStartFetch(undefined, 'all')}
               loading={loading}
               disabled={loading}
             >
               {loading ? '全量获取中...' : '开始全量获取'}
-            </Button>
+            </Dropdown.Button>
           </div>
         </div>
       </Header>
