@@ -24,17 +24,18 @@ const HORIZONS = [
   { key: 'd1', days: 1 },
   { key: 'd2', days: 2 },
   { key: 'd3', days: 3 },
+  { key: 'd4', days: 4 },
   { key: 'd5', days: 5 },
-  { key: 'd10', days: 10 },
+  { key: 'd6', days: 6 },
 ];
 const THRESHOLD = 0.05;
-const MIN_HIT_WIDE = 3;
-const MIN_HIT_STRICT = 5;
+const MIN_HIT_WIDE = 2;
+const MIN_HIT_STRICT = 6;
 
-const CRITERIA_WIDE = '买入收盘后，近1/2/3/5/10日累计收益中至少3个 >5%';
-const CRITERIA_STRICT = '买入收盘后，近1/2/3/5/10日累计收益全部 >5%';
+const CRITERIA_WIDE = '买入收盘后，近1/2/3/4/5/6日累计收益中至少2个 >5%';
+const CRITERIA_STRICT = '买入收盘后，近1/2/3/4/5/6日累计收益全部 >5%';
 const ENTRY_RULE =
-  '买入价=当日收盘；累计收益=(未来第N日收盘-买入收盘)/买入收盘；两周按10个交易日';
+  '买入价=当日收盘；累计收益=(未来第N日收盘-买入收盘)/买入收盘；周期按连续6个交易日';
 
 function fmtDate(ts) {
   const d = new Date(ts);

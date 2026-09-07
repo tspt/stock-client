@@ -39,8 +39,9 @@ const HORIZONS: Array<{ key: keyof ReturnSnapshot; days: number }> = [
   { key: 'd1', days: 1 },
   { key: 'd2', days: 2 },
   { key: 'd3', days: 3 },
+  { key: 'd4', days: 4 },
   { key: 'd5', days: 5 },
-  { key: 'd10', days: 10 },
+  { key: 'd6', days: 6 },
 ];
 
 export function normalizeDateKey(date: string): string {
@@ -81,7 +82,7 @@ function calculateFutureReturns(
   history: StockHistoryRecord | undefined,
   signal: LatestScenarioSignal
 ): ReturnSnapshot {
-  const returns: ReturnSnapshot = { d1: null, d2: null, d3: null, d5: null, d10: null };
+  const returns: ReturnSnapshot = { d1: null, d2: null, d3: null, d4: null, d5: null, d6: null };
   const lines = history?.dailyLines || [];
   if (lines.length === 0) return returns;
 

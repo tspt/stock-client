@@ -17,6 +17,7 @@ release
 docs/回测优化/股票数据/**/*.json
 docs/回测优化/买点信号/**/*.json
 docs/回测优化/买点场景/**/*.json
+docs/回测优化/历史买点/**/*.json
 
 # Editor directories and files
 .vscode/*

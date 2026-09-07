@@ -58,6 +58,7 @@ import {
 } from '@/utils/storage/hotRankFiles';
 import {
   exportBacktestSignalsToJson,
+  resolveHistoryExportDate,
   resolveLatestExportDate,
 } from '@/utils/export/backtestExportUtils';
 import { exportStockNamesToPng } from '@/utils/export/stockNamesExportUtils';
@@ -160,7 +161,7 @@ export function BacktestPage() {
   const [trackingIndustryGroupLabels, setTrackingIndustryGroupLabels] = useState<string[]>([]);
   const [trackingIndustryInvert, setTrackingIndustryInvert] = useState(true);
   const [trackingThreshold, setTrackingThreshold] = useState(5);
-  const [trackingMinHitCount, setTrackingMinHitCount] = useState(3);
+  const [trackingMinHitCount, setTrackingMinHitCount] = useState(2);
   const [trackingRows, setTrackingRows] = useState<TrackedLatestSignal[]>([]);
   const [loadingTracking, setLoadingTracking] = useState(false);
   const [trackingStatsCollapsed, setTrackingStatsCollapsed] = useState(true);
@@ -258,12 +259,53 @@ export function BacktestPage() {
       message.info('正在基于当前 stockHistory 扫描历史好买点...');
       const { histories } = await readFilteredHistories();
       const signals = scanHistoricalBuyPoints(histories, {
-        minHitCount: 3,
+        minHitCount: 2,
         threshold: 5,
         includeOther: true,
       }).sort((a, b) => b.timestamp - a.timestamp);
-      setHistorySignals(signals);
-      message.success(`历史好买点扫描完成，共 ${signals.length} 条`);
+
+      const data = signals.map((item) => ({
+        ...item,
+        industry: item.industry || industryMapping.get(normalizeStockCode(item.code)) || null,
+        concepts: conceptMapping.get(normalizeStockCode(item.code)) || [],
+      }));
+
+      setHistorySignals(data);
+      setActiveTab('history');
+
+      if (data.length === 0) {
+        message.info('当前未扫描到符合条件的历史好买点');
+        return;
+      }
+
+      if (!window.electronAPI?.exportBacktestSignalsFile) {
+        message.warning(`扫描完成，共 ${data.length} 条，但自动导出快照不可用（需在 Electron 环境中运行）`);
+        return;
+      }
+
+      try {
+        const fileBaseName = resolveHistoryExportDate(latestDateSummary.dominantDate);
+        const meta = {
+          tab: 'history' as const,
+          autoExport: true,
+          minHitCount: 2,
+          threshold: 5,
+          horizons: 'd1-d6',
+          excludeST,
+          latestDate: latestDateSummary.dominantDate || null,
+          fileBaseName,
+        };
+        const filePath = await exportBacktestSignalsToJson({
+          kind: 'history',
+          data,
+          fileBaseName,
+          meta,
+        });
+        message.success(`已保存历史好买点快照 ${data.length} 条到 ${filePath}`);
+      } catch (exportError) {
+        logger.error('[BacktestPage] 扫描历史后导出快照失败:', exportError);
+        message.error('导出快照失败: ' + (exportError as Error).message);
+      }
     } catch (error) {
       logger.error('[BacktestPage] 扫描历史好买点失败:', error);
       message.error('扫描历史好买点失败: ' + (error as Error).message);
@@ -764,7 +806,7 @@ export function BacktestPage() {
   }, [historySignals]);
 
   const renderReturn = (returns: ReturnSnapshot, key: keyof ReturnSnapshot) => {
-    const value = returns[key];
+    const value = returns[key] ?? null;
     return <Text style={{ color: returnColor(value) }}>{returnText(value)}</Text>;
   };
 
@@ -870,8 +912,9 @@ export function BacktestPage() {
     { title: '1日', width: 80, sorter: (a, b) => compareReturn(a.returns, b.returns, 'd1'), render: (_, record) => renderReturn(record.returns, 'd1') },
     { title: '2日', width: 80, sorter: (a, b) => compareReturn(a.returns, b.returns, 'd2'), render: (_, record) => renderReturn(record.returns, 'd2') },
     { title: '3日', width: 80, sorter: (a, b) => compareReturn(a.returns, b.returns, 'd3'), render: (_, record) => renderReturn(record.returns, 'd3') },
+    { title: '4日', width: 80, sorter: (a, b) => compareReturn(a.returns, b.returns, 'd4'), render: (_, record) => renderReturn(record.returns, 'd4') },
     { title: '5日', width: 80, sorter: (a, b) => compareReturn(a.returns, b.returns, 'd5'), render: (_, record) => renderReturn(record.returns, 'd5') },
-    { title: '两周', width: 80, sorter: (a, b) => compareReturn(a.returns, b.returns, 'd10'), render: (_, record) => renderReturn(record.returns, 'd10') },
+    { title: '6日', width: 80, sorter: (a, b) => compareReturn(a.returns, b.returns, 'd6'), render: (_, record) => renderReturn(record.returns, 'd6') },
     { title: '所属概念', width: 360, render: renderConcepts },
     {
       title: '命中规则',
@@ -928,8 +971,9 @@ export function BacktestPage() {
     { title: '1日', width: 80, sorter: (a, b) => compareReturn(a.trackedReturns, b.trackedReturns, 'd1'), render: (_, record) => renderReturn(record.trackedReturns, 'd1') },
     { title: '2日', width: 80, sorter: (a, b) => compareReturn(a.trackedReturns, b.trackedReturns, 'd2'), render: (_, record) => renderReturn(record.trackedReturns, 'd2') },
     { title: '3日', width: 80, sorter: (a, b) => compareReturn(a.trackedReturns, b.trackedReturns, 'd3'), render: (_, record) => renderReturn(record.trackedReturns, 'd3') },
+    { title: '4日', width: 80, sorter: (a, b) => compareReturn(a.trackedReturns, b.trackedReturns, 'd4'), render: (_, record) => renderReturn(record.trackedReturns, 'd4') },
     { title: '5日', width: 80, sorter: (a, b) => compareReturn(a.trackedReturns, b.trackedReturns, 'd5'), render: (_, record) => renderReturn(record.trackedReturns, 'd5') },
-    { title: '两周', width: 80, sorter: (a, b) => compareReturn(a.trackedReturns, b.trackedReturns, 'd10'), render: (_, record) => renderReturn(record.trackedReturns, 'd10') },
+    { title: '6日', width: 80, sorter: (a, b) => compareReturn(a.trackedReturns, b.trackedReturns, 'd6'), render: (_, record) => renderReturn(record.trackedReturns, 'd6') },
     { title: '已发生', dataIndex: 'occurredCount', width: 80 },
     { title: '命中', dataIndex: 'hitCount', width: 80 },
     { title: '状态', dataIndex: 'status', width: 90, render: renderTrackingStatus },
@@ -1061,7 +1105,7 @@ export function BacktestPage() {
                     title={
                       <div className={styles.compactInfoTooltip}>
                         <div>历史好买点与买点追踪均基于 IndexedDB stockHistory；最新交易日扫描会自动保存快照并联动更新追踪收益。</div>
-                        <div>历史好买点规则：买入收盘后 1/2/3/5/10 日累计收益中至少 3 项 &gt; 5%。</div>
+                        <div>历史好买点规则：买入收盘后 1-6 日累计收益中至少 2 项 &gt;= 5%。</div>
                         <div>最新交易日只扫描 lift&gt;1 的高价值场景，未来收益尚未发生时处于“验证中”状态。</div>
                         <div>赔率分会综合场景、当日强弱、量价结构和位置关系，对买点信号做“赔率优先”排序。</div>
                       </div>
@@ -1210,25 +1254,29 @@ export function BacktestPage() {
                       style={{ width: 190 }}
                       size="small"
                     />
-                    <InputNumber
-                      addonBefore="阈值"
-                      addonAfter="%"
-                      min={0}
-                      max={50}
-                      value={trackingThreshold}
-                      onChange={(value) => setTrackingThreshold(Number(value ?? 5))}
-                      style={{ width: 120 }}
-                      size="small"
-                    />
-                    <InputNumber
-                      addonBefore="命中"
-                      min={1}
-                      max={5}
-                      value={trackingMinHitCount}
-                      onChange={(value) => setTrackingMinHitCount(Number(value ?? 3))}
-                      style={{ width: 100 }}
-                      size="small"
-                    />
+                    <Space.Compact size="small">
+                      <Button size="small" style={{ pointerEvents: 'none' }}>阈值</Button>
+                      <InputNumber
+                        min={0}
+                        max={50}
+                        value={trackingThreshold}
+                        onChange={(value) => setTrackingThreshold(Number(value ?? 5))}
+                        style={{ width: 70 }}
+                        size="small"
+                      />
+                      <Button size="small" style={{ pointerEvents: 'none' }}>%</Button>
+                    </Space.Compact>
+                    <Space.Compact size="small">
+                      <Button size="small" style={{ pointerEvents: 'none' }}>命中</Button>
+                      <InputNumber
+                        min={1}
+                        max={5}
+                        value={trackingMinHitCount}
+                        onChange={(value) => setTrackingMinHitCount(Number(value ?? 3))}
+                        style={{ width: 60 }}
+                        size="small"
+                      />
+                    </Space.Compact>
                   </>
                 ) : (
                   <>

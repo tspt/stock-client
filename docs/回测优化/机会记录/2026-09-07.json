@@ -1,0 +1,579 @@
+{
+  "version": "1.0",
+  "kind": "opportunity-record",
+  "date": "2026-09-07",
+  "createdAt": 1788766632945,
+  "updatedAt": 1788766632945,
+  "stocks": [
+    {
+      "code": "SZ000019",
+      "name": "深粮控股",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SZ000026",
+      "name": "飞亚达",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SZ000070",
+      "name": "特发信息",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SZ000505",
+      "name": "京粮控股",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SZ000523",
+      "name": "红棉股份",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SZ000533",
+      "name": "顺钠股份",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SZ000536",
+      "name": "华映科技",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SZ000665",
+      "name": "湖北广电",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SZ000713",
+      "name": "国投丰乐",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SZ000716",
+      "name": "黑芝麻",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SZ000721",
+      "name": "西安饮食",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SZ000736",
+      "name": "中交发展",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SZ000816",
+      "name": "智慧农业",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SZ000852",
+      "name": "石化机械",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SZ000978",
+      "name": "桂林旅游",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SZ000998",
+      "name": "隆平高科",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SZ001222",
+      "name": "源飞宠物",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SZ001330",
+      "name": "博纳影业",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SZ001376",
+      "name": "百通能源",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SZ001696",
+      "name": "宗申动力",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SZ002011",
+      "name": "盾安环境",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SZ002015",
+      "name": "协鑫能科",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SZ002025",
+      "name": "航天电器",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SZ002041",
+      "name": "登海种业",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SZ002045",
+      "name": "国光电器",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SZ002059",
+      "name": "云南旅游",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SZ002107",
+      "name": "沃华医药",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SZ002190",
+      "name": "成飞集成",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SZ002229",
+      "name": "鸿博股份",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SZ002258",
+      "name": "利尔化学",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SZ002322",
+      "name": "理工能科",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SZ002354",
+      "name": "天娱数科",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SZ002385",
+      "name": "大北农",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SZ002403",
+      "name": "爱仕达",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SZ002425",
+      "name": "凯撒文化",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SZ002520",
+      "name": "日发精机",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SZ002534",
+      "name": "西子洁能",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SZ002553",
+      "name": "南方精工",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SZ002564",
+      "name": "天沃科技",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SZ002575",
+      "name": "群兴玩具",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SZ002578",
+      "name": "闽发铝业",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SZ002815",
+      "name": "崇达技术",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SZ002824",
+      "name": "和胜股份",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SZ002837",
+      "name": "英维克",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SZ002838",
+      "name": "道恩股份",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SZ002909",
+      "name": "集泰股份",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SZ002988",
+      "name": "豪美新材",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SZ002992",
+      "name": "宝明科技",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SH600156",
+      "name": "华升股份",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SH600186",
+      "name": "莲花控股",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SH600250",
+      "name": "南京商旅",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SH600251",
+      "name": "冠农股份",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SH600313",
+      "name": "农发种业",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SH600327",
+      "name": "大东方",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SH600354",
+      "name": "敦煌种业",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SH600359",
+      "name": "新农开发",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SH600470",
+      "name": "六国化工",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SH600556",
+      "name": "天下秀",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SH600828",
+      "name": "茂业商业",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SH600865",
+      "name": "百大集团",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SH600975",
+      "name": "新五丰",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SH601086",
+      "name": "国芳集团",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SH601118",
+      "name": "海南橡胶",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SH601136",
+      "name": "首创证券",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SH601566",
+      "name": "九牧王",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SH601579",
+      "name": "会稽山",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SH601595",
+      "name": "上海电影",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SH601949",
+      "name": "中国出版",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SH601952",
+      "name": "苏垦农发",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SH601999",
+      "name": "出版传媒",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SH603012",
+      "name": "创力集团",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SH603042",
+      "name": "华脉科技",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SH603082",
+      "name": "北自科技",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SH603093",
+      "name": "南华期货",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SH603112",
+      "name": "华翔股份",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SH603115",
+      "name": "海星股份",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SH603121",
+      "name": "华培动力",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SH603123",
+      "name": "翠微股份",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SH603179",
+      "name": "新泉股份",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SH603286",
+      "name": "日盈电子",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SH603375",
+      "name": "盛景微",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SH603395",
+      "name": "红四方",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SH603466",
+      "name": "风语筑",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SH603668",
+      "name": "天马科技",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SH603716",
+      "name": "塞力医疗",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SH603725",
+      "name": "天安新材",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SH603728",
+      "name": "鸣志电器",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SH603739",
+      "name": "蔚蓝生物",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SH603999",
+      "name": "读者传媒",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SH605068",
+      "name": "明新旭腾",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SH605080",
+      "name": "浙江自然",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SH605128",
+      "name": "上海沿浦",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SH605398",
+      "name": "新炬网络",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SH605577",
+      "name": "龙版传媒",
+      "concepts": [],
+      "timestamp": 1788766632945
+    },
+    {
+      "code": "SH605580",
+      "name": "恒盛能源",
+      "concepts": [],
+      "timestamp": 1788766632945
+    }
+  ]
+}

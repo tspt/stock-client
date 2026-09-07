@@ -48,8 +48,10 @@ export interface ReturnSnapshot {
   d1: number | null;
   d2: number | null;
   d3: number | null;
+  d4: number | null;
   d5: number | null;
-  d10: number | null;
+  d6: number | null;
+  d10?: number | null;
 }
 
 export interface BuyPointSignal extends ClassifiedScenario {
@@ -117,8 +119,9 @@ const HORIZONS: Array<{ key: keyof ReturnSnapshot; days: number }> = [
   { key: 'd1', days: 1 },
   { key: 'd2', days: 2 },
   { key: 'd3', days: 3 },
+  { key: 'd4', days: 4 },
   { key: 'd5', days: 5 },
-  { key: 'd10', days: 10 },
+  { key: 'd6', days: 6 },
 ];
 
 export function formatKlineDate(ts: number): string {
@@ -290,7 +293,7 @@ export function getLatestSignalOdds(classified: ClassifiedScenario): Pick<
 
 export function calculateFutureReturns(lines: KLineData[], index: number): ReturnSnapshot {
   const entry = lines[index]?.close;
-  const returns: ReturnSnapshot = { d1: null, d2: null, d3: null, d5: null, d10: null };
+  const returns: ReturnSnapshot = { d1: null, d2: null, d3: null, d4: null, d5: null, d6: null };
   if (!entry || entry <= 0) return returns;
 
   HORIZONS.forEach((h) => {
@@ -303,7 +306,7 @@ export function calculateFutureReturns(lines: KLineData[], index: number): Retur
 }
 
 export function countReturnHits(returns: ReturnSnapshot, threshold = 5): number {
-  return Object.values(returns).filter((v) => v != null && v > threshold).length;
+  return Object.values(returns).filter((v) => v != null && v >= threshold).length;
 }
 
 export function classifyOneDay(lines: KLineData[], i: number): ClassifiedScenario {
@@ -498,7 +501,7 @@ export function scanHistoricalBuyPoints(
   histories: StockHistoryRecord[],
   options: { minHitCount?: number; threshold?: number; includeOther?: boolean } = {}
 ): BuyPointSignal[] {
-  const minHitCount = options.minHitCount ?? 3;
+  const minHitCount = options.minHitCount ?? 2;
   const threshold = options.threshold ?? 5;
   const includeOther = options.includeOther ?? true;
   const signals: BuyPointSignal[] = [];
