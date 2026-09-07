@@ -276,6 +276,7 @@ export function SectorConstituentsPage() {
       setProgress(null);
       if (signal.aborted) {
         message.info('已取消获取');
+        await loadCachedData(false);
       } else if (result.failed.length === 0) {
         message.success('数据获取完成，请点击“更新板块信息”按钮同步到股票列表');
       } else {
@@ -332,6 +333,7 @@ export function SectorConstituentsPage() {
 
       if (signal.aborted) {
         message.info('已取消获取');
+        await loadCachedData(false);
       } else if (result.failed.length === 0) {
         message.success('剩余数据获取完成，请点击“更新板块信息”按钮同步到股票列表');
       } else {

@@ -133,6 +133,16 @@ export interface ElectronAPI {
     error?: string;
   }>;
 
+  /** 写入 docs/回测优化/ 根目录下的指定文件（成分股数据.json、行业板块.json、概念板块.json、股票列表.json） */
+  writeBacktestOptimizeFile: (payload: {
+    fileName: string;
+    content: string;
+  }) => Promise<{
+    success: boolean;
+    filePath?: string;
+    error?: string;
+  }>;
+
   /** 监听Cookie获取进度 */
   onCookieFetchProgress: (
     callback: (progress: {

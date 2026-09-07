@@ -1099,6 +1099,44 @@ function setupIpcHandlers() {
       return { success: false, error: errorMessage };
     }
   });
+
+  /**
+   * 写入 docs/回测优化/ 根目录下的指定文件
+   */
+  ipcMain.handle(
+    'write-backtest-optimize-file',
+    async (_event, payload: { fileName: string; content: string }) => {
+      try {
+        const { fileName, content } = payload;
+        const ALLOWED_FILES = ['成分股数据.json', '行业板块.json', '概念板块.json', '股票列表.json'];
+        if (!fileName || !ALLOWED_FILES.includes(fileName)) {
+          return { success: false, error: `非法文件名: ${fileName}` };
+        }
+
+        let targetDir: string;
+        if (isDev) {
+          targetDir = join(app.getAppPath(), 'docs', '回测优化');
+        } else {
+          const exeDir = join(app.getPath('exe'), '..');
+          targetDir = join(exeDir, 'docs', '回测优化');
+        }
+
+        if (!existsSync(targetDir)) {
+          mkdirSync(targetDir, { recursive: true });
+          mainLog(`[主进程] 创建目录: ${targetDir}`);
+        }
+
+        const filePath = join(targetDir, fileName);
+        writeFileSync(filePath, String(content), 'utf-8');
+        mainLog(`[主进程] 回测优化文件已保存: ${filePath}`);
+        return { success: true, filePath };
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        mainLog(`[主进程] 保存回测优化文件失败: ${errorMessage}`, true);
+        return { success: false, error: errorMessage };
+      }
+    }
+  );
 }
 
 // 应用准备就绪

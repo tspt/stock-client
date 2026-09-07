@@ -107,6 +107,11 @@ try {
       return ipcRenderer.invoke('read-hot-rank-day-file', date);
     },
 
+    // 写入 docs/回测优化/ 下的文件
+    writeBacktestOptimizeFile: (payload: { fileName: string; content: string }) => {
+      return ipcRenderer.invoke('write-backtest-optimize-file', payload);
+    },
+
     // 监听Cookie获取进度
     onCookieFetchProgress: (callback: (progress: any) => void) => {
       const listener = (_event: any, progress: any) => callback(progress);

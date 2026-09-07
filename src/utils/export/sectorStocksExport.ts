@@ -64,7 +64,22 @@ export async function exportSectorStocksToJSON(): Promise<void> {
     // 转换为 JSON 字符串
     const jsonStr = JSON.stringify(exportData, null, 2);
 
-    // 创建 Blob 并下载
+    // 如果处于 Electron 环境，优先静默落盘到 docs/回测优化/成分股数据.json
+    if (window.electronAPI?.writeBacktestOptimizeFile) {
+      const res = await window.electronAPI.writeBacktestOptimizeFile({
+        fileName: '成分股数据.json',
+        content: jsonStr,
+      });
+      if (!res.success) {
+        throw new Error(res.error || '写入成分股数据.json失败');
+      }
+      logger.info(
+        `[SectorStocksExport] 静默导出成功至 docs/回测优化/成分股数据.json - 行业: ${industrySectors.length}, 概念: ${conceptSectors.length}`
+      );
+      return;
+    }
+
+    // 非 Electron 环境回退为浏览器 Blob 下载
     const blob = new Blob([jsonStr], { type: 'application/json;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');

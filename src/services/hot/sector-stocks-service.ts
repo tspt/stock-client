@@ -151,14 +151,6 @@ async function fetchAllStocksForSector(
           ? await getIndustrySectorStocks(sectorCode, 'f12', 1, pageSize, pageNum, signal)
           : await getConceptSectorStocks(sectorCode, 'f12', 1, pageSize, pageNum, signal);
 
-      // 在第一次请求后检查total值，如果超过500则跳过该板块
-      if (pageNum === 1 && result.total > 500) {
-        logger.info(
-          `[SectorStocks] 跳过板块 ${sectorCode} (${sectorType})，成分股数量 ${result.total} 超过限制 500`
-        );
-        throw new Error(`SKIP_SECTOR_TOTAL_EXCEEDED: ${result.total}`);
-      }
-
       const stocks = result.data.map((item) => ({
         name: item.name,
         code: item.code,
@@ -173,10 +165,6 @@ async function fetchAllStocksForSector(
       }
     } catch (error: any) {
       if (error.name === 'AbortError') {
-        throw error;
-      }
-      // 如果是跳过板块的错误，直接抛出
-      if (error.message?.startsWith('SKIP_SECTOR_TOTAL_EXCEEDED')) {
         throw error;
       }
       logger.error(`获取板块 ${sectorCode} 第 ${pageNum} 页失败:`, error);
@@ -290,52 +278,35 @@ export async function fetchAllSectorsStocks(
       updateProgress(`正在获取行业: ${sector.name}`);
       try {
         const stocks = await fetchAllStocksForSector(sector.code, 'industry', signal);
-        industryData.push({
+        const singleData: SectorFullData = {
           sectorCode: sector.code,
           sectorName: sector.name,
           stocks,
-        });
+        };
+        industryData.push(singleData);
+
+        // 实时单板块增量写入 IndexedDB，确保随时取消都能保留已完成的数据
+        await saveIndustrySectors([
+          {
+            code: sector.code,
+            name: sector.name,
+            children: stocks,
+            total: stocks.length,
+            savedAt: Date.now(),
+          },
+        ], true);
       } catch (error: any) {
         if (error.name === 'AbortError') {
           logger.info('[SectorStocks] 获取已被用户取消');
           break;
         }
-        if (error.message?.startsWith('SKIP_SECTOR_TOTAL_EXCEEDED')) {
-          const total = error.message.split(':')[1];
-          logger.warn(`[SectorStocks] 行业板块 ${sector.name} 因成分股数量(${total})超过500而被跳过`);
-          newFailed.push({
-            sectorCode: sector.code,
-            sectorName: sector.name,
-            sectorType: 'industry',
-            error: { type: 'SKIPPED', reason: `成分股数量(${total})超过500` },
-          });
-        } else {
-          logger.warn(`[SectorStocks] 行业板块 ${sector.name} 获取失败，已记录`);
-          newFailed.push({
-            sectorCode: sector.code,
-            sectorName: sector.name,
-            sectorType: 'industry',
-            error,
-          });
-        }
-      }
-    }
-
-    // 如果已取消,保存已获取的行业板块数据
-    if (signal?.aborted && industryData.length > 0) {
-      const industryToSave: SectorWithStocks[] = industryData.map((item) => ({
-        code: item.sectorCode,
-        name: item.sectorName,
-        children: item.stocks,
-        total: item.stocks.length,
-        savedAt: Date.now(),
-      }));
-
-      try {
-        await saveIndustrySectors(industryToSave, false);
-        logger.info(`[SectorStocks] 已保存 ${industryData.length} 个行业板块数据到 IndexedDB`);
-      } catch (error) {
-        logger.error('[SectorStocks] 保存行业板块数据失败:', error);
+        logger.warn(`[SectorStocks] 行业板块 ${sector.name} 获取失败，已记录`);
+        newFailed.push({
+          sectorCode: sector.code,
+          sectorName: sector.name,
+          sectorType: 'industry',
+          error,
+        });
       }
     }
 
@@ -362,51 +333,35 @@ export async function fetchAllSectorsStocks(
       updateProgress(`正在获取概念: ${sector.name}`);
       try {
         const stocks = await fetchAllStocksForSector(sector.code, 'concept', signal);
-        conceptData.push({
+        const singleData: SectorFullData = {
           sectorCode: sector.code,
           sectorName: sector.name,
           stocks,
-        });
+        };
+        conceptData.push(singleData);
+
+        // 实时单板块增量写入 IndexedDB，确保随时取消都能保留已完成的数据
+        await saveConceptSectors([
+          {
+            code: sector.code,
+            name: sector.name,
+            children: stocks,
+            total: stocks.length,
+            savedAt: Date.now(),
+          },
+        ], true);
       } catch (error: any) {
         if (error.name === 'AbortError') {
           logger.info('[SectorStocks] 获取已被用户取消');
           break;
         }
-        if (error.message?.startsWith('SKIP_SECTOR_TOTAL_EXCEEDED')) {
-          const total = error.message.split(':')[1];
-          logger.warn(`[SectorStocks] 概念板块 ${sector.name} 因成分股数量(${total})超过500而被跳过`);
-          newFailed.push({
-            sectorCode: sector.code,
-            sectorName: sector.name,
-            sectorType: 'concept',
-            error: { type: 'SKIPPED', reason: `成分股数量(${total})超过500` },
-          });
-        } else {
-          logger.warn(`[SectorStocks] 概念板块 ${sector.name} 获取失败，已记录`);
-          newFailed.push({
-            sectorCode: sector.code,
-            sectorName: sector.name,
-            sectorType: 'concept',
-            error,
-          });
-        }
-      }
-    }
-
-    if (signal?.aborted && conceptData.length > 0) {
-      const conceptToSave: SectorWithStocks[] = conceptData.map((item) => ({
-        code: item.sectorCode,
-        name: item.sectorName,
-        children: item.stocks,
-        total: item.stocks.length,
-        savedAt: Date.now(),
-      }));
-
-      try {
-        await saveConceptSectors(conceptToSave, true);
-        logger.info(`[SectorStocks] 已保存 ${conceptData.length} 个概念板块数据到 IndexedDB`);
-      } catch (error) {
-        logger.error('[SectorStocks] 保存概念板块数据失败:', error);
+        logger.warn(`[SectorStocks] 概念板块 ${sector.name} 获取失败，已记录`);
+        newFailed.push({
+          sectorCode: sector.code,
+          sectorName: sector.name,
+          sectorType: 'concept',
+          error,
+        });
       }
     }
   }
@@ -586,51 +541,35 @@ export async function fetchRemainingSectorsStocks(
       updateProgress(`正在获取行业: ${sector.name}`);
       try {
         const stocks = await fetchAllStocksForSector(sector.code, 'industry', signal);
-        industryData.push({
+        const singleData: SectorFullData = {
           sectorCode: sector.code,
           sectorName: sector.name,
           stocks,
-        });
+        };
+        industryData.push(singleData);
+
+        // 实时单板块增量写入 IndexedDB，确保随时取消都能保留已完成的数据
+        await saveIndustrySectors([
+          {
+            code: sector.code,
+            name: sector.name,
+            children: stocks,
+            total: stocks.length,
+            savedAt: Date.now(),
+          },
+        ], true);
       } catch (error: any) {
         if (error.name === 'AbortError') {
           logger.info('[SectorStocks] 获取已被用户取消');
           break;
         }
-        if (error.message?.startsWith('SKIP_SECTOR_TOTAL_EXCEEDED')) {
-          const total = error.message.split(':')[1];
-          logger.warn(`[SectorStocks] 行业板块 ${sector.name} 因成分股数量(${total})超过500而被跳过`);
-          newFailed.push({
-            sectorCode: sector.code,
-            sectorName: sector.name,
-            sectorType: 'industry',
-            error: { type: 'SKIPPED', reason: `成分股数量(${total})超过500` },
-          });
-        } else {
-          logger.warn(`[SectorStocks] 行业板块 ${sector.name} 获取失败`);
-          newFailed.push({
-            sectorCode: sector.code,
-            sectorName: sector.name,
-            sectorType: 'industry',
-            error,
-          });
-        }
-      }
-    }
-
-    if (signal?.aborted && industryData.length > 0) {
-      const industryToSave: SectorWithStocks[] = industryData.map((item) => ({
-        code: item.sectorCode,
-        name: item.sectorName,
-        children: item.stocks,
-        total: item.stocks.length,
-        savedAt: Date.now(),
-      }));
-
-      try {
-        await saveIndustrySectors(industryToSave, true);
-        logger.info(`[SectorStocks] 已保存 ${industryData.length} 个行业板块数据到 IndexedDB`);
-      } catch (error) {
-        logger.error('[SectorStocks] 保存行业板块数据失败:', error);
+        logger.warn(`[SectorStocks] 行业板块 ${sector.name} 获取失败`);
+        newFailed.push({
+          sectorCode: sector.code,
+          sectorName: sector.name,
+          sectorType: 'industry',
+          error,
+        });
       }
     }
 
@@ -658,52 +597,50 @@ export async function fetchRemainingSectorsStocks(
       updateProgress(`正在获取概念: ${sector.name}`);
       try {
         const stocks = await fetchAllStocksForSector(sector.code, 'concept', signal);
-        conceptData.push({
+        const singleData: SectorFullData = {
           sectorCode: sector.code,
           sectorName: sector.name,
           stocks,
-        });
+        };
+        conceptData.push(singleData);
+
+        // 实时单板块增量写入 IndexedDB，确保随时取消都能保留已完成的数据
+        await saveConceptSectors([
+          {
+            code: sector.code,
+            name: sector.name,
+            children: stocks,
+            total: stocks.length,
+            savedAt: Date.now(),
+          },
+        ], true);
       } catch (error: any) {
         if (error.name === 'AbortError') {
           logger.info('[SectorStocks] 获取已被用户取消');
           break;
         }
-        if (error.message?.startsWith('SKIP_SECTOR_TOTAL_EXCEEDED')) {
-          const total = error.message.split(':')[1];
-          logger.warn(`[SectorStocks] 概念板块 ${sector.name} 因成分股数量(${total})超过500而被跳过`);
-          newFailed.push({
-            sectorCode: sector.code,
-            sectorName: sector.name,
-            sectorType: 'concept',
-            error: { type: 'SKIPPED', reason: `成分股数量(${total})超过500` },
-          });
-        } else {
-          logger.warn(`[SectorStocks] 概念板块 ${sector.name} 获取失败`);
-          newFailed.push({
-            sectorCode: sector.code,
-            sectorName: sector.name,
-            sectorType: 'concept',
-            error,
-          });
-        }
+        logger.warn(`[SectorStocks] 概念板块 ${sector.name} 获取失败`);
+        newFailed.push({
+          sectorCode: sector.code,
+          sectorName: sector.name,
+          sectorType: 'concept',
+          error,
+        });
       }
     }
 
-    if (signal?.aborted && conceptData.length > 0) {
-      const conceptToSave: SectorWithStocks[] = conceptData.map((item) => ({
-        code: item.sectorCode,
-        name: item.sectorName,
-        children: item.stocks,
-        total: item.stocks.length,
-        savedAt: Date.now(),
-      }));
+    if (signal?.aborted) {
+      const mergedIndustry = fetchIndustry ? mergeSectorData(cachedIndustry, industryData) : [];
+      const mergedConcept = mergeSectorData(cachedConcept, conceptData);
+      logger.info(
+        `[SectorStocks] 增量获取已取消(概念阶段)。行业已保存: ${industryData.length}, 概念已保存: ${conceptData.length}, 失败: ${newFailed.length}`
+      );
 
-      try {
-        await saveConceptSectors(conceptToSave, true);
-        logger.info(`[SectorStocks] 已保存 ${conceptData.length} 个概念板块数据到 IndexedDB`);
-      } catch (error) {
-        logger.error('[SectorStocks] 保存概念板块数据失败:', error);
-      }
+      return {
+        industry: mergedIndustry,
+        concept: mergedConcept,
+        failed: newFailed,
+      };
     }
   }
 

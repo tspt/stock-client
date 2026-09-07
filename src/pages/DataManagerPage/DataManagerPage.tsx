@@ -192,8 +192,14 @@ export function DataManagerPage() {
   const handleRefreshStockList = async () => {
     setRefreshingStockList(true);
     try {
-      await refreshStockList();
-      antMessage.success('股票列表刷新成功');
+      const stocks = await refreshStockList();
+      if (window.electronAPI?.writeBacktestOptimizeFile) {
+        await window.electronAPI.writeBacktestOptimizeFile({
+          fileName: '股票列表.json',
+          content: JSON.stringify(stocks, null, 4),
+        });
+      }
+      antMessage.success('股票列表刷新成功并已同步到文件');
       await loadStockListStatus();
     } catch (error) {
       antMessage.error('刷新失败，请查看控制台');
@@ -224,8 +230,14 @@ export function DataManagerPage() {
   const handleRefreshIndustryBasic = async () => {
     setRefreshingIndustryBasic(true);
     try {
-      await refreshIndustrySectorsBasic();
-      antMessage.success('行业板块基础信息刷新成功');
+      const industryBasics = await refreshIndustrySectorsBasic();
+      if (window.electronAPI?.writeBacktestOptimizeFile) {
+        await window.electronAPI.writeBacktestOptimizeFile({
+          fileName: '行业板块.json',
+          content: JSON.stringify(industryBasics, null, 4),
+        });
+      }
+      antMessage.success('行业板块基础信息刷新成功并已同步到文件');
       await loadSectorBasicStatus();
     } catch (error) {
       antMessage.error('刷新失败');
@@ -239,8 +251,14 @@ export function DataManagerPage() {
   const handleRefreshConceptBasic = async () => {
     setRefreshingConceptBasic(true);
     try {
-      await refreshConceptSectorsBasic();
-      antMessage.success('概念板块基础信息刷新成功');
+      const conceptBasics = await refreshConceptSectorsBasic();
+      if (window.electronAPI?.writeBacktestOptimizeFile) {
+        await window.electronAPI.writeBacktestOptimizeFile({
+          fileName: '概念板块.json',
+          content: JSON.stringify(conceptBasics, null, 4),
+        });
+      }
+      antMessage.success('概念板块基础信息刷新成功并已同步到文件');
       await loadSectorBasicStatus();
     } catch (error) {
       antMessage.error('刷新失败');
