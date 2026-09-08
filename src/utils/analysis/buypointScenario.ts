@@ -94,24 +94,23 @@ export const SCENARIOS: ScenarioDefinition[] = [
 
 export const HIGH_LIFT_SCENARIOS: ScenarioDefinition[] = [
   { id: 'limit_up_trend', name: '连板/强趋势', lift: 3.18 },
-  { id: 'volume_breakout', name: '放量突破续涨', lift: 1.847 },
-  { id: 'soft_breakout', name: '温和过前高', lift: 1.814 },
-  { id: 'trend_continuation', name: '趋势中继', lift: 1.577 },
-  { id: 'volume_mid_thrust', name: '中部放量启动', lift: 1.298 },
+  { id: 'volume_mid_thrust', name: '中部放量启动', lift: 1.88 },
+  { id: 'trend_continuation', name: '趋势中继', lift: 1.58 },
+  { id: 'pullback_stabilize', name: '缩量回踩企稳反弹', lift: 1.42 },
 ];
 
 export const HIGH_LIFT_IDS = new Set(HIGH_LIFT_SCENARIOS.map((s) => s.id));
 
 const SCENARIO_ODDS_BASE: Record<ScenarioId, number> = {
-  limit_up_trend: 70,
+  limit_up_trend: 75,
   trend_continuation: 64,
-  volume_mid_thrust: 48,
-  volume_breakout: 26,
-  soft_breakout: 18,
-  pullback_stabilize: 52,
+  volume_mid_thrust: 62,
+  pullback_stabilize: 58,
   pullback_with_volume: 48,
   oversold_bounce: 45,
   weak_base: 38,
+  volume_breakout: 26,
+  soft_breakout: 18,
   other: 20,
 };
 
@@ -265,28 +264,82 @@ export function getLatestSignalOdds(classified: ClassifiedScenario): Pick<
   const limitUpCount5 = features.limitUpCount5;
   if (classified.scenario === 'limit_up_trend' && typeof limitUpCount5 === 'number') {
     if (limitUpCount5 >= 3) {
-      score += 6;
-      pushReason(reasons, '短线连板强度足够');
-    } else if (limitUpCount5 === 2 && dayReturn != null && dayReturn < 0) {
-      score -= 10;
-      pushReason(reasons, '连板后转弱');
+      score += 8;
+      pushReason(reasons, '短线连板龙头主升');
+    } else if (limitUpCount5 === 2) {
+      if (dayReturn != null && dayReturn >= 5) {
+        score += 8;
+        pushReason(reasons, '2板加速确立主升');
+      } else if (dayReturn != null && dayReturn < 0) {
+        score -= 12;
+        pushReason(reasons, '连板后转弱分歧');
+      }
     }
   }
 
+  // 方案C 通道1: 首板/首阳启动前移买点（前期平稳蓄势，当天首根放量启动阳线）
   const ret3 = features.ret3;
+  if (limitUpCount5 === 1 && dayReturn != null && dayReturn >= 7) {
+    if (ret3 != null && ret3 <= 15) {
+      score += 15;
+      pushReason(reasons, '首板突破第一买点');
+    }
+  } else if (classified.scenario === 'volume_mid_thrust') {
+    if (ret3 != null && ret3 <= 8 && dayReturn != null && dayReturn >= 4) {
+      score += 10;
+      pushReason(reasons, '低位首阳放量起爆');
+    }
+  }
+
+  // 方案C 排雷1: 买点偏晚排雷（前3天涨幅透支过大但当天动能衰竭滞涨）
+  if (ret3 != null && ret3 >= 18 && dayReturn != null && dayReturn < 3) {
+    score -= 16;
+    pushReason(reasons, '前期涨幅过大短线滞涨');
+  }
+
+  // 方案C 排雷2: 假突破与冲高受阻严重排雷
+  if (features.nearHigh20 === true) {
+    if (upperShadowRatio != null && upperShadowRatio >= 0.28) {
+      score -= 14;
+      pushReason(reasons, '逼近前高但受阻明显');
+    }
+  }
+
   if (classified.scenario === 'trend_continuation' && ret3 != null) {
-    if (ret3 >= 10) {
+    if (ret3 >= 10 && ret3 < 18) {
       score += 6;
-      pushReason(reasons, '3日趋势斜率较强');
+      pushReason(reasons, '3日趋势斜率适中健康');
     } else if (ret3 < 7) {
-      score -= 4;
-      pushReason(reasons, '3日趋势强度偏弱');
+      score -= 6;
+      pushReason(reasons, '3日趋势动能偏弱');
+    }
+  }
+
+  // 方案二：主升龙头确定性溢价加分（近5日有板且当日强阳收高）
+  if (limitUpCount5 != null && limitUpCount5 >= 1 && dayReturn != null && dayReturn >= 3 && (upperShadowRatio == null || upperShadowRatio <= 0.2)) {
+    score += 8;
+    pushReason(reasons, '龙头主升动能强劲');
+  }
+
+  // 方案一：硬核动能门槛一票否决——坚决清洗平庸滞涨股
+  // 1. 当日涨幅不足2% 或 3日动能疲软(<7%)，绝不允许流入 A 档（A档阈值为74分，限制最高不超过73分流入B档）
+  if ((dayReturn == null || dayReturn < 2) || (ret3 == null || ret3 < 7)) {
+    if (score >= 74) {
+      score = 73;
+      pushReason(reasons, '动能不足降级');
+    }
+  }
+  // 2. 当日收跌且无近5日涨停支撑，限制最高不超过57分（降为C档）
+  if (dayReturn != null && dayReturn < 0 && (limitUpCount5 == null || limitUpCount5 === 0)) {
+    if (score >= 58) {
+      score = 57;
+      pushReason(reasons, '收跌走弱降级');
     }
   }
 
   const oddsScore = clampScore(score);
   const oddsTier = resolveOddsTier(oddsScore);
-  const oddsReason = reasons.slice(0, 3).join(' / ') || '场景基础赔率';
+  const oddsReason = reasons.slice(-3).join(' / ') || reasons.slice(0, 3).join(' / ') || '场景基础赔率';
 
   return { oddsScore, oddsTier, oddsReason };
 }
