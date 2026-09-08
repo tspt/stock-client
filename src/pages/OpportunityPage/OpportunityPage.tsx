@@ -65,6 +65,12 @@ import {
 import { getUnifiedSectorBasics } from '@/services/hot/unified-sectors';
 import type { IndustrySectorBasicInfo, ConceptSectorBasicInfo } from '@/types/stock';
 import {
+  getMappedConcepts,
+  getMappedIndustry,
+  loadSectorStockMapping,
+  type SectorInfo,
+} from '@/services/stocks/sectorMapping';
+import {
   OPPORTUNITY_TABLE_HEIGHT_PADDING,
   OPPORTUNITY_TABLE_HEIGHT_EXTRA_PADDING,
   OPPORTUNITY_TABLE_HEIGHT_MARGIN,
@@ -217,6 +223,23 @@ export function OpportunityPage() {
 
   const { allStocks } = useAllStocks();
 
+  const [industryMapping, setIndustryMapping] = useState<Map<string, SectorInfo>>(new Map());
+  const [conceptMapping, setConceptMapping] = useState<Map<string, SectorInfo[]>>(new Map());
+
+  useEffect(() => {
+    let cancelled = false;
+    const loadSectorMapping = async () => {
+      const { industryByCode, conceptsByCode } = await loadSectorStockMapping();
+      if (cancelled) return;
+      setIndustryMapping(industryByCode);
+      setConceptMapping(conceptsByCode);
+    };
+    loadSectorMapping();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   // 为每只股票计算交易信号
   const processedData = useMemo(() => {
     // 构建股票代码到完整信息的映射（包含 industry 和 concepts）
@@ -225,11 +248,25 @@ export function OpportunityPage() {
     );
 
     return analysisData.map((item) => {
-      // 从 allStocks 中补充 industry 和 concepts 字段
+      // 从 allStocks 中补充 industry 和 concepts；缺省时用 IndexedDB 成分股映射兜底
       const stockInfo = stockInfoMap.get(item.code);
-      const enrichedItem = stockInfo
-        ? { ...item, industry: stockInfo.industry, concepts: stockInfo.concepts }
-        : item;
+      const industry =
+        stockInfo?.industry ||
+        item.industry ||
+        getMappedIndustry(item.code, industryMapping) ||
+        undefined;
+      const conceptsFromStock = stockInfo?.concepts;
+      const concepts =
+        (conceptsFromStock && conceptsFromStock.length > 0
+          ? conceptsFromStock
+          : undefined) ||
+        (item.concepts && item.concepts.length > 0 ? item.concepts : undefined) ||
+        getMappedConcepts(item.code, conceptMapping);
+      const enrichedItem = {
+        ...item,
+        industry,
+        concepts,
+      };
 
       // 从 klineDataCache 中获取 K 线数据
       const cachedKline = klineDataCache?.get(enrichedItem.code);
@@ -248,7 +285,7 @@ export function OpportunityPage() {
       const { tradingSignal: __, ...rest } = enrichedItem;
       return rest;
     });
-  }, [analysisData, klineDataCache, allStocks]);
+  }, [analysisData, klineDataCache, allStocks, industryMapping, conceptMapping]);
 
   const [columnSettingsVisible, setColumnSettingsVisible] = useState(false);
   const [selectedMarket, setSelectedMarket] = useState<string[]>([...INITIAL_FILTER_STATE.selectedMarket]);
@@ -1006,6 +1043,11 @@ export function OpportunityPage() {
     return allStocks.filter((stock) => {
       const pureCode = getPureCode(stock.code);
       const isST = stock.name.includes('ST');
+      const industry = stock.industry || getMappedIndustry(stock.code, industryMapping) || undefined;
+      const concepts =
+        (stock.concepts && stock.concepts.length > 0
+          ? stock.concepts
+          : getMappedConcepts(stock.code, conceptMapping));
 
       // 市场筛选
       if (!marketMatchFn(pureCode)) return false;
@@ -1015,7 +1057,7 @@ export function OpportunityPage() {
 
       // 行业板块筛选（预过滤）
       if (industrySectors && industrySectors.length > 0) {
-        const hasIndustry = stock.industry && industrySectors.includes(stock.industry.code);
+        const hasIndustry = industry && industrySectors.includes(industry.code);
         if (industrySectorInvert) {
           // 反选模式：排除选中板块的股票
           if (hasIndustry) return false;
@@ -1027,14 +1069,14 @@ export function OpportunityPage() {
 
       // 概念板块筛选（预过滤）
       if (conceptSectors && conceptSectors.length > 0) {
-        if (!stock.concepts || stock.concepts.length === 0) {
+        if (!concepts || concepts.length === 0) {
           // 如果股票没有概念板块
           if (!conceptSectorInvert) {
             return false; // 正常模式：没有概念板块的股票被排除
           }
           // 反选模式：没有概念板块的股票保留（因为不在排除列表中）
         } else {
-          const hasMatchingConcept = stock.concepts.some((c: { code: string; name: string }) => conceptSectors.includes(c.code));
+          const hasMatchingConcept = concepts.some((c: { code: string; name: string }) => conceptSectors.includes(c.code));
           if (conceptSectorInvert) {
             // 反选模式：排除选中板块的股票
             if (hasMatchingConcept) return false;
@@ -1047,7 +1089,7 @@ export function OpportunityPage() {
 
       return true;
     });
-  }, [allStocks, selectedMarket, nameType, industrySectors, conceptSectors, industrySectorInvert, conceptSectorInvert]);
+  }, [allStocks, selectedMarket, nameType, industrySectors, conceptSectors, industrySectorInvert, conceptSectorInvert, industryMapping, conceptMapping]);
 
   // 处理添加到自选股
   const handleAddToWatchList = () => {
@@ -1559,9 +1601,11 @@ export function OpportunityPage() {
 
       const industryByCode = new Map<string, { code: string; name: string }>();
       allStocks.forEach((stock) => {
-        if (stock.industry) {
-          industryByCode.set(stock.code, { code: stock.industry.code, name: stock.industry.name });
-          industryByCode.set(getPureCode(stock.code), { code: stock.industry.code, name: stock.industry.name });
+        const industry =
+          stock.industry || getMappedIndustry(stock.code, industryMapping) || null;
+        if (industry) {
+          industryByCode.set(stock.code, { code: industry.code, name: industry.name });
+          industryByCode.set(getPureCode(stock.code), { code: industry.code, name: industry.name });
         }
       });
 
@@ -1570,6 +1614,7 @@ export function OpportunityPage() {
           history.industry ||
           industryByCode.get(history.code) ||
           industryByCode.get(getPureCode(history.code)) ||
+          getMappedIndustry(history.code, industryMapping) ||
           null;
         if ((index + 1) % 50 === 0 || index + 1 === allHistories.length) {
           setExportKlineProgress({ current: index + 1, total: allHistories.length });

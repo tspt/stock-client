@@ -3,77 +3,16 @@
  * 为股票列表动态添加行业和概念板块信息
  */
 
-import { getIndustrySectors, getConceptSectors } from '@/utils/storage/sectorStocksIndexedDB';
-import type { StockInfo, IndustryInfo, ConceptInfo } from '@/types/stock';
+import type { StockInfo } from '@/types/stock';
 import { logger } from '@/utils/business/logger';
+import { loadSectorStockMapping, toCombinedSectorMapping } from './sectorMapping';
 
 /**
- * 根据纯数字股票代码添加市场前缀
- * 规则：60/68/90 开头 -> SH，00/30 开头 -> SZ
+ * 从 IndexedDB 构建股票 -> 板块映射表（与展示侧共用规则）
  */
-function normalizeStockCode(code: string): string {
-  // 如果已经是标准格式（SH/SZ开头），直接返回
-  if (code.startsWith('SH') || code.startsWith('SZ')) {
-    return code;
-  }
-
-  // 根据代码前缀判断市场
-  const prefix = code.substring(0, 2);
-  if (['60', '68', '90'].includes(prefix)) {
-    return `SH${code}`;
-  } else if (['00', '30'].includes(prefix)) {
-    return `SZ${code}`;
-  }
-
-  // 如果无法判断，记录警告并返回原始代码
-  logger.warn(`[SectorEnhancer] 无法识别股票代码: ${code}`);
-  return code;
-}
-
-/**
- * 从 IndexedDB 构建股票 -> 板块映射表
- */
-async function buildSectorMapping(): Promise<
-  Map<string, { industry?: IndustryInfo; concepts?: ConceptInfo[] }>
-> {
-  const mapping = new Map<string, { industry?: IndustryInfo; concepts?: ConceptInfo[] }>();
-
-  try {
-    // 1. 获取行业板块
-    const industrySectors = await getIndustrySectors();
-    industrySectors.forEach((sector) => {
-      sector.children?.forEach((stock) => {
-        // 将纯数字代码转换为标准格式
-        const normalizedCode = normalizeStockCode(stock.code);
-        if (!mapping.has(normalizedCode)) {
-          mapping.set(normalizedCode, {});
-        }
-        const info = mapping.get(normalizedCode)!;
-        info.industry = { code: sector.code, name: sector.name };
-      });
-    });
-
-    // 2. 获取概念板块
-    const conceptSectors = await getConceptSectors();
-    conceptSectors.forEach((sector) => {
-      sector.children?.forEach((stock) => {
-        // 将纯数字代码转换为标准格式
-        const normalizedCode = normalizeStockCode(stock.code);
-        if (!mapping.has(normalizedCode)) {
-          mapping.set(normalizedCode, {});
-        }
-        const info = mapping.get(normalizedCode)!;
-        if (!info.concepts) {
-          info.concepts = [];
-        }
-        info.concepts.push({ code: sector.code, name: sector.name });
-      });
-    });
-  } catch (error) {
-    logger.error('[SectorEnhancer] 构建板块映射失败:', error);
-  }
-
-  return mapping;
+async function buildSectorMapping() {
+  const mapping = await loadSectorStockMapping();
+  return toCombinedSectorMapping(mapping);
 }
 
 /**

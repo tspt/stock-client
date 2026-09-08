@@ -150,14 +150,8 @@ export function buildTrackedLatestSignals(
         !!hotCodes && (hotCodes.has(signal.code) || hotCodes.has(pureCode(signal.code)));
       const trackedReturns = calculateFutureReturns(historyMap.get(signal.code) || historyMap.get(pureCode(signal.code)), signal);
       const stat = getTrackingStatus(trackedReturns, options);
-      const odds =
-        signal.oddsScore != null && signal.oddsTier && signal.oddsReason
-          ? {
-              oddsScore: signal.oddsScore,
-              oddsTier: signal.oddsTier,
-              oddsReason: signal.oddsReason,
-            }
-          : getLatestSignalOdds(signal);
+      // 采用最新经过双通道与排雷增强的赔率计算逻辑，确保评分实时对齐
+      const odds = getLatestSignalOdds(signal);
 
       return [{
         ...signal,

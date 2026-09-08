@@ -24,11 +24,12 @@ import {
   InputNumber,
   Tooltip,
   DatePicker,
+  Popover,
 } from 'antd';
 import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
 import type { ColumnsType } from 'antd/es/table';
-import { DatabaseOutlined, ExportOutlined, InfoCircleOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons';
+import { BarChartOutlined, DatabaseOutlined, ExportOutlined, InfoCircleOutlined, ReloadOutlined, SearchOutlined, SyncOutlined } from '@ant-design/icons';
 import {
   getStocksHistory,
   type StockHistoryRecord,
@@ -65,6 +66,13 @@ import { exportStockNamesToPng } from '@/utils/export/stockNamesExportUtils';
 import { logger } from '@/utils/business/logger';
 import { OPPORTUNITY_INDUSTRY_GROUPS } from '@/utils/config/opportunityAnalysisDefaults';
 import { StockConceptTags, StockFeatureTag, StockStatusTag } from '@/components/common/Tags';
+import {
+  getMappedConcepts,
+  getMappedIndustry,
+  loadSectorStockMapping,
+  normalizeSectorStockCode,
+  type SectorInfo,
+} from '@/services/stocks/sectorMapping';
 import styles from './BacktestPage.module.css';
 
 const { Header, Content } = Layout;
@@ -73,7 +81,6 @@ const { Text } = Typography;
 /** 表格滚动区为表头与分页预留的高度 */
 const TABLE_SCROLL_Y_RESERVE = 72;
 
-type SectorInfo = { code: string; name: string };
 
 function isSTStock(name: string): boolean {
   return name.includes('ST');
@@ -146,6 +153,7 @@ export function BacktestPage() {
   const [loadingCount, setLoadingCount] = useState(false);
   const [scanningHistory, setScanningHistory] = useState(false);
   const [scanningLatest, setScanningLatest] = useState(false);
+  const [syncingAllLatest, setSyncingAllLatest] = useState(false);
   const [industryMapping, setIndustryMapping] = useState<Map<string, SectorInfo>>(new Map());
   const [conceptMapping, setConceptMapping] = useState<Map<string, SectorInfo[]>>(new Map());
   const [historySignals, setHistorySignals] = useState<BuyPointSignal[]>([]);
@@ -164,7 +172,6 @@ export function BacktestPage() {
   const [trackingMinHitCount, setTrackingMinHitCount] = useState(2);
   const [trackingRows, setTrackingRows] = useState<TrackedLatestSignal[]>([]);
   const [loadingTracking, setLoadingTracking] = useState(false);
-  const [trackingStatsCollapsed, setTrackingStatsCollapsed] = useState(true);
   const [showAddTrackingLatestModal, setShowAddTrackingLatestModal] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [latestDateSummary, setLatestDateSummary] = useState({ dominantDate: '', dominantCount: 0 });
@@ -175,58 +182,15 @@ export function BacktestPage() {
   const [asOfDate, setAsOfDate] = useState<string | null>(null);
   const tableAreaRef = useRef<HTMLDivElement>(null);
 
-  const normalizeStockCode = useCallback((code: string): string => {
-    if (code.startsWith('SH') || code.startsWith('SZ')) {
-      return code;
-    }
-    const prefix = code.substring(0, 2);
-    if (['60', '68', '90'].includes(prefix)) {
-      return `SH${code}`;
-    }
-    if (['00', '30'].includes(prefix)) {
-      return `SZ${code}`;
-    }
-    return code;
-  }, []);
-
   useEffect(() => {
     const loadSectorMapping = async () => {
-      try {
-        const { getIndustrySectors, getConceptSectors } = await import('@/utils/storage/sectorStocksIndexedDB');
-        const mapping = new Map<string, SectorInfo>();
-        const conceptMap = new Map<string, SectorInfo[]>();
-        const [industrySectors, conceptSectors] = await Promise.all([
-          getIndustrySectors(),
-          getConceptSectors(),
-        ]);
-        industrySectors.forEach((sector) => {
-          sector.children?.forEach((stock) => {
-            const normalizedCode = normalizeStockCode(stock.code);
-            if (!mapping.has(normalizedCode)) {
-              mapping.set(normalizedCode, { code: sector.code, name: sector.name });
-            }
-          });
-        });
-        conceptSectors.forEach((sector) => {
-          sector.children?.forEach((stock) => {
-            const normalizedCode = normalizeStockCode(stock.code);
-            const concepts = conceptMap.get(normalizedCode) || [];
-            if (!concepts.some((item) => item.code === sector.code)) {
-              concepts.push({ code: sector.code, name: sector.name });
-            }
-            conceptMap.set(normalizedCode, concepts);
-          });
-        });
-        setIndustryMapping(mapping);
-        setConceptMapping(conceptMap);
-        logger.info(`[BacktestPage] 板块映射加载完成，行业 ${mapping.size} 只，概念 ${conceptMap.size} 只`);
-      } catch (error) {
-        logger.error('[BacktestPage] 加载板块映射失败:', error);
-      }
+      const { industryByCode, conceptsByCode } = await loadSectorStockMapping();
+      setIndustryMapping(industryByCode);
+      setConceptMapping(conceptsByCode);
     };
 
     loadSectorMapping();
-  }, [normalizeStockCode]);
+  }, []);
 
   const readFilteredHistories = useCallback(async () => {
     const allHistories = await getStocksHistory([]);
@@ -266,8 +230,8 @@ export function BacktestPage() {
 
       const data = signals.map((item) => ({
         ...item,
-        industry: item.industry || industryMapping.get(normalizeStockCode(item.code)) || null,
-        concepts: conceptMapping.get(normalizeStockCode(item.code)) || [],
+        industry: item.industry || getMappedIndustry(item.code, industryMapping) || null,
+        concepts: getMappedConcepts(item.code, conceptMapping),
       }));
 
       setHistorySignals(data);
@@ -440,8 +404,8 @@ export function BacktestPage() {
       try {
         const data = signals.map((item) => ({
           ...item,
-          industry: item.industry || industryMapping.get(normalizeStockCode(item.code)) || null,
-          concepts: conceptMapping.get(normalizeStockCode(item.code)) || [],
+          industry: item.industry || getMappedIndustry(item.code, industryMapping) || null,
+          concepts: getMappedConcepts(item.code, conceptMapping),
         }));
         const fileBaseName = resolveLatestExportDate(
           signals,
@@ -481,6 +445,112 @@ export function BacktestPage() {
       message.error('扫描最新交易日失败: ' + (error as Error).message);
     } finally {
       setScanningLatest(false);
+    }
+  };
+
+  const handleSyncExistingBuyPoints = async () => {
+    if (!window.electronAPI?.readLatestBuyPointFiles || !window.electronAPI?.exportBacktestSignalsFile) {
+      message.warning('同步功能不可用（需在 Electron 环境中运行）');
+      return;
+    }
+
+    try {
+      setSyncingAllLatest(true);
+      message.loading({ content: '正在读取已有买点文件列表...', key: 'sync_existing' });
+
+      const filesResult = await window.electronAPI.readLatestBuyPointFiles();
+      if (!filesResult.success) {
+        message.error({ content: '读取已有买点文件失败: ' + (filesResult.error || '未知错误'), key: 'sync_existing' });
+        return;
+      }
+
+      const files = filesResult.files || [];
+      if (files.length === 0) {
+        message.warning({ content: '未找到任何已有买点文件，请先执行“扫描最新”', key: 'sync_existing' });
+        return;
+      }
+
+      // 提取所有已有文件的日期并排序
+      const dateKeys = Array.from(
+        new Set(
+          files
+            .map((f) => normalizeDateKey(f.fileBaseName))
+            .filter((d) => /^\d{4}-\d{2}-\d{2}$/.test(d))
+        )
+      ).sort();
+
+      if (dateKeys.length === 0) {
+        message.warning({ content: '未匹配到合法的日期快照文件', key: 'sync_existing' });
+        return;
+      }
+
+      message.loading({ content: `正在加载股票行情并同步 ${dateKeys.length} 个历史日期...`, key: 'sync_existing' });
+
+      // 一次性加载全量股票历史数据，杜绝重复从 IndexedDB 读取
+      const { histories } = await readFilteredHistories();
+
+      let successCount = 0;
+      let totalSignals = 0;
+
+      for (let i = 0; i < dateKeys.length; i++) {
+        const dateKey = dateKeys[i];
+        message.loading({
+          content: `正在同步第 [${i + 1}/${dateKeys.length}] 个日期 (${dateKey})...`,
+          key: 'sync_existing',
+        });
+
+        const signals = scanLatestScenarioSignals(histories, {
+          highLiftOnly: true,
+          asOfDate: dateKey,
+        }).sort((a, b) => {
+          if ((b.oddsScore || 0) !== (a.oddsScore || 0)) return (b.oddsScore || 0) - (a.oddsScore || 0);
+          if ((b.lift || 0) !== (a.lift || 0)) return (b.lift || 0) - (a.lift || 0);
+          return a.name.localeCompare(b.name, 'zh-CN');
+        });
+
+        // 即使 signals 为空也保留为空快照，确保文件与算法逻辑真实同步
+        const data = signals.map((item) => ({
+          ...item,
+          industry: item.industry || getMappedIndustry(item.code, industryMapping) || null,
+          concepts: getMappedConcepts(item.code, conceptMapping),
+        }));
+
+        const fileBaseName = dateKey;
+        const meta = {
+          tab: 'latest' as const,
+          autoExport: true,
+          asOfDate: dateKey,
+          searchText: '',
+          scenarioFilter: 'all',
+          excludeST,
+          latestDate: dateKey,
+          fileBaseName,
+        };
+
+        await exportBacktestSignalsToJson({
+          kind: 'latest',
+          data,
+          fileBaseName,
+          meta,
+        });
+
+        successCount++;
+        totalSignals += data.length;
+      }
+
+      message.loading({ content: '文件同步完成，正在重新加载买点追踪...', key: 'sync_existing' });
+      await handleLoadTrackingRows(true);
+      message.success({
+        content: `成功更新 ${successCount} 个已有买点文件（累计信号 ${totalSignals} 只），追踪数据已同步！`,
+        key: 'sync_existing',
+        duration: 4,
+      });
+    } catch (error) {
+      logger.error('[BacktestPage] 批量同步已有买点失败:', error);
+      message.error({ content: '批量同步失败: ' + (error as Error).message, key: 'sync_existing' });
+      await handleLoadTrackingRows(true);
+    } finally {
+      setSyncingAllLatest(false);
     }
   };
 
@@ -524,11 +594,15 @@ export function BacktestPage() {
     const dateLimit =
       trackingDateRange === 'today'
         ? 1
-        : trackingDateRange === 'recent5'
-          ? 5
-          : trackingDateRange === 'recent10'
-            ? 10
-            : sortedDates.length;
+        : trackingDateRange === 'recent2'
+          ? 2
+          : trackingDateRange === 'recent3'
+            ? 3
+            : trackingDateRange === 'recent5'
+              ? 5
+              : trackingDateRange === 'recent10'
+                ? 10
+                : sortedDates.length;
     const allowedDates = new Set(sortedDates.slice(0, dateLimit));
     const onlyOpportunity = trackingIntersectionFilters.includes('opportunity');
     const onlyHotRank = trackingIntersectionFilters.includes('hotRank');
@@ -541,7 +615,7 @@ export function BacktestPage() {
       const opportunityMatch = !onlyOpportunity || item.opportunityRecordHit;
       const hotRankMatch = !onlyHotRank || item.hotRankHit;
       const industryCode =
-        item.industry?.code || industryMapping.get(normalizeStockCode(item.code))?.code;
+        item.industry?.code || getMappedIndustry(item.code, industryMapping)?.code;
       const industryMatch = matchIndustryGroupFilter(
         industryCode,
         trackingIndustryCodes,
@@ -563,7 +637,6 @@ export function BacktestPage() {
     });
   }, [
     industryMapping,
-    normalizeStockCode,
     searchText,
     trackingIndustryCodes,
     trackingIndustryInvert,
@@ -580,14 +653,13 @@ export function BacktestPage() {
 
     trackingAnalysisRows.forEach((item) => {
       if (!allowedStatuses.has(item.status)) return;
-      const key = `${normalizeStockCode(item.code)}-${item.signalDateKey}`;
+      const key = `${normalizeSectorStockCode(item.code)}-${item.signalDateKey}`;
       const current = uniqueRows.get(key);
       uniqueRows.set(key, current ? pickPreferredTrackingRow(current, item) : item);
     });
 
     return Array.from(uniqueRows.values());
   }, [
-    normalizeStockCode,
     trackingAnalysisRows,
     trackingStatusFilter,
   ]);
@@ -603,7 +675,7 @@ export function BacktestPage() {
     const stockMap = new Map<string, { code: string; name: string }>();
     filteredTrackingRows.forEach((item) => {
       if (item.signalDateKey !== latestDateKey) return;
-      const code = normalizeStockCode(item.code);
+      const code = normalizeSectorStockCode(item.code);
       if (!stockMap.has(code)) {
         stockMap.set(code, { code, name: item.name });
       }
@@ -613,7 +685,7 @@ export function BacktestPage() {
       latestDateKey,
       stocks: Array.from(stockMap.values()),
     };
-  }, [filteredTrackingRows, normalizeStockCode]);
+  }, [filteredTrackingRows]);
 
   const trackingStats = useMemo(() => {
     const total = filteredTrackingRows.length;
@@ -707,7 +779,7 @@ export function BacktestPage() {
       .slice(0, 6);
 
     const thresholds = [3, 5, 8];
-    const minHits = [2, 3, 4];
+    const minHits = [1, 2, 3];
     const parameterStats = thresholds.flatMap((threshold) =>
       minHits.map((minHitCount) => {
         const counts = trackingAnalysisRows.reduce(
@@ -852,7 +924,7 @@ export function BacktestPage() {
   };
 
   const getRecordIndustry = (record: { code: string; industry?: SectorInfo | null }) => {
-    return record.industry || industryMapping.get(normalizeStockCode(record.code)) || null;
+    return record.industry || getMappedIndustry(record.code, industryMapping);
   };
 
   const compareIndustry = (
@@ -865,7 +937,9 @@ export function BacktestPage() {
   };
 
   const getRecordConcepts = (record: { code: string; concepts?: SectorInfo[] }) => {
-    return record.concepts || conceptMapping.get(normalizeStockCode(record.code)) || [];
+    return (record.concepts && record.concepts.length > 0)
+      ? record.concepts
+      : getMappedConcepts(record.code, conceptMapping);
   };
 
   const renderIndustry = (_: unknown, record: { code: string; industry?: SectorInfo | null }) => {
@@ -1010,6 +1084,101 @@ export function BacktestPage() {
     />
   );
 
+  const renderTrackingStatsPopoverContent = () => (
+    <div className={styles.trackingPopoverContent}>
+      <Row gutter={[16, 8]} className={styles.trackingStatsRow}>
+        <Col>
+          <Statistic title="当前展示" value={trackingStats.total} />
+        </Col>
+        <Col>
+          <Statistic title="已达标" value={trackingStats.passed} />
+        </Col>
+        <Col>
+          <Statistic title="验证中" value={trackingStats.tracking} />
+        </Col>
+        <Col>
+          <Statistic title="未达标" value={trackingStats.failed} />
+        </Col>
+        <Col>
+          <Statistic
+            title="已验证达标率"
+            value={trackingStats.passRate == null ? '-' : `${trackingStats.passRate}%`}
+            valueStyle={{ color: trackingStats.passRate != null && trackingStats.passRate >= 50 ? '#cf1322' : undefined }}
+          />
+        </Col>
+        <Col>
+          <Statistic
+            title="平均最大收益"
+            value={
+              trackingStats.avgMaxReturn == null ? '-' : `${trackingStats.avgMaxReturn}%`
+            }
+          />
+        </Col>
+      </Row>
+      {trackingStats.scenarios.length > 0 && (
+        <div className={styles.trackingAnalysisBlock}>
+          <Text type="secondary">场景统计：</Text>
+          <Space wrap size={[4, 4]} className={styles.trackingScenarioStats}>
+            {trackingStats.scenarios.map((item) => (
+              <Tag key={item.name} color="blue">
+                {item.name}: {item.total} / 达标 {item.passed}
+                {item.passRate != null ? ` / ${item.passRate}%` : ''}
+              </Tag>
+            ))}
+          </Space>
+        </div>
+      )}
+      {trackingAnalysisStats.failedRules.length > 0 && (
+        <div className={styles.trackingAnalysisBlock}>
+          <Text type="secondary">失败样本 Top：</Text>
+          <Space wrap size={[4, 4]}>
+            {trackingAnalysisStats.failedRules.map((item) => (
+              <Tag
+                key={`${item.scenarioName}-${item.matchedRule}`}
+                bordered={false}
+                title={item.matchedRule}
+              >
+                {item.scenarioName}｜{getRuleShortLabel(item.matchedRule)}: 失败 {item.failed} / {item.total}
+              </Tag>
+            ))}
+          </Space>
+        </div>
+      )}
+      {trackingAnalysisStats.ruleStats.length > 0 && (
+        <div className={styles.trackingAnalysisBlock}>
+          <Text type="secondary">规则胜率 Top：</Text>
+          <Space wrap size={[4, 4]}>
+            {trackingAnalysisStats.ruleStats.map((item) => (
+              <Tag
+                key={`${item.scenarioName}-${item.matchedRule}`}
+                bordered={false}
+                title={item.matchedRule}
+              >
+                {item.scenarioName}｜{getRuleShortLabel(item.matchedRule)}:{' '}
+                {item.passRate == null ? '待验证' : `${item.passRate}%`}
+                （{item.passed}/{item.verified}）
+              </Tag>
+            ))}
+          </Space>
+        </div>
+      )}
+      {trackingAnalysisStats.parameterStats.length > 0 && (
+        <div className={styles.trackingAnalysisBlock}>
+          <Text type="secondary">参数回测：</Text>
+          <Space wrap size={[4, 4]}>
+            {trackingAnalysisStats.parameterStats.map((item) => (
+              <Tag key={`${item.threshold}-${item.minHitCount}`} bordered={false}>
+                {item.threshold}% / {item.minHitCount}中：
+                {item.passRate == null ? '待验证' : `${item.passRate}%`}
+                （{item.passed}/{item.verified}）
+              </Tag>
+            ))}
+          </Space>
+        </div>
+      )}
+    </div>
+  );
+
   const activeDataLength =
     activeTab === 'tracking'
       ? filteredTrackingRows.length
@@ -1034,10 +1203,82 @@ export function BacktestPage() {
               买点追踪收益验证、历史好买点归类
             </span>
           </div>
+
+          <div className={styles.headerStatsStrip}>
+            <div className={styles.statBadge}>
+              <span className={styles.statBadgeLabel}>总数</span>
+              <span className={styles.statBadgeValue}>{loadingCount ? '-' : totalCount.toLocaleString()}</span>
+            </div>
+            <div className={styles.statBadge}>
+              <span className={styles.statBadgeLabel}>参与</span>
+              <span className={styles.statBadgeValue}>{loadingCount ? '-' : exportCount.toLocaleString()}</span>
+            </div>
+            <div className={styles.statBadge}>
+              <span className={styles.statBadgeLabel}>行业</span>
+              <span className={styles.statBadgeValue}>{loadingCount ? '-' : industryMapping.size.toLocaleString()}</span>
+            </div>
+            <div className={styles.statBadge}>
+              <span className={styles.statBadgeLabel}>概念</span>
+              <span className={styles.statBadgeValue}>{loadingCount ? '-' : conceptMapping.size.toLocaleString()}</span>
+            </div>
+            <div className={styles.statBadge}>
+              <span className={styles.statBadgeLabel}>历史好买点</span>
+              <span className={styles.statBadgeValue}>{loadingCount ? '-' : historySignals.length.toLocaleString()}</span>
+            </div>
+            <div className={styles.statBadge}>
+              <span className={styles.statBadgeLabel}>追踪总信号</span>
+              <span className={styles.statBadgeValue}>{loadingTracking ? '-' : trackingRows.length.toLocaleString()}</span>
+            </div>
+            <div className={styles.headerDateBadge}>
+              <Tooltip
+                placement="bottom"
+                title={
+                  <div className={styles.compactInfoTooltip}>
+                    <div>历史好买点与买点追踪均基于 IndexedDB stockHistory；最新交易日扫描会自动保存快照并联动更新追踪收益。</div>
+                    <div>历史好买点规则：买入收盘后 1-6 日累计收益中至少 2 项 &gt;= 5%。</div>
+                    <div>最新交易日只扫描 lift&gt;1 的高价值场景，未来收益尚未发生时处于“验证中”状态。</div>
+                    <div>赔率分会综合场景、当日强弱、量价结构和位置关系，对买点信号做“赔率优先”排序。</div>
+                  </div>
+                }
+              >
+                <InfoCircleOutlined className={styles.compactInfoIcon} />
+              </Tooltip>
+              <span>
+                {latestDateSummary.dominantDate
+                  ? `${latestDateSummary.dominantDate} (${latestDateSummary.dominantCount}只)`
+                  : '未读取到截止日'}
+              </span>
+            </div>
+          </div>
+
           <Space wrap className={styles.headerActions}>
+            <Popover
+              content={renderTrackingStatsPopoverContent}
+              title={
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span>买点追踪统计与多维归因</span>
+                  <Tag color={trackingStats.passRate != null && trackingStats.passRate >= 50 ? 'red' : 'blue'}>
+                    达标率: {trackingStats.passRate == null ? '-' : `${trackingStats.passRate}%`}
+                  </Tag>
+                </div>
+              }
+              trigger={['hover', 'click']}
+              placement="bottomRight"
+              overlayClassName={styles.trackingPopoverOverlay}
+            >
+              <Button
+                icon={<BarChartOutlined />}
+                style={{
+                  borderColor: trackingStats.passRate != null && trackingStats.passRate >= 50 ? '#ff7875' : undefined,
+                  color: trackingStats.passRate != null && trackingStats.passRate >= 50 ? '#cf1322' : undefined,
+                }}
+              >
+                追踪统计 {trackingStats.passRate != null ? `(${trackingStats.passRate}%)` : ''}
+              </Button>
+            </Popover>
             <Checkbox
               checked={excludeST}
-              disabled={scanningHistory || scanningLatest}
+              disabled={scanningHistory || scanningLatest || syncingAllLatest}
               onChange={(e) => setExcludeST(e.target.checked)}
             >
               排除ST
@@ -1045,84 +1286,12 @@ export function BacktestPage() {
             <Button onClick={refreshHistoryCount} disabled={loadingCount} loading={loadingCount}>
               刷新统计
             </Button>
-            <Button
-              icon={<ReloadOutlined />}
-              loading={scanningHistory}
-              disabled={exportCount === 0}
-              onClick={handleScanHistoricalBuyPoints}
-            >
-              扫描历史
-            </Button>
-            <DatePicker
-              allowClear
-              value={asOfDate ? dayjs(asOfDate) : null}
-              disabled={scanningLatest || scanningHistory}
-              disabledDate={(current: Dayjs) => !!(current && current.isAfter(dayjs(), 'day'))}
-              style={{ width: 140 }}
-              placeholder="截止日(最新)"
-              onChange={(date: Dayjs | null) => {
-                setAsOfDate(date ? date.format('YYYY-MM-DD') : null);
-              }}
-            />
-            <Button
-              icon={<SearchOutlined />}
-              loading={scanningLatest}
-              disabled={exportCount === 0}
-              onClick={handleScanLatestSignals}
-            >
-              扫描最新
-            </Button>
           </Space>
         </div>
       </Header>
 
       <Content className={styles.content}>
         <div className={styles.pageBody}>
-          <Card className={styles.summaryPanel} size="small">
-            <Row gutter={[16, 8]} className={styles.metricStrip}>
-              <Col>
-                <Statistic title="stockHistory 总数" value={totalCount} loading={loadingCount} />
-              </Col>
-              <Col>
-                <Statistic title="参与扫描" value={exportCount} loading={loadingCount} />
-              </Col>
-              <Col>
-                <Statistic title="行业映射数" value={industryMapping.size} loading={loadingCount} />
-              </Col>
-              <Col>
-                <Statistic title="概念映射数" value={conceptMapping.size} loading={loadingCount} />
-              </Col>
-              <Col>
-                <Statistic title="历史好买点" value={historySignals.length} loading={loadingCount} />
-              </Col>
-              <Col>
-                <Statistic title="追踪总信号" value={trackingRows.length} loading={loadingTracking} />
-              </Col>
-              <Col>
-                <div className={styles.compactInfo}>
-                  <Tooltip
-                    placement="right"
-                    title={
-                      <div className={styles.compactInfoTooltip}>
-                        <div>历史好买点与买点追踪均基于 IndexedDB stockHistory；最新交易日扫描会自动保存快照并联动更新追踪收益。</div>
-                        <div>历史好买点规则：买入收盘后 1-6 日累计收益中至少 2 项 &gt;= 5%。</div>
-                        <div>最新交易日只扫描 lift&gt;1 的高价值场景，未来收益尚未发生时处于“验证中”状态。</div>
-                        <div>赔率分会综合场景、当日强弱、量价结构和位置关系，对买点信号做“赔率优先”排序。</div>
-                      </div>
-                    }
-                  >
-                    <InfoCircleOutlined className={styles.compactInfoIcon} />
-                  </Tooltip>
-                  <span>
-                    {latestDateSummary.dominantDate
-                      ? `当前 K 线众数截止日：${latestDateSummary.dominantDate}（${latestDateSummary.dominantCount} 只）`
-                      : '尚未读取到 K 线截止日'}
-                  </span>
-                </div>
-              </Col>
-            </Row>
-          </Card>
-
           <Card className={styles.resultCard} size="small">
             <Tabs
               className={styles.resultTabs}
@@ -1136,10 +1305,41 @@ export function BacktestPage() {
               tabBarExtraContent={
                 activeTab === 'tracking' ? (
                   <Space size={8}>
+                    <DatePicker
+                      allowClear
+                      size="small"
+                      value={asOfDate ? dayjs(asOfDate) : null}
+                      disabled={scanningLatest || scanningHistory || syncingAllLatest}
+                      disabledDate={(current: Dayjs) => !!(current && current.isAfter(dayjs(), 'day'))}
+                      style={{ width: 130 }}
+                      placeholder="截止日(最新)"
+                      onChange={(date: Dayjs | null) => {
+                        setAsOfDate(date ? date.format('YYYY-MM-DD') : null);
+                      }}
+                    />
+                    <Button
+                      size="small"
+                      icon={<SearchOutlined />}
+                      loading={scanningLatest}
+                      disabled={exportCount === 0 || syncingAllLatest || scanningHistory}
+                      onClick={handleScanLatestSignals}
+                    >
+                      扫描最新
+                    </Button>
+                    <Button
+                      size="small"
+                      icon={<SyncOutlined />}
+                      loading={syncingAllLatest}
+                      disabled={exportCount === 0 || scanningLatest || scanningHistory}
+                      onClick={handleSyncExistingBuyPoints}
+                    >
+                      更新已有买点
+                    </Button>
                     <Button
                       size="small"
                       icon={<ReloadOutlined />}
                       loading={loadingTracking}
+                      disabled={syncingAllLatest || scanningLatest}
                       onClick={() => void handleLoadTrackingRows()}
                     >
                       更新收益
@@ -1161,7 +1361,19 @@ export function BacktestPage() {
                       添加最新信号
                     </Button>
                   </Space>
-                ) : null
+                ) : (
+                  <Space size={8}>
+                    <Button
+                      size="small"
+                      icon={<ReloadOutlined />}
+                      loading={scanningHistory}
+                      disabled={exportCount === 0 || syncingAllLatest || scanningLatest}
+                      onClick={handleScanHistoricalBuyPoints}
+                    >
+                      扫描历史
+                    </Button>
+                  </Space>
+                )
               }
               items={[
                 {
@@ -1228,6 +1440,8 @@ export function BacktestPage() {
                       value={trackingDateRange}
                       options={[
                         { label: '今天', value: 'today' },
+                        { label: '最近2日', value: 'recent2' },
+                        { label: '最近3日', value: 'recent3' },
                         { label: '最近5日', value: 'recent5' },
                         { label: '最近10日', value: 'recent10' },
                         { label: '全部日期', value: 'all' },
@@ -1254,6 +1468,17 @@ export function BacktestPage() {
                       style={{ width: 190 }}
                       size="small"
                     />
+                    <Select
+                      value={trackingMinHitCount}
+                      options={[
+                        { label: '短线冲高(1天≥5%)', value: 1 },
+                        { label: '稳健持股(2天≥5%)', value: 2 },
+                        { label: '强连涨(3天≥5%)', value: 3 },
+                      ]}
+                      onChange={(val) => setTrackingMinHitCount(Number(val))}
+                      style={{ width: 145 }}
+                      size="small"
+                    />
                     <Space.Compact size="small">
                       <Button size="small" style={{ pointerEvents: 'none' }}>阈值</Button>
                       <InputNumber
@@ -1261,21 +1486,10 @@ export function BacktestPage() {
                         max={50}
                         value={trackingThreshold}
                         onChange={(value) => setTrackingThreshold(Number(value ?? 5))}
-                        style={{ width: 70 }}
+                        style={{ width: 65 }}
                         size="small"
                       />
                       <Button size="small" style={{ pointerEvents: 'none' }}>%</Button>
-                    </Space.Compact>
-                    <Space.Compact size="small">
-                      <Button size="small" style={{ pointerEvents: 'none' }}>命中</Button>
-                      <InputNumber
-                        min={1}
-                        max={5}
-                        value={trackingMinHitCount}
-                        onChange={(value) => setTrackingMinHitCount(Number(value ?? 3))}
-                        style={{ width: 60 }}
-                        size="small"
-                      />
                     </Space.Compact>
                   </>
                 ) : (
@@ -1295,114 +1509,6 @@ export function BacktestPage() {
               </div>
               {renderSearchInput()}
             </div>
-
-            {activeTab === 'tracking' && (
-              <div className={styles.trackingStatsPanel}>
-                <div className={styles.trackingStatsHeader}>
-                  <Text type="secondary">追踪统计</Text>
-                  <Button
-                    type="link"
-                    size="small"
-                    onClick={() => setTrackingStatsCollapsed((collapsed) => !collapsed)}
-                  >
-                    {trackingStatsCollapsed ? '展开' : '收起'}
-                  </Button>
-                </div>
-                {!trackingStatsCollapsed && (
-                  <>
-                    <Row gutter={[16, 8]} className={styles.trackingStatsRow}>
-                      <Col>
-                        <Statistic title="当前展示" value={trackingStats.total} />
-                      </Col>
-                      <Col>
-                        <Statistic title="已达标" value={trackingStats.passed} />
-                      </Col>
-                      <Col>
-                        <Statistic title="验证中" value={trackingStats.tracking} />
-                      </Col>
-                      <Col>
-                        <Statistic title="未达标" value={trackingStats.failed} />
-                      </Col>
-                      <Col>
-                        <Statistic
-                          title="已验证达标率"
-                          value={trackingStats.passRate == null ? '-' : `${trackingStats.passRate}%`}
-                        />
-                      </Col>
-                      <Col>
-                        <Statistic
-                          title="平均最大收益"
-                          value={
-                            trackingStats.avgMaxReturn == null ? '-' : `${trackingStats.avgMaxReturn}%`
-                          }
-                        />
-                      </Col>
-                    </Row>
-                    {trackingStats.scenarios.length > 0 && (
-                      <div className={styles.trackingAnalysisBlock}>
-                        <Text type="secondary">场景统计：</Text>
-                        <Space wrap size={[4, 4]} className={styles.trackingScenarioStats}>
-                          {trackingStats.scenarios.map((item) => (
-                            <Tag key={item.name} color="blue">
-                              {item.name}: {item.total} / 达标 {item.passed}
-                              {item.passRate != null ? ` / ${item.passRate}%` : ''}
-                            </Tag>
-                          ))}
-                        </Space>
-                      </div>
-                    )}
-                    {trackingAnalysisStats.failedRules.length > 0 && (
-                      <div className={styles.trackingAnalysisBlock}>
-                        <Text type="secondary">失败样本 Top：</Text>
-                        <Space wrap size={[4, 4]}>
-                          {trackingAnalysisStats.failedRules.map((item) => (
-                            <Tag
-                              key={`${item.scenarioName}-${item.matchedRule}`}
-                              bordered={false}
-                              title={item.matchedRule}
-                            >
-                              {item.scenarioName}｜{getRuleShortLabel(item.matchedRule)}: 失败 {item.failed} / {item.total}
-                            </Tag>
-                          ))}
-                        </Space>
-                      </div>
-                    )}
-                    {trackingAnalysisStats.ruleStats.length > 0 && (
-                      <div className={styles.trackingAnalysisBlock}>
-                        <Text type="secondary">规则胜率 Top：</Text>
-                        <Space wrap size={[4, 4]}>
-                          {trackingAnalysisStats.ruleStats.map((item) => (
-                            <Tag
-                              key={`${item.scenarioName}-${item.matchedRule}`}
-                              bordered={false}
-                              title={item.matchedRule}
-                            >
-                              {item.scenarioName}｜{getRuleShortLabel(item.matchedRule)}:{' '}
-                              {item.passRate == null ? '待验证' : `${item.passRate}%`}
-                              （{item.passed}/{item.verified}）
-                            </Tag>
-                          ))}
-                        </Space>
-                      </div>
-                    )}
-                    {trackingAnalysisStats.parameterStats.length > 0 && (
-                      <div className={styles.trackingAnalysisBlock}>
-                        <Text type="secondary">参数回测：</Text>
-                        <Space wrap size={[4, 4]}>
-                          {trackingAnalysisStats.parameterStats.map((item) => (
-                            <Tag key={`${item.threshold}-${item.minHitCount}`} bordered={false}>
-                              {item.threshold}% / {item.minHitCount}中：
-                              {item.passRate == null ? '待验证' : `${item.passRate}%`}
-                              （{item.passed}/{item.verified}）
-                            </Tag>
-                          ))}
-                        </Space>
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
-            )}
 
             <div className={styles.tableArea} ref={tableAreaRef}>
               <Table
