@@ -159,7 +159,7 @@ export function BacktestPage() {
   const [historySignals, setHistorySignals] = useState<BuyPointSignal[]>([]);
   const [historyScenarioFilter, setHistoryScenarioFilter] = useState<string>('all');
   const [trackingScenarioFilter, setTrackingScenarioFilter] = useState<string>('all');
-  const [trackingOnlyHighOdds, setTrackingOnlyHighOdds] = useState(true);
+  const [trackingOddsTiers, setTrackingOddsTiers] = useState<Array<'S' | 'A' | 'B' | 'C'>>(['S', 'A']);
   const [trackingDateRange, setTrackingDateRange] = useState<string>('today');
   const [trackingStatusFilter, setTrackingStatusFilter] = useState<TrackingStatus[]>([
     'tracking',
@@ -611,7 +611,9 @@ export function BacktestPage() {
       const dateMatch = trackingDateRange === 'all' || allowedDates.has(item.signalDateKey);
       const scenarioMatch =
         trackingScenarioFilter === 'all' || item.scenario === trackingScenarioFilter;
-      const oddsMatch = !trackingOnlyHighOdds || item.oddsTier === 'S' || item.oddsTier === 'A';
+      const oddsMatch =
+        trackingOddsTiers.length === 0 ||
+        (item.oddsTier != null && trackingOddsTiers.includes(item.oddsTier));
       const opportunityMatch = !onlyOpportunity || item.opportunityRecordHit;
       const hotRankMatch = !onlyHotRank || item.hotRankHit;
       const industryCode =
@@ -641,7 +643,7 @@ export function BacktestPage() {
     trackingIndustryCodes,
     trackingIndustryInvert,
     trackingIntersectionFilters,
-    trackingOnlyHighOdds,
+    trackingOddsTiers,
     trackedRowsWithStatus,
     trackingDateRange,
     trackingScenarioFilter,
@@ -1450,12 +1452,22 @@ export function BacktestPage() {
                       style={{ width: 110 }}
                       size="small"
                     />
-                    <Checkbox
-                      checked={trackingOnlyHighOdds}
-                      onChange={(e) => setTrackingOnlyHighOdds(e.target.checked)}
-                    >
-                      仅S/A档
-                    </Checkbox>
+                    <Select
+                      mode="multiple"
+                      allowClear
+                      placeholder="赔率档"
+                      value={trackingOddsTiers}
+                      options={[
+                        { label: 'S档', value: 'S' },
+                        { label: 'A档', value: 'A' },
+                        { label: 'B档', value: 'B' },
+                        { label: 'C档', value: 'C' },
+                      ]}
+                      onChange={setTrackingOddsTiers}
+                      style={{ width: 160 }}
+                      maxTagCount="responsive"
+                      size="small"
+                    />
                     <Select
                       mode="multiple"
                       value={trackingStatusFilter}
