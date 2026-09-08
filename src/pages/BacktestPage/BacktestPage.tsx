@@ -1509,6 +1509,7 @@ export function BacktestPage() {
                         { label: '未达标', value: 'failed' },
                       ]}
                       onChange={setTrackingStatusFilter}
+                      maxTagCount="responsive"
                       style={{ width: 190 }}
                       size="small"
                     />

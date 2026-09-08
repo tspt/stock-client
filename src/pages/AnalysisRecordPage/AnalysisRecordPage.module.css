@@ -106,6 +106,20 @@
   font-size: 12px;
 }
 
+.trackingStatsRow {
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--ant-color-border-secondary);
+}
+
+.trackingStatsRow :global(.ant-statistic-title) {
+  font-size: 12px;
+}
+
+.trackingStatsRow :global(.ant-statistic-content) {
+  font-size: 18px;
+}
+
 /* 深色主题适配 */
 [data-theme='dark'] .analysisRecordPage {
   background: #141414;

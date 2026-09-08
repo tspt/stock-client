@@ -78,19 +78,26 @@ function buildOpportunityRecordMap(records: StockRecord[]): Map<string, Set<stri
   return map;
 }
 
-function calculateFutureReturns(
+/**
+ * 按信号日收盘价计算买入后 1-6 日累计收益（收盘对收盘）
+ * @param history 日K历史
+ * @param signalDate 信号日 YYYY-MM-DD
+ * @param entryClose 可选买入价；缺省用信号日 K 线收盘价
+ */
+export function calculateFutureReturnsFromClose(
   history: StockHistoryRecord | undefined,
-  signal: LatestScenarioSignal
+  signalDate: string,
+  entryClose?: number | null
 ): ReturnSnapshot {
   const returns: ReturnSnapshot = { d1: null, d2: null, d3: null, d4: null, d5: null, d6: null };
   const lines = history?.dailyLines || [];
   if (lines.length === 0) return returns;
 
-  const signalDateKey = normalizeDateKey(signal.date);
+  const signalDateKey = normalizeDateKey(signalDate);
   const index = lines.findIndex((line) => formatKlineDate(line.time) === signalDateKey);
   if (index < 0) return returns;
 
-  const entry = signal.close || lines[index]?.close;
+  const entry = entryClose || lines[index]?.close;
   if (!entry || entry <= 0) return returns;
 
   HORIZONS.forEach((horizon) => {
@@ -100,6 +107,13 @@ function calculateFutureReturns(
   });
 
   return returns;
+}
+
+function calculateFutureReturns(
+  history: StockHistoryRecord | undefined,
+  signal: LatestScenarioSignal
+): ReturnSnapshot {
+  return calculateFutureReturnsFromClose(history, signal.date, signal.close);
 }
 
 export function getTrackingStatus(
