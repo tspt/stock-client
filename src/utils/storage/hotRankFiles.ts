@@ -17,9 +17,10 @@ function getLocalDateString(): string {
   return `${year}-${month}-${day}`;
 }
 
-function getLocalHourString(): string {
-  return String(new Date().getHours()).padStart(2, '0');
-}
+// 1小时文件名用，暂不落盘
+// function getLocalHourString(): string {
+//   return String(new Date().getHours()).padStart(2, '0');
+// }
 
 function pureCode(code: string): string {
   return code.replace(/^(SH|SZ)/i, '');
@@ -29,6 +30,11 @@ function pureCode(code: string): string {
  * 保存热门榜：day 写无后缀日期文件，hour 写带本地小时后缀
  */
 export async function saveHotRankToFile(items: ThsHotRankItem[], period: ThsHotRankPeriod): Promise<void> {
+  // 1小时暂不生成 JSON（YYYY-MM-DD_HH.json）
+  if (period === 'hour') {
+    return;
+  }
+
   const api = window.electronAPI;
   if (!api?.writeHotRankFile) {
     logger.warn('[HotRankFiles] 写入不可用（需在 Electron 环境中运行并重启应用）');
@@ -36,7 +42,8 @@ export async function saveHotRankToFile(items: ThsHotRankItem[], period: ThsHotR
   }
 
   const date = getLocalDateString();
-  const fileBaseName = period === 'hour' ? `${date}_${getLocalHourString()}` : date;
+  // const fileBaseName = period === 'hour' ? `${date}_${getLocalHourString()}` : date;
+  const fileBaseName = date;
   const result = await api.writeHotRankFile({
     fileBaseName,
     content: JSON.stringify(items),

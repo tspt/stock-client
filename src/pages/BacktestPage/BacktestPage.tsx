@@ -86,6 +86,21 @@ function isSTStock(name: string): boolean {
   return name.includes('ST');
 }
 
+function matchBcQualityFilter(
+  item: {
+    oddsTier?: 'S' | 'A' | 'B' | 'C';
+    features?: { pullbackFromHigh20?: number | null; limitUpCount5?: number };
+  },
+  enabled: boolean
+): boolean {
+  if (!enabled) return true;
+  if (item.oddsTier !== 'B' && item.oddsTier !== 'C') return true;
+  const pullback = item.features?.pullbackFromHigh20;
+  const boards = item.features?.limitUpCount5 ?? 0;
+  if (pullback == null) return false;
+  return pullback > 18 || (pullback > 12 && boards >= 1);
+}
+
 function matchIndustryGroupFilter(
   industryCode: string | undefined,
   selectedCodes: Set<string>,
@@ -159,7 +174,8 @@ export function BacktestPage() {
   const [historySignals, setHistorySignals] = useState<BuyPointSignal[]>([]);
   const [historyScenarioFilter, setHistoryScenarioFilter] = useState<string>('all');
   const [trackingScenarioFilter, setTrackingScenarioFilter] = useState<string>('all');
-  const [trackingOddsTiers, setTrackingOddsTiers] = useState<Array<'S' | 'A' | 'B' | 'C'>>(['S', 'A']);
+  const [trackingOddsTiers, setTrackingOddsTiers] = useState<Array<'S' | 'A' | 'B' | 'C'>>(['S', 'A', 'B', 'C']);
+  const [trackingBcQualityFilter, setTrackingBcQualityFilter] = useState(true);
   const [trackingDateRange, setTrackingDateRange] = useState<string>('today');
   const [trackingStatusFilter, setTrackingStatusFilter] = useState<TrackingStatus[]>([
     'tracking',
@@ -600,9 +616,11 @@ export function BacktestPage() {
             ? 3
             : trackingDateRange === 'recent5'
               ? 5
-              : trackingDateRange === 'recent10'
-                ? 10
-                : sortedDates.length;
+              : trackingDateRange === 'recent6'
+                ? 6
+                : trackingDateRange === 'recent12'
+                  ? 12
+                  : sortedDates.length;
     const allowedDates = new Set(sortedDates.slice(0, dateLimit));
     const onlyOpportunity = trackingIntersectionFilters.includes('opportunity');
     const onlyHotRank = trackingIntersectionFilters.includes('hotRank');
@@ -614,6 +632,7 @@ export function BacktestPage() {
       const oddsMatch =
         trackingOddsTiers.length === 0 ||
         (item.oddsTier != null && trackingOddsTiers.includes(item.oddsTier));
+      const bcQualityMatch = matchBcQualityFilter(item, trackingBcQualityFilter);
       const opportunityMatch = !onlyOpportunity || item.opportunityRecordHit;
       const hotRankMatch = !onlyHotRank || item.hotRankHit;
       const industryCode =
@@ -631,6 +650,7 @@ export function BacktestPage() {
         dateMatch &&
         scenarioMatch &&
         oddsMatch &&
+        bcQualityMatch &&
         opportunityMatch &&
         hotRankMatch &&
         industryMatch &&
@@ -644,6 +664,7 @@ export function BacktestPage() {
     trackingIndustryInvert,
     trackingIntersectionFilters,
     trackingOddsTiers,
+    trackingBcQualityFilter,
     trackedRowsWithStatus,
     trackingDateRange,
     trackingScenarioFilter,
@@ -1034,7 +1055,7 @@ export function BacktestPage() {
     {
       title: '场景',
       dataIndex: 'scenarioName',
-      width: 100,
+      width: 150,
       render: (_, record) => <StockFeatureTag text={record.scenarioName} variant="red" />,
     },
     {
@@ -1043,6 +1064,20 @@ export function BacktestPage() {
       sorter: compareIndustry,
       showSorterTooltip: { title: '按所属行业排序' },
       render: renderIndustry,
+    },
+    {
+      title: '机会记录',
+      dataIndex: 'opportunityRecordHit',
+      width: 90,
+      sorter: (a, b) => Number(Boolean(a.opportunityRecordHit)) - Number(Boolean(b.opportunityRecordHit)),
+      render: (hit) => <StockStatusTag status={Boolean(hit)} />,
+    },
+    {
+      title: '热门榜',
+      dataIndex: 'hotRankHit',
+      width: 80,
+      sorter: (a, b) => Number(Boolean(a.hotRankHit)) - Number(Boolean(b.hotRankHit)),
+      render: (hit) => <StockStatusTag status={Boolean(hit)} />,
     },
     { title: '1日', width: 80, sorter: (a, b) => compareReturn(a.trackedReturns, b.trackedReturns, 'd1'), render: (_, record) => renderReturn(record.trackedReturns, 'd1') },
     { title: '2日', width: 80, sorter: (a, b) => compareReturn(a.trackedReturns, b.trackedReturns, 'd2'), render: (_, record) => renderReturn(record.trackedReturns, 'd2') },
@@ -1053,18 +1088,6 @@ export function BacktestPage() {
     { title: '已发生', dataIndex: 'occurredCount', width: 80 },
     { title: '命中', dataIndex: 'hitCount', width: 80 },
     { title: '状态', dataIndex: 'status', width: 90, render: renderTrackingStatus },
-    {
-      title: '机会记录',
-      dataIndex: 'opportunityRecordHit',
-      width: 90,
-      render: (hit) => <StockStatusTag status={Boolean(hit)} />,
-    },
-    {
-      title: '热门榜',
-      dataIndex: 'hotRankHit',
-      width: 80,
-      render: (hit) => <StockStatusTag status={Boolean(hit)} />,
-    },
     { title: '所属概念', width: 360, render: renderConcepts },
     {
       title: '命中规则',
@@ -1445,7 +1468,8 @@ export function BacktestPage() {
                         { label: '最近2日', value: 'recent2' },
                         { label: '最近3日', value: 'recent3' },
                         { label: '最近5日', value: 'recent5' },
-                        { label: '最近10日', value: 'recent10' },
+                        { label: '最近6日', value: 'recent6' },
+                        { label: '最近12日', value: 'recent12' },
                         { label: '全部日期', value: 'all' },
                       ]}
                       onChange={setTrackingDateRange}
@@ -1468,6 +1492,14 @@ export function BacktestPage() {
                       maxTagCount="responsive"
                       size="small"
                     />
+                    <Tooltip title="开启后只保留回撤>18%，或回撤>12%且近5日有板的B/C，达标率约24%→45%，召回约20%。S/A不受影响。">
+                      <Checkbox
+                        checked={trackingBcQualityFilter}
+                        onChange={(e) => setTrackingBcQualityFilter(e.target.checked)}
+                      >
+                        B/C位置增强
+                      </Checkbox>
+                    </Tooltip>
                     <Select
                       mode="multiple"
                       value={trackingStatusFilter}

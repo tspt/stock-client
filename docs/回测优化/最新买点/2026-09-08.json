@@ -1,17 +1,17 @@
 {
-  "exportedAt": "2026-09-08T08:41:30.696Z",
+  "exportedAt": "2026-09-08T14:36:55.012Z",
   "kind": "latest",
   "kindLabel": "最新交易日命中",
-  "count": 500,
+  "count": 499,
   "fileBaseName": "2026-09-08",
   "meta": {
     "tab": "latest",
     "autoExport": true,
-    "asOfDate": "2026-09-08",
+    "asOfDate": null,
     "searchText": "",
     "scenarioFilter": "all",
     "excludeST": true,
-    "latestDate": "2026-09-08",
+    "latestDate": "2026/09/08",
     "fileBaseName": "2026-09-08"
   },
   "items": [
@@ -19015,49 +19015,6 @@
           "name": "免疫治疗"
         }
       ]
-    },
-    {
-      "scenario": "pullback_stabilize",
-      "scenarioName": "缩量回踩企稳反弹",
-      "matchedRule": "回撤=16.6%∈[8,25]%且量比≤0.9且收涨企稳",
-      "features": {
-        "dayReturn": 1.63,
-        "volumeRatio": 0.76,
-        "lowerShadowRatio": 0.204,
-        "upperShadowRatio": 0.143,
-        "bodyRatio": 0.653,
-        "closeStrength": 0.857,
-        "pullbackFromHigh20": 16.59,
-        "ret3": 1.07,
-        "ret10": 4.68,
-        "ret20": 3.43,
-        "limitUpCount5": 0,
-        "nearHigh20": false,
-        "aboveMa10": true,
-        "nearMa20": true
-      },
-      "oddsScore": 62,
-      "oddsTier": "B",
-      "oddsReason": "当日动能一般 / 仍站在10日线之上 / 收盘靠近日内高位",
-      "code": "SH603382",
-      "name": "海阳科技",
-      "industry": {
-        "code": "BK0471",
-        "name": "化学纤维"
-      },
-      "date": "2026/09/08",
-      "timestamp": 1788796800000,
-      "close": 19.91,
-      "lift": 1.42,
-      "returns": {
-        "d1": null,
-        "d2": null,
-        "d3": null,
-        "d4": null,
-        "d5": null,
-        "d6": null
-      },
-      "concepts": []
     },
     {
       "scenario": "pullback_stabilize",
