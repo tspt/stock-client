@@ -73,6 +73,7 @@ import {
   normalizeSectorStockCode,
   type SectorInfo,
 } from '@/services/stocks/sectorMapping';
+import { formatKLineDate } from '@/utils/analysis/asOfKline';
 import styles from './BacktestPage.module.css';
 
 const { Header, Content } = Layout;
@@ -153,6 +154,45 @@ function getLatestDateSummary(histories: StockHistoryRecord[]): {
   return { dominantDate, dominantCount };
 }
 
+/** 买点追踪日期筛选：最近 N 个信号日；all 表示不限 */
+const TRACKING_DATE_RANGE_LIMIT: Record<string, number | 'all'> = {
+  today: 1,
+  recent2: 2,
+  recent3: 3,
+  recent5: 5,
+  recent6: 6,
+  recent12: 12,
+  recent18: 18,
+  recent24: 24,
+  recent30: 30,
+  recent36: 36,
+  recent42: 42,
+  recent48: 48,
+  recent54: 54,
+  all: 'all',
+};
+
+/** 所选自然月内，K 线出现过的全部交易日 YYYY-MM-DD（升序） */
+function resolveTradingDaysInMonth(
+  histories: StockHistoryRecord[],
+  yearMonth: string
+): string[] {
+  const dates = new Set<string>();
+  const monthStart = `${yearMonth}-01`;
+  histories.forEach((history) => {
+    const lines = history.dailyLines || [];
+    for (let i = lines.length - 1; i >= 0; i--) {
+      const d = formatKLineDate(lines[i].time);
+      if (d.startsWith(yearMonth)) {
+        dates.add(d);
+        continue;
+      }
+      if (d < monthStart) break;
+    }
+  });
+  return Array.from(dates).sort();
+}
+
 const scenarioOptions = [
   { label: '全部场景', value: 'all' },
   ...SCENARIOS.map((s) => ({ label: s.name, value: s.id })),
@@ -194,8 +234,8 @@ export function BacktestPage() {
   const [activeTab, setActiveTab] = useState<'tracking' | 'history'>('tracking');
   const [tablePageSize, setTablePageSize] = useState(100);
   const [tableScrollY, setTableScrollY] = useState(360);
-  /** 扫描最新的截止日 YYYY-MM-DD；空=用各股日K最后一根 */
-  const [asOfDate, setAsOfDate] = useState<string | null>(null);
+  /** 扫描最新的截止月 YYYY-MM；空=用各股日K最后一根 */
+  const [asOfMonth, setAsOfMonth] = useState<string | null>(null);
   const tableAreaRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -388,25 +428,94 @@ export function BacktestPage() {
   }, [handleLoadTrackingRows]);
 
   const handleScanLatestSignals = async () => {
-    try {
-      setScanningLatest(true);
-      if (asOfDate) {
-        message.info(`正在按截止日 ${asOfDate} 扫描高价值场景并更新追踪...`);
-      } else {
-        message.info('正在扫描最新交易日高价值场景并更新追踪...');
-      }
-      const { histories } = await readFilteredHistories();
-      const signals = scanLatestScenarioSignals(histories, {
-        highLiftOnly: true,
-        asOfDate: asOfDate || undefined,
-      }).sort((a, b) => {
+    const sortSignals = (signals: ReturnType<typeof scanLatestScenarioSignals>) =>
+      signals.sort((a, b) => {
         if ((b.oddsScore || 0) !== (a.oddsScore || 0)) return (b.oddsScore || 0) - (a.oddsScore || 0);
         if ((b.lift || 0) !== (a.lift || 0)) return (b.lift || 0) - (a.lift || 0);
         return a.name.localeCompare(b.name, 'zh-CN');
       });
 
+    const mapSignals = (signals: ReturnType<typeof scanLatestScenarioSignals>) =>
+      signals.map((item) => ({
+        ...item,
+        industry: item.industry || getMappedIndustry(item.code, industryMapping) || null,
+        concepts: getMappedConcepts(item.code, conceptMapping),
+      }));
+
+    try {
+      setScanningLatest(true);
+      const { histories } = await readFilteredHistories();
+
+      if (asOfMonth) {
+        const dateKeys = resolveTradingDaysInMonth(histories, asOfMonth);
+        if (dateKeys.length === 0) {
+          message.info(`截止月 ${asOfMonth} 未找到可用交易日`);
+          return;
+        }
+        if (!window.electronAPI?.exportBacktestSignalsFile) {
+          message.warning('按月扫描完成，但自动导出快照不可用（需在 Electron 环境中运行）');
+          return;
+        }
+
+        let successCount = 0;
+        let totalSignals = 0;
+        message.loading({
+          content: `正在扫描截止月 ${asOfMonth} 共 ${dateKeys.length} 个交易日...`,
+          key: 'scan_month',
+        });
+
+        for (let i = 0; i < dateKeys.length; i++) {
+          const dateKey = dateKeys[i];
+          message.loading({
+            content: `正在扫描并导出 [${i + 1}/${dateKeys.length}] ${dateKey}...`,
+            key: 'scan_month',
+          });
+          const signals = sortSignals(
+            scanLatestScenarioSignals(histories, {
+              highLiftOnly: true,
+              asOfDate: dateKey,
+            })
+          );
+          const data = mapSignals(signals);
+          await exportBacktestSignalsToJson({
+            kind: 'latest',
+            data,
+            fileBaseName: dateKey,
+            meta: {
+              tab: 'latest' as const,
+              autoExport: true,
+              asOfDate: dateKey,
+              asOfMonth,
+              searchText: '',
+              scenarioFilter: 'all',
+              excludeST,
+              latestDate: dateKey,
+              fileBaseName: dateKey,
+            },
+          });
+          successCount++;
+          totalSignals += data.length;
+        }
+
+        message.loading({ content: '按月导出完成，正在重新加载买点追踪...', key: 'scan_month' });
+        await handleLoadTrackingRows(true);
+        message.success({
+          content: `截止月 ${asOfMonth} 已导出 ${successCount} 个交易日 JSON（累计信号 ${totalSignals} 只）`,
+          key: 'scan_month',
+          duration: 4,
+        });
+        return;
+      }
+
+      message.info('正在扫描最新交易日高价值场景并更新追踪...');
+      const signals = sortSignals(
+        scanLatestScenarioSignals(histories, {
+          highLiftOnly: true,
+        })
+      );
+
       if (signals.length === 0) {
-        message.info(asOfDate ? `截止日 ${asOfDate} 未扫描到高价值场景信号` : '最新交易日未扫描到高价值场景信号');
+        message.info('最新交易日未扫描到高价值场景信号');
         await handleLoadTrackingRows(true);
         return;
       }
@@ -418,19 +527,15 @@ export function BacktestPage() {
       }
 
       try {
-        const data = signals.map((item) => ({
-          ...item,
-          industry: item.industry || getMappedIndustry(item.code, industryMapping) || null,
-          concepts: getMappedConcepts(item.code, conceptMapping),
-        }));
+        const data = mapSignals(signals);
         const fileBaseName = resolveLatestExportDate(
           signals,
-          asOfDate || latestDateSummary.dominantDate
+          latestDateSummary.dominantDate
         );
         const meta = {
           tab: 'latest' as const,
           autoExport: true,
-          asOfDate: asOfDate || null,
+          asOfDate: null,
           searchText: '',
           scenarioFilter: 'all',
           excludeST,
@@ -444,13 +549,8 @@ export function BacktestPage() {
           meta,
         });
         message.success(`已保存最新买点快照 ${data.length} 条到 ${filePath}`);
-        // 扫描并落盘后，立即联动重新读取追踪文件更新收益
         await handleLoadTrackingRows(true);
-        message.success(
-          asOfDate
-            ? `截止日 ${asOfDate} 扫描完成并已更新买点追踪（命中 ${signals.length} 只）`
-            : `最新交易日扫描完成并已更新买点追踪（命中 ${signals.length} 只）`
-        );
+        message.success(`最新交易日扫描完成并已更新买点追踪（命中 ${signals.length} 只）`);
       } catch (exportError) {
         logger.error('[BacktestPage] 扫描最新后导出快照失败:', exportError);
         message.error('导出快照失败: ' + (exportError as Error).message);
@@ -458,7 +558,7 @@ export function BacktestPage() {
       }
     } catch (error) {
       logger.error('[BacktestPage] 扫描最新交易日失败:', error);
-      message.error('扫描最新交易日失败: ' + (error as Error).message);
+      message.error({ content: '扫描失败: ' + (error as Error).message, key: 'scan_month' });
     } finally {
       setScanningLatest(false);
     }
@@ -607,20 +707,8 @@ export function BacktestPage() {
     const sortedDates = Array.from(new Set(trackedRowsWithStatus.map((item) => item.signalDateKey)))
       .sort()
       .reverse();
-    const dateLimit =
-      trackingDateRange === 'today'
-        ? 1
-        : trackingDateRange === 'recent2'
-          ? 2
-          : trackingDateRange === 'recent3'
-            ? 3
-            : trackingDateRange === 'recent5'
-              ? 5
-              : trackingDateRange === 'recent6'
-                ? 6
-                : trackingDateRange === 'recent12'
-                  ? 12
-                  : sortedDates.length;
+    const dateRangeLimit = TRACKING_DATE_RANGE_LIMIT[trackingDateRange] ?? 'all';
+    const dateLimit = dateRangeLimit === 'all' ? sortedDates.length : dateRangeLimit;
     const allowedDates = new Set(sortedDates.slice(0, dateLimit));
     const onlyOpportunity = trackingIntersectionFilters.includes('opportunity');
     const onlyHotRank = trackingIntersectionFilters.includes('hotRank');
@@ -1331,15 +1419,16 @@ export function BacktestPage() {
                 activeTab === 'tracking' ? (
                   <Space size={8}>
                     <DatePicker
+                      picker="month"
                       allowClear
                       size="small"
-                      value={asOfDate ? dayjs(asOfDate) : null}
+                      value={asOfMonth ? dayjs(asOfMonth) : null}
                       disabled={scanningLatest || scanningHistory || syncingAllLatest}
-                      disabledDate={(current: Dayjs) => !!(current && current.isAfter(dayjs(), 'day'))}
-                      style={{ width: 130 }}
-                      placeholder="截止日(最新)"
+                      disabledDate={(current: Dayjs) => !!(current && current.isAfter(dayjs(), 'month'))}
+                      style={{ width: 120 }}
+                      placeholder="截止月(最新)"
                       onChange={(date: Dayjs | null) => {
-                        setAsOfDate(date ? date.format('YYYY-MM-DD') : null);
+                        setAsOfMonth(date ? date.format('YYYY-MM') : null);
                       }}
                     />
                     <Button
@@ -1470,6 +1559,13 @@ export function BacktestPage() {
                         { label: '最近5日', value: 'recent5' },
                         { label: '最近6日', value: 'recent6' },
                         { label: '最近12日', value: 'recent12' },
+                        { label: '最近18日', value: 'recent18' },
+                        { label: '最近24日', value: 'recent24' },
+                        { label: '最近30日', value: 'recent30' },
+                        { label: '最近36日', value: 'recent36' },
+                        { label: '最近42日', value: 'recent42' },
+                        { label: '最近48日', value: 'recent48' },
+                        { label: '最近54日', value: 'recent54' },
                         { label: '全部日期', value: 'all' },
                       ]}
                       onChange={setTrackingDateRange}
