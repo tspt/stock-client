@@ -1,0 +1,7590 @@
+{
+  "exportedAt": "2026-09-11T13:11:39.638Z",
+  "kind": "latest",
+  "kindLabel": "最新交易日命中",
+  "count": 120,
+  "fileBaseName": "2026-07-17",
+  "meta": {
+    "tab": "latest",
+    "autoExport": true,
+    "asOfDate": "2026-07-17",
+    "asOfMonth": "2026-07",
+    "searchText": "",
+    "scenarioFilter": "all",
+    "excludeST": true,
+    "latestDate": "2026-07-17",
+    "fileBaseName": "2026-07-17"
+  },
+  "items": [
+    {
+      "scenario": "limit_up_trend",
+      "scenarioName": "连板/强趋势",
+      "matchedRule": "近5日近似涨停根数=4≥2",
+      "features": {
+        "dayReturn": 9.99,
+        "volumeRatio": 0.06,
+        "lowerShadowRatio": 0,
+        "upperShadowRatio": 0,
+        "bodyRatio": 0,
+        "closeStrength": 0,
+        "pullbackFromHigh20": 0,
+        "ret3": 33.1,
+        "ret10": 88.74,
+        "ret20": 92.29,
+        "limitUpCount5": 4,
+        "nearHigh20": true,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "oddsScore": 100,
+      "oddsTier": "S",
+      "oddsReason": "收盘偏弱 / 短线连板龙头主升 / 龙头主升动能强劲",
+      "code": "SH603580",
+      "name": "艾艾精工",
+      "industry": {
+        "code": "BK0454",
+        "name": "塑料"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 44.92,
+      "lift": 3.18,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0812",
+          "name": "贬值受益"
+        }
+      ]
+    },
+    {
+      "scenario": "limit_up_trend",
+      "scenarioName": "连板/强趋势",
+      "matchedRule": "近5日近似涨停根数=3≥2",
+      "features": {
+        "dayReturn": 10.07,
+        "volumeRatio": 1.63,
+        "lowerShadowRatio": 0.037,
+        "upperShadowRatio": 0,
+        "bodyRatio": 0.963,
+        "closeStrength": 1,
+        "pullbackFromHigh20": 2.86,
+        "ret3": 15.47,
+        "ret10": 22.89,
+        "ret20": 16.35,
+        "limitUpCount5": 3,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "oddsScore": 100,
+      "oddsTier": "S",
+      "oddsReason": "收盘靠近日内高位 / 短线连板龙头主升 / 龙头主升动能强劲",
+      "code": "SH600227",
+      "name": "赤天化",
+      "industry": {
+        "code": "BK0731",
+        "name": "农化制品"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 3.06,
+      "lift": 3.18,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0492",
+          "name": "煤化工概念"
+        },
+        {
+          "code": "BK0512",
+          "name": "化工原料"
+        },
+        {
+          "code": "BK0834",
+          "name": "乡村振兴"
+        },
+        {
+          "code": "BK0894",
+          "name": "阿兹海默"
+        }
+      ]
+    },
+    {
+      "scenario": "limit_up_trend",
+      "scenarioName": "连板/强趋势",
+      "matchedRule": "近5日近似涨停根数=2≥2",
+      "features": {
+        "dayReturn": 9.97,
+        "volumeRatio": 2.88,
+        "lowerShadowRatio": 0.184,
+        "upperShadowRatio": 0,
+        "bodyRatio": 0.816,
+        "closeStrength": 1,
+        "pullbackFromHigh20": 0.84,
+        "ret3": 23,
+        "ret10": 18.59,
+        "ret20": 8.5,
+        "limitUpCount5": 2,
+        "nearHigh20": true,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "oddsScore": 100,
+      "oddsTier": "S",
+      "oddsReason": "收盘靠近日内高位 / 2板加速确立主升 / 龙头主升动能强劲",
+      "code": "SZ002632",
+      "name": "道明光学",
+      "industry": {
+        "code": "BK0454",
+        "name": "塑料"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 10.59,
+      "lift": 3.18,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0617",
+          "name": "石墨烯"
+        },
+        {
+          "code": "BK0722",
+          "name": "虚拟现实"
+        },
+        {
+          "code": "BK0801",
+          "name": "增强现实"
+        },
+        {
+          "code": "BK0968",
+          "name": "固态电池"
+        },
+        {
+          "code": "BK1160",
+          "name": "柔性屏(折叠屏)"
+        },
+        {
+          "code": "BK1651",
+          "name": "显示技术"
+        }
+      ]
+    },
+    {
+      "scenario": "limit_up_trend",
+      "scenarioName": "连板/强趋势",
+      "matchedRule": "近5日近似涨停根数=2≥2",
+      "features": {
+        "dayReturn": 10.05,
+        "volumeRatio": 1.1,
+        "lowerShadowRatio": 0,
+        "upperShadowRatio": 0,
+        "bodyRatio": 1,
+        "closeStrength": 1,
+        "pullbackFromHigh20": 0,
+        "ret3": 11.09,
+        "ret10": 24.68,
+        "ret20": 20.95,
+        "limitUpCount5": 2,
+        "nearHigh20": true,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "oddsScore": 100,
+      "oddsTier": "S",
+      "oddsReason": "收盘靠近日内高位 / 2板加速确立主升 / 龙头主升动能强劲",
+      "code": "SH600992",
+      "name": "贵绳股份",
+      "industry": {
+        "code": "BK0545",
+        "name": "通用设备"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 11.72,
+      "lift": 3.18,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": []
+    },
+    {
+      "scenario": "limit_up_trend",
+      "scenarioName": "连板/强趋势",
+      "matchedRule": "近5日近似涨停根数=4≥2",
+      "features": {
+        "dayReturn": 7.89,
+        "volumeRatio": 3.8,
+        "lowerShadowRatio": 0.507,
+        "upperShadowRatio": 0.133,
+        "bodyRatio": 0.36,
+        "closeStrength": 0.867,
+        "pullbackFromHigh20": 1.84,
+        "ret3": 30.64,
+        "ret10": 69.75,
+        "ret20": 73.05,
+        "limitUpCount5": 4,
+        "nearHigh20": true,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "oddsScore": 100,
+      "oddsTier": "S",
+      "oddsReason": "收盘靠近日内高位 / 短线连板龙头主升 / 龙头主升动能强劲",
+      "code": "SH600664",
+      "name": "哈药股份",
+      "industry": {
+        "code": "BK0465",
+        "name": "化学制药"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 5.33,
+      "lift": 3.18,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0615",
+          "name": "中药概念"
+        },
+        {
+          "code": "BK0653",
+          "name": "养老概念"
+        },
+        {
+          "code": "BK0852",
+          "name": "冷链物流"
+        },
+        {
+          "code": "BK0906",
+          "name": "流感"
+        },
+        {
+          "code": "BK1078",
+          "name": "肝炎概念"
+        },
+        {
+          "code": "BK1106",
+          "name": "创新药"
+        },
+        {
+          "code": "BK1657",
+          "name": "病原体防治"
+        }
+      ]
+    },
+    {
+      "scenario": "limit_up_trend",
+      "scenarioName": "连板/强趋势",
+      "matchedRule": "近5日近似涨停根数=2≥2",
+      "features": {
+        "dayReturn": 10.02,
+        "volumeRatio": 3,
+        "lowerShadowRatio": 0.073,
+        "upperShadowRatio": 0,
+        "bodyRatio": 0.927,
+        "closeStrength": 1,
+        "pullbackFromHigh20": 2.19,
+        "ret3": 26.76,
+        "ret10": 16.71,
+        "ret20": -3.69,
+        "limitUpCount5": 2,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "oddsScore": 100,
+      "oddsTier": "S",
+      "oddsReason": "收盘靠近日内高位 / 2板加速确立主升 / 龙头主升动能强劲",
+      "code": "SZ000722",
+      "name": "湖南发展",
+      "industry": {
+        "code": "BK0428",
+        "name": "电力"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 13.83,
+      "lift": 3.18,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0597",
+          "name": "水利建设"
+        },
+        {
+          "code": "BK1024",
+          "name": "绿色电力"
+        },
+        {
+          "code": "BK1109",
+          "name": "供销社概念"
+        }
+      ]
+    },
+    {
+      "scenario": "limit_up_trend",
+      "scenarioName": "连板/强趋势",
+      "matchedRule": "近5日近似涨停根数=3≥2",
+      "features": {
+        "dayReturn": 10,
+        "volumeRatio": 1.84,
+        "lowerShadowRatio": 1,
+        "upperShadowRatio": 0,
+        "bodyRatio": 0,
+        "closeStrength": 1,
+        "pullbackFromHigh20": 0,
+        "ret3": 30.05,
+        "ret10": 19.21,
+        "ret20": 7.74,
+        "limitUpCount5": 3,
+        "nearHigh20": true,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "oddsScore": 100,
+      "oddsTier": "S",
+      "oddsReason": "收盘靠近日内高位 / 短线连板龙头主升 / 龙头主升动能强劲",
+      "code": "SZ002432",
+      "name": "九安医疗",
+      "industry": {
+        "code": "BK1041",
+        "name": "医疗器械"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 79.2,
+      "lift": 3.18,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0506",
+          "name": "创投"
+        },
+        {
+          "code": "BK0641",
+          "name": "智能穿戴"
+        },
+        {
+          "code": "BK0812",
+          "name": "贬值受益"
+        },
+        {
+          "code": "BK0825",
+          "name": "新零售"
+        },
+        {
+          "code": "BK0833",
+          "name": "小米概念"
+        },
+        {
+          "code": "BK0837",
+          "name": "互联网医疗"
+        },
+        {
+          "code": "BK0841",
+          "name": "体外诊断概念"
+        },
+        {
+          "code": "BK0906",
+          "name": "流感"
+        },
+        {
+          "code": "BK1135",
+          "name": "数据要素"
+        },
+        {
+          "code": "BK1153",
+          "name": "多模态AI"
+        },
+        {
+          "code": "BK1169",
+          "name": "Kimi概念"
+        },
+        {
+          "code": "BK1188",
+          "name": "DeepSeek概念"
+        },
+        {
+          "code": "BK1646",
+          "name": "消费电子概念"
+        },
+        {
+          "code": "BK1657",
+          "name": "病原体防治"
+        },
+        {
+          "code": "BK1658",
+          "name": "创新医疗服务"
+        },
+        {
+          "code": "BK1659",
+          "name": "精准诊断"
+        }
+      ]
+    },
+    {
+      "scenario": "limit_up_trend",
+      "scenarioName": "连板/强趋势",
+      "matchedRule": "近5日近似涨停根数=2≥2",
+      "features": {
+        "dayReturn": 9.97,
+        "volumeRatio": 2.66,
+        "lowerShadowRatio": 0.096,
+        "upperShadowRatio": 0,
+        "bodyRatio": 0.904,
+        "closeStrength": 1,
+        "pullbackFromHigh20": 0,
+        "ret3": 26.26,
+        "ret10": 16.48,
+        "ret20": 12.06,
+        "limitUpCount5": 2,
+        "nearHigh20": true,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "oddsScore": 100,
+      "oddsTier": "S",
+      "oddsReason": "收盘靠近日内高位 / 2板加速确立主升 / 龙头主升动能强劲",
+      "code": "SZ001258",
+      "name": "立新能源",
+      "industry": {
+        "code": "BK0428",
+        "name": "电力"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 8.27,
+      "lift": 3.18,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0493",
+          "name": "新能源"
+        },
+        {
+          "code": "BK0595",
+          "name": "风能"
+        },
+        {
+          "code": "BK0700",
+          "name": "充电桩"
+        },
+        {
+          "code": "BK0989",
+          "name": "储能概念"
+        },
+        {
+          "code": "BK1024",
+          "name": "绿色电力"
+        }
+      ]
+    },
+    {
+      "scenario": "limit_up_trend",
+      "scenarioName": "连板/强趋势",
+      "matchedRule": "近5日近似涨停根数=3≥2",
+      "features": {
+        "dayReturn": 10.07,
+        "volumeRatio": 2.62,
+        "lowerShadowRatio": 0.448,
+        "upperShadowRatio": 0,
+        "bodyRatio": 0.552,
+        "closeStrength": 1,
+        "pullbackFromHigh20": 26.27,
+        "ret3": 33.04,
+        "ret10": 22.4,
+        "ret20": -14.53,
+        "limitUpCount5": 3,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "oddsScore": 100,
+      "oddsTier": "S",
+      "oddsReason": "收盘靠近日内高位 / 短线连板龙头主升 / 龙头主升动能强劲",
+      "code": "SH600162",
+      "name": "香江控股",
+      "industry": {
+        "code": "BK0451",
+        "name": "房地产开发"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 3.06,
+      "lift": 3.18,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0653",
+          "name": "养老概念"
+        },
+        {
+          "code": "BK0677",
+          "name": "粤港自贸"
+        },
+        {
+          "code": "BK1134",
+          "name": "算力概念"
+        }
+      ]
+    },
+    {
+      "scenario": "limit_up_trend",
+      "scenarioName": "连板/强趋势",
+      "matchedRule": "近5日近似涨停根数=2≥2",
+      "features": {
+        "dayReturn": 9.98,
+        "volumeRatio": 1.56,
+        "lowerShadowRatio": 0.239,
+        "upperShadowRatio": 0,
+        "bodyRatio": 0.761,
+        "closeStrength": 1,
+        "pullbackFromHigh20": 3.36,
+        "ret3": 12.36,
+        "ret10": 12.67,
+        "ret20": 11.1,
+        "limitUpCount5": 2,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "oddsScore": 100,
+      "oddsTier": "S",
+      "oddsReason": "收盘靠近日内高位 / 2板加速确立主升 / 龙头主升动能强劲",
+      "code": "SZ002829",
+      "name": "星网宇达",
+      "industry": {
+        "code": "BK1232",
+        "name": "航天装备Ⅱ"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 20.72,
+      "lift": 3.18,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0601",
+          "name": "海工装备"
+        },
+        {
+          "code": "BK0704",
+          "name": "无人机"
+        },
+        {
+          "code": "BK0802",
+          "name": "智能驾驶"
+        },
+        {
+          "code": "BK0808",
+          "name": "军民融合"
+        },
+        {
+          "code": "BK0845",
+          "name": "百度概念"
+        },
+        {
+          "code": "BK0905",
+          "name": "传感器"
+        },
+        {
+          "code": "BK0921",
+          "name": "卫星互联网"
+        },
+        {
+          "code": "BK0963",
+          "name": "商业航天"
+        },
+        {
+          "code": "BK1155",
+          "name": "小米汽车"
+        },
+        {
+          "code": "BK1166",
+          "name": "低空经济"
+        }
+      ]
+    },
+    {
+      "scenario": "limit_up_trend",
+      "scenarioName": "连板/强趋势",
+      "matchedRule": "近5日近似涨停根数=2≥2",
+      "features": {
+        "dayReturn": 10.06,
+        "volumeRatio": 2.45,
+        "lowerShadowRatio": 0.235,
+        "upperShadowRatio": 0,
+        "bodyRatio": 0.765,
+        "closeStrength": 1,
+        "pullbackFromHigh20": 0,
+        "ret3": 11.38,
+        "ret10": 20,
+        "ret20": 22.37,
+        "limitUpCount5": 2,
+        "nearHigh20": true,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "oddsScore": 100,
+      "oddsTier": "S",
+      "oddsReason": "收盘靠近日内高位 / 2板加速确立主升 / 龙头主升动能强劲",
+      "code": "SH600881",
+      "name": "亚泰集团",
+      "industry": {
+        "code": "BK0539",
+        "name": "综合Ⅱ"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 1.86,
+      "lift": 3.18,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0615",
+          "name": "中药概念"
+        },
+        {
+          "code": "BK0708",
+          "name": "体育产业"
+        },
+        {
+          "code": "BK1106",
+          "name": "创新药"
+        },
+        {
+          "code": "BK1181",
+          "name": "并购重组概念"
+        },
+        {
+          "code": "BK1193",
+          "name": "海南自贸"
+        }
+      ]
+    },
+    {
+      "scenario": "limit_up_trend",
+      "scenarioName": "连板/强趋势",
+      "matchedRule": "近5日近似涨停根数=3≥2",
+      "features": {
+        "dayReturn": 9.96,
+        "volumeRatio": 0.46,
+        "lowerShadowRatio": 0,
+        "upperShadowRatio": 0,
+        "bodyRatio": 0,
+        "closeStrength": 0,
+        "pullbackFromHigh20": 0,
+        "ret3": 33.17,
+        "ret10": 41.21,
+        "ret20": 19.19,
+        "limitUpCount5": 3,
+        "nearHigh20": true,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "oddsScore": 100,
+      "oddsTier": "S",
+      "oddsReason": "收盘偏弱 / 短线连板龙头主升 / 龙头主升动能强劲",
+      "code": "SZ002677",
+      "name": "浙江美大",
+      "industry": {
+        "code": "BK1240",
+        "name": "厨卫电器"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 7.95,
+      "lift": 3.18,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0802",
+          "name": "智能驾驶"
+        },
+        {
+          "code": "BK1629",
+          "name": "AI应用"
+        }
+      ]
+    },
+    {
+      "scenario": "limit_up_trend",
+      "scenarioName": "连板/强趋势",
+      "matchedRule": "近5日近似涨停根数=2≥2",
+      "features": {
+        "dayReturn": 10.04,
+        "volumeRatio": 2.54,
+        "lowerShadowRatio": 0.298,
+        "upperShadowRatio": 0,
+        "bodyRatio": 0.702,
+        "closeStrength": 1,
+        "pullbackFromHigh20": 0,
+        "ret3": 25.1,
+        "ret10": 25.89,
+        "ret20": 28.85,
+        "limitUpCount5": 2,
+        "nearHigh20": true,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "oddsScore": 100,
+      "oddsTier": "S",
+      "oddsReason": "收盘靠近日内高位 / 2板加速确立主升 / 龙头主升动能强劲",
+      "code": "SH603567",
+      "name": "珍宝岛",
+      "industry": {
+        "code": "BK1040",
+        "name": "中药Ⅱ"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 6.03,
+      "lift": 3.18,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0615",
+          "name": "中药概念"
+        },
+        {
+          "code": "BK0676",
+          "name": "独家药品"
+        },
+        {
+          "code": "BK0906",
+          "name": "流感"
+        },
+        {
+          "code": "BK1106",
+          "name": "创新药"
+        },
+        {
+          "code": "BK1656",
+          "name": "特色药"
+        },
+        {
+          "code": "BK1657",
+          "name": "病原体防治"
+        }
+      ]
+    },
+    {
+      "scenario": "limit_up_trend",
+      "scenarioName": "连板/强趋势",
+      "matchedRule": "近5日近似涨停根数=3≥2",
+      "features": {
+        "dayReturn": 9.97,
+        "volumeRatio": 5.31,
+        "lowerShadowRatio": 0.604,
+        "upperShadowRatio": 0,
+        "bodyRatio": 0.396,
+        "closeStrength": 1,
+        "pullbackFromHigh20": 0,
+        "ret3": 33.07,
+        "ret10": 28.33,
+        "ret20": 25.27,
+        "limitUpCount5": 3,
+        "nearHigh20": true,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "oddsScore": 100,
+      "oddsTier": "S",
+      "oddsReason": "收盘靠近日内高位 / 短线连板龙头主升 / 龙头主升动能强劲",
+      "code": "SZ000676",
+      "name": "智度股份",
+      "industry": {
+        "code": "BK1220",
+        "name": "广告营销"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 6.84,
+      "lift": 3.18,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0447",
+          "name": "互联网服务"
+        },
+        {
+          "code": "BK0506",
+          "name": "创投"
+        },
+        {
+          "code": "BK0509",
+          "name": "网络游戏"
+        },
+        {
+          "code": "BK0637",
+          "name": "互联网金融"
+        },
+        {
+          "code": "BK0689",
+          "name": "阿里概念"
+        },
+        {
+          "code": "BK0722",
+          "name": "虚拟现实"
+        },
+        {
+          "code": "BK0830",
+          "name": "区块链"
+        },
+        {
+          "code": "BK0835",
+          "name": "独角兽"
+        },
+        {
+          "code": "BK0883",
+          "name": "数字货币"
+        },
+        {
+          "code": "BK0923",
+          "name": "抖音概念(字节概念)"
+        },
+        {
+          "code": "BK0940",
+          "name": "网红经济"
+        },
+        {
+          "code": "BK0953",
+          "name": "鸿蒙概念"
+        },
+        {
+          "code": "BK0957",
+          "name": "拼多多概念"
+        },
+        {
+          "code": "BK1009",
+          "name": "元宇宙概念"
+        },
+        {
+          "code": "BK1110",
+          "name": "Web3.0"
+        },
+        {
+          "code": "BK1126",
+          "name": "ChatGPT概念"
+        },
+        {
+          "code": "BK1646",
+          "name": "消费电子概念"
+        }
+      ]
+    },
+    {
+      "scenario": "limit_up_trend",
+      "scenarioName": "连板/强趋势",
+      "matchedRule": "近5日近似涨停根数=2≥2",
+      "features": {
+        "dayReturn": 10.01,
+        "volumeRatio": 0.41,
+        "lowerShadowRatio": 0,
+        "upperShadowRatio": 0,
+        "bodyRatio": 0,
+        "closeStrength": 0,
+        "pullbackFromHigh20": 0,
+        "ret3": 20.74,
+        "ret10": 42.46,
+        "ret20": 37.46,
+        "limitUpCount5": 2,
+        "nearHigh20": true,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "oddsScore": 100,
+      "oddsTier": "S",
+      "oddsReason": "收盘偏弱 / 2板加速确立主升 / 龙头主升动能强劲",
+      "code": "SZ003001",
+      "name": "中岩大地",
+      "industry": {
+        "code": "BK1248",
+        "name": "专业工程"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 19.56,
+      "lift": 3.18,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0577",
+          "name": "核能核电"
+        },
+        {
+          "code": "BK0592",
+          "name": "铁路基建"
+        },
+        {
+          "code": "BK0877",
+          "name": "PCB"
+        },
+        {
+          "code": "BK1163",
+          "name": "可控核聚变"
+        },
+        {
+          "code": "BK1181",
+          "name": "并购重组概念"
+        },
+        {
+          "code": "BK1192",
+          "name": "雅下水电概念"
+        }
+      ]
+    },
+    {
+      "scenario": "volume_mid_thrust",
+      "scenarioName": "中部放量启动",
+      "matchedRule": "未近20日高且量比=3.86≥1.5且当日涨幅=10.0%≥2%",
+      "features": {
+        "dayReturn": 9.97,
+        "volumeRatio": 3.86,
+        "lowerShadowRatio": 0.039,
+        "upperShadowRatio": 0,
+        "bodyRatio": 0.961,
+        "closeStrength": 1,
+        "pullbackFromHigh20": 2.28,
+        "ret3": 11,
+        "ret10": 7.43,
+        "ret20": -0.83,
+        "limitUpCount5": 1,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "oddsScore": 100,
+      "oddsTier": "S",
+      "oddsReason": "收盘靠近日内高位 / 首板突破第一买点 / 龙头主升动能强劲",
+      "code": "SZ000899",
+      "name": "赣能股份",
+      "industry": {
+        "code": "BK0428",
+        "name": "电力"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 10.7,
+      "lift": 1.88,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0493",
+          "name": "新能源"
+        },
+        {
+          "code": "BK0577",
+          "name": "核能核电"
+        },
+        {
+          "code": "BK0595",
+          "name": "风能"
+        },
+        {
+          "code": "BK0700",
+          "name": "充电桩"
+        },
+        {
+          "code": "BK1024",
+          "name": "绿色电力"
+        },
+        {
+          "code": "BK1087",
+          "name": "超超临界发电"
+        }
+      ]
+    },
+    {
+      "scenario": "volume_mid_thrust",
+      "scenarioName": "中部放量启动",
+      "matchedRule": "未近20日高且量比=2.69≥1.5且当日涨幅=9.8%≥2%",
+      "features": {
+        "dayReturn": 9.76,
+        "volumeRatio": 2.69,
+        "lowerShadowRatio": 0.023,
+        "upperShadowRatio": 0,
+        "bodyRatio": 0.977,
+        "closeStrength": 1,
+        "pullbackFromHigh20": 0,
+        "ret3": 14.21,
+        "ret10": 10.57,
+        "ret20": 2.74,
+        "limitUpCount5": 1,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "oddsScore": 100,
+      "oddsTier": "S",
+      "oddsReason": "收盘靠近日内高位 / 首板突破第一买点 / 龙头主升动能强劲",
+      "code": "SH600310",
+      "name": "广西能源",
+      "industry": {
+        "code": "BK0428",
+        "name": "电力"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 4.5,
+      "lift": 1.88,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0506",
+          "name": "创投"
+        },
+        {
+          "code": "BK0595",
+          "name": "风能"
+        },
+        {
+          "code": "BK0989",
+          "name": "储能概念"
+        },
+        {
+          "code": "BK1003",
+          "name": "抽水蓄能"
+        },
+        {
+          "code": "BK1024",
+          "name": "绿色电力"
+        },
+        {
+          "code": "BK1181",
+          "name": "并购重组概念"
+        }
+      ]
+    },
+    {
+      "scenario": "volume_mid_thrust",
+      "scenarioName": "中部放量启动",
+      "matchedRule": "未近20日高且量比=1.70≥1.5且当日涨幅=10.0%≥2%",
+      "features": {
+        "dayReturn": 9.96,
+        "volumeRatio": 1.7,
+        "lowerShadowRatio": 0.051,
+        "upperShadowRatio": 0,
+        "bodyRatio": 0.949,
+        "closeStrength": 1,
+        "pullbackFromHigh20": 18.02,
+        "ret3": 10.17,
+        "ret10": -6.14,
+        "ret20": -15.82,
+        "limitUpCount5": 1,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": true
+      },
+      "oddsScore": 100,
+      "oddsTier": "S",
+      "oddsReason": "收盘靠近日内高位 / 首板突破第一买点 / 龙头主升动能强劲",
+      "code": "SH600744",
+      "name": "华银电力",
+      "industry": {
+        "code": "BK0428",
+        "name": "电力"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 5.96,
+      "lift": 1.88,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0493",
+          "name": "新能源"
+        },
+        {
+          "code": "BK0577",
+          "name": "核能核电"
+        },
+        {
+          "code": "BK0595",
+          "name": "风能"
+        },
+        {
+          "code": "BK0966",
+          "name": "碳交易"
+        },
+        {
+          "code": "BK0989",
+          "name": "储能概念"
+        },
+        {
+          "code": "BK1024",
+          "name": "绿色电力"
+        },
+        {
+          "code": "BK1087",
+          "name": "超超临界发电"
+        }
+      ]
+    },
+    {
+      "scenario": "volume_mid_thrust",
+      "scenarioName": "中部放量启动",
+      "matchedRule": "未近20日高且量比=2.89≥1.5且当日涨幅=10.0%≥2%",
+      "features": {
+        "dayReturn": 10.01,
+        "volumeRatio": 2.89,
+        "lowerShadowRatio": 0,
+        "upperShadowRatio": 0,
+        "bodyRatio": 1,
+        "closeStrength": 1,
+        "pullbackFromHigh20": 2.49,
+        "ret3": 14.05,
+        "ret10": 6.38,
+        "ret20": -1.21,
+        "limitUpCount5": 1,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "oddsScore": 100,
+      "oddsTier": "S",
+      "oddsReason": "收盘靠近日内高位 / 首板突破第一买点 / 龙头主升动能强劲",
+      "code": "SH600644",
+      "name": "乐山电力",
+      "industry": {
+        "code": "BK0428",
+        "name": "电力"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 9.01,
+      "lift": 1.88,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0493",
+          "name": "新能源"
+        },
+        {
+          "code": "BK0534",
+          "name": "成渝特区"
+        },
+        {
+          "code": "BK0581",
+          "name": "智能电网"
+        },
+        {
+          "code": "BK0700",
+          "name": "充电桩"
+        },
+        {
+          "code": "BK0843",
+          "name": "天然气"
+        },
+        {
+          "code": "BK0958",
+          "name": "虚拟电厂"
+        },
+        {
+          "code": "BK0989",
+          "name": "储能概念"
+        },
+        {
+          "code": "BK1024",
+          "name": "绿色电力"
+        },
+        {
+          "code": "BK1647",
+          "name": "电网概念"
+        },
+        {
+          "code": "BK1649",
+          "name": "油气资源"
+        }
+      ]
+    },
+    {
+      "scenario": "volume_mid_thrust",
+      "scenarioName": "中部放量启动",
+      "matchedRule": "未近20日高且量比=4.57≥1.5且当日涨幅=9.9%≥2%",
+      "features": {
+        "dayReturn": 9.94,
+        "volumeRatio": 4.57,
+        "lowerShadowRatio": 0,
+        "upperShadowRatio": 0,
+        "bodyRatio": 1,
+        "closeStrength": 1,
+        "pullbackFromHigh20": 3.42,
+        "ret3": 9.7,
+        "ret10": 4.3,
+        "ret20": -1.74,
+        "limitUpCount5": 1,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "oddsScore": 100,
+      "oddsTier": "S",
+      "oddsReason": "收盘靠近日内高位 / 首板突破第一买点 / 龙头主升动能强劲",
+      "code": "SH600982",
+      "name": "宁波能源",
+      "industry": {
+        "code": "BK0428",
+        "name": "电力"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 5.09,
+      "lift": 1.88,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0493",
+          "name": "新能源"
+        },
+        {
+          "code": "BK0981",
+          "name": "工业气体"
+        },
+        {
+          "code": "BK1003",
+          "name": "抽水蓄能"
+        },
+        {
+          "code": "BK1024",
+          "name": "绿色电力"
+        },
+        {
+          "code": "BK1076",
+          "name": "建筑节能"
+        },
+        {
+          "code": "BK1098",
+          "name": "生物质能发电"
+        }
+      ]
+    },
+    {
+      "scenario": "volume_mid_thrust",
+      "scenarioName": "中部放量启动",
+      "matchedRule": "未近20日高且量比=3.04≥1.5且当日涨幅=10.1%≥2%",
+      "features": {
+        "dayReturn": 10.05,
+        "volumeRatio": 3.04,
+        "lowerShadowRatio": 0.065,
+        "upperShadowRatio": 0,
+        "bodyRatio": 0.935,
+        "closeStrength": 1,
+        "pullbackFromHigh20": 11.45,
+        "ret3": 10.18,
+        "ret10": 2.11,
+        "ret20": -11.28,
+        "limitUpCount5": 1,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": true
+      },
+      "oddsScore": 100,
+      "oddsTier": "S",
+      "oddsReason": "收盘靠近日内高位 / 首板突破第一买点 / 龙头主升动能强劲",
+      "code": "SZ000037",
+      "name": "深南电A",
+      "industry": {
+        "code": "BK0428",
+        "name": "电力"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 9.2,
+      "lift": 1.88,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0577",
+          "name": "核能核电"
+        },
+        {
+          "code": "BK0989",
+          "name": "储能概念"
+        }
+      ]
+    },
+    {
+      "scenario": "volume_mid_thrust",
+      "scenarioName": "中部放量启动",
+      "matchedRule": "未近20日高且量比=2.74≥1.5且当日涨幅=10.0%≥2%",
+      "features": {
+        "dayReturn": 10.03,
+        "volumeRatio": 2.74,
+        "lowerShadowRatio": 0.156,
+        "upperShadowRatio": 0,
+        "bodyRatio": 0.844,
+        "closeStrength": 1,
+        "pullbackFromHigh20": 15.91,
+        "ret3": 10.49,
+        "ret10": -2.7,
+        "ret20": -14.58,
+        "limitUpCount5": 1,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": true
+      },
+      "oddsScore": 100,
+      "oddsTier": "S",
+      "oddsReason": "收盘靠近日内高位 / 首板突破第一买点 / 龙头主升动能强劲",
+      "code": "SZ001369",
+      "name": "双欣材料",
+      "industry": {
+        "code": "BK0471",
+        "name": "化学纤维"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 12.95,
+      "lift": 1.88,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0512",
+          "name": "化工原料"
+        }
+      ]
+    },
+    {
+      "scenario": "volume_mid_thrust",
+      "scenarioName": "中部放量启动",
+      "matchedRule": "未近20日高且量比=1.85≥1.5且当日涨幅=5.3%≥2%",
+      "features": {
+        "dayReturn": 5.3,
+        "volumeRatio": 1.85,
+        "lowerShadowRatio": 0.222,
+        "upperShadowRatio": 0.016,
+        "bodyRatio": 0.762,
+        "closeStrength": 0.984,
+        "pullbackFromHigh20": 2.31,
+        "ret3": 7.12,
+        "ret10": 7.33,
+        "ret20": 8.78,
+        "limitUpCount5": 0,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "oddsScore": 99,
+      "oddsTier": "S",
+      "oddsReason": "中部放量启动较健康 / 收盘靠近日内高位 / 低位首阳放量起爆",
+      "code": "SH603519",
+      "name": "立霸股份",
+      "industry": {
+        "code": "BK1242",
+        "name": "家电零部件Ⅱ"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 16.1,
+      "lift": 1.88,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0891",
+          "name": "国产芯片"
+        },
+        {
+          "code": "BK0952",
+          "name": "第三代半导体"
+        },
+        {
+          "code": "BK0977",
+          "name": "碳化硅"
+        }
+      ]
+    },
+    {
+      "scenario": "volume_mid_thrust",
+      "scenarioName": "中部放量启动",
+      "matchedRule": "未近20日高且量比=2.20≥1.5且当日涨幅=5.8%≥2%",
+      "features": {
+        "dayReturn": 5.78,
+        "volumeRatio": 2.2,
+        "lowerShadowRatio": 0.062,
+        "upperShadowRatio": 0,
+        "bodyRatio": 0.938,
+        "closeStrength": 1,
+        "pullbackFromHigh20": 5.18,
+        "ret3": 16.1,
+        "ret10": 7.21,
+        "ret20": 2.15,
+        "limitUpCount5": 1,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "oddsScore": 97,
+      "oddsTier": "S",
+      "oddsReason": "中部放量启动较健康 / 收盘靠近日内高位 / 龙头主升动能强劲",
+      "code": "SZ002310",
+      "name": "东方新能",
+      "industry": {
+        "code": "BK0428",
+        "name": "电力"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 2.38,
+      "lift": 1.88,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK1024",
+          "name": "绿色电力"
+        }
+      ]
+    },
+    {
+      "scenario": "volume_mid_thrust",
+      "scenarioName": "中部放量启动",
+      "matchedRule": "未近20日高且量比=2.93≥1.5且当日涨幅=7.2%≥2%",
+      "features": {
+        "dayReturn": 7.19,
+        "volumeRatio": 2.93,
+        "lowerShadowRatio": 0.033,
+        "upperShadowRatio": 0.248,
+        "bodyRatio": 0.719,
+        "closeStrength": 0.752,
+        "pullbackFromHigh20": 12.04,
+        "ret3": 9.71,
+        "ret10": -0.27,
+        "ret20": -11.41,
+        "limitUpCount5": 0,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": true
+      },
+      "oddsScore": 85,
+      "oddsTier": "A",
+      "oddsReason": "仍站在10日线之上 / 放量过猛需防分歧 / 收盘靠近日内高位",
+      "code": "SH600021",
+      "name": "上海电力",
+      "industry": {
+        "code": "BK0428",
+        "name": "电力"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 14.91,
+      "lift": 1.88,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0493",
+          "name": "新能源"
+        },
+        {
+          "code": "BK0577",
+          "name": "核能核电"
+        },
+        {
+          "code": "BK0595",
+          "name": "风能"
+        },
+        {
+          "code": "BK0843",
+          "name": "天然气"
+        },
+        {
+          "code": "BK0864",
+          "name": "氢能源"
+        },
+        {
+          "code": "BK0966",
+          "name": "碳交易"
+        },
+        {
+          "code": "BK0989",
+          "name": "储能概念"
+        },
+        {
+          "code": "BK1024",
+          "name": "绿色电力"
+        },
+        {
+          "code": "BK1649",
+          "name": "油气资源"
+        }
+      ]
+    },
+    {
+      "scenario": "volume_mid_thrust",
+      "scenarioName": "中部放量启动",
+      "matchedRule": "未近20日高且量比=3.02≥1.5且当日涨幅=7.3%≥2%",
+      "features": {
+        "dayReturn": 7.35,
+        "volumeRatio": 3.02,
+        "lowerShadowRatio": 0.069,
+        "upperShadowRatio": 0.241,
+        "bodyRatio": 0.69,
+        "closeStrength": 0.759,
+        "pullbackFromHigh20": 7.01,
+        "ret3": 10.19,
+        "ret10": 5.42,
+        "ret20": 1.39,
+        "limitUpCount5": 0,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "oddsScore": 85,
+      "oddsTier": "A",
+      "oddsReason": "仍站在10日线之上 / 放量过猛需防分歧 / 收盘靠近日内高位",
+      "code": "SH600280",
+      "name": "中央商场",
+      "industry": {
+        "code": "BK0482",
+        "name": "一般零售"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 2.92,
+      "lift": 1.88,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0825",
+          "name": "新零售"
+        },
+        {
+          "code": "BK1001",
+          "name": "内贸流通"
+        }
+      ]
+    },
+    {
+      "scenario": "volume_mid_thrust",
+      "scenarioName": "中部放量启动",
+      "matchedRule": "未近20日高且量比=1.95≥1.5且当日涨幅=2.5%≥2%",
+      "features": {
+        "dayReturn": 2.54,
+        "volumeRatio": 1.95,
+        "lowerShadowRatio": 0.387,
+        "upperShadowRatio": 0.194,
+        "bodyRatio": 0.419,
+        "closeStrength": 0.806,
+        "pullbackFromHigh20": 3.97,
+        "ret3": 11.52,
+        "ret10": 3.86,
+        "ret20": -2.62,
+        "limitUpCount5": 0,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "oddsScore": 83,
+      "oddsTier": "A",
+      "oddsReason": "仍站在10日线之上 / 中部放量启动较健康 / 收盘靠近日内高位",
+      "code": "SH603300",
+      "name": "海南华铁",
+      "industry": {
+        "code": "BK0738",
+        "name": "多元金融"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 4.84,
+      "lift": 1.88,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0704",
+          "name": "无人机"
+        },
+        {
+          "code": "BK0834",
+          "name": "乡村振兴"
+        },
+        {
+          "code": "BK0883",
+          "name": "数字货币"
+        },
+        {
+          "code": "BK0937",
+          "name": "蚂蚁金服概念"
+        },
+        {
+          "code": "BK1061",
+          "name": "数字经济"
+        },
+        {
+          "code": "BK1134",
+          "name": "算力概念"
+        },
+        {
+          "code": "BK1166",
+          "name": "低空经济"
+        },
+        {
+          "code": "BK1192",
+          "name": "雅下水电概念"
+        },
+        {
+          "code": "BK1193",
+          "name": "海南自贸"
+        }
+      ]
+    },
+    {
+      "scenario": "trend_continuation",
+      "scenarioName": "趋势中继",
+      "matchedRule": "近3日累计=7.3%∈[5,20)且当日不跌",
+      "features": {
+        "dayReturn": 3.22,
+        "volumeRatio": 1.34,
+        "lowerShadowRatio": 0.219,
+        "upperShadowRatio": 0.295,
+        "bodyRatio": 0.486,
+        "closeStrength": 0.705,
+        "pullbackFromHigh20": 1.76,
+        "ret3": 7.27,
+        "ret10": 5.07,
+        "ret20": 4.07,
+        "limitUpCount5": 0,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "oddsScore": 83,
+      "oddsTier": "A",
+      "oddsReason": "当日延续上涨 / 仍站在10日线之上 / 不贴前高，仍有上攻空间",
+      "code": "SH603556",
+      "name": "海兴电力",
+      "industry": {
+        "code": "BK0457",
+        "name": "电网设备"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 24.06,
+      "lift": 1.58,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0581",
+          "name": "智能电网"
+        },
+        {
+          "code": "BK0700",
+          "name": "充电桩"
+        },
+        {
+          "code": "BK0989",
+          "name": "储能概念"
+        },
+        {
+          "code": "BK1647",
+          "name": "电网概念"
+        }
+      ]
+    },
+    {
+      "scenario": "trend_continuation",
+      "scenarioName": "趋势中继",
+      "matchedRule": "近3日累计=12.9%∈[5,20)且当日不跌",
+      "features": {
+        "dayReturn": 2,
+        "volumeRatio": 1.02,
+        "lowerShadowRatio": 0.075,
+        "upperShadowRatio": 0.514,
+        "bodyRatio": 0.411,
+        "closeStrength": 0.486,
+        "pullbackFromHigh20": 17.03,
+        "ret3": 12.92,
+        "ret10": 25.74,
+        "ret20": -7.52,
+        "limitUpCount5": 1,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "oddsScore": 81,
+      "oddsTier": "A",
+      "oddsReason": "不贴前高，仍有上攻空间 / 上影较重 / 3日趋势斜率适中健康",
+      "code": "SH603201",
+      "name": "常润股份",
+      "industry": {
+        "code": "BK0481",
+        "name": "汽车零部件"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 17.83,
+      "lift": 1.58,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0812",
+          "name": "贬值受益"
+        },
+        {
+          "code": "BK1181",
+          "name": "并购重组概念"
+        }
+      ]
+    },
+    {
+      "scenario": "volume_mid_thrust",
+      "scenarioName": "中部放量启动",
+      "matchedRule": "未近20日高且量比=3.55≥1.5且当日涨幅=6.8%≥2%",
+      "features": {
+        "dayReturn": 6.81,
+        "volumeRatio": 3.55,
+        "lowerShadowRatio": 0,
+        "upperShadowRatio": 0.063,
+        "bodyRatio": 0.937,
+        "closeStrength": 0.937,
+        "pullbackFromHigh20": 7.2,
+        "ret3": 10.48,
+        "ret10": 5.36,
+        "ret20": -8.45,
+        "limitUpCount5": 0,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "oddsScore": 80,
+      "oddsTier": "A",
+      "oddsReason": "仍站在10日线之上 / 放量过猛需防分歧 / 收盘靠近日内高位",
+      "code": "SH600505",
+      "name": "西昌电力",
+      "industry": {
+        "code": "BK0428",
+        "name": "电力"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 11.6,
+      "lift": 1.88,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0534",
+          "name": "成渝特区"
+        },
+        {
+          "code": "BK0595",
+          "name": "风能"
+        },
+        {
+          "code": "BK1024",
+          "name": "绿色电力"
+        }
+      ]
+    },
+    {
+      "scenario": "volume_mid_thrust",
+      "scenarioName": "中部放量启动",
+      "matchedRule": "未近20日高且量比=3.24≥1.5且当日涨幅=6.5%≥2%",
+      "features": {
+        "dayReturn": 6.48,
+        "volumeRatio": 3.24,
+        "lowerShadowRatio": 0.085,
+        "upperShadowRatio": 0.021,
+        "bodyRatio": 0.894,
+        "closeStrength": 0.979,
+        "pullbackFromHigh20": 8.66,
+        "ret3": 8.44,
+        "ret10": -0.56,
+        "ret20": -8.89,
+        "limitUpCount5": 0,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": true
+      },
+      "oddsScore": 80,
+      "oddsTier": "A",
+      "oddsReason": "仍站在10日线之上 / 放量过猛需防分歧 / 收盘靠近日内高位",
+      "code": "SH600032",
+      "name": "浙江新能",
+      "industry": {
+        "code": "BK0428",
+        "name": "电力"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 7.07,
+      "lift": 1.88,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0493",
+          "name": "新能源"
+        },
+        {
+          "code": "BK0595",
+          "name": "风能"
+        },
+        {
+          "code": "BK0864",
+          "name": "氢能源"
+        },
+        {
+          "code": "BK1003",
+          "name": "抽水蓄能"
+        },
+        {
+          "code": "BK1024",
+          "name": "绿色电力"
+        }
+      ]
+    },
+    {
+      "scenario": "volume_mid_thrust",
+      "scenarioName": "中部放量启动",
+      "matchedRule": "未近20日高且量比=1.72≥1.5且当日涨幅=2.6%≥2%",
+      "features": {
+        "dayReturn": 2.59,
+        "volumeRatio": 1.72,
+        "lowerShadowRatio": 0.174,
+        "upperShadowRatio": 0.266,
+        "bodyRatio": 0.56,
+        "closeStrength": 0.734,
+        "pullbackFromHigh20": 12.66,
+        "ret3": 7.43,
+        "ret10": -0.52,
+        "ret20": -9.42,
+        "limitUpCount5": 0,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": true
+      },
+      "oddsScore": 77,
+      "oddsTier": "A",
+      "oddsReason": "当日延续上涨 / 仍站在10日线之上 / 中部放量启动较健康",
+      "code": "SZ002074",
+      "name": "国轩高科",
+      "industry": {
+        "code": "BK1033",
+        "name": "电池"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 26.91,
+      "lift": 1.88,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0493",
+          "name": "新能源"
+        },
+        {
+          "code": "BK0581",
+          "name": "智能电网"
+        },
+        {
+          "code": "BK0595",
+          "name": "风能"
+        },
+        {
+          "code": "BK0700",
+          "name": "充电桩"
+        },
+        {
+          "code": "BK0868",
+          "name": "GDR"
+        },
+        {
+          "code": "BK0922",
+          "name": "数据中心"
+        },
+        {
+          "code": "BK0968",
+          "name": "固态电池"
+        },
+        {
+          "code": "BK0985",
+          "name": "换电概念"
+        },
+        {
+          "code": "BK0989",
+          "name": "储能概念"
+        },
+        {
+          "code": "BK1052",
+          "name": "动力电池回收"
+        },
+        {
+          "code": "BK1157",
+          "name": "飞行汽车(eVTOL)"
+        },
+        {
+          "code": "BK1166",
+          "name": "低空经济"
+        },
+        {
+          "code": "BK1647",
+          "name": "电网概念"
+        }
+      ]
+    },
+    {
+      "scenario": "limit_up_trend",
+      "scenarioName": "连板/强趋势",
+      "matchedRule": "近5日近似涨停根数=3≥2",
+      "features": {
+        "dayReturn": -9.98,
+        "volumeRatio": 0.08,
+        "lowerShadowRatio": 0,
+        "upperShadowRatio": 0,
+        "bodyRatio": 0,
+        "closeStrength": 0,
+        "pullbackFromHigh20": 18.98,
+        "ret3": -10.87,
+        "ret10": 67.54,
+        "ret20": 144.08,
+        "limitUpCount5": 3,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "oddsScore": 73,
+      "oddsTier": "B",
+      "oddsReason": "收盘偏弱 / 短线连板龙头主升 / 动能不足降级",
+      "code": "SH603137",
+      "name": "恒尚节能",
+      "industry": {
+        "code": "BK0725",
+        "name": "装修装饰Ⅱ"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 28.85,
+      "lift": 3.18,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0945",
+          "name": "装配建筑"
+        },
+        {
+          "code": "BK1076",
+          "name": "建筑节能"
+        },
+        {
+          "code": "BK1080",
+          "name": "新型城镇化"
+        },
+        {
+          "code": "BK1181",
+          "name": "并购重组概念"
+        }
+      ]
+    },
+    {
+      "scenario": "volume_mid_thrust",
+      "scenarioName": "中部放量启动",
+      "matchedRule": "未近20日高且量比=2.33≥1.5且当日涨幅=2.1%≥2%",
+      "features": {
+        "dayReturn": 2.07,
+        "volumeRatio": 2.33,
+        "lowerShadowRatio": 0.118,
+        "upperShadowRatio": 0.059,
+        "bodyRatio": 0.824,
+        "closeStrength": 0.941,
+        "pullbackFromHigh20": 0.13,
+        "ret3": 4.64,
+        "ret10": 5.19,
+        "ret20": 2.46,
+        "limitUpCount5": 0,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": true
+      },
+      "oddsScore": 73,
+      "oddsTier": "B",
+      "oddsReason": "中部放量启动较健康 / 收盘靠近日内高位 / 动能不足降级",
+      "code": "SH600004",
+      "name": "白云机场",
+      "industry": {
+        "code": "BK0420",
+        "name": "航空机场"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 7.9,
+      "lift": 1.88,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0677",
+          "name": "粤港自贸"
+        },
+        {
+          "code": "BK0927",
+          "name": "免税概念"
+        }
+      ]
+    },
+    {
+      "scenario": "volume_mid_thrust",
+      "scenarioName": "中部放量启动",
+      "matchedRule": "未近20日高且量比=1.93≥1.5且当日涨幅=4.4%≥2%",
+      "features": {
+        "dayReturn": 4.4,
+        "volumeRatio": 1.93,
+        "lowerShadowRatio": 0.211,
+        "upperShadowRatio": 0.237,
+        "bodyRatio": 0.553,
+        "closeStrength": 0.763,
+        "pullbackFromHigh20": 14.05,
+        "ret3": 3.83,
+        "ret10": -5.48,
+        "ret20": -9.54,
+        "limitUpCount5": 0,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": true
+      },
+      "oddsScore": 73,
+      "oddsTier": "B",
+      "oddsReason": "收盘靠近日内高位 / 低位首阳放量起爆 / 动能不足降级",
+      "code": "SZ000683",
+      "name": "博源化工",
+      "industry": {
+        "code": "BK1019",
+        "name": "化学原料"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 5.69,
+      "lift": 1.88,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0512",
+          "name": "化工原料"
+        }
+      ]
+    },
+    {
+      "scenario": "volume_mid_thrust",
+      "scenarioName": "中部放量启动",
+      "matchedRule": "未近20日高且量比=1.55≥1.5且当日涨幅=4.1%≥2%",
+      "features": {
+        "dayReturn": 4.12,
+        "volumeRatio": 1.55,
+        "lowerShadowRatio": 0.301,
+        "upperShadowRatio": 0.312,
+        "bodyRatio": 0.387,
+        "closeStrength": 0.688,
+        "pullbackFromHigh20": 15.06,
+        "ret3": 5.51,
+        "ret10": -5.04,
+        "ret20": -13.2,
+        "limitUpCount5": 0,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": true
+      },
+      "oddsScore": 73,
+      "oddsTier": "B",
+      "oddsReason": "中部放量启动较健康 / 低位首阳放量起爆 / 动能不足降级",
+      "code": "SH600331",
+      "name": "宏达股份",
+      "industry": {
+        "code": "BK0731",
+        "name": "农化制品"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 11.11,
+      "lift": 1.88,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0519",
+          "name": "稀缺资源"
+        },
+        {
+          "code": "BK0534",
+          "name": "成渝特区"
+        },
+        {
+          "code": "BK1010",
+          "name": "磷化工"
+        }
+      ]
+    },
+    {
+      "scenario": "volume_mid_thrust",
+      "scenarioName": "中部放量启动",
+      "matchedRule": "未近20日高且量比=1.99≥1.5且当日涨幅=2.5%≥2%",
+      "features": {
+        "dayReturn": 2.52,
+        "volumeRatio": 1.99,
+        "lowerShadowRatio": 0.069,
+        "upperShadowRatio": 0.345,
+        "bodyRatio": 0.586,
+        "closeStrength": 0.655,
+        "pullbackFromHigh20": 13.72,
+        "ret3": 0.14,
+        "ret10": -2.54,
+        "ret20": -9.42,
+        "limitUpCount5": 0,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": true
+      },
+      "oddsScore": 73,
+      "oddsTier": "B",
+      "oddsReason": "仍站在10日线之上 / 中部放量启动较健康 / 动能不足降级",
+      "code": "SH600011",
+      "name": "华能国际",
+      "industry": {
+        "code": "BK0428",
+        "name": "电力"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 6.92,
+      "lift": 1.88,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0577",
+          "name": "核能核电"
+        },
+        {
+          "code": "BK0595",
+          "name": "风能"
+        },
+        {
+          "code": "BK1024",
+          "name": "绿色电力"
+        },
+        {
+          "code": "BK1087",
+          "name": "超超临界发电"
+        }
+      ]
+    },
+    {
+      "scenario": "volume_mid_thrust",
+      "scenarioName": "中部放量启动",
+      "matchedRule": "未近20日高且量比=2.20≥1.5且当日涨幅=2.0%≥2%",
+      "features": {
+        "dayReturn": 2.02,
+        "volumeRatio": 2.2,
+        "lowerShadowRatio": 0.12,
+        "upperShadowRatio": 0.2,
+        "bodyRatio": 0.68,
+        "closeStrength": 0.8,
+        "pullbackFromHigh20": 15.73,
+        "ret3": 3.51,
+        "ret10": 0.43,
+        "ret20": -15.33,
+        "limitUpCount5": 0,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": true
+      },
+      "oddsScore": 73,
+      "oddsTier": "B",
+      "oddsReason": "中部放量启动较健康 / 收盘靠近日内高位 / 动能不足降级",
+      "code": "SZ002608",
+      "name": "江苏国信",
+      "industry": {
+        "code": "BK0428",
+        "name": "电力"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 7.07,
+      "lift": 1.88,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0989",
+          "name": "储能概念"
+        },
+        {
+          "code": "BK1087",
+          "name": "超超临界发电"
+        },
+        {
+          "code": "BK1103",
+          "name": "熔盐储能"
+        }
+      ]
+    },
+    {
+      "scenario": "volume_mid_thrust",
+      "scenarioName": "中部放量启动",
+      "matchedRule": "未近20日高且量比=1.97≥1.5且当日涨幅=10.0%≥2%",
+      "features": {
+        "dayReturn": 10,
+        "volumeRatio": 1.97,
+        "lowerShadowRatio": 0,
+        "upperShadowRatio": 0,
+        "bodyRatio": 1,
+        "closeStrength": 1,
+        "pullbackFromHigh20": 15.92,
+        "ret3": 6.99,
+        "ret10": -6.07,
+        "ret20": -9.21,
+        "limitUpCount5": 1,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": true
+      },
+      "oddsScore": 73,
+      "oddsTier": "B",
+      "oddsReason": "首板突破第一买点 / 龙头主升动能强劲 / 动能不足降级",
+      "code": "SH603161",
+      "name": "科华控股",
+      "industry": {
+        "code": "BK0481",
+        "name": "汽车零部件"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 13.31,
+      "lift": 1.88,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0682",
+          "name": "燃料电池概念"
+        },
+        {
+          "code": "BK0864",
+          "name": "氢能源"
+        },
+        {
+          "code": "BK0984",
+          "name": "华为汽车"
+        }
+      ]
+    },
+    {
+      "scenario": "volume_mid_thrust",
+      "scenarioName": "中部放量启动",
+      "matchedRule": "未近20日高且量比=1.92≥1.5且当日涨幅=6.4%≥2%",
+      "features": {
+        "dayReturn": 6.41,
+        "volumeRatio": 1.92,
+        "lowerShadowRatio": 0.207,
+        "upperShadowRatio": 0.259,
+        "bodyRatio": 0.534,
+        "closeStrength": 0.741,
+        "pullbackFromHigh20": 13.69,
+        "ret3": 3.71,
+        "ret10": -4.3,
+        "ret20": 8.73,
+        "limitUpCount5": 1,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": true
+      },
+      "oddsScore": 73,
+      "oddsTier": "B",
+      "oddsReason": "中部放量启动较健康 / 低位首阳放量起爆 / 动能不足降级",
+      "code": "SH603120",
+      "name": "肯特催化",
+      "industry": {
+        "code": "BK0538",
+        "name": "化学制品"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 54.81,
+      "lift": 1.88,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0512",
+          "name": "化工原料"
+        },
+        {
+          "code": "BK1011",
+          "name": "环氧丙烷"
+        },
+        {
+          "code": "BK1753",
+          "name": "光刻胶"
+        }
+      ]
+    },
+    {
+      "scenario": "volume_mid_thrust",
+      "scenarioName": "中部放量启动",
+      "matchedRule": "未近20日高且量比=3.70≥1.5且当日涨幅=4.8%≥2%",
+      "features": {
+        "dayReturn": 4.82,
+        "volumeRatio": 3.7,
+        "lowerShadowRatio": 0.016,
+        "upperShadowRatio": 0.279,
+        "bodyRatio": 0.705,
+        "closeStrength": 0.721,
+        "pullbackFromHigh20": 4.07,
+        "ret3": 5.21,
+        "ret10": 3.04,
+        "ret20": -2.42,
+        "limitUpCount5": 0,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": true
+      },
+      "oddsScore": 73,
+      "oddsTier": "B",
+      "oddsReason": "放量过猛需防分歧 / 低位首阳放量起爆 / 动能不足降级",
+      "code": "SH600101",
+      "name": "明星电力",
+      "industry": {
+        "code": "BK0428",
+        "name": "电力"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 8.48,
+      "lift": 1.88,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0534",
+          "name": "成渝特区"
+        },
+        {
+          "code": "BK0700",
+          "name": "充电桩"
+        },
+        {
+          "code": "BK0843",
+          "name": "天然气"
+        },
+        {
+          "code": "BK1024",
+          "name": "绿色电力"
+        },
+        {
+          "code": "BK1649",
+          "name": "油气资源"
+        }
+      ]
+    },
+    {
+      "scenario": "volume_mid_thrust",
+      "scenarioName": "中部放量启动",
+      "matchedRule": "未近20日高且量比=2.37≥1.5且当日涨幅=4.7%≥2%",
+      "features": {
+        "dayReturn": 4.67,
+        "volumeRatio": 2.37,
+        "lowerShadowRatio": 0.067,
+        "upperShadowRatio": 0.333,
+        "bodyRatio": 0.6,
+        "closeStrength": 0.667,
+        "pullbackFromHigh20": 5.71,
+        "ret3": 4.73,
+        "ret10": 2.6,
+        "ret20": -2.89,
+        "limitUpCount5": 0,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": true
+      },
+      "oddsScore": 73,
+      "oddsTier": "B",
+      "oddsReason": "中部放量启动较健康 / 低位首阳放量起爆 / 动能不足降级",
+      "code": "SH600312",
+      "name": "平高电气",
+      "industry": {
+        "code": "BK0457",
+        "name": "电网设备"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 18.15,
+      "lift": 1.88,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0577",
+          "name": "核能核电"
+        },
+        {
+          "code": "BK0581",
+          "name": "智能电网"
+        },
+        {
+          "code": "BK0700",
+          "name": "充电桩"
+        },
+        {
+          "code": "BK0809",
+          "name": "AI智能体"
+        },
+        {
+          "code": "BK0918",
+          "name": "特高压"
+        },
+        {
+          "code": "BK0922",
+          "name": "数据中心"
+        },
+        {
+          "code": "BK1647",
+          "name": "电网概念"
+        }
+      ]
+    },
+    {
+      "scenario": "volume_mid_thrust",
+      "scenarioName": "中部放量启动",
+      "matchedRule": "未近20日高且量比=2.02≥1.5且当日涨幅=5.5%≥2%",
+      "features": {
+        "dayReturn": 5.54,
+        "volumeRatio": 2.02,
+        "lowerShadowRatio": 0.048,
+        "upperShadowRatio": 0.29,
+        "bodyRatio": 0.661,
+        "closeStrength": 0.71,
+        "pullbackFromHigh20": 10.74,
+        "ret3": 3.85,
+        "ret10": -1.82,
+        "ret20": -1.97,
+        "limitUpCount5": 0,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": true
+      },
+      "oddsScore": 73,
+      "oddsTier": "B",
+      "oddsReason": "中部放量启动较健康 / 低位首阳放量起爆 / 动能不足降级",
+      "code": "SZ000601",
+      "name": "韶能股份",
+      "industry": {
+        "code": "BK0428",
+        "name": "电力"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 6.48,
+      "lift": 1.88,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0597",
+          "name": "水利建设"
+        },
+        {
+          "code": "BK0669",
+          "name": "生态农业"
+        },
+        {
+          "code": "BK0700",
+          "name": "充电桩"
+        },
+        {
+          "code": "BK1024",
+          "name": "绿色电力"
+        },
+        {
+          "code": "BK1098",
+          "name": "生物质能发电"
+        },
+        {
+          "code": "BK1100",
+          "name": "减速器"
+        }
+      ]
+    },
+    {
+      "scenario": "volume_mid_thrust",
+      "scenarioName": "中部放量启动",
+      "matchedRule": "未近20日高且量比=1.61≥1.5且当日涨幅=2.7%≥2%",
+      "features": {
+        "dayReturn": 2.67,
+        "volumeRatio": 1.61,
+        "lowerShadowRatio": 0.125,
+        "upperShadowRatio": 0.292,
+        "bodyRatio": 0.583,
+        "closeStrength": 0.708,
+        "pullbackFromHigh20": 3.97,
+        "ret3": 0.36,
+        "ret10": 0.24,
+        "ret20": 2.42,
+        "limitUpCount5": 0,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": true
+      },
+      "oddsScore": 73,
+      "oddsTier": "B",
+      "oddsReason": "仍站在10日线之上 / 中部放量启动较健康 / 动能不足降级",
+      "code": "SH600039",
+      "name": "四川路桥",
+      "industry": {
+        "code": "BK1247",
+        "name": "基础建设"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 8.47,
+      "lift": 1.88,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0425",
+          "name": "工程建设"
+        },
+        {
+          "code": "BK0534",
+          "name": "成渝特区"
+        },
+        {
+          "code": "BK0721",
+          "name": "PPP模式"
+        },
+        {
+          "code": "BK0966",
+          "name": "碳交易"
+        },
+        {
+          "code": "BK1010",
+          "name": "磷化工"
+        },
+        {
+          "code": "BK1192",
+          "name": "雅下水电概念"
+        }
+      ]
+    },
+    {
+      "scenario": "volume_mid_thrust",
+      "scenarioName": "中部放量启动",
+      "matchedRule": "未近20日高且量比=2.87≥1.5且当日涨幅=4.4%≥2%",
+      "features": {
+        "dayReturn": 4.36,
+        "volumeRatio": 2.87,
+        "lowerShadowRatio": 0.038,
+        "upperShadowRatio": 0.271,
+        "bodyRatio": 0.692,
+        "closeStrength": 0.729,
+        "pullbackFromHigh20": 11.37,
+        "ret3": 4.89,
+        "ret10": -1.65,
+        "ret20": -9,
+        "limitUpCount5": 0,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": true
+      },
+      "oddsScore": 73,
+      "oddsTier": "B",
+      "oddsReason": "放量过猛需防分歧 / 低位首阳放量起爆 / 动能不足降级",
+      "code": "SZ000400",
+      "name": "许继电气",
+      "industry": {
+        "code": "BK0457",
+        "name": "电网设备"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 20.82,
+      "lift": 1.88,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0581",
+          "name": "智能电网"
+        },
+        {
+          "code": "BK0700",
+          "name": "充电桩"
+        },
+        {
+          "code": "BK0864",
+          "name": "氢能源"
+        },
+        {
+          "code": "BK0918",
+          "name": "特高压"
+        },
+        {
+          "code": "BK0922",
+          "name": "数据中心"
+        },
+        {
+          "code": "BK0960",
+          "name": "无线充电"
+        },
+        {
+          "code": "BK0985",
+          "name": "换电概念"
+        },
+        {
+          "code": "BK0989",
+          "name": "储能概念"
+        },
+        {
+          "code": "BK1003",
+          "name": "抽水蓄能"
+        },
+        {
+          "code": "BK1163",
+          "name": "可控核聚变"
+        },
+        {
+          "code": "BK1647",
+          "name": "电网概念"
+        }
+      ]
+    },
+    {
+      "scenario": "volume_mid_thrust",
+      "scenarioName": "中部放量启动",
+      "matchedRule": "未近20日高且量比=1.69≥1.5且当日涨幅=4.8%≥2%",
+      "features": {
+        "dayReturn": 4.77,
+        "volumeRatio": 1.69,
+        "lowerShadowRatio": 0.068,
+        "upperShadowRatio": 0.37,
+        "bodyRatio": 0.563,
+        "closeStrength": 0.63,
+        "pullbackFromHigh20": 6.89,
+        "ret3": 4.13,
+        "ret10": -5.19,
+        "ret20": 4.11,
+        "limitUpCount5": 0,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": true
+      },
+      "oddsScore": 73,
+      "oddsTier": "B",
+      "oddsReason": "上影较重 / 低位首阳放量起爆 / 动能不足降级",
+      "code": "SZ000893",
+      "name": "亚钾国际",
+      "industry": {
+        "code": "BK0731",
+        "name": "农化制品"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 42.59,
+      "lift": 1.88,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0669",
+          "name": "生态农业"
+        },
+        {
+          "code": "BK1109",
+          "name": "供销社概念"
+        }
+      ]
+    },
+    {
+      "scenario": "volume_mid_thrust",
+      "scenarioName": "中部放量启动",
+      "matchedRule": "未近20日高且量比=3.03≥1.5且当日涨幅=4.0%≥2%",
+      "features": {
+        "dayReturn": 3.95,
+        "volumeRatio": 3.03,
+        "lowerShadowRatio": 0.087,
+        "upperShadowRatio": 0,
+        "bodyRatio": 0.913,
+        "closeStrength": 1,
+        "pullbackFromHigh20": 5.48,
+        "ret3": 6.61,
+        "ret10": 1.83,
+        "ret20": -5.12,
+        "limitUpCount5": 0,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": true
+      },
+      "oddsScore": 73,
+      "oddsTier": "B",
+      "oddsReason": "放量过猛需防分歧 / 收盘靠近日内高位 / 动能不足降级",
+      "code": "SZ000862",
+      "name": "银星能源",
+      "industry": {
+        "code": "BK0428",
+        "name": "电力"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 5,
+      "lift": 1.88,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0493",
+          "name": "新能源"
+        },
+        {
+          "code": "BK0581",
+          "name": "智能电网"
+        },
+        {
+          "code": "BK0595",
+          "name": "风能"
+        },
+        {
+          "code": "BK1024",
+          "name": "绿色电力"
+        }
+      ]
+    },
+    {
+      "scenario": "volume_mid_thrust",
+      "scenarioName": "中部放量启动",
+      "matchedRule": "未近20日高且量比=1.62≥1.5且当日涨幅=2.8%≥2%",
+      "features": {
+        "dayReturn": 2.76,
+        "volumeRatio": 1.62,
+        "lowerShadowRatio": 0,
+        "upperShadowRatio": 0.111,
+        "bodyRatio": 0.889,
+        "closeStrength": 0.889,
+        "pullbackFromHigh20": 3.87,
+        "ret3": 1.53,
+        "ret10": 7.19,
+        "ret20": 3.11,
+        "limitUpCount5": 0,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": true
+      },
+      "oddsScore": 73,
+      "oddsTier": "B",
+      "oddsReason": "中部放量启动较健康 / 收盘靠近日内高位 / 动能不足降级",
+      "code": "SH601988",
+      "name": "中国银行",
+      "industry": {
+        "code": "BK0475",
+        "name": "银行Ⅱ"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 5.96,
+      "lift": 1.88,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0637",
+          "name": "互联网金融"
+        },
+        {
+          "code": "BK1071",
+          "name": "跨境支付"
+        }
+      ]
+    },
+    {
+      "scenario": "volume_mid_thrust",
+      "scenarioName": "中部放量启动",
+      "matchedRule": "未近20日高且量比=1.79≥1.5且当日涨幅=6.6%≥2%",
+      "features": {
+        "dayReturn": 6.58,
+        "volumeRatio": 1.79,
+        "lowerShadowRatio": 0.105,
+        "upperShadowRatio": 0.248,
+        "bodyRatio": 0.647,
+        "closeStrength": 0.752,
+        "pullbackFromHigh20": 27.29,
+        "ret3": 2.14,
+        "ret10": -19.66,
+        "ret20": -13.64,
+        "limitUpCount5": 0,
+        "nearHigh20": false,
+        "aboveMa10": false,
+        "nearMa20": false
+      },
+      "oddsScore": 73,
+      "oddsTier": "B",
+      "oddsReason": "收盘靠近日内高位 / 低位首阳放量起爆 / 动能不足降级",
+      "code": "SZ002915",
+      "name": "中欣氟材",
+      "industry": {
+        "code": "BK0538",
+        "name": "化学制品"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 17.16,
+      "lift": 1.88,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0690",
+          "name": "氟化工概念"
+        },
+        {
+          "code": "BK0891",
+          "name": "国产芯片"
+        },
+        {
+          "code": "BK0952",
+          "name": "第三代半导体"
+        },
+        {
+          "code": "BK0968",
+          "name": "固态电池"
+        },
+        {
+          "code": "BK0988",
+          "name": "钠离子电池"
+        },
+        {
+          "code": "BK1156",
+          "name": "PEEK材料概念"
+        }
+      ]
+    },
+    {
+      "scenario": "volume_mid_thrust",
+      "scenarioName": "中部放量启动",
+      "matchedRule": "未近20日高且量比=2.77≥1.5且当日涨幅=6.1%≥2%",
+      "features": {
+        "dayReturn": 6.06,
+        "volumeRatio": 2.77,
+        "lowerShadowRatio": 0,
+        "upperShadowRatio": 0.361,
+        "bodyRatio": 0.639,
+        "closeStrength": 0.639,
+        "pullbackFromHigh20": 12.94,
+        "ret3": 6.06,
+        "ret10": -5.15,
+        "ret20": -7.89,
+        "limitUpCount5": 0,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": true
+      },
+      "oddsScore": 73,
+      "oddsTier": "B",
+      "oddsReason": "上影较重 / 低位首阳放量起爆 / 动能不足降级",
+      "code": "SH601016",
+      "name": "XD节能风",
+      "industry": {
+        "code": "BK0428",
+        "name": "电力"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 3.5,
+      "lift": 1.88,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0493",
+          "name": "新能源"
+        },
+        {
+          "code": "BK0595",
+          "name": "风能"
+        },
+        {
+          "code": "BK0864",
+          "name": "氢能源"
+        },
+        {
+          "code": "BK1003",
+          "name": "抽水蓄能"
+        },
+        {
+          "code": "BK1024",
+          "name": "绿色电力"
+        }
+      ]
+    },
+    {
+      "scenario": "volume_mid_thrust",
+      "scenarioName": "中部放量启动",
+      "matchedRule": "未近20日高且量比=1.53≥1.5且当日涨幅=2.5%≥2%",
+      "features": {
+        "dayReturn": 2.46,
+        "volumeRatio": 1.53,
+        "lowerShadowRatio": 0.096,
+        "upperShadowRatio": 0.31,
+        "bodyRatio": 0.594,
+        "closeStrength": 0.69,
+        "pullbackFromHigh20": 8.85,
+        "ret3": 0.63,
+        "ret10": 1.24,
+        "ret20": 1.43,
+        "limitUpCount5": 0,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": true
+      },
+      "oddsScore": 73,
+      "oddsTier": "B",
+      "oddsReason": "仍站在10日线之上 / 中部放量启动较健康 / 动能不足降级",
+      "code": "SH600309",
+      "name": "XD万华化",
+      "industry": {
+        "code": "BK0538",
+        "name": "化学制品"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 70.04,
+      "lift": 1.88,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0492",
+          "name": "煤化工概念"
+        },
+        {
+          "code": "BK0506",
+          "name": "创投"
+        },
+        {
+          "code": "BK0512",
+          "name": "化工原料"
+        },
+        {
+          "code": "BK1011",
+          "name": "环氧丙烷"
+        },
+        {
+          "code": "BK1661",
+          "name": "行业龙头"
+        }
+      ]
+    },
+    {
+      "scenario": "trend_continuation",
+      "scenarioName": "趋势中继",
+      "matchedRule": "近3日累计=5.1%∈[5,20)且当日不跌",
+      "features": {
+        "dayReturn": 9.95,
+        "volumeRatio": 1.12,
+        "lowerShadowRatio": 0.118,
+        "upperShadowRatio": 0,
+        "bodyRatio": 0.882,
+        "closeStrength": 1,
+        "pullbackFromHigh20": 4.62,
+        "ret3": 5.09,
+        "ret10": 6.74,
+        "ret20": 4.28,
+        "limitUpCount5": 1,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "oddsScore": 73,
+      "oddsTier": "B",
+      "oddsReason": "3日趋势动能偏弱 / 龙头主升动能强劲 / 动能不足降级",
+      "code": "SH601369",
+      "name": "陕鼓动力",
+      "industry": {
+        "code": "BK0910",
+        "name": "专用设备"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 9.5,
+      "lift": 1.58,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0492",
+          "name": "煤化工概念"
+        },
+        {
+          "code": "BK0577",
+          "name": "核能核电"
+        },
+        {
+          "code": "BK0603",
+          "name": "页岩气"
+        },
+        {
+          "code": "BK0864",
+          "name": "氢能源"
+        },
+        {
+          "code": "BK0981",
+          "name": "工业气体"
+        },
+        {
+          "code": "BK0989",
+          "name": "储能概念"
+        },
+        {
+          "code": "BK1181",
+          "name": "并购重组概念"
+        }
+      ]
+    },
+    {
+      "scenario": "pullback_stabilize",
+      "scenarioName": "缩量回踩企稳反弹",
+      "matchedRule": "回撤=11.8%∈[8,25]%且量比≤0.9且收涨企稳",
+      "features": {
+        "dayReturn": 10.06,
+        "volumeRatio": 0.86,
+        "lowerShadowRatio": 0.113,
+        "upperShadowRatio": 0,
+        "bodyRatio": 0.887,
+        "closeStrength": 1,
+        "pullbackFromHigh20": 11.79,
+        "ret3": 4.53,
+        "ret10": 2.65,
+        "ret20": -1.5,
+        "limitUpCount5": 1,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": true
+      },
+      "oddsScore": 73,
+      "oddsTier": "B",
+      "oddsReason": "首板突破第一买点 / 龙头主升动能强劲 / 动能不足降级",
+      "code": "SH600722",
+      "name": "金牛化工",
+      "industry": {
+        "code": "BK1019",
+        "name": "化学原料"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 8.53,
+      "lift": 1.42,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0492",
+          "name": "煤化工概念"
+        },
+        {
+          "code": "BK0512",
+          "name": "化工原料"
+        }
+      ]
+    },
+    {
+      "scenario": "volume_mid_thrust",
+      "scenarioName": "中部放量启动",
+      "matchedRule": "未近20日高且量比=1.66≥1.5且当日涨幅=4.8%≥2%",
+      "features": {
+        "dayReturn": 4.8,
+        "volumeRatio": 1.66,
+        "lowerShadowRatio": 0,
+        "upperShadowRatio": 0.556,
+        "bodyRatio": 0.444,
+        "closeStrength": 0.444,
+        "pullbackFromHigh20": 4.77,
+        "ret3": 3.41,
+        "ret10": 10.79,
+        "ret20": 11.5,
+        "limitUpCount5": 1,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "oddsScore": 71,
+      "oddsTier": "B",
+      "oddsReason": "收盘偏弱 / 上影较重 / 低位首阳放量起爆",
+      "code": "SZ000759",
+      "name": "中百集团",
+      "industry": {
+        "code": "BK0482",
+        "name": "一般零售"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 6.98,
+      "lift": 1.88,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0825",
+          "name": "新零售"
+        },
+        {
+          "code": "BK0909",
+          "name": "降解塑料"
+        },
+        {
+          "code": "BK1001",
+          "name": "内贸流通"
+        }
+      ]
+    },
+    {
+      "scenario": "trend_continuation",
+      "scenarioName": "趋势中继",
+      "matchedRule": "近3日累计=9.5%∈[5,20)且当日不跌",
+      "features": {
+        "dayReturn": 1.38,
+        "volumeRatio": 1.88,
+        "lowerShadowRatio": 0.114,
+        "upperShadowRatio": 0.341,
+        "bodyRatio": 0.545,
+        "closeStrength": 0.659,
+        "pullbackFromHigh20": 1.44,
+        "ret3": 9.51,
+        "ret10": 7.78,
+        "ret20": 2.5,
+        "limitUpCount5": 0,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "oddsScore": 70,
+      "oddsTier": "B",
+      "oddsReason": "当日动能一般 / 仍站在10日线之上 / 不贴前高，仍有上攻空间",
+      "code": "SZ002351",
+      "name": "漫步者",
+      "industry": {
+        "code": "BK1037",
+        "name": "消费电子"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 10.25,
+      "lift": 1.58,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0641",
+          "name": "智能穿戴"
+        },
+        {
+          "code": "BK0809",
+          "name": "AI智能体"
+        },
+        {
+          "code": "BK0835",
+          "name": "独角兽"
+        },
+        {
+          "code": "BK0853",
+          "name": "电子竞技"
+        },
+        {
+          "code": "BK0893",
+          "name": "无线耳机"
+        },
+        {
+          "code": "BK1188",
+          "name": "DeepSeek概念"
+        },
+        {
+          "code": "BK1629",
+          "name": "AI应用"
+        },
+        {
+          "code": "BK1646",
+          "name": "消费电子概念"
+        }
+      ]
+    },
+    {
+      "scenario": "volume_mid_thrust",
+      "scenarioName": "中部放量启动",
+      "matchedRule": "未近20日高且量比=2.27≥1.5且当日涨幅=2.1%≥2%",
+      "features": {
+        "dayReturn": 2.12,
+        "volumeRatio": 2.27,
+        "lowerShadowRatio": 0.524,
+        "upperShadowRatio": 0.355,
+        "bodyRatio": 0.12,
+        "closeStrength": 0.524,
+        "pullbackFromHigh20": 9.96,
+        "ret3": 5.45,
+        "ret10": -3.15,
+        "ret20": 4.15,
+        "limitUpCount5": 1,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": true
+      },
+      "oddsScore": 69,
+      "oddsTier": "B",
+      "oddsReason": "仍站在10日线之上 / 中部放量启动较健康 / 上影较重",
+      "code": "SZ002173",
+      "name": "创新医疗",
+      "industry": {
+        "code": "BK0727",
+        "name": "医疗服务"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 17.81,
+      "lift": 1.88,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0653",
+          "name": "养老概念"
+        },
+        {
+          "code": "BK0664",
+          "name": "婴童概念"
+        },
+        {
+          "code": "BK0706",
+          "name": "脑机接口"
+        },
+        {
+          "code": "BK0995",
+          "name": "华为昇腾"
+        },
+        {
+          "code": "BK1170",
+          "name": "AI制药（医疗）"
+        },
+        {
+          "code": "BK1188",
+          "name": "DeepSeek概念"
+        }
+      ]
+    },
+    {
+      "scenario": "volume_mid_thrust",
+      "scenarioName": "中部放量启动",
+      "matchedRule": "未近20日高且量比=1.78≥1.5且当日涨幅=2.5%≥2%",
+      "features": {
+        "dayReturn": 2.49,
+        "volumeRatio": 1.78,
+        "lowerShadowRatio": 0.077,
+        "upperShadowRatio": 0.436,
+        "bodyRatio": 0.487,
+        "closeStrength": 0.564,
+        "pullbackFromHigh20": 13.33,
+        "ret3": 3.49,
+        "ret10": -4.39,
+        "ret20": -13.74,
+        "limitUpCount5": 0,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": true
+      },
+      "oddsScore": 69,
+      "oddsTier": "B",
+      "oddsReason": "仍站在10日线之上 / 中部放量启动较健康 / 上影较重",
+      "code": "SZ000791",
+      "name": "甘肃能源",
+      "industry": {
+        "code": "BK0428",
+        "name": "电力"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 7.41,
+      "lift": 1.88,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0595",
+          "name": "风能"
+        },
+        {
+          "code": "BK1024",
+          "name": "绿色电力"
+        },
+        {
+          "code": "BK1064",
+          "name": "东数西算"
+        }
+      ]
+    },
+    {
+      "scenario": "volume_mid_thrust",
+      "scenarioName": "中部放量启动",
+      "matchedRule": "未近20日高且量比=2.17≥1.5且当日涨幅=2.3%≥2%",
+      "features": {
+        "dayReturn": 2.33,
+        "volumeRatio": 2.17,
+        "lowerShadowRatio": 0.043,
+        "upperShadowRatio": 0.435,
+        "bodyRatio": 0.522,
+        "closeStrength": 0.565,
+        "pullbackFromHigh20": 11.24,
+        "ret3": 3.4,
+        "ret10": -1.74,
+        "ret20": -11.24,
+        "limitUpCount5": 0,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": true
+      },
+      "oddsScore": 69,
+      "oddsTier": "B",
+      "oddsReason": "仍站在10日线之上 / 中部放量启动较健康 / 上影较重",
+      "code": "SH600979",
+      "name": "广安爱众",
+      "industry": {
+        "code": "BK0428",
+        "name": "电力"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 3.95,
+      "lift": 1.88,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0534",
+          "name": "成渝特区"
+        },
+        {
+          "code": "BK0700",
+          "name": "充电桩"
+        },
+        {
+          "code": "BK0843",
+          "name": "天然气"
+        },
+        {
+          "code": "BK0958",
+          "name": "虚拟电厂"
+        },
+        {
+          "code": "BK1024",
+          "name": "绿色电力"
+        },
+        {
+          "code": "BK1098",
+          "name": "生物质能发电"
+        },
+        {
+          "code": "BK1649",
+          "name": "油气资源"
+        }
+      ]
+    },
+    {
+      "scenario": "volume_mid_thrust",
+      "scenarioName": "中部放量启动",
+      "matchedRule": "未近20日高且量比=1.63≥1.5且当日涨幅=3.0%≥2%",
+      "features": {
+        "dayReturn": 2.95,
+        "volumeRatio": 1.63,
+        "lowerShadowRatio": 0.116,
+        "upperShadowRatio": 0.42,
+        "bodyRatio": 0.464,
+        "closeStrength": 0.58,
+        "pullbackFromHigh20": 4.08,
+        "ret3": 10.25,
+        "ret10": 7.67,
+        "ret20": -1.54,
+        "limitUpCount5": 0,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "oddsScore": 69,
+      "oddsTier": "B",
+      "oddsReason": "仍站在10日线之上 / 中部放量启动较健康 / 上影较重",
+      "code": "SZ002115",
+      "name": "三维通信",
+      "industry": {
+        "code": "BK0736",
+        "name": "通信服务"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 11.51,
+      "lift": 1.88,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0447",
+          "name": "互联网服务"
+        },
+        {
+          "code": "BK0506",
+          "name": "创投"
+        },
+        {
+          "code": "BK0623",
+          "name": "海洋经济"
+        },
+        {
+          "code": "BK0689",
+          "name": "阿里概念"
+        },
+        {
+          "code": "BK0714",
+          "name": "5G概念"
+        },
+        {
+          "code": "BK0830",
+          "name": "区块链"
+        },
+        {
+          "code": "BK0921",
+          "name": "卫星互联网"
+        },
+        {
+          "code": "BK0923",
+          "name": "抖音概念(字节概念)"
+        },
+        {
+          "code": "BK0963",
+          "name": "商业航天"
+        },
+        {
+          "code": "BK0964",
+          "name": "6G概念"
+        },
+        {
+          "code": "BK0972",
+          "name": "快手概念"
+        },
+        {
+          "code": "BK1055",
+          "name": "虚拟数字人"
+        },
+        {
+          "code": "BK1187",
+          "name": "小红书概念"
+        },
+        {
+          "code": "BK1650",
+          "name": "通信技术"
+        }
+      ]
+    },
+    {
+      "scenario": "volume_mid_thrust",
+      "scenarioName": "中部放量启动",
+      "matchedRule": "未近20日高且量比=1.84≥1.5且当日涨幅=3.1%≥2%",
+      "features": {
+        "dayReturn": 3.15,
+        "volumeRatio": 1.84,
+        "lowerShadowRatio": 0.093,
+        "upperShadowRatio": 0.488,
+        "bodyRatio": 0.419,
+        "closeStrength": 0.512,
+        "pullbackFromHigh20": 12.99,
+        "ret3": 4.53,
+        "ret10": -0.48,
+        "ret20": -9.18,
+        "limitUpCount5": 0,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": true
+      },
+      "oddsScore": 69,
+      "oddsTier": "B",
+      "oddsReason": "仍站在10日线之上 / 中部放量启动较健康 / 上影较重",
+      "code": "SH600810",
+      "name": "神马股份",
+      "industry": {
+        "code": "BK0471",
+        "name": "化学纤维"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 6.23,
+      "lift": 1.88,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": []
+    },
+    {
+      "scenario": "volume_mid_thrust",
+      "scenarioName": "中部放量启动",
+      "matchedRule": "未近20日高且量比=1.76≥1.5且当日涨幅=2.2%≥2%",
+      "features": {
+        "dayReturn": 2.23,
+        "volumeRatio": 1.76,
+        "lowerShadowRatio": 0.179,
+        "upperShadowRatio": 0.536,
+        "bodyRatio": 0.286,
+        "closeStrength": 0.464,
+        "pullbackFromHigh20": 2.65,
+        "ret3": 2.8,
+        "ret10": 5.57,
+        "ret20": 3.58,
+        "limitUpCount5": 0,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": true
+      },
+      "oddsScore": 69,
+      "oddsTier": "B",
+      "oddsReason": "仍站在10日线之上 / 中部放量启动较健康 / 上影较重",
+      "code": "SH601107",
+      "name": "四川成渝",
+      "industry": {
+        "code": "BK0421",
+        "name": "铁路公路"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 5.5,
+      "lift": 1.88,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0506",
+          "name": "创投"
+        },
+        {
+          "code": "BK0534",
+          "name": "成渝特区"
+        },
+        {
+          "code": "BK0700",
+          "name": "充电桩"
+        }
+      ]
+    },
+    {
+      "scenario": "volume_mid_thrust",
+      "scenarioName": "中部放量启动",
+      "matchedRule": "未近20日高且量比=2.15≥1.5且当日涨幅=4.6%≥2%",
+      "features": {
+        "dayReturn": 4.58,
+        "volumeRatio": 2.15,
+        "lowerShadowRatio": 0.054,
+        "upperShadowRatio": 0.351,
+        "bodyRatio": 0.595,
+        "closeStrength": 0.649,
+        "pullbackFromHigh20": 4.41,
+        "ret3": 12.14,
+        "ret10": 8.77,
+        "ret20": -3.13,
+        "limitUpCount5": 0,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "oddsScore": 69,
+      "oddsTier": "B",
+      "oddsReason": "仍站在10日线之上 / 中部放量启动较健康 / 上影较重",
+      "code": "SZ000966",
+      "name": "长源电力",
+      "industry": {
+        "code": "BK0428",
+        "name": "电力"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 4.34,
+      "lift": 1.88,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0493",
+          "name": "新能源"
+        },
+        {
+          "code": "BK0506",
+          "name": "创投"
+        },
+        {
+          "code": "BK0595",
+          "name": "风能"
+        },
+        {
+          "code": "BK0966",
+          "name": "碳交易"
+        },
+        {
+          "code": "BK1003",
+          "name": "抽水蓄能"
+        },
+        {
+          "code": "BK1024",
+          "name": "绿色电力"
+        },
+        {
+          "code": "BK1087",
+          "name": "超超临界发电"
+        }
+      ]
+    },
+    {
+      "scenario": "trend_continuation",
+      "scenarioName": "趋势中继",
+      "matchedRule": "近3日累计=6.2%∈[5,20)且当日不跌",
+      "features": {
+        "dayReturn": 2.57,
+        "volumeRatio": 1.07,
+        "lowerShadowRatio": 0.283,
+        "upperShadowRatio": 0.442,
+        "bodyRatio": 0.275,
+        "closeStrength": 0.558,
+        "pullbackFromHigh20": 5.55,
+        "ret3": 6.24,
+        "ret10": 12.51,
+        "ret20": 15.65,
+        "limitUpCount5": 1,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "oddsScore": 69,
+      "oddsTier": "B",
+      "oddsReason": "不贴前高，仍有上攻空间 / 上影较重 / 3日趋势动能偏弱",
+      "code": "SH600671",
+      "name": "天目药业",
+      "industry": {
+        "code": "BK1040",
+        "name": "中药Ⅱ"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 20.77,
+      "lift": 1.58,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0615",
+          "name": "中药概念"
+        },
+        {
+          "code": "BK0653",
+          "name": "养老概念"
+        },
+        {
+          "code": "BK0676",
+          "name": "独家药品"
+        },
+        {
+          "code": "BK1656",
+          "name": "特色药"
+        }
+      ]
+    },
+    {
+      "scenario": "volume_mid_thrust",
+      "scenarioName": "中部放量启动",
+      "matchedRule": "未近20日高且量比=2.70≥1.5且当日涨幅=3.4%≥2%",
+      "features": {
+        "dayReturn": 3.41,
+        "volumeRatio": 2.7,
+        "lowerShadowRatio": 0,
+        "upperShadowRatio": 0.269,
+        "bodyRatio": 0.731,
+        "closeStrength": 0.731,
+        "pullbackFromHigh20": 10.06,
+        "ret3": 4.71,
+        "ret10": -1.48,
+        "ret20": -8,
+        "limitUpCount5": 0,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": true
+      },
+      "oddsScore": 68,
+      "oddsTier": "B",
+      "oddsReason": "当日延续上涨 / 仍站在10日线之上 / 放量过猛需防分歧",
+      "code": "SZ000993",
+      "name": "闽东电力",
+      "industry": {
+        "code": "BK0428",
+        "name": "电力"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 10.01,
+      "lift": 1.88,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0493",
+          "name": "新能源"
+        },
+        {
+          "code": "BK0595",
+          "name": "风能"
+        },
+        {
+          "code": "BK0966",
+          "name": "碳交易"
+        },
+        {
+          "code": "BK1024",
+          "name": "绿色电力"
+        },
+        {
+          "code": "BK1073",
+          "name": "啤酒概念"
+        }
+      ]
+    },
+    {
+      "scenario": "trend_continuation",
+      "scenarioName": "趋势中继",
+      "matchedRule": "近3日累计=10.4%∈[5,20)且当日不跌",
+      "features": {
+        "dayReturn": 1.88,
+        "volumeRatio": 1.25,
+        "lowerShadowRatio": 0.103,
+        "upperShadowRatio": 0.541,
+        "bodyRatio": 0.356,
+        "closeStrength": 0.459,
+        "pullbackFromHigh20": 6.62,
+        "ret3": 10.4,
+        "ret10": 0.58,
+        "ret20": 2.11,
+        "limitUpCount5": 0,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "oddsScore": 68,
+      "oddsTier": "B",
+      "oddsReason": "不贴前高，仍有上攻空间 / 上影较重 / 3日趋势斜率适中健康",
+      "code": "SH600562",
+      "name": "国睿科技",
+      "industry": {
+        "code": "BK1233",
+        "name": "军工电子Ⅱ"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 22.71,
+      "lift": 1.58,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0714",
+          "name": "5G概念"
+        },
+        {
+          "code": "BK0721",
+          "name": "PPP模式"
+        },
+        {
+          "code": "BK0802",
+          "name": "智能驾驶"
+        },
+        {
+          "code": "BK0808",
+          "name": "军民融合"
+        },
+        {
+          "code": "BK0814",
+          "name": "大飞机"
+        },
+        {
+          "code": "BK0963",
+          "name": "商业航天"
+        },
+        {
+          "code": "BK1163",
+          "name": "可控核聚变"
+        },
+        {
+          "code": "BK1166",
+          "name": "低空经济"
+        },
+        {
+          "code": "BK1650",
+          "name": "通信技术"
+        }
+      ]
+    },
+    {
+      "scenario": "limit_up_trend",
+      "scenarioName": "连板/强趋势",
+      "matchedRule": "近5日近似涨停根数=3≥2",
+      "features": {
+        "dayReturn": -26.76,
+        "volumeRatio": 3.18,
+        "lowerShadowRatio": 0,
+        "upperShadowRatio": 0,
+        "bodyRatio": 1,
+        "closeStrength": 1,
+        "pullbackFromHigh20": 30.66,
+        "ret3": -23.74,
+        "ret10": -10.78,
+        "ret20": -15.91,
+        "limitUpCount5": 3,
+        "nearHigh20": false,
+        "aboveMa10": false,
+        "nearMa20": false
+      },
+      "oddsScore": 65,
+      "oddsTier": "B",
+      "oddsReason": "爆量后次日分歧风险偏高 / 收盘靠近日内高位 / 短线连板龙头主升",
+      "code": "SZ001388",
+      "name": "信通电子",
+      "industry": {
+        "code": "BK0457",
+        "name": "电网设备"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 24.74,
+      "lift": 3.18,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0581",
+          "name": "智能电网"
+        },
+        {
+          "code": "BK0696",
+          "name": "国产软件"
+        },
+        {
+          "code": "BK0714",
+          "name": "5G概念"
+        },
+        {
+          "code": "BK0832",
+          "name": "工业互联网"
+        },
+        {
+          "code": "BK0860",
+          "name": "边缘计算"
+        },
+        {
+          "code": "BK0877",
+          "name": "PCB"
+        },
+        {
+          "code": "BK0915",
+          "name": "WiFi"
+        },
+        {
+          "code": "BK0918",
+          "name": "特高压"
+        },
+        {
+          "code": "BK0998",
+          "name": "机器视觉"
+        },
+        {
+          "code": "BK1002",
+          "name": "激光雷达"
+        },
+        {
+          "code": "BK1075",
+          "name": "电子身份证"
+        },
+        {
+          "code": "BK1134",
+          "name": "算力概念"
+        },
+        {
+          "code": "BK1150",
+          "name": "新型工业化"
+        },
+        {
+          "code": "BK1153",
+          "name": "多模态AI"
+        },
+        {
+          "code": "BK1629",
+          "name": "AI应用"
+        },
+        {
+          "code": "BK1647",
+          "name": "电网概念"
+        },
+        {
+          "code": "BK1650",
+          "name": "通信技术"
+        }
+      ]
+    },
+    {
+      "scenario": "trend_continuation",
+      "scenarioName": "趋势中继",
+      "matchedRule": "近3日累计=5.2%∈[5,20)且当日不跌",
+      "features": {
+        "dayReturn": 1.38,
+        "volumeRatio": 1.47,
+        "lowerShadowRatio": 0.182,
+        "upperShadowRatio": 0.273,
+        "bodyRatio": 0.545,
+        "closeStrength": 0.727,
+        "pullbackFromHigh20": 8.11,
+        "ret3": 5.24,
+        "ret10": -2.64,
+        "ret20": -7.34,
+        "limitUpCount5": 0,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": true
+      },
+      "oddsScore": 64,
+      "oddsTier": "B",
+      "oddsReason": "仍站在10日线之上 / 不贴前高，仍有上攻空间 / 3日趋势动能偏弱",
+      "code": "SZ000591",
+      "name": "太阳能",
+      "industry": {
+        "code": "BK0428",
+        "name": "电力"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 4.42,
+      "lift": 1.58,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0493",
+          "name": "新能源"
+        },
+        {
+          "code": "BK0534",
+          "name": "成渝特区"
+        },
+        {
+          "code": "BK0581",
+          "name": "智能电网"
+        },
+        {
+          "code": "BK0966",
+          "name": "碳交易"
+        },
+        {
+          "code": "BK0989",
+          "name": "储能概念"
+        },
+        {
+          "code": "BK1024",
+          "name": "绿色电力"
+        },
+        {
+          "code": "BK1094",
+          "name": "钙钛矿电池"
+        },
+        {
+          "code": "BK1097",
+          "name": "TOPCon电池"
+        }
+      ]
+    },
+    {
+      "scenario": "trend_continuation",
+      "scenarioName": "趋势中继",
+      "matchedRule": "近3日累计=7.6%∈[5,20)且当日不跌",
+      "features": {
+        "dayReturn": 0.71,
+        "volumeRatio": 1.06,
+        "lowerShadowRatio": 0.3,
+        "upperShadowRatio": 0.544,
+        "bodyRatio": 0.156,
+        "closeStrength": 0.456,
+        "pullbackFromHigh20": 6.22,
+        "ret3": 7.61,
+        "ret10": 2.38,
+        "ret20": -6.03,
+        "limitUpCount5": 0,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": true
+      },
+      "oddsScore": 62,
+      "oddsTier": "B",
+      "oddsReason": "仍站在10日线之上 / 不贴前高，仍有上攻空间 / 上影较重",
+      "code": "SZ000786",
+      "name": "北新建材",
+      "industry": {
+        "code": "BK0476",
+        "name": "装修建材"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 18.53,
+      "lift": 1.58,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0493",
+          "name": "新能源"
+        },
+        {
+          "code": "BK0945",
+          "name": "装配建筑"
+        },
+        {
+          "code": "BK1661",
+          "name": "行业龙头"
+        }
+      ]
+    },
+    {
+      "scenario": "trend_continuation",
+      "scenarioName": "趋势中继",
+      "matchedRule": "近3日累计=7.5%∈[5,20)且当日不跌",
+      "features": {
+        "dayReturn": 0.54,
+        "volumeRatio": 1.68,
+        "lowerShadowRatio": 0.208,
+        "upperShadowRatio": 0.416,
+        "bodyRatio": 0.377,
+        "closeStrength": 0.584,
+        "pullbackFromHigh20": 2.45,
+        "ret3": 7.47,
+        "ret10": 7.06,
+        "ret20": 1.92,
+        "limitUpCount5": 0,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "oddsScore": 62,
+      "oddsTier": "B",
+      "oddsReason": "仍站在10日线之上 / 不贴前高，仍有上攻空间 / 上影较重",
+      "code": "SH603395",
+      "name": "红四方",
+      "industry": {
+        "code": "BK0731",
+        "name": "农化制品"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 22.29,
+      "lift": 1.58,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0888",
+          "name": "农业种植"
+        }
+      ]
+    },
+    {
+      "scenario": "trend_continuation",
+      "scenarioName": "趋势中继",
+      "matchedRule": "近3日累计=7.3%∈[5,20)且当日不跌",
+      "features": {
+        "dayReturn": 0.88,
+        "volumeRatio": 1.05,
+        "lowerShadowRatio": 0.068,
+        "upperShadowRatio": 0.5,
+        "bodyRatio": 0.432,
+        "closeStrength": 0.5,
+        "pullbackFromHigh20": 13.96,
+        "ret3": 7.28,
+        "ret10": 2.16,
+        "ret20": 6.22,
+        "limitUpCount5": 0,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": true
+      },
+      "oddsScore": 62,
+      "oddsTier": "B",
+      "oddsReason": "仍站在10日线之上 / 不贴前高，仍有上攻空间 / 上影较重",
+      "code": "SZ002767",
+      "name": "先锋电子",
+      "industry": {
+        "code": "BK0545",
+        "name": "通用设备"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 18.43,
+      "lift": 1.58,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0843",
+          "name": "天然气"
+        },
+        {
+          "code": "BK1649",
+          "name": "油气资源"
+        }
+      ]
+    },
+    {
+      "scenario": "pullback_stabilize",
+      "scenarioName": "缩量回踩企稳反弹",
+      "matchedRule": "回撤=8.0%∈[8,25]%且量比≤0.9且收涨企稳",
+      "features": {
+        "dayReturn": 0.52,
+        "volumeRatio": 0.86,
+        "lowerShadowRatio": 0.75,
+        "upperShadowRatio": 0.179,
+        "bodyRatio": 0.071,
+        "closeStrength": 0.821,
+        "pullbackFromHigh20": 8.04,
+        "ret3": -1.27,
+        "ret10": 12.43,
+        "ret20": 24.68,
+        "limitUpCount5": 0,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "oddsScore": 62,
+      "oddsTier": "B",
+      "oddsReason": "当日动能一般 / 仍站在10日线之上 / 收盘靠近日内高位",
+      "code": "SZ000518",
+      "name": "四环生物",
+      "industry": {
+        "code": "BK1044",
+        "name": "生物制品"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 3.89,
+      "lift": 1.42,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0675",
+          "name": "病毒防治"
+        },
+        {
+          "code": "BK0698",
+          "name": "免疫治疗"
+        },
+        {
+          "code": "BK0866",
+          "name": "人造肉"
+        },
+        {
+          "code": "BK1181",
+          "name": "并购重组概念"
+        }
+      ]
+    },
+    {
+      "scenario": "volume_mid_thrust",
+      "scenarioName": "中部放量启动",
+      "matchedRule": "未近20日高且量比=2.04≥1.5且当日涨幅=2.5%≥2%",
+      "features": {
+        "dayReturn": 2.49,
+        "volumeRatio": 2.04,
+        "lowerShadowRatio": 0,
+        "upperShadowRatio": 0.561,
+        "bodyRatio": 0.439,
+        "closeStrength": 0.439,
+        "pullbackFromHigh20": 12.11,
+        "ret3": 1.98,
+        "ret10": -3.74,
+        "ret20": 5.47,
+        "limitUpCount5": 0,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": true
+      },
+      "oddsScore": 61,
+      "oddsTier": "B",
+      "oddsReason": "中部放量启动较健康 / 收盘偏弱 / 上影较重",
+      "code": "SH603980",
+      "name": "吉华集团",
+      "industry": {
+        "code": "BK0538",
+        "name": "化学制品"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 6.17,
+      "lift": 1.88,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0512",
+          "name": "化工原料"
+        },
+        {
+          "code": "BK0894",
+          "name": "阿兹海默"
+        }
+      ]
+    },
+    {
+      "scenario": "volume_mid_thrust",
+      "scenarioName": "中部放量启动",
+      "matchedRule": "未近20日高且量比=1.62≥1.5且当日涨幅=3.3%≥2%",
+      "features": {
+        "dayReturn": 3.31,
+        "volumeRatio": 1.62,
+        "lowerShadowRatio": 0,
+        "upperShadowRatio": 0.295,
+        "bodyRatio": 0.705,
+        "closeStrength": 0.705,
+        "pullbackFromHigh20": 23.45,
+        "ret3": -0.93,
+        "ret10": -17.94,
+        "ret20": -3.98,
+        "limitUpCount5": 0,
+        "nearHigh20": false,
+        "aboveMa10": false,
+        "nearMa20": false
+      },
+      "oddsScore": 61,
+      "oddsTier": "B",
+      "oddsReason": "当日延续上涨 / 跌回10日线下 / 中部放量启动较健康",
+      "code": "SZ002452",
+      "name": "长高电气",
+      "industry": {
+        "code": "BK0457",
+        "name": "电网设备"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 10.61,
+      "lift": 1.88,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0581",
+          "name": "智能电网"
+        },
+        {
+          "code": "BK0597",
+          "name": "水利建设"
+        },
+        {
+          "code": "BK0700",
+          "name": "充电桩"
+        },
+        {
+          "code": "BK0918",
+          "name": "特高压"
+        },
+        {
+          "code": "BK1647",
+          "name": "电网概念"
+        }
+      ]
+    },
+    {
+      "scenario": "volume_mid_thrust",
+      "scenarioName": "中部放量启动",
+      "matchedRule": "未近20日高且量比=2.90≥1.5且当日涨幅=3.1%≥2%",
+      "features": {
+        "dayReturn": 3.06,
+        "volumeRatio": 2.9,
+        "lowerShadowRatio": 0.091,
+        "upperShadowRatio": 0.432,
+        "bodyRatio": 0.477,
+        "closeStrength": 0.568,
+        "pullbackFromHigh20": 6.58,
+        "ret3": 8.59,
+        "ret10": 0.62,
+        "ret20": -5.49,
+        "limitUpCount5": 0,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": true
+      },
+      "oddsScore": 60,
+      "oddsTier": "B",
+      "oddsReason": "仍站在10日线之上 / 放量过猛需防分歧 / 上影较重",
+      "code": "SH600969",
+      "name": "郴电国际",
+      "industry": {
+        "code": "BK0428",
+        "name": "电力"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 8.09,
+      "lift": 1.88,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0700",
+          "name": "充电桩"
+        },
+        {
+          "code": "BK0981",
+          "name": "工业气体"
+        },
+        {
+          "code": "BK1058",
+          "name": "地下管网"
+        }
+      ]
+    },
+    {
+      "scenario": "volume_mid_thrust",
+      "scenarioName": "中部放量启动",
+      "matchedRule": "未近20日高且量比=2.54≥1.5且当日涨幅=3.5%≥2%",
+      "features": {
+        "dayReturn": 3.46,
+        "volumeRatio": 2.54,
+        "lowerShadowRatio": 0,
+        "upperShadowRatio": 0.515,
+        "bodyRatio": 0.485,
+        "closeStrength": 0.485,
+        "pullbackFromHigh20": 9.11,
+        "ret3": 5.56,
+        "ret10": -3.23,
+        "ret20": 5.18,
+        "limitUpCount5": 0,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": true
+      },
+      "oddsScore": 60,
+      "oddsTier": "B",
+      "oddsReason": "仍站在10日线之上 / 放量过猛需防分歧 / 上影较重",
+      "code": "SZ002670",
+      "name": "国盛证券",
+      "industry": {
+        "code": "BK0473",
+        "name": "证券Ⅱ"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 11.97,
+      "lift": 1.88,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0637",
+          "name": "互联网金融"
+        },
+        {
+          "code": "BK0830",
+          "name": "区块链"
+        }
+      ]
+    },
+    {
+      "scenario": "volume_mid_thrust",
+      "scenarioName": "中部放量启动",
+      "matchedRule": "未近20日高且量比=2.76≥1.5且当日涨幅=3.9%≥2%",
+      "features": {
+        "dayReturn": 3.87,
+        "volumeRatio": 2.76,
+        "lowerShadowRatio": 0,
+        "upperShadowRatio": 0.383,
+        "bodyRatio": 0.617,
+        "closeStrength": 0.617,
+        "pullbackFromHigh20": 19.43,
+        "ret3": 5.09,
+        "ret10": -10.97,
+        "ret20": -18.55,
+        "limitUpCount5": 0,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": true
+      },
+      "oddsScore": 60,
+      "oddsTier": "B",
+      "oddsReason": "仍站在10日线之上 / 放量过猛需防分歧 / 上影较重",
+      "code": "SH603370",
+      "name": "华新精科",
+      "industry": {
+        "code": "BK1030",
+        "name": "电机Ⅱ"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 34.08,
+      "lift": 1.88,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0905",
+          "name": "传感器"
+        }
+      ]
+    },
+    {
+      "scenario": "volume_mid_thrust",
+      "scenarioName": "中部放量启动",
+      "matchedRule": "未近20日高且量比=2.56≥1.5且当日涨幅=3.0%≥2%",
+      "features": {
+        "dayReturn": 3.01,
+        "volumeRatio": 2.56,
+        "lowerShadowRatio": 0.038,
+        "upperShadowRatio": 0.462,
+        "bodyRatio": 0.5,
+        "closeStrength": 0.538,
+        "pullbackFromHigh20": 27.08,
+        "ret3": 2.09,
+        "ret10": -8.31,
+        "ret20": -25.49,
+        "limitUpCount5": 0,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "oddsScore": 60,
+      "oddsTier": "B",
+      "oddsReason": "仍站在10日线之上 / 放量过猛需防分歧 / 上影较重",
+      "code": "SZ000767",
+      "name": "晋控电力",
+      "industry": {
+        "code": "BK0428",
+        "name": "电力"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 3.42,
+      "lift": 1.88,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0493",
+          "name": "新能源"
+        },
+        {
+          "code": "BK0595",
+          "name": "风能"
+        },
+        {
+          "code": "BK0966",
+          "name": "碳交易"
+        },
+        {
+          "code": "BK1024",
+          "name": "绿色电力"
+        },
+        {
+          "code": "BK1087",
+          "name": "超超临界发电"
+        }
+      ]
+    },
+    {
+      "scenario": "volume_mid_thrust",
+      "scenarioName": "中部放量启动",
+      "matchedRule": "未近20日高且量比=2.50≥1.5且当日涨幅=4.2%≥2%",
+      "features": {
+        "dayReturn": 4.17,
+        "volumeRatio": 2.5,
+        "lowerShadowRatio": 0.053,
+        "upperShadowRatio": 0.461,
+        "bodyRatio": 0.486,
+        "closeStrength": 0.539,
+        "pullbackFromHigh20": 7.25,
+        "ret3": 13.69,
+        "ret10": 5.06,
+        "ret20": -6.87,
+        "limitUpCount5": 1,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "oddsScore": 60,
+      "oddsTier": "B",
+      "oddsReason": "仍站在10日线之上 / 放量过猛需防分歧 / 上影较重",
+      "code": "SZ002881",
+      "name": "美格智能",
+      "industry": {
+        "code": "BK0448",
+        "name": "通信设备"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 40.68,
+      "lift": 1.88,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0556",
+          "name": "移动支付"
+        },
+        {
+          "code": "BK0714",
+          "name": "5G概念"
+        },
+        {
+          "code": "BK0802",
+          "name": "智能驾驶"
+        },
+        {
+          "code": "BK0809",
+          "name": "AI智能体"
+        },
+        {
+          "code": "BK0860",
+          "name": "边缘计算"
+        },
+        {
+          "code": "BK0921",
+          "name": "卫星互联网"
+        },
+        {
+          "code": "BK1134",
+          "name": "算力概念"
+        },
+        {
+          "code": "BK1178",
+          "name": "AI眼镜"
+        },
+        {
+          "code": "BK1180",
+          "name": "华为海思"
+        },
+        {
+          "code": "BK1184",
+          "name": "人形机器人"
+        },
+        {
+          "code": "BK1650",
+          "name": "通信技术"
+        }
+      ]
+    },
+    {
+      "scenario": "limit_up_trend",
+      "scenarioName": "连板/强趋势",
+      "matchedRule": "近5日近似涨停根数=2≥2",
+      "features": {
+        "dayReturn": 2.2,
+        "volumeRatio": 3.19,
+        "lowerShadowRatio": 0.167,
+        "upperShadowRatio": 0.697,
+        "bodyRatio": 0.136,
+        "closeStrength": 0.303,
+        "pullbackFromHigh20": 7.08,
+        "ret3": 18.43,
+        "ret10": 17.51,
+        "ret20": 28.24,
+        "limitUpCount5": 2,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "oddsScore": 58,
+      "oddsTier": "B",
+      "oddsReason": "收盘偏弱 / 上影较重 / 前期涨幅过大短线滞涨",
+      "code": "SZ002141",
+      "name": "贤丰控股",
+      "industry": {
+        "code": "BK1254",
+        "name": "动物保健Ⅱ"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 6.04,
+      "lift": 3.18,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0506",
+          "name": "创投"
+        },
+        {
+          "code": "BK0548",
+          "name": "生物疫苗"
+        },
+        {
+          "code": "BK0835",
+          "name": "独角兽"
+        },
+        {
+          "code": "BK0877",
+          "name": "PCB"
+        },
+        {
+          "code": "BK1646",
+          "name": "消费电子概念"
+        }
+      ]
+    },
+    {
+      "scenario": "trend_continuation",
+      "scenarioName": "趋势中继",
+      "matchedRule": "近3日累计=5.1%∈[5,20)且当日不跌",
+      "features": {
+        "dayReturn": 0.23,
+        "volumeRatio": 1.04,
+        "lowerShadowRatio": 0.471,
+        "upperShadowRatio": 0.471,
+        "bodyRatio": 0.059,
+        "closeStrength": 0.529,
+        "pullbackFromHigh20": 11.25,
+        "ret3": 5.08,
+        "ret10": 2.6,
+        "ret20": -6.26,
+        "limitUpCount5": 0,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": true
+      },
+      "oddsScore": 56,
+      "oddsTier": "C",
+      "oddsReason": "不贴前高，仍有上攻空间 / 上影较重 / 3日趋势动能偏弱",
+      "code": "SZ002108",
+      "name": "沧州明珠",
+      "industry": {
+        "code": "BK0454",
+        "name": "塑料"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 4.34,
+      "lift": 1.58,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0597",
+          "name": "水利建设"
+        },
+        {
+          "code": "BK0832",
+          "name": "工业互联网"
+        },
+        {
+          "code": "BK0988",
+          "name": "钠离子电池"
+        },
+        {
+          "code": "BK1058",
+          "name": "地下管网"
+        },
+        {
+          "code": "BK1080",
+          "name": "新型城镇化"
+        }
+      ]
+    },
+    {
+      "scenario": "trend_continuation",
+      "scenarioName": "趋势中继",
+      "matchedRule": "近3日累计=6.8%∈[5,20)且当日不跌",
+      "features": {
+        "dayReturn": 0.02,
+        "volumeRatio": 1.45,
+        "lowerShadowRatio": 0.411,
+        "upperShadowRatio": 0.538,
+        "bodyRatio": 0.051,
+        "closeStrength": 0.462,
+        "pullbackFromHigh20": 1.74,
+        "ret3": 6.77,
+        "ret10": 5.6,
+        "ret20": 16.33,
+        "limitUpCount5": 0,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "oddsScore": 56,
+      "oddsTier": "C",
+      "oddsReason": "不贴前高，仍有上攻空间 / 上影较重 / 3日趋势动能偏弱",
+      "code": "SZ002311",
+      "name": "海大集团",
+      "industry": {
+        "code": "BK1258",
+        "name": "饲料"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 47.93,
+      "lift": 1.58,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0882",
+          "name": "猪肉概念"
+        },
+        {
+          "code": "BK0967",
+          "name": "水产概念"
+        },
+        {
+          "code": "BK1661",
+          "name": "行业龙头"
+        }
+      ]
+    },
+    {
+      "scenario": "trend_continuation",
+      "scenarioName": "趋势中继",
+      "matchedRule": "近3日累计=5.9%∈[5,20)且当日不跌",
+      "features": {
+        "dayReturn": 1.73,
+        "volumeRatio": 1.79,
+        "lowerShadowRatio": 0.25,
+        "upperShadowRatio": 0.357,
+        "bodyRatio": 0.393,
+        "closeStrength": 0.643,
+        "pullbackFromHigh20": 4.42,
+        "ret3": 5.88,
+        "ret10": 2.69,
+        "ret20": 10.96,
+        "limitUpCount5": 0,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "oddsScore": 56,
+      "oddsTier": "C",
+      "oddsReason": "不贴前高，仍有上攻空间 / 上影较重 / 3日趋势动能偏弱",
+      "code": "SZ001322",
+      "name": "箭牌家居",
+      "industry": {
+        "code": "BK0440",
+        "name": "家居用品"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 6.48,
+      "lift": 1.58,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0680",
+          "name": "智能家居"
+        }
+      ]
+    },
+    {
+      "scenario": "trend_continuation",
+      "scenarioName": "趋势中继",
+      "matchedRule": "近3日累计=6.1%∈[5,20)且当日不跌",
+      "features": {
+        "dayReturn": 1.49,
+        "volumeRatio": 1.87,
+        "lowerShadowRatio": 0.103,
+        "upperShadowRatio": 0.414,
+        "bodyRatio": 0.483,
+        "closeStrength": 0.586,
+        "pullbackFromHigh20": 10.11,
+        "ret3": 6.11,
+        "ret10": 0.4,
+        "ret20": -7.66,
+        "limitUpCount5": 0,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": true
+      },
+      "oddsScore": 56,
+      "oddsTier": "C",
+      "oddsReason": "不贴前高，仍有上攻空间 / 上影较重 / 3日趋势动能偏弱",
+      "code": "SZ000537",
+      "name": "绿发电力",
+      "industry": {
+        "code": "BK0428",
+        "name": "电力"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 7.47,
+      "lift": 1.58,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0493",
+          "name": "新能源"
+        },
+        {
+          "code": "BK0534",
+          "name": "成渝特区"
+        },
+        {
+          "code": "BK0595",
+          "name": "风能"
+        },
+        {
+          "code": "BK0989",
+          "name": "储能概念"
+        },
+        {
+          "code": "BK1024",
+          "name": "绿色电力"
+        }
+      ]
+    },
+    {
+      "scenario": "trend_continuation",
+      "scenarioName": "趋势中继",
+      "matchedRule": "近3日累计=11.8%∈[5,20)且当日不跌",
+      "features": {
+        "dayReturn": 1.91,
+        "volumeRatio": 1.74,
+        "lowerShadowRatio": 0.265,
+        "upperShadowRatio": 0.294,
+        "bodyRatio": 0.441,
+        "closeStrength": 0.706,
+        "pullbackFromHigh20": 1.67,
+        "ret3": 11.79,
+        "ret10": 5.38,
+        "ret20": 6.14,
+        "limitUpCount5": 0,
+        "nearHigh20": true,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "oddsScore": 56,
+      "oddsTier": "C",
+      "oddsReason": "处于相对强势位置 / 逼近前高但受阻明显 / 3日趋势斜率适中健康",
+      "code": "SZ002599",
+      "name": "盛通股份",
+      "industry": {
+        "code": "BK1265",
+        "name": "包装印刷"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 5.88,
+      "lift": 1.58,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0662",
+          "name": "在线教育"
+        },
+        {
+          "code": "BK0664",
+          "name": "婴童概念"
+        },
+        {
+          "code": "BK0708",
+          "name": "体育产业"
+        },
+        {
+          "code": "BK0733",
+          "name": "包装材料"
+        },
+        {
+          "code": "BK0953",
+          "name": "鸿蒙概念"
+        },
+        {
+          "code": "BK1009",
+          "name": "元宇宙概念"
+        },
+        {
+          "code": "BK1115",
+          "name": "跨境电商"
+        },
+        {
+          "code": "BK1182",
+          "name": "智谱AI概念"
+        },
+        {
+          "code": "BK1188",
+          "name": "DeepSeek概念"
+        },
+        {
+          "code": "BK1189",
+          "name": "腾讯云"
+        },
+        {
+          "code": "BK1629",
+          "name": "AI应用"
+        }
+      ]
+    },
+    {
+      "scenario": "trend_continuation",
+      "scenarioName": "趋势中继",
+      "matchedRule": "近3日累计=7.2%∈[5,20)且当日不跌",
+      "features": {
+        "dayReturn": 0,
+        "volumeRatio": 1.56,
+        "lowerShadowRatio": 0.15,
+        "upperShadowRatio": 0.75,
+        "bodyRatio": 0.1,
+        "closeStrength": 0.25,
+        "pullbackFromHigh20": 4.6,
+        "ret3": 7.18,
+        "ret10": 4.78,
+        "ret20": 15.12,
+        "limitUpCount5": 1,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "oddsScore": 54,
+      "oddsTier": "C",
+      "oddsReason": "不贴前高，仍有上攻空间 / 收盘偏弱 / 上影较重",
+      "code": "SZ000959",
+      "name": "首钢股份",
+      "industry": {
+        "code": "BK1226",
+        "name": "普钢"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 3.73,
+      "lift": 1.58,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0506",
+          "name": "创投"
+        },
+        {
+          "code": "BK0595",
+          "name": "风能"
+        },
+        {
+          "code": "BK0809",
+          "name": "AI智能体"
+        },
+        {
+          "code": "BK0832",
+          "name": "工业互联网"
+        },
+        {
+          "code": "BK0979",
+          "name": "低碳冶金"
+        }
+      ]
+    },
+    {
+      "scenario": "volume_mid_thrust",
+      "scenarioName": "中部放量启动",
+      "matchedRule": "未近20日高且量比=1.90≥1.5且当日涨幅=2.2%≥2%",
+      "features": {
+        "dayReturn": 2.17,
+        "volumeRatio": 1.9,
+        "lowerShadowRatio": 0.411,
+        "upperShadowRatio": 0.43,
+        "bodyRatio": 0.158,
+        "closeStrength": 0.57,
+        "pullbackFromHigh20": 17.3,
+        "ret3": 0.25,
+        "ret10": -12.44,
+        "ret20": -8.86,
+        "limitUpCount5": 0,
+        "nearHigh20": false,
+        "aboveMa10": false,
+        "nearMa20": false
+      },
+      "oddsScore": 53,
+      "oddsTier": "C",
+      "oddsReason": "跌回10日线下 / 中部放量启动较健康 / 上影较重",
+      "code": "SH603350",
+      "name": "安乃达",
+      "industry": {
+        "code": "BK1030",
+        "name": "电机Ⅱ"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 28.3,
+      "lift": 1.88,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0905",
+          "name": "传感器"
+        },
+        {
+          "code": "BK1099",
+          "name": "轮毂电机"
+        }
+      ]
+    },
+    {
+      "scenario": "volume_mid_thrust",
+      "scenarioName": "中部放量启动",
+      "matchedRule": "未近20日高且量比=1.74≥1.5且当日涨幅=2.4%≥2%",
+      "features": {
+        "dayReturn": 2.4,
+        "volumeRatio": 1.74,
+        "lowerShadowRatio": 0.027,
+        "upperShadowRatio": 0.405,
+        "bodyRatio": 0.568,
+        "closeStrength": 0.595,
+        "pullbackFromHigh20": 6.33,
+        "ret3": -2.16,
+        "ret10": -1.66,
+        "ret20": -4.11,
+        "limitUpCount5": 0,
+        "nearHigh20": false,
+        "aboveMa10": false,
+        "nearMa20": true
+      },
+      "oddsScore": 53,
+      "oddsTier": "C",
+      "oddsReason": "跌回10日线下 / 中部放量启动较健康 / 上影较重",
+      "code": "SZ000543",
+      "name": "皖能电力",
+      "industry": {
+        "code": "BK0428",
+        "name": "电力"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 7.69,
+      "lift": 1.88,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0492",
+          "name": "煤化工概念"
+        },
+        {
+          "code": "BK0493",
+          "name": "新能源"
+        },
+        {
+          "code": "BK0577",
+          "name": "核能核电"
+        },
+        {
+          "code": "BK0595",
+          "name": "风能"
+        },
+        {
+          "code": "BK0700",
+          "name": "充电桩"
+        },
+        {
+          "code": "BK0843",
+          "name": "天然气"
+        },
+        {
+          "code": "BK0966",
+          "name": "碳交易"
+        },
+        {
+          "code": "BK1003",
+          "name": "抽水蓄能"
+        },
+        {
+          "code": "BK1087",
+          "name": "超超临界发电"
+        },
+        {
+          "code": "BK1163",
+          "name": "可控核聚变"
+        },
+        {
+          "code": "BK1649",
+          "name": "油气资源"
+        }
+      ]
+    },
+    {
+      "scenario": "volume_mid_thrust",
+      "scenarioName": "中部放量启动",
+      "matchedRule": "未近20日高且量比=1.59≥1.5且当日涨幅=3.4%≥2%",
+      "features": {
+        "dayReturn": 3.41,
+        "volumeRatio": 1.59,
+        "lowerShadowRatio": 0.108,
+        "upperShadowRatio": 0.503,
+        "bodyRatio": 0.389,
+        "closeStrength": 0.497,
+        "pullbackFromHigh20": 32.07,
+        "ret3": 2.72,
+        "ret10": -11.48,
+        "ret20": -29.67,
+        "limitUpCount5": 1,
+        "nearHigh20": false,
+        "aboveMa10": false,
+        "nearMa20": false
+      },
+      "oddsScore": 53,
+      "oddsTier": "C",
+      "oddsReason": "跌回10日线下 / 中部放量启动较健康 / 上影较重",
+      "code": "SZ001896",
+      "name": "豫能控股",
+      "industry": {
+        "code": "BK0428",
+        "name": "电力"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 13.96,
+      "lift": 1.88,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0493",
+          "name": "新能源"
+        },
+        {
+          "code": "BK0506",
+          "name": "创投"
+        },
+        {
+          "code": "BK0595",
+          "name": "风能"
+        },
+        {
+          "code": "BK0622",
+          "name": "地热能"
+        },
+        {
+          "code": "BK0700",
+          "name": "充电桩"
+        },
+        {
+          "code": "BK0864",
+          "name": "氢能源"
+        },
+        {
+          "code": "BK0966",
+          "name": "碳交易"
+        },
+        {
+          "code": "BK0989",
+          "name": "储能概念"
+        },
+        {
+          "code": "BK1003",
+          "name": "抽水蓄能"
+        },
+        {
+          "code": "BK1024",
+          "name": "绿色电力"
+        },
+        {
+          "code": "BK1087",
+          "name": "超超临界发电"
+        }
+      ]
+    },
+    {
+      "scenario": "volume_mid_thrust",
+      "scenarioName": "中部放量启动",
+      "matchedRule": "未近20日高且量比=4.24≥1.5且当日涨幅=2.7%≥2%",
+      "features": {
+        "dayReturn": 2.68,
+        "volumeRatio": 4.24,
+        "lowerShadowRatio": 0.135,
+        "upperShadowRatio": 0.656,
+        "bodyRatio": 0.208,
+        "closeStrength": 0.344,
+        "pullbackFromHigh20": 23.74,
+        "ret3": 13.7,
+        "ret10": -0.68,
+        "ret20": -17.37,
+        "limitUpCount5": 1,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": true
+      },
+      "oddsScore": 52,
+      "oddsTier": "C",
+      "oddsReason": "放量过猛需防分歧 / 收盘偏弱 / 上影较重",
+      "code": "SH603327",
+      "name": "福蓉科技",
+      "industry": {
+        "code": "BK1037",
+        "name": "消费电子"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 8.8,
+      "lift": 1.88,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0666",
+          "name": "苹果概念"
+        },
+        {
+          "code": "BK0714",
+          "name": "5G概念"
+        },
+        {
+          "code": "BK0833",
+          "name": "小米概念"
+        },
+        {
+          "code": "BK1160",
+          "name": "柔性屏(折叠屏)"
+        },
+        {
+          "code": "BK1162",
+          "name": "AI手机"
+        },
+        {
+          "code": "BK1164",
+          "name": "AIPC"
+        },
+        {
+          "code": "BK1178",
+          "name": "AI眼镜"
+        },
+        {
+          "code": "BK1650",
+          "name": "通信技术"
+        }
+      ]
+    },
+    {
+      "scenario": "volume_mid_thrust",
+      "scenarioName": "中部放量启动",
+      "matchedRule": "未近20日高且量比=2.51≥1.5且当日涨幅=3.1%≥2%",
+      "features": {
+        "dayReturn": 3.12,
+        "volumeRatio": 2.51,
+        "lowerShadowRatio": 0.017,
+        "upperShadowRatio": 0.3,
+        "bodyRatio": 0.683,
+        "closeStrength": 0.7,
+        "pullbackFromHigh20": 14.8,
+        "ret3": 3.4,
+        "ret10": -8.9,
+        "ret20": -14.42,
+        "limitUpCount5": 0,
+        "nearHigh20": false,
+        "aboveMa10": false,
+        "nearMa20": false
+      },
+      "oddsScore": 52,
+      "oddsTier": "C",
+      "oddsReason": "当日延续上涨 / 跌回10日线下 / 放量过猛需防分歧",
+      "code": "SH603693",
+      "name": "江苏新能",
+      "industry": {
+        "code": "BK0428",
+        "name": "电力"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 11.57,
+      "lift": 1.88,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0493",
+          "name": "新能源"
+        },
+        {
+          "code": "BK0595",
+          "name": "风能"
+        },
+        {
+          "code": "BK0989",
+          "name": "储能概念"
+        },
+        {
+          "code": "BK1024",
+          "name": "绿色电力"
+        }
+      ]
+    },
+    {
+      "scenario": "volume_mid_thrust",
+      "scenarioName": "中部放量启动",
+      "matchedRule": "未近20日高且量比=3.14≥1.5且当日涨幅=2.7%≥2%",
+      "features": {
+        "dayReturn": 2.66,
+        "volumeRatio": 3.14,
+        "lowerShadowRatio": 0.176,
+        "upperShadowRatio": 0.471,
+        "bodyRatio": 0.353,
+        "closeStrength": 0.176,
+        "pullbackFromHigh20": 3.5,
+        "ret3": 1.85,
+        "ret10": 2.66,
+        "ret20": 1.31,
+        "limitUpCount5": 0,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": true
+      },
+      "oddsScore": 52,
+      "oddsTier": "C",
+      "oddsReason": "放量过猛需防分歧 / 收盘偏弱 / 上影较重",
+      "code": "SH600020",
+      "name": "中原高速",
+      "industry": {
+        "code": "BK0421",
+        "name": "铁路公路"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 3.86,
+      "lift": 1.88,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0506",
+          "name": "创投"
+        },
+        {
+          "code": "BK0700",
+          "name": "充电桩"
+        }
+      ]
+    },
+    {
+      "scenario": "limit_up_trend",
+      "scenarioName": "连板/强趋势",
+      "matchedRule": "近5日近似涨停根数=2≥2",
+      "features": {
+        "dayReturn": -6.78,
+        "volumeRatio": 1.08,
+        "lowerShadowRatio": 0.274,
+        "upperShadowRatio": 0.17,
+        "bodyRatio": 0.557,
+        "closeStrength": 0.274,
+        "pullbackFromHigh20": 14.97,
+        "ret3": 3.45,
+        "ret10": -8.35,
+        "ret20": 9.37,
+        "limitUpCount5": 2,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "oddsScore": 51,
+      "oddsTier": "C",
+      "oddsReason": "不贴前高，仍有上攻空间 / 收盘偏弱 / 连板后转弱分歧",
+      "code": "SH605189",
+      "name": "富春染织",
+      "industry": {
+        "code": "BK1224",
+        "name": "纺织制造"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 14.71,
+      "lift": 3.18,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK1156",
+          "name": "PEEK材料概念"
+        },
+        {
+          "code": "BK1184",
+          "name": "人形机器人"
+        }
+      ]
+    },
+    {
+      "scenario": "limit_up_trend",
+      "scenarioName": "连板/强趋势",
+      "matchedRule": "近5日近似涨停根数=2≥2",
+      "features": {
+        "dayReturn": -2.43,
+        "volumeRatio": 0.89,
+        "lowerShadowRatio": 0.198,
+        "upperShadowRatio": 0.51,
+        "bodyRatio": 0.292,
+        "closeStrength": 0.198,
+        "pullbackFromHigh20": 5.83,
+        "ret3": 3.43,
+        "ret10": 20.04,
+        "ret20": 8.19,
+        "limitUpCount5": 2,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "oddsScore": 51,
+      "oddsTier": "C",
+      "oddsReason": "收盘偏弱 / 上影较重 / 连板后转弱分歧",
+      "code": "SZ002379",
+      "name": "宏桥控股",
+      "industry": {
+        "code": "BK1287",
+        "name": "工业金属"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 18.09,
+      "lift": 3.18,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0595",
+          "name": "风能"
+        },
+        {
+          "code": "BK1181",
+          "name": "并购重组概念"
+        }
+      ]
+    },
+    {
+      "scenario": "limit_up_trend",
+      "scenarioName": "连板/强趋势",
+      "matchedRule": "近5日近似涨停根数=2≥2",
+      "features": {
+        "dayReturn": -8.65,
+        "volumeRatio": 2.39,
+        "lowerShadowRatio": 0.072,
+        "upperShadowRatio": 0,
+        "bodyRatio": 0.928,
+        "closeStrength": 0.072,
+        "pullbackFromHigh20": 8.65,
+        "ret3": 10.47,
+        "ret10": 7.14,
+        "ret20": 9.06,
+        "limitUpCount5": 2,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "oddsScore": 51,
+      "oddsTier": "C",
+      "oddsReason": "不贴前高，仍有上攻空间 / 收盘偏弱 / 连板后转弱分歧",
+      "code": "SZ000504",
+      "name": "南华生物",
+      "industry": {
+        "code": "BK0727",
+        "name": "医疗服务"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 8.55,
+      "lift": 3.18,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0698",
+          "name": "免疫治疗"
+        },
+        {
+          "code": "BK0889",
+          "name": "医美概念"
+        },
+        {
+          "code": "BK1052",
+          "name": "动力电池回收"
+        }
+      ]
+    },
+    {
+      "scenario": "trend_continuation",
+      "scenarioName": "趋势中继",
+      "matchedRule": "近3日累计=5.6%∈[5,20)且当日不跌",
+      "features": {
+        "dayReturn": 0.75,
+        "volumeRatio": 1.31,
+        "lowerShadowRatio": 0.097,
+        "upperShadowRatio": 0.828,
+        "bodyRatio": 0.075,
+        "closeStrength": 0.172,
+        "pullbackFromHigh20": 8.37,
+        "ret3": 5.57,
+        "ret10": 17.2,
+        "ret20": 50.25,
+        "limitUpCount5": 0,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "oddsScore": 48,
+      "oddsTier": "C",
+      "oddsReason": "收盘偏弱 / 上影较重 / 3日趋势动能偏弱",
+      "code": "SH603823",
+      "name": "百合花",
+      "industry": {
+        "code": "BK0538",
+        "name": "化学制品"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 70.18,
+      "lift": 1.58,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK1753",
+          "name": "光刻胶"
+        }
+      ]
+    },
+    {
+      "scenario": "trend_continuation",
+      "scenarioName": "趋势中继",
+      "matchedRule": "近3日累计=5.7%∈[5,20)且当日不跌",
+      "features": {
+        "dayReturn": 0,
+        "volumeRatio": 1.15,
+        "lowerShadowRatio": 0.385,
+        "upperShadowRatio": 0.615,
+        "bodyRatio": 0,
+        "closeStrength": 0.385,
+        "pullbackFromHigh20": 3.77,
+        "ret3": 5.7,
+        "ret10": 0.99,
+        "ret20": 10.87,
+        "limitUpCount5": 0,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "oddsScore": 48,
+      "oddsTier": "C",
+      "oddsReason": "收盘偏弱 / 上影较重 / 3日趋势动能偏弱",
+      "code": "SZ000850",
+      "name": "华茂股份",
+      "industry": {
+        "code": "BK1224",
+        "name": "纺织制造"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 4.08,
+      "lift": 1.58,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0506",
+          "name": "创投"
+        },
+        {
+          "code": "BK0632",
+          "name": "土地流转"
+        },
+        {
+          "code": "BK0852",
+          "name": "冷链物流"
+        },
+        {
+          "code": "BK0888",
+          "name": "农业种植"
+        }
+      ]
+    },
+    {
+      "scenario": "trend_continuation",
+      "scenarioName": "趋势中继",
+      "matchedRule": "近3日累计=6.3%∈[5,20)且当日不跌",
+      "features": {
+        "dayReturn": 1.64,
+        "volumeRatio": 1.01,
+        "lowerShadowRatio": 0.019,
+        "upperShadowRatio": 0.63,
+        "bodyRatio": 0.352,
+        "closeStrength": 0.37,
+        "pullbackFromHigh20": 6.38,
+        "ret3": 6.27,
+        "ret10": 1.48,
+        "ret20": 15.49,
+        "limitUpCount5": 0,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "oddsScore": 48,
+      "oddsTier": "C",
+      "oddsReason": "收盘偏弱 / 上影较重 / 3日趋势动能偏弱",
+      "code": "SH603766",
+      "name": "隆鑫通用",
+      "industry": {
+        "code": "BK1263",
+        "name": "摩托车及其他"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 13.05,
+      "lift": 1.58,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0429",
+          "name": "交运设备"
+        },
+        {
+          "code": "BK0700",
+          "name": "充电桩"
+        },
+        {
+          "code": "BK0924",
+          "name": "地摊经济"
+        },
+        {
+          "code": "BK1014",
+          "name": "发电机概念"
+        },
+        {
+          "code": "BK1079",
+          "name": "户外露营"
+        }
+      ]
+    },
+    {
+      "scenario": "limit_up_trend",
+      "scenarioName": "连板/强趋势",
+      "matchedRule": "近5日近似涨停根数=2≥2",
+      "features": {
+        "dayReturn": -4.4,
+        "volumeRatio": 3.67,
+        "lowerShadowRatio": 0.176,
+        "upperShadowRatio": 0,
+        "bodyRatio": 0.824,
+        "closeStrength": 0.176,
+        "pullbackFromHigh20": 10,
+        "ret3": 15.7,
+        "ret10": 15.81,
+        "ret20": 18.09,
+        "limitUpCount5": 2,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "oddsScore": 47,
+      "oddsTier": "C",
+      "oddsReason": "爆量后次日分歧风险偏高 / 收盘偏弱 / 连板后转弱分歧",
+      "code": "SZ002365",
+      "name": "永安药业",
+      "industry": {
+        "code": "BK0465",
+        "name": "化学制药"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 12.6,
+      "lift": 3.18,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0617",
+          "name": "石墨烯"
+        },
+        {
+          "code": "BK0864",
+          "name": "氢能源"
+        },
+        {
+          "code": "BK0993",
+          "name": "宠物经济"
+        }
+      ]
+    },
+    {
+      "scenario": "volume_mid_thrust",
+      "scenarioName": "中部放量启动",
+      "matchedRule": "未近20日高且量比=1.74≥1.5且当日涨幅=3.0%≥2%",
+      "features": {
+        "dayReturn": 3.05,
+        "volumeRatio": 1.74,
+        "lowerShadowRatio": 0.015,
+        "upperShadowRatio": 0.707,
+        "bodyRatio": 0.278,
+        "closeStrength": 0.293,
+        "pullbackFromHigh20": 27.61,
+        "ret3": 0.67,
+        "ret10": -23.71,
+        "ret20": -18.49,
+        "limitUpCount5": 0,
+        "nearHigh20": false,
+        "aboveMa10": false,
+        "nearMa20": false
+      },
+      "oddsScore": 45,
+      "oddsTier": "C",
+      "oddsReason": "中部放量启动较健康 / 收盘偏弱 / 上影较重",
+      "code": "SZ002955",
+      "name": "鸿合科技",
+      "industry": {
+        "code": "BK1038",
+        "name": "光学光电子"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 28.34,
+      "lift": 1.88,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0506",
+          "name": "创投"
+        },
+        {
+          "code": "BK0662",
+          "name": "在线教育"
+        },
+        {
+          "code": "BK0664",
+          "name": "婴童概念"
+        },
+        {
+          "code": "BK0708",
+          "name": "体育产业"
+        },
+        {
+          "code": "BK0812",
+          "name": "贬值受益"
+        },
+        {
+          "code": "BK0923",
+          "name": "抖音概念(字节概念)"
+        },
+        {
+          "code": "BK0953",
+          "name": "鸿蒙概念"
+        },
+        {
+          "code": "BK1074",
+          "name": "托育服务"
+        },
+        {
+          "code": "BK1629",
+          "name": "AI应用"
+        }
+      ]
+    },
+    {
+      "scenario": "trend_continuation",
+      "scenarioName": "趋势中继",
+      "matchedRule": "近3日累计=6.2%∈[5,20)且当日不跌",
+      "features": {
+        "dayReturn": 0,
+        "volumeRatio": 3.9,
+        "lowerShadowRatio": 0.356,
+        "upperShadowRatio": 0.575,
+        "bodyRatio": 0.069,
+        "closeStrength": 0.425,
+        "pullbackFromHigh20": 7.75,
+        "ret3": 6.22,
+        "ret10": -4.35,
+        "ret20": -4.28,
+        "limitUpCount5": 0,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": true
+      },
+      "oddsScore": 44,
+      "oddsTier": "C",
+      "oddsReason": "收盘偏弱 / 上影较重 / 3日趋势动能偏弱",
+      "code": "SH605155",
+      "name": "西大门",
+      "industry": {
+        "code": "BK0440",
+        "name": "家居用品"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 12.97,
+      "lift": 1.58,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0680",
+          "name": "智能家居"
+        },
+        {
+          "code": "BK0812",
+          "name": "贬值受益"
+        },
+        {
+          "code": "BK1076",
+          "name": "建筑节能"
+        },
+        {
+          "code": "BK1079",
+          "name": "户外露营"
+        },
+        {
+          "code": "BK1115",
+          "name": "跨境电商"
+        },
+        {
+          "code": "BK1116",
+          "name": "抗菌面料"
+        }
+      ]
+    },
+    {
+      "scenario": "limit_up_trend",
+      "scenarioName": "连板/强趋势",
+      "matchedRule": "近5日近似涨停根数=2≥2",
+      "features": {
+        "dayReturn": -9.99,
+        "volumeRatio": 1.25,
+        "lowerShadowRatio": 0,
+        "upperShadowRatio": 0.44,
+        "bodyRatio": 0.56,
+        "closeStrength": 0,
+        "pullbackFromHigh20": 10.1,
+        "ret3": 8.72,
+        "ret10": 7.47,
+        "ret20": 5.2,
+        "limitUpCount5": 2,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "oddsScore": 43,
+      "oddsTier": "C",
+      "oddsReason": "收盘偏弱 / 上影较重 / 连板后转弱分歧",
+      "code": "SH600721",
+      "name": "百花医药",
+      "industry": {
+        "code": "BK0727",
+        "name": "医疗服务"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 7.48,
+      "lift": 3.18,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0899",
+          "name": "CRO"
+        },
+        {
+          "code": "BK0906",
+          "name": "流感"
+        },
+        {
+          "code": "BK1078",
+          "name": "肝炎概念"
+        },
+        {
+          "code": "BK1106",
+          "name": "创新药"
+        },
+        {
+          "code": "BK1657",
+          "name": "病原体防治"
+        },
+        {
+          "code": "BK1658",
+          "name": "创新医疗服务"
+        }
+      ]
+    },
+    {
+      "scenario": "limit_up_trend",
+      "scenarioName": "连板/强趋势",
+      "matchedRule": "近5日近似涨停根数=2≥2",
+      "features": {
+        "dayReturn": -1.31,
+        "volumeRatio": 1.54,
+        "lowerShadowRatio": 0.1,
+        "upperShadowRatio": 0.7,
+        "bodyRatio": 0.2,
+        "closeStrength": 0.1,
+        "pullbackFromHigh20": 6.07,
+        "ret3": 5.23,
+        "ret10": 11.03,
+        "ret20": 4.5,
+        "limitUpCount5": 2,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "oddsScore": 43,
+      "oddsTier": "C",
+      "oddsReason": "收盘偏弱 / 上影较重 / 连板后转弱分歧",
+      "code": "SH600746",
+      "name": "江苏索普",
+      "industry": {
+        "code": "BK1019",
+        "name": "化学原料"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 6.04,
+      "lift": 3.18,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": []
+    },
+    {
+      "scenario": "limit_up_trend",
+      "scenarioName": "连板/强趋势",
+      "matchedRule": "近5日近似涨停根数=2≥2",
+      "features": {
+        "dayReturn": -0.7,
+        "volumeRatio": 1.67,
+        "lowerShadowRatio": 0.444,
+        "upperShadowRatio": 0.556,
+        "bodyRatio": 0,
+        "closeStrength": 0.444,
+        "pullbackFromHigh20": 11.88,
+        "ret3": 4.44,
+        "ret10": 11.02,
+        "ret20": 8.46,
+        "limitUpCount5": 2,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "oddsScore": 43,
+      "oddsTier": "C",
+      "oddsReason": "收盘偏弱 / 上影较重 / 连板后转弱分歧",
+      "code": "SH600844",
+      "name": "金煤科技",
+      "industry": {
+        "code": "BK1019",
+        "name": "化学原料"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 2.82,
+      "lift": 3.18,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0492",
+          "name": "煤化工概念"
+        },
+        {
+          "code": "BK0909",
+          "name": "降解塑料"
+        }
+      ]
+    },
+    {
+      "scenario": "limit_up_trend",
+      "scenarioName": "连板/强趋势",
+      "matchedRule": "近5日近似涨停根数=2≥2",
+      "features": {
+        "dayReturn": -10,
+        "volumeRatio": 1.06,
+        "lowerShadowRatio": 0,
+        "upperShadowRatio": 0.52,
+        "bodyRatio": 0.48,
+        "closeStrength": 0,
+        "pullbackFromHigh20": 13.89,
+        "ret3": 4.12,
+        "ret10": 11.43,
+        "ret20": 14.01,
+        "limitUpCount5": 2,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "oddsScore": 43,
+      "oddsTier": "C",
+      "oddsReason": "收盘偏弱 / 上影较重 / 连板后转弱分歧",
+      "code": "SH600829",
+      "name": "人民同泰",
+      "industry": {
+        "code": "BK1042",
+        "name": "医药商业"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 9.36,
+      "lift": 3.18,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0615",
+          "name": "中药概念"
+        },
+        {
+          "code": "BK0852",
+          "name": "冷链物流"
+        },
+        {
+          "code": "BK1001",
+          "name": "内贸流通"
+        }
+      ]
+    },
+    {
+      "scenario": "limit_up_trend",
+      "scenarioName": "连板/强趋势",
+      "matchedRule": "近5日近似涨停根数=2≥2",
+      "features": {
+        "dayReturn": -0.04,
+        "volumeRatio": 2.13,
+        "lowerShadowRatio": 0,
+        "upperShadowRatio": 0.633,
+        "bodyRatio": 0.367,
+        "closeStrength": 0.367,
+        "pullbackFromHigh20": 7.34,
+        "ret3": 10.62,
+        "ret10": 1.54,
+        "ret20": 13.56,
+        "limitUpCount5": 2,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "oddsScore": 43,
+      "oddsTier": "C",
+      "oddsReason": "收盘偏弱 / 上影较重 / 连板后转弱分歧",
+      "code": "SH605028",
+      "name": "世茂能源",
+      "industry": {
+        "code": "BK0428",
+        "name": "电力"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 24.37,
+      "lift": 3.18,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK1024",
+          "name": "绿色电力"
+        }
+      ]
+    },
+    {
+      "scenario": "limit_up_trend",
+      "scenarioName": "连板/强趋势",
+      "matchedRule": "近5日近似涨停根数=2≥2",
+      "features": {
+        "dayReturn": -10.02,
+        "volumeRatio": 0.08,
+        "lowerShadowRatio": 0,
+        "upperShadowRatio": 0,
+        "bodyRatio": 0,
+        "closeStrength": 0,
+        "pullbackFromHigh20": 27.1,
+        "ret3": -27.1,
+        "ret10": -8.72,
+        "ret20": 9.86,
+        "limitUpCount5": 2,
+        "nearHigh20": false,
+        "aboveMa10": false,
+        "nearMa20": false
+      },
+      "oddsScore": 43,
+      "oddsTier": "C",
+      "oddsReason": "缩量延续更利于赔率 / 收盘偏弱 / 连板后转弱分歧",
+      "code": "SH603065",
+      "name": "宿迁联盛",
+      "industry": {
+        "code": "BK0538",
+        "name": "化学制品"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 17.16,
+      "lift": 3.18,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": []
+    },
+    {
+      "scenario": "limit_up_trend",
+      "scenarioName": "连板/强趋势",
+      "matchedRule": "近5日近似涨停根数=2≥2",
+      "features": {
+        "dayReturn": -1.06,
+        "volumeRatio": 2.14,
+        "lowerShadowRatio": 0.061,
+        "upperShadowRatio": 0.886,
+        "bodyRatio": 0.053,
+        "closeStrength": 0.061,
+        "pullbackFromHigh20": 15.66,
+        "ret3": 1.45,
+        "ret10": 4.48,
+        "ret20": -6.73,
+        "limitUpCount5": 2,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": true
+      },
+      "oddsScore": 43,
+      "oddsTier": "C",
+      "oddsReason": "收盘偏弱 / 上影较重 / 连板后转弱分歧",
+      "code": "SZ000920",
+      "name": "沃顿科技",
+      "industry": {
+        "code": "BK0454",
+        "name": "塑料"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 14,
+      "lift": 3.18,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK1068",
+          "name": "净水概念"
+        }
+      ]
+    },
+    {
+      "scenario": "trend_continuation",
+      "scenarioName": "趋势中继",
+      "matchedRule": "近3日累计=12.0%∈[5,20)且当日不跌",
+      "features": {
+        "dayReturn": 0.93,
+        "volumeRatio": 2.38,
+        "lowerShadowRatio": 0.326,
+        "upperShadowRatio": 0.629,
+        "bodyRatio": 0.045,
+        "closeStrength": 0.371,
+        "pullbackFromHigh20": 4.31,
+        "ret3": 12.04,
+        "ret10": 15.12,
+        "ret20": 2.22,
+        "limitUpCount5": 1,
+        "nearHigh20": true,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "oddsScore": 40,
+      "oddsTier": "C",
+      "oddsReason": "上影较重 / 逼近前高但受阻明显 / 3日趋势斜率适中健康",
+      "code": "SH600602",
+      "name": "云赛智联",
+      "industry": {
+        "code": "BK0737",
+        "name": "软件开发"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 18.43,
+      "lift": 1.58,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0614",
+          "name": "食品安全"
+        },
+        {
+          "code": "BK0696",
+          "name": "国产软件"
+        },
+        {
+          "code": "BK0886",
+          "name": "智慧政务"
+        },
+        {
+          "code": "BK0922",
+          "name": "数据中心"
+        },
+        {
+          "code": "BK1008",
+          "name": "国资云概念"
+        },
+        {
+          "code": "BK1104",
+          "name": "信创"
+        },
+        {
+          "code": "BK1134",
+          "name": "算力概念"
+        },
+        {
+          "code": "BK1135",
+          "name": "数据要素"
+        },
+        {
+          "code": "BK1189",
+          "name": "腾讯云"
+        }
+      ]
+    },
+    {
+      "scenario": "trend_continuation",
+      "scenarioName": "趋势中继",
+      "matchedRule": "近3日累计=6.3%∈[5,20)且当日不跌",
+      "features": {
+        "dayReturn": 1.66,
+        "volumeRatio": 1.62,
+        "lowerShadowRatio": 0.484,
+        "upperShadowRatio": 0.405,
+        "bodyRatio": 0.111,
+        "closeStrength": 0.595,
+        "pullbackFromHigh20": 0.94,
+        "ret3": 6.27,
+        "ret10": 5.79,
+        "ret20": 7.87,
+        "limitUpCount5": 0,
+        "nearHigh20": true,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "oddsScore": 36,
+      "oddsTier": "C",
+      "oddsReason": "上影较重 / 逼近前高但受阻明显 / 3日趋势动能偏弱",
+      "code": "SH600660",
+      "name": "福耀玻璃",
+      "industry": {
+        "code": "BK0481",
+        "name": "汽车零部件"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 53.88,
+      "lift": 1.58,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0644",
+          "name": "特斯拉概念"
+        },
+        {
+          "code": "BK0812",
+          "name": "贬值受益"
+        },
+        {
+          "code": "BK1155",
+          "name": "小米汽车"
+        }
+      ]
+    },
+    {
+      "scenario": "trend_continuation",
+      "scenarioName": "趋势中继",
+      "matchedRule": "近3日累计=5.2%∈[5,20)且当日不跌",
+      "features": {
+        "dayReturn": 1.89,
+        "volumeRatio": 1.61,
+        "lowerShadowRatio": 0.107,
+        "upperShadowRatio": 0.536,
+        "bodyRatio": 0.357,
+        "closeStrength": 0.464,
+        "pullbackFromHigh20": 2.27,
+        "ret3": 5.2,
+        "ret10": 5.37,
+        "ret20": 6.94,
+        "limitUpCount5": 0,
+        "nearHigh20": true,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "oddsScore": 36,
+      "oddsTier": "C",
+      "oddsReason": "上影较重 / 逼近前高但受阻明显 / 3日趋势动能偏弱",
+      "code": "SH600901",
+      "name": "江苏金租",
+      "industry": {
+        "code": "BK0738",
+        "name": "多元金融"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 6.47,
+      "lift": 1.58,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": []
+    },
+    {
+      "scenario": "limit_up_trend",
+      "scenarioName": "连板/强趋势",
+      "matchedRule": "近5日近似涨停根数=2≥2",
+      "features": {
+        "dayReturn": -10,
+        "volumeRatio": 0.36,
+        "lowerShadowRatio": 0,
+        "upperShadowRatio": 1,
+        "bodyRatio": 0,
+        "closeStrength": 0,
+        "pullbackFromHigh20": 21.79,
+        "ret3": -11.22,
+        "ret10": 7.35,
+        "ret20": 35.46,
+        "limitUpCount5": 2,
+        "nearHigh20": false,
+        "aboveMa10": false,
+        "nearMa20": false
+      },
+      "oddsScore": 35,
+      "oddsTier": "C",
+      "oddsReason": "收盘偏弱 / 上影较重 / 连板后转弱分歧",
+      "code": "SH603669",
+      "name": "灵康药业",
+      "industry": {
+        "code": "BK0465",
+        "name": "化学制药"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 6.57,
+      "lift": 3.18,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0906",
+          "name": "流感"
+        }
+      ]
+    },
+    {
+      "scenario": "limit_up_trend",
+      "scenarioName": "连板/强趋势",
+      "matchedRule": "近5日近似涨停根数=2≥2",
+      "features": {
+        "dayReturn": -10,
+        "volumeRatio": 1.13,
+        "lowerShadowRatio": 0,
+        "upperShadowRatio": 0.004,
+        "bodyRatio": 0.996,
+        "closeStrength": 0,
+        "pullbackFromHigh20": 19,
+        "ret3": -10.9,
+        "ret10": -4.91,
+        "ret20": -12.66,
+        "limitUpCount5": 2,
+        "nearHigh20": false,
+        "aboveMa10": false,
+        "nearMa20": false
+      },
+      "oddsScore": 35,
+      "oddsTier": "C",
+      "oddsReason": "不贴前高，仍有上攻空间 / 收盘偏弱 / 连板后转弱分歧",
+      "code": "SH605255",
+      "name": "天普股份",
+      "industry": {
+        "code": "BK0481",
+        "name": "汽车零部件"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 70.62,
+      "lift": 3.18,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0682",
+          "name": "燃料电池概念"
+        }
+      ]
+    },
+    {
+      "scenario": "trend_continuation",
+      "scenarioName": "趋势中继",
+      "matchedRule": "近3日累计=6.9%∈[5,20)且当日不跌",
+      "features": {
+        "dayReturn": 1.94,
+        "volumeRatio": 2.79,
+        "lowerShadowRatio": 0.159,
+        "upperShadowRatio": 0.5,
+        "bodyRatio": 0.341,
+        "closeStrength": 0.5,
+        "pullbackFromHigh20": 2.72,
+        "ret3": 6.92,
+        "ret10": 7.65,
+        "ret20": 5.63,
+        "limitUpCount5": 0,
+        "nearHigh20": true,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "oddsScore": 32,
+      "oddsTier": "C",
+      "oddsReason": "上影较重 / 逼近前高但受阻明显 / 3日趋势动能偏弱",
+      "code": "SZ000096",
+      "name": "广聚能源",
+      "industry": {
+        "code": "BK1274",
+        "name": "炼化及贸易"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 7.88,
+      "lift": 1.58,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0595",
+          "name": "风能"
+        },
+        {
+          "code": "BK0677",
+          "name": "粤港自贸"
+        },
+        {
+          "code": "BK1001",
+          "name": "内贸流通"
+        }
+      ]
+    },
+    {
+      "scenario": "limit_up_trend",
+      "scenarioName": "连板/强趋势",
+      "matchedRule": "近5日近似涨停根数=2≥2",
+      "features": {
+        "dayReturn": -2.23,
+        "volumeRatio": 2.77,
+        "lowerShadowRatio": 0.056,
+        "upperShadowRatio": 0.218,
+        "bodyRatio": 0.726,
+        "closeStrength": 0.056,
+        "pullbackFromHigh20": 10.39,
+        "ret3": 18.29,
+        "ret10": 3.06,
+        "ret20": 26.6,
+        "limitUpCount5": 2,
+        "nearHigh20": false,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "oddsScore": 31,
+      "oddsTier": "C",
+      "oddsReason": "收盘偏弱 / 连板后转弱分歧 / 前期涨幅过大短线滞涨",
+      "code": "SZ002739",
+      "name": "儒意电影",
+      "industry": {
+        "code": "BK1222",
+        "name": "影视院线"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 10.09,
+      "lift": 3.18,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0509",
+          "name": "网络游戏"
+        },
+        {
+          "code": "BK0847",
+          "name": "影视概念"
+        },
+        {
+          "code": "BK0923",
+          "name": "抖音概念(字节概念)"
+        },
+        {
+          "code": "BK1183",
+          "name": "谷子经济"
+        },
+        {
+          "code": "BK1187",
+          "name": "小红书概念"
+        },
+        {
+          "code": "BK1654",
+          "name": "文娱消费"
+        }
+      ]
+    },
+    {
+      "scenario": "limit_up_trend",
+      "scenarioName": "连板/强趋势",
+      "matchedRule": "近5日近似涨停根数=2≥2",
+      "features": {
+        "dayReturn": -7.73,
+        "volumeRatio": 3.59,
+        "lowerShadowRatio": 0.068,
+        "upperShadowRatio": 0.345,
+        "bodyRatio": 0.588,
+        "closeStrength": 0.068,
+        "pullbackFromHigh20": 47.91,
+        "ret3": 11.69,
+        "ret10": -16.83,
+        "ret20": -43.35,
+        "limitUpCount5": 2,
+        "nearHigh20": false,
+        "aboveMa10": false,
+        "nearMa20": false
+      },
+      "oddsScore": 31,
+      "oddsTier": "C",
+      "oddsReason": "爆量后次日分歧风险偏高 / 收盘偏弱 / 连板后转弱分歧",
+      "code": "SH600785",
+      "name": "新华百货",
+      "industry": {
+        "code": "BK0482",
+        "name": "一般零售"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 8.6,
+      "lift": 3.18,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0825",
+          "name": "新零售"
+        },
+        {
+          "code": "BK1001",
+          "name": "内贸流通"
+        }
+      ]
+    },
+    {
+      "scenario": "trend_continuation",
+      "scenarioName": "趋势中继",
+      "matchedRule": "近3日累计=6.7%∈[5,20)且当日不跌",
+      "features": {
+        "dayReturn": 0.66,
+        "volumeRatio": 1.35,
+        "lowerShadowRatio": 0.167,
+        "upperShadowRatio": 0.705,
+        "bodyRatio": 0.128,
+        "closeStrength": 0.295,
+        "pullbackFromHigh20": 2.92,
+        "ret3": 6.71,
+        "ret10": 8.54,
+        "ret20": 10.64,
+        "limitUpCount5": 0,
+        "nearHigh20": true,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "oddsScore": 28,
+      "oddsTier": "C",
+      "oddsReason": "上影较重 / 逼近前高但受阻明显 / 3日趋势动能偏弱",
+      "code": "SZ002568",
+      "name": "百润股份",
+      "industry": {
+        "code": "BK1279",
+        "name": "非白酒"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 18.3,
+      "lift": 1.58,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0477",
+          "name": "酿酒概念"
+        },
+        {
+          "code": "BK1026",
+          "name": "调味品概念"
+        }
+      ]
+    },
+    {
+      "scenario": "trend_continuation",
+      "scenarioName": "趋势中继",
+      "matchedRule": "近3日累计=6.2%∈[5,20)且当日不跌",
+      "features": {
+        "dayReturn": 0,
+        "volumeRatio": 1.54,
+        "lowerShadowRatio": 0.263,
+        "upperShadowRatio": 0.737,
+        "bodyRatio": 0,
+        "closeStrength": 0.263,
+        "pullbackFromHigh20": 1.97,
+        "ret3": 6.17,
+        "ret10": 5.53,
+        "ret20": 3.96,
+        "limitUpCount5": 0,
+        "nearHigh20": true,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "oddsScore": 28,
+      "oddsTier": "C",
+      "oddsReason": "上影较重 / 逼近前高但受阻明显 / 3日趋势动能偏弱",
+      "code": "SH603237",
+      "name": "五芳斋",
+      "industry": {
+        "code": "BK1280",
+        "name": "食品加工"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 13.93,
+      "lift": 1.58,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK1025",
+          "name": "预制菜概念"
+        },
+        {
+          "code": "BK1055",
+          "name": "虚拟数字人"
+        }
+      ]
+    },
+    {
+      "scenario": "limit_up_trend",
+      "scenarioName": "连板/强趋势",
+      "matchedRule": "近5日近似涨停根数=2≥2",
+      "features": {
+        "dayReturn": -8.57,
+        "volumeRatio": 1.54,
+        "lowerShadowRatio": 0.094,
+        "upperShadowRatio": 0.469,
+        "bodyRatio": 0.438,
+        "closeStrength": 0.094,
+        "pullbackFromHigh20": 27.71,
+        "ret3": -6.25,
+        "ret10": -10.11,
+        "ret20": -20.13,
+        "limitUpCount5": 2,
+        "nearHigh20": false,
+        "aboveMa10": false,
+        "nearMa20": false
+      },
+      "oddsScore": 27,
+      "oddsTier": "C",
+      "oddsReason": "收盘偏弱 / 上影较重 / 连板后转弱分歧",
+      "code": "SH600403",
+      "name": "大有能源",
+      "industry": {
+        "code": "BK1250",
+        "name": "煤炭开采"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 4.8,
+      "lift": 3.18,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": []
+    },
+    {
+      "scenario": "limit_up_trend",
+      "scenarioName": "连板/强趋势",
+      "matchedRule": "近5日近似涨停根数=2≥2",
+      "features": {
+        "dayReturn": -10.05,
+        "volumeRatio": 1.44,
+        "lowerShadowRatio": 0,
+        "upperShadowRatio": 0.356,
+        "bodyRatio": 0.644,
+        "closeStrength": 0,
+        "pullbackFromHigh20": 24.22,
+        "ret3": 8.97,
+        "ret10": -16.94,
+        "ret20": 35.28,
+        "limitUpCount5": 2,
+        "nearHigh20": false,
+        "aboveMa10": false,
+        "nearMa20": true
+      },
+      "oddsScore": 27,
+      "oddsTier": "C",
+      "oddsReason": "收盘偏弱 / 上影较重 / 连板后转弱分歧",
+      "code": "SZ000566",
+      "name": "海南海药",
+      "industry": {
+        "code": "BK0465",
+        "name": "化学制药"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 5.1,
+      "lift": 3.18,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0506",
+          "name": "创投"
+        },
+        {
+          "code": "BK0548",
+          "name": "生物疫苗"
+        },
+        {
+          "code": "BK0615",
+          "name": "中药概念"
+        },
+        {
+          "code": "BK0706",
+          "name": "脑机接口"
+        },
+        {
+          "code": "BK0837",
+          "name": "互联网医疗"
+        },
+        {
+          "code": "BK0870",
+          "name": "单抗概念"
+        },
+        {
+          "code": "BK0895",
+          "name": "维生素"
+        },
+        {
+          "code": "BK0906",
+          "name": "流感"
+        },
+        {
+          "code": "BK0986",
+          "name": "CAR-T细胞疗法"
+        },
+        {
+          "code": "BK1078",
+          "name": "肝炎概念"
+        },
+        {
+          "code": "BK1106",
+          "name": "创新药"
+        },
+        {
+          "code": "BK1193",
+          "name": "海南自贸"
+        },
+        {
+          "code": "BK1657",
+          "name": "病原体防治"
+        }
+      ]
+    },
+    {
+      "scenario": "trend_continuation",
+      "scenarioName": "趋势中继",
+      "matchedRule": "近3日累计=18.2%∈[5,20)且当日不跌",
+      "features": {
+        "dayReturn": 0.65,
+        "volumeRatio": 2.04,
+        "lowerShadowRatio": 0.352,
+        "upperShadowRatio": 0.453,
+        "bodyRatio": 0.195,
+        "closeStrength": 0.547,
+        "pullbackFromHigh20": 2.15,
+        "ret3": 18.23,
+        "ret10": 6.8,
+        "ret20": 11.49,
+        "limitUpCount5": 1,
+        "nearHigh20": true,
+        "aboveMa10": true,
+        "nearMa20": false
+      },
+      "oddsScore": 26,
+      "oddsTier": "C",
+      "oddsReason": "上影较重 / 前期涨幅过大短线滞涨 / 逼近前高但受阻明显",
+      "code": "SZ003010",
+      "name": "若羽臣",
+      "industry": {
+        "code": "BK1268",
+        "name": "互联网电商"
+      },
+      "date": "2026/07/17",
+      "timestamp": 1784217600000,
+      "close": 26.4,
+      "lift": 1.58,
+      "returns": {
+        "d1": null,
+        "d2": null,
+        "d3": null,
+        "d4": null,
+        "d5": null,
+        "d6": null
+      },
+      "concepts": [
+        {
+          "code": "BK0447",
+          "name": "互联网服务"
+        },
+        {
+          "code": "BK0664",
+          "name": "婴童概念"
+        },
+        {
+          "code": "BK0722",
+          "name": "虚拟现实"
+        },
+        {
+          "code": "BK0801",
+          "name": "增强现实"
+        },
+        {
+          "code": "BK0940",
+          "name": "网红经济"
+        },
+        {
+          "code": "BK0957",
+          "name": "拼多多概念"
+        },
+        {
+          "code": "BK1187",
+          "name": "小红书概念"
+        }
+      ]
+    }
+  ]
+}
