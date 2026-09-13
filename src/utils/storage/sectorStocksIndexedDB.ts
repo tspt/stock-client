@@ -26,6 +26,28 @@ export interface SectorWithStocks {
 let dbInstance: IDBDatabase | null = null;
 
 /**
+ * 板块成分股数据变更通知。
+ * 写入/清空板块数据后通知下游（如「股票→板块映射」缓存）失效自己的缓存，
+ * 避免板块刷新后仍使用旧映射。这里只做回调注册，不反向依赖业务模块。
+ */
+type SectorStocksChangeListener = () => void;
+const sectorStocksChangeListeners: SectorStocksChangeListener[] = [];
+
+export function onSectorStocksChange(listener: SectorStocksChangeListener): void {
+  sectorStocksChangeListeners.push(listener);
+}
+
+function notifySectorStocksChange(): void {
+  sectorStocksChangeListeners.forEach((listener) => {
+    try {
+      listener();
+    } catch (error) {
+      logger.error('[SectorStocksDB] 板块数据变更通知失败:', error);
+    }
+  });
+}
+
+/**
  * 初始化数据库
  */
 export async function initSectorStocksDB(): Promise<IDBDatabase> {
@@ -68,9 +90,20 @@ export async function initSectorStocksDB(): Promise<IDBDatabase> {
 }
 
 /**
- * 保存行业板块数据
+ * 保存行业板块数据（写入完成后通知板块数据变更）
  */
 export async function saveIndustrySectors(
+  data: SectorWithStocks[],
+  incremental: boolean = false
+): Promise<void> {
+  try {
+    await saveIndustrySectorsInternal(data, incremental);
+  } finally {
+    notifySectorStocksChange();
+  }
+}
+
+async function saveIndustrySectorsInternal(
   data: SectorWithStocks[],
   incremental: boolean = false
 ): Promise<void> {
@@ -114,9 +147,20 @@ export async function saveIndustrySectors(
 }
 
 /**
- * 保存概念板块数据
+ * 保存概念板块数据（写入完成后通知板块数据变更）
  */
 export async function saveConceptSectors(
+  data: SectorWithStocks[],
+  incremental: boolean = false
+): Promise<void> {
+  try {
+    await saveConceptSectorsInternal(data, incremental);
+  } finally {
+    notifySectorStocksChange();
+  }
+}
+
+async function saveConceptSectorsInternal(
   data: SectorWithStocks[],
   incremental: boolean = false
 ): Promise<void> {
@@ -205,6 +249,14 @@ export async function getConceptSectors(): Promise<SectorWithStocks[]> {
  * 清空所有板块成分股数据
  */
 export async function clearSectorStocksDB(): Promise<void> {
+  try {
+    await clearSectorStocksDBInternal();
+  } finally {
+    notifySectorStocksChange();
+  }
+}
+
+async function clearSectorStocksDBInternal(): Promise<void> {
   const db = await initSectorStocksDB();
   const transaction = db.transaction(
     [SECTOR_STOCKS_INDUSTRY_STORE, SECTOR_STOCKS_CONCEPT_STORE],

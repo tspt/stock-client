@@ -49,6 +49,13 @@ type StockQuoteLike = {
 type OpportunityAiVersion = 'v1' | 'v2' | 'v3' | 'v4' | 'v5' | 'v6' | 'v7';
 
 /**
+ * AI 批量阶段每计算多少只让出一次主线程。
+ * 相似形态是全池比对（O(N²)），一次性跑完会让界面长时间冻结。
+ * 分片只改变执行节奏，入参、遍历顺序与计算方法完全不变，因此结果一致。
+ */
+const AI_YIELD_EVERY_ITEMS = 10;
+
+/**
  * ⚠️ 当前项目仅使用 v5.0，其余版本已注释，避免生成/加载多余 chunk。
  * 需要恢复时取消下方对应分支注释即可。
  */
@@ -602,7 +609,20 @@ export function analyzeAllStocksOpportunity(
 
     logger.info(`[AI分析] 有效股票池大小: ${sortedStockDataForAI.size}`);
 
-    results.forEach((result) => {
+    // 分片执行：每 AI_YIELD_EVERY_ITEMS 只让出一次主线程（并响应取消），
+    // 计算入参（klineData、result、sortedStockDataForAI）与遍历顺序与原先的 forEach 完全一致。
+    for (let index = 0; index < results.length; index++) {
+      if (index > 0 && index % AI_YIELD_EVERY_ITEMS === 0) {
+        await new Promise<void>((resolve) => {
+          setTimeout(resolve, 0);
+        });
+        if (cancelledRef.cancelled) {
+          logger.info(`[AI分析] 已取消，停止剩余 ${results.length - index} 只股票的 AI 计算`);
+          return { results, errors, klineDataMap };
+        }
+      }
+
+      const result = results[index];
       if (result.code && !result.error && klineDataMap.has(result.code)) {
         const klineData = klineDataMap.get(result.code)!;
         if (klineData && klineData.length >= 100) {
@@ -619,7 +639,7 @@ export function analyzeAllStocksOpportunity(
           }
         }
       }
-    });
+    }
 
     logger.info(`[AI分析] 批量计算完成，更新 ${aiUpdatedCount} 只股票`);
 

@@ -3,7 +3,11 @@
  * 机会分析与回测共用同一套构建与查找规则
  */
 
-import { getIndustrySectors, getConceptSectors } from '@/utils/storage/sectorStocksIndexedDB';
+import {
+  getIndustrySectors,
+  getConceptSectors,
+  onSectorStocksChange,
+} from '@/utils/storage/sectorStocksIndexedDB';
 import type { IndustryInfo, ConceptInfo } from '@/types/stock';
 import { logger } from '@/utils/business/logger';
 
@@ -33,10 +37,67 @@ export function normalizeSectorStockCode(code: string): string {
 }
 
 /**
+ * 模块级缓存：机会分析页、回测页、板块增强都会调用本函数，
+ * 板块数据未变动时直接复用，避免重复读取两套 IndexedDB 并重建映射。
+ * 注意：返回的是共享 Map，调用方不应修改其内容。
+ */
+let cachedMapping: SectorStockMapping | null = null;
+let cachedMappingPromise: Promise<SectorStockMapping> | null = null;
+let invalidateRegistered = false;
+
+/** 惰性注册失效回调（避免模块顶层副作用） */
+function ensureInvalidateRegistered(): void {
+  if (invalidateRegistered) {
+    return;
+  }
+  invalidateRegistered = true;
+  onSectorStocksChange(() => {
+    cachedMapping = null;
+    cachedMappingPromise = null;
+  });
+}
+
+/** 手动失效板块映射缓存（板块数据在别处被改动时使用） */
+export function invalidateSectorStockMappingCache(): void {
+  cachedMapping = null;
+  cachedMappingPromise = null;
+}
+
+/**
+ * 加载股票 → 行业/概念映射（带缓存与并发复用）
+ */
+export async function loadSectorStockMapping(): Promise<SectorStockMapping> {
+  ensureInvalidateRegistered();
+
+  if (cachedMapping) {
+    return cachedMapping;
+  }
+  if (cachedMappingPromise) {
+    return cachedMappingPromise;
+  }
+
+  cachedMappingPromise = buildSectorStockMapping()
+    .then((mapping) => {
+      // 空结果（读取失败或库中无数据）不缓存，避免把空映射固化下来
+      if (mapping.industryByCode.size > 0 || mapping.conceptsByCode.size > 0) {
+        cachedMapping = mapping;
+      }
+      cachedMappingPromise = null;
+      return mapping;
+    })
+    .catch((error) => {
+      cachedMappingPromise = null;
+      throw error;
+    });
+
+  return cachedMappingPromise;
+}
+
+/**
  * 从 IndexedDB 构建股票 → 行业/概念映射
  * 行业：同一股票只保留第一次命中的板块；概念：按板块 code 去重
  */
-export async function loadSectorStockMapping(): Promise<SectorStockMapping> {
+async function buildSectorStockMapping(): Promise<SectorStockMapping> {
   const industryByCode = new Map<string, SectorInfo>();
   const conceptsByCode = new Map<string, SectorInfo[]>();
 

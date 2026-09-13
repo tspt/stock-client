@@ -13,6 +13,7 @@ import {
   OPPORTUNITY_DB_NAME,
   OPPORTUNITY_DB_VERSION,
   OPPORTUNITY_STORE_NAME,
+  OPPORTUNITY_KLINE_STORE_NAME,
   STOCK_HISTORY_STORE_NAME,
 } from '../config/constants';
 
@@ -63,14 +64,75 @@ export async function initOpportunityDB(): Promise<IDBDatabase> {
       if (db.objectStoreNames.contains('stockRecords')) {
         db.deleteObjectStore('stockRecords');
       }
+
+      // v7: K 线缓存从主记录拆分为独立存储，避免单条记录过大导致读取缓慢
+      if (!db.objectStoreNames.contains(OPPORTUNITY_KLINE_STORE_NAME)) {
+        db.createObjectStore(OPPORTUNITY_KLINE_STORE_NAME, { keyPath: 'code' });
+      }
     };
   });
 }
 
+/** K 线缓存写入分批大小，避免单个事务过大 */
+const KLINE_WRITE_BATCH = 500;
+
 /**
- * 保存分析结果
+ * 保存 K 线缓存（独立存储）：先清空旧数据，再分批写入
+ */
+export async function saveOpportunityKlines(
+  entries: Array<[string, KLineData[]]>
+): Promise<void> {
+  const db = await initOpportunityDB();
+
+  await new Promise<void>((resolve, reject) => {
+    const transaction = db.transaction([OPPORTUNITY_KLINE_STORE_NAME], 'readwrite');
+    transaction.oncomplete = () => resolve();
+    transaction.onerror = () => reject(new Error('清空K线缓存失败'));
+    transaction.objectStore(OPPORTUNITY_KLINE_STORE_NAME).clear();
+  });
+
+  for (let index = 0; index < entries.length; index += KLINE_WRITE_BATCH) {
+    const batch = entries.slice(index, index + KLINE_WRITE_BATCH);
+    await new Promise<void>((resolve, reject) => {
+      const transaction = db.transaction([OPPORTUNITY_KLINE_STORE_NAME], 'readwrite');
+      transaction.oncomplete = () => resolve();
+      transaction.onerror = () =>
+        reject(new Error(`写入K线缓存失败：第 ${Math.floor(index / KLINE_WRITE_BATCH) + 1} 批`));
+      const store = transaction.objectStore(OPPORTUNITY_KLINE_STORE_NAME);
+      batch.forEach(([code, kline]) => {
+        store.put({ code, kline });
+      });
+    });
+  }
+}
+
+/**
+ * 读取全部 K 线缓存（一次性读回，保证与拆分前的数据集合完全一致）
+ */
+export async function getOpportunityKlines(): Promise<Array<[string, KLineData[]]>> {
+  const db = await initOpportunityDB();
+
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction([OPPORTUNITY_KLINE_STORE_NAME], 'readonly');
+    const request = transaction.objectStore(OPPORTUNITY_KLINE_STORE_NAME).getAll();
+
+    request.onsuccess = () => {
+      const rows = (request.result || []) as Array<{ code: string; kline: KLineData[] }>;
+      resolve(rows.map((row) => [row.code, row.kline]));
+    };
+    request.onerror = () => reject(new Error('获取K线缓存失败'));
+  });
+}
+
+/**
+ * 保存分析结果。
+ * K 线缓存单独存表：先写 K 线再写主记录，避免主记录已更新而 K 线缺失导致读到不完整数据。
  */
 export async function saveOpportunityData(data: OpportunityAnalysisResult): Promise<void> {
+  const { klineDataCache, ...rest } = data;
+
+  await saveOpportunityKlines(klineDataCache ?? []);
+
   const db = await initOpportunityDB();
   const transaction = db.transaction([OPPORTUNITY_STORE_NAME], 'readwrite');
   const store = transaction.objectStore(OPPORTUNITY_STORE_NAME);
@@ -78,7 +140,7 @@ export async function saveOpportunityData(data: OpportunityAnalysisResult): Prom
   return new Promise((resolve, reject) => {
     const request = store.put({
       id: 'latest',
-      ...data,
+      ...rest,
     });
 
     request.onsuccess = () => resolve();
@@ -87,36 +149,44 @@ export async function saveOpportunityData(data: OpportunityAnalysisResult): Prom
 }
 
 /**
- * 获取最新的分析结果
+ * 获取最新的分析结果。
+ * 新版从独立存储读回 K 线；老数据（K 线仍在 `latest` 主记录内）自动回退读取，保证升级前后一致。
  */
 export async function getOpportunityData(): Promise<OpportunityAnalysisResult | null> {
   const db = await initOpportunityDB();
-  const transaction = db.transaction([OPPORTUNITY_STORE_NAME], 'readonly');
-  const store = transaction.objectStore(OPPORTUNITY_STORE_NAME);
+  const mainRecord = await new Promise<any>((resolve, reject) => {
+    const transaction = db.transaction([OPPORTUNITY_STORE_NAME], 'readonly');
+    const request = transaction.objectStore(OPPORTUNITY_STORE_NAME).get('latest');
 
-  return new Promise((resolve, reject) => {
-    const request = store.get('latest');
-
-    request.onsuccess = () => {
-      const result = request.result;
-      if (result) {
-        const { id, ...data } = result;
-        resolve(data as OpportunityAnalysisResult);
-      } else {
-        resolve(null);
-      }
-    };
-
+    request.onsuccess = () => resolve(request.result);
     request.onerror = () => reject(new Error('获取数据失败'));
   });
+
+  if (!mainRecord) {
+    return null;
+  }
+
+  const { id: _id, ...data } = mainRecord;
+  const result = data as OpportunityAnalysisResult;
+
+  // 新存储有数据时覆盖；否则沿用主记录里旧版自带的 klineDataCache
+  const klineEntries = await getOpportunityKlines();
+  if (klineEntries.length > 0) {
+    result.klineDataCache = klineEntries;
+  }
+
+  return result;
 }
 
 /**
- * 清空所有数据
+ * 清空所有数据（含独立存储的 K 线缓存）
  */
 export async function clearOpportunityData(): Promise<void> {
   const db = await initOpportunityDB();
-  const transaction = db.transaction([OPPORTUNITY_STORE_NAME], 'readwrite');
+  const transaction = db.transaction(
+    [OPPORTUNITY_STORE_NAME, OPPORTUNITY_KLINE_STORE_NAME],
+    'readwrite'
+  );
 
   return new Promise((resolve, reject) => {
     transaction.onerror = () => reject(new Error('清空数据失败'));
@@ -125,6 +195,10 @@ export async function clearOpportunityData(): Promise<void> {
     const mainStore = transaction.objectStore(OPPORTUNITY_STORE_NAME);
     const mainRequest = mainStore.clear();
     mainRequest.onerror = () => reject(new Error('清空主数据失败'));
+
+    const klineStore = transaction.objectStore(OPPORTUNITY_KLINE_STORE_NAME);
+    const klineRequest = klineStore.clear();
+    klineRequest.onerror = () => reject(new Error('清空K线缓存失败'));
   });
 }
 

@@ -6,7 +6,7 @@ import { useMemo, useState, memo } from 'react';
 import { Table } from 'antd';
 import type React from 'react';
 import type { ColumnsType, TablePaginationConfig } from 'antd/es/table';
-import type { OverviewSortConfig, StockOpportunityData } from '@/types/stock';
+import type { OverviewSortConfig, StockOpportunityData, TradingSignalType } from '@/types/stock';
 import type { ColumnConfig } from '@/types/common';
 import {
   formatPrice,
@@ -19,6 +19,18 @@ import {
 } from '@/utils/format/format';
 import { StockConceptTags, StockFeatureTag, StockStatusTag } from '@/components/common/Tags';
 import styles from './OpportunityTable.module.css';
+
+/**
+ * 交易信号排序权重：买入类相邻、卖出类相邻，观望排在最后。
+ * 升序顺序：建议买入 → 强烈买入 → 建议卖出 → 强烈卖出 → 观望（无信号始终最后）
+ */
+const TRADING_SIGNAL_SORT_WEIGHT: Record<TradingSignalType, number> = {
+  BUY: 0,
+  STRONG_BUY: 1,
+  SELL: 2,
+  STRONG_SELL: 3,
+  HOLD: 4,
+};
 
 interface OpportunityTableProps {
   data: StockOpportunityData[];
@@ -56,8 +68,11 @@ export const OpportunityTable = memo(function OpportunityTable({ data, columns, 
         return record.industry?.name ?? '';
       case 'concepts':
         return record.concepts?.map(c => c.name).join('、') ?? '';
-      case 'tradingSignal':
-        return record.tradingSignal?.type ?? '';
+      case 'tradingSignal': {
+        const signalType = record.tradingSignal?.type;
+        // 用权重而非类型字符串排序：避免 HOLD 插在买入与卖出之间、且 STRONG_* 被字典序排到最后
+        return signalType ? TRADING_SIGNAL_SORT_WEIGHT[signalType] ?? 5 : undefined;
+      }
       default:
         return (record as any)[key];
     }
