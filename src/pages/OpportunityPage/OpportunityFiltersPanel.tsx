@@ -2,7 +2,7 @@
  * 机会分析页：筛选条件（单行入口 + 右侧 Drawer，节省主区域高度）
  */
 
-import { useMemo, useState } from 'react';
+import { memo, useMemo, useState } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 import { Button, Drawer, Space, Collapse, InputNumber, Checkbox, Select } from 'antd';
 import { FilterOutlined } from '@ant-design/icons';
@@ -339,7 +339,7 @@ export interface OpportunityFiltersPanelProps {
   setDrawerOpen?: (open: boolean) => void;
 }
 
-export function OpportunityFiltersPanel({
+function OpportunityFiltersPanelComponent({
   filterPanelActiveKey,
   setFilterPanelActiveKey,
   priceRange,
@@ -1736,3 +1736,9 @@ export function OpportunityFiltersPanel({
     </>
   );
 }
+
+/**
+ * 面板控件数量众多，父组件的无关状态（分析结果、loading、交易信号等）变化时
+ * 不应触发整块重渲染，这里做浅比较记忆化。
+ */
+export const OpportunityFiltersPanel = memo(OpportunityFiltersPanelComponent);

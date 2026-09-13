@@ -200,9 +200,13 @@ export const OpportunityTable = memo(function OpportunityTable({ data, columns, 
     }
   };
 
-  const tableColumns: ColumnsType<StockOpportunityData> = useMemo(() => {
-    const visibleColumns = columns.filter((c) => c.visible).sort((a, b) => a.order - b.order);
+  // 可见列只计算一次，供列定义与横向滚动宽度共用（原先两处各自 filter + sort）
+  const visibleColumns = useMemo(
+    () => columns.filter((c) => c.visible).sort((a, b) => a.order - b.order),
+    [columns]
+  );
 
+  const tableColumns: ColumnsType<StockOpportunityData> = useMemo(() => {
     const cols = visibleColumns.map((col) => {
       const column: ColumnsType<StockOpportunityData>[0] = {
         title: col.title,
@@ -291,13 +295,13 @@ export const OpportunityTable = memo(function OpportunityTable({ data, columns, 
     }
 
     return cols;
-  }, [columns, sortConfig, onShowAIAnalysis]);
+  }, [visibleColumns, sortConfig, onShowAIAnalysis]);
 
-  // 计算表格横向滚动宽度
-  const scrollX = useMemo(() => {
-    const visibleColumns = columns.filter((c) => c.visible).sort((a, b) => a.order - b.order);
-    return visibleColumns.reduce((sum, col) => sum + (col.width || 120), 0);
-  }, [columns]);
+  // 计算表格横向滚动宽度（与列定义共用同一份可见列）
+  const scrollX = useMemo(
+    () => visibleColumns.reduce((sum, col) => sum + (col.width || 120), 0),
+    [visibleColumns]
+  );
 
   const handleTableChange = (paginationConfig: TablePaginationConfig, _filters: any, sorter: any) => {
     if (paginationConfig) {

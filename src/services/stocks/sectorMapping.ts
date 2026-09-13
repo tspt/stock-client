@@ -40,11 +40,14 @@ export async function loadSectorStockMapping(): Promise<SectorStockMapping> {
   const industryByCode = new Map<string, SectorInfo>();
   const conceptsByCode = new Map<string, SectorInfo[]>();
 
+  const t0 = performance.now();
+
   try {
     const [industrySectors, conceptSectors] = await Promise.all([
       getIndustrySectors(),
       getConceptSectors(),
     ]);
+    const tDbRead = performance.now();
 
     industrySectors.forEach((sector) => {
       sector.children?.forEach((stock) => {
@@ -66,8 +69,15 @@ export async function loadSectorStockMapping(): Promise<SectorStockMapping> {
       });
     });
 
+    const tBuild = performance.now();
+    const countChildren = (list: typeof industrySectors) =>
+      list.reduce((sum, sector) => sum + (sector.children?.length ?? 0), 0);
     logger.info(
-      `[SectorMapping] 板块映射加载完成，行业 ${industryByCode.size} 只，概念 ${conceptsByCode.size} 只`
+      `[SectorMapping] 板块映射加载完成，行业 ${industryByCode.size} 只，概念 ${conceptsByCode.size} 只；` +
+        `IndexedDB 读取 ${(tDbRead - t0).toFixed(0)}ms，建 Map ${(tBuild - tDbRead).toFixed(0)}ms，` +
+        `总耗时 ${(tBuild - t0).toFixed(0)}ms；` +
+        `行业板块 ${industrySectors.length} 个/成分股 ${countChildren(industrySectors)} 条，` +
+        `概念板块 ${conceptSectors.length} 个/成分股 ${countChildren(conceptSectors)} 条`
     );
   } catch (error) {
     logger.error('[SectorMapping] 加载板块映射失败:', error);

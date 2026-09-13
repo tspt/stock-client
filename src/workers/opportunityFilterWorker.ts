@@ -13,18 +13,22 @@ import {
   isNearLowerBand,
   calculateADX,
 } from '@/utils/analysis/technicalIndicators';
-import { performAIAnalysisWithTimestamp as performAIV6Analysis } from '@/services/opportunity/ai-v6.0';
-import { performAIAnalysis as performAIV7Analysis } from '@/services/opportunity/ai-v7.0';
+// ⚠️ 当前项目仅使用 v5.0：其余版本已注释，避免把 7 个 AI 模块（约 295KB 源码）全部打进 worker bundle。
+// 需要启用其它版本时：取消注释对应 import 与下方 useVersionAnalyzer 分支即可。
 import { performAIAnalysis as performAIV5Analysis } from '@/services/opportunity/ai-v5.0';
-import { performAIAnalysis as performAIV4Analysis } from '@/services/opportunity/ai-v4.0';
-import { performAIAnalysis as performAIV3Analysis } from '@/services/opportunity/ai-v3.0';
-import { performAIAnalysis as performAIV2Analysis } from '@/services/opportunity/ai-v2.0';
-import { performAIAnalysis as performAIV1Analysis } from '@/services/opportunity/ai';
-import type { AIComputationContext } from '@/services/opportunity/ai-v6.0';
-import type { KLineData, SharpMovePatternAnalysis, StockOpportunityData } from '@/types/stock';
+// import { performAIAnalysis as performAIV7Analysis } from '@/services/opportunity/ai-v7.0';
+// import { performAIAnalysisWithTimestamp as performAIV6Analysis } from '@/services/opportunity/ai-v6.0';
+// import { performAIAnalysis as performAIV4Analysis } from '@/services/opportunity/ai-v4.0';
+// import { performAIAnalysis as performAIV3Analysis } from '@/services/opportunity/ai-v3.0';
+// import { performAIAnalysis as performAIV2Analysis } from '@/services/opportunity/ai-v2.0';
+// import { performAIAnalysis as performAIV1Analysis } from '@/services/opportunity/ai';
+// import type { AIComputationContext } from '@/services/opportunity/ai-v6.0';
+import type { KLineData, SharpMovePatternAnalysis, StockOpportunityData, TradingSignal } from '@/types/stock';
+import { detectTradingSignal } from '@/utils/analysis/signalDetector';
 import type { OpportunityFilterSnapshot } from '@/types/opportunityFilter';
 import type {
   OpportunityFilterWorkerMessage,
+  OpportunityFilterWorkerOutboundMessage,
   OpportunityFilterWorkerResponse,
 } from './opportunityFilterWorkerTypes';
 import { normalizeStockName } from '@/utils/format/format';
@@ -33,6 +37,17 @@ let cancelledThroughRequestId = 0;
 const YIELD_EVERY_ITEMS = 40;
 let klineDataMap = new Map<string, KLineData[]>();
 let latestRequestId = 0;
+
+// AI 重算任务的取消水位（与筛选任务相互独立）
+let cancelledAIThroughRequestId = 0;
+let latestAIRequestId = 0;
+/** AI 计算比筛选更重，分片粒度更小 */
+const AI_YIELD_EVERY_ITEMS = 10;
+
+// 交易信号检测任务的取消水位（K 线已在本 Worker 内，主线程只传代码列表）
+let cancelledSignalsThroughRequestId = 0;
+let latestSignalsRequestId = 0;
+const SIGNALS_YIELD_EVERY_ITEMS = 50;
 
 // AI分析结果缓存，避免重复计算
 interface AICacheEntry {
@@ -466,6 +481,169 @@ function shouldCancel(requestId: number): boolean {
   return requestId <= cancelledThroughRequestId;
 }
 
+function postMessageOutbound(response: OpportunityFilterWorkerOutboundMessage): void {
+  self.postMessage(response);
+}
+
+function shouldCancelAI(requestId: number): boolean {
+  return requestId <= cancelledAIThroughRequestId;
+}
+
+function shouldCancelSignals(requestId: number): boolean {
+  return requestId <= cancelledSignalsThroughRequestId;
+}
+
+/**
+ * 批量检测交易信号。
+ * 每只股票都要算 MA5/10/20/60 + KDJ，放在主线程会长时间阻塞渲染。
+ */
+async function runDetectSignalsTask(
+  message: Extract<OpportunityFilterWorkerMessage, { type: 'detect-signals' }>
+): Promise<void> {
+  const { requestId, codes } = message;
+  const total = codes.length;
+  const signals: Array<[string, TradingSignal]> = [];
+
+  const postCancelled = () => {
+    postMessageOutbound({ type: 'signals-result', requestId, cancelled: true, signals: [] });
+  };
+
+  for (let index = 0; index < codes.length; index++) {
+    if (shouldCancelSignals(requestId)) {
+      postCancelled();
+      return;
+    }
+
+    if (index > 0 && index % SIGNALS_YIELD_EVERY_ITEMS === 0) {
+      await new Promise<void>((resolve) => {
+        setTimeout(resolve, 0);
+      });
+      if (shouldCancelSignals(requestId)) {
+        postCancelled();
+        return;
+      }
+      postMessageOutbound({
+        type: 'signals-progress',
+        requestId,
+        completed: index,
+        total,
+        percent: total > 0 ? Math.floor((index / total) * 100) : 100,
+      });
+    }
+
+    const code = codes[index];
+    const klineData = klineDataMap.get(code);
+    if (!klineData || klineData.length < 60) {
+      continue;
+    }
+
+    try {
+      const signal = detectTradingSignal(klineData);
+      if (signal) {
+        signals.push([code, signal]);
+      }
+    } catch (error) {
+      console.error(`detectTradingSignal failed for ${code}:`, error);
+    }
+  }
+
+  postMessageOutbound({ type: 'signals-result', requestId, cancelled: false, signals });
+}
+
+/**
+ * 批量重算 AI 分析（切换 AI 版本时使用）。
+ * 放在 Worker 中执行，避免在主线程做 O(N²) 相似形态比对导致界面卡死。
+ */
+async function runRecomputeAITask(
+  message: Extract<OpportunityFilterWorkerMessage, { type: 'recompute-ai' }>
+): Promise<void> {
+  const { requestId, analysisData } = message;
+  const total = analysisData.length;
+
+  // 版本切换后旧结果全部失效
+  aiCacheMap.clear();
+
+  // 构建完整股票池（用于相似形态识别），与主线程的规则一致：K线 >= 100
+  const allStockDataForAI = new Map<
+    string,
+    { code: string; name: string; klineData: KLineData[] }
+  >();
+  analysisData.forEach((item) => {
+    const klineData = klineDataMap.get(item.code);
+    if (klineData && klineData.length >= 100) {
+      allStockDataForAI.set(item.code, { code: item.code, name: item.name, klineData });
+    }
+  });
+
+  const updatedData: StockOpportunityData[] = [];
+  let updatedCount = 0;
+  let skippedCount = 0;
+
+  const postCancelled = () => {
+    postMessageOutbound({
+      type: 'ai-result',
+      requestId,
+      cancelled: true,
+      data: [],
+      updatedCount,
+      skippedCount,
+    });
+  };
+
+  for (let index = 0; index < analysisData.length; index++) {
+    if (shouldCancelAI(requestId)) {
+      postCancelled();
+      return;
+    }
+
+    if (index > 0 && index % AI_YIELD_EVERY_ITEMS === 0) {
+      await new Promise<void>((resolve) => {
+        setTimeout(resolve, 0);
+      });
+      if (shouldCancelAI(requestId)) {
+        postCancelled();
+        return;
+      }
+      postMessageOutbound({
+        type: 'ai-progress',
+        requestId,
+        completed: index,
+        total,
+        percent: total > 0 ? Math.floor((index / total) * 100) : 100,
+      });
+    }
+
+    const item = analysisData[index];
+    const klineData = klineDataMap.get(item.code);
+
+    if (!klineData || klineData.length < 100) {
+      updatedData.push(item);
+      skippedCount++;
+      continue;
+    }
+
+    try {
+      const aiAnalysis = performAIV5Analysis(klineData, item, allStockDataForAI);
+      updatedData.push({ ...item, aiAnalysis, analysisTimestamp: Date.now() });
+      aiCacheMap.set(item.code, { aiAnalysis, timestamp: Date.now() });
+      updatedCount++;
+    } catch (error) {
+      console.error(`AI recompute failed for ${item.code}:`, error);
+      updatedData.push(item);
+      skippedCount++;
+    }
+  }
+
+  postMessageOutbound({
+    type: 'ai-result',
+    requestId,
+    cancelled: false,
+    data: updatedData,
+    updatedCount,
+    skippedCount,
+  });
+}
+
 function postCancelled(requestId: number): void {
   postResult({
     type: 'result',
@@ -698,39 +876,39 @@ async function runFilterTask(
         // 并且在分析前准备好计算上下文，避免重复计算
         if (!aiAnalysis && klineData && klineData.length >= 30) {
           try {
-            // 准备共享计算上下文
-            const rsiPeriod = filters.rsiPeriod || 6;
-            const rsi6 = calculateRSI(klineData, 6);
-            const rsi12 = calculateRSI(klineData, 12);
-            const macd = calculateMACD(klineData);
-            const bb = calculateBollingerBands(klineData, 20, 2);
-            const adx = calculateADX(klineData, 14);
+            // 共享计算上下文（仅 v6.0 使用，当前 v6 已注释，故一并停用以免每只股票白算 RSI/MACD/BOLL/ADX）
+            // const rsiPeriod = filters.rsiPeriod || 6;
+            // const rsi6 = calculateRSI(klineData, 6);
+            // const rsi12 = calculateRSI(klineData, 12);
+            // const macd = calculateMACD(klineData);
+            // const bb = calculateBollingerBands(klineData, 20, 2);
+            // const adx = calculateADX(klineData, 14);
+            // const context: AIComputationContext = { rsi6, rsi12, macd, bollingerBands: bb, adx };
 
-            const context: AIComputationContext = {
-              rsi6,
-              rsi12,
-              macd,
-              bollingerBands: bb,
-              adx,
-            };
-
-            // 使用对应版本的 AI 进行分析
+            // 使用对应版本的 AI 进行分析（当前仅启用 v5.0）
             let result: StockOpportunityData['aiAnalysis'];
-            if (filters.aiVersion === 'v6') {
-              result = performAIV6Analysis(klineData, nextItem, undefined, context).result;
-            } else if (filters.aiVersion === 'v7') {
-              result = performAIV7Analysis(klineData, nextItem);
-            } else if (filters.aiVersion === 'v5') {
-              result = performAIV5Analysis(klineData, nextItem);
-            } else if (filters.aiVersion === 'v4') {
-              result = performAIV4Analysis(klineData, nextItem);
-            } else if (filters.aiVersion === 'v3') {
-              result = performAIV3Analysis(klineData, nextItem);
-            } else if (filters.aiVersion === 'v2') {
-              result = performAIV2Analysis(klineData, nextItem);
-            } else {
-              result = performAIV1Analysis(klineData, nextItem);
+            if (filters.aiVersion && filters.aiVersion !== 'v5') {
+              console.warn(
+                `[FilterWorker] AI 版本 ${filters.aiVersion} 当前未启用，已回退到 v5.0`
+              );
             }
+            result = performAIV5Analysis(klineData, nextItem);
+            // 恢复其它版本时，把下面的 v5 调用替换为上方被注释的分支：
+            // if (filters.aiVersion === 'v6') {
+            //   result = performAIV6Analysis(klineData, nextItem, undefined, context).result;
+            // } else if (filters.aiVersion === 'v7') {
+            //   result = performAIV7Analysis(klineData, nextItem);
+            // } else if (filters.aiVersion === 'v5') {
+            //   result = performAIV5Analysis(klineData, nextItem);
+            // } else if (filters.aiVersion === 'v4') {
+            //   result = performAIV4Analysis(klineData, nextItem);
+            // } else if (filters.aiVersion === 'v3') {
+            //   result = performAIV3Analysis(klineData, nextItem);
+            // } else if (filters.aiVersion === 'v2') {
+            //   result = performAIV2Analysis(klineData, nextItem);
+            // } else {
+            //   result = performAIV1Analysis(klineData, nextItem);
+            // }
             aiAnalysis = result;
             
             // 存入缓存
@@ -887,11 +1065,42 @@ self.onmessage = (event: MessageEvent<OpportunityFilterWorkerMessage>) => {
     return;
   }
   if (message.type === 'cancel') {
-    cancelledThroughRequestId = Math.max(cancelledThroughRequestId, message.requestId);
+    const { task } = message;
+    if (task !== 'ai' && task !== 'signals') {
+      cancelledThroughRequestId = Math.max(cancelledThroughRequestId, message.requestId);
+    }
+    if (task !== 'filter' && task !== 'signals') {
+      cancelledAIThroughRequestId = Math.max(cancelledAIThroughRequestId, message.requestId);
+    }
+    if (task !== 'filter' && task !== 'ai') {
+      cancelledSignalsThroughRequestId = Math.max(
+        cancelledSignalsThroughRequestId,
+        message.requestId
+      );
+    }
     return;
   }
   if (message.type === 'clear-ai-cache') {
     aiCacheMap.clear();
+    return;
+  }
+  if (message.type === 'recompute-ai') {
+    if (latestAIRequestId > 0) {
+      cancelledAIThroughRequestId = Math.max(cancelledAIThroughRequestId, latestAIRequestId);
+    }
+    latestAIRequestId = message.requestId;
+    void runRecomputeAITask(message);
+    return;
+  }
+  if (message.type === 'detect-signals') {
+    if (latestSignalsRequestId > 0) {
+      cancelledSignalsThroughRequestId = Math.max(
+        cancelledSignalsThroughRequestId,
+        latestSignalsRequestId
+      );
+    }
+    latestSignalsRequestId = message.requestId;
+    void runDetectSignalsTask(message);
     return;
   }
 

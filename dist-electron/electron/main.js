@@ -15,6 +15,16 @@ import { deriveEastmoneyRefererOrigin, isEastmoneyJsonpUrl } from './eastMoneyPu
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 // 开发环境判断
 const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
+/**
+ * 启动时是否自动打开开发者工具（DevTools）。
+ * 默认关闭；需要调试时可通过以下任一方式开启：
+ * 1. .env 中配置 OPEN_DEVTOOLS=true
+ * 2. 启动命令追加 --devtools 参数（如 electron . --devtools）
+ * 运行时仍可通过右键菜单「打开开发者工具」或 F12/Ctrl+Shift+I 手动打开。
+ */
+const shouldOpenDevTools = process.env.OPEN_DEVTOOLS === 'true' ||
+    process.env.OPEN_DEVTOOLS === '1' ||
+    process.argv.includes('--devtools');
 /** 应用窗口/托盘用的图标（开发：项目根下 build；打包：app.asar 内 build） */
 function getAppIconPath() {
     const relativeToApp = join('build', 'icon.ico');
@@ -180,10 +190,13 @@ function createWindow() {
     // 加载应用
     if (isDev) {
         mainWindow.loadURL('http://localhost:5173');
-        mainWindow.webContents.openDevTools();
     }
     else {
         mainWindow.loadFile(join(__dirname, '../../dist/index.html'));
+    }
+    // 默认不自动打开 DevTools，仅在显式开启时打开（detach 模式避免占用主窗口空间）
+    if (shouldOpenDevTools) {
+        mainWindow.webContents.openDevTools({ mode: 'detach' });
     }
     // 监听 preload 脚本加载错误
     mainWindow.webContents.on('preload-error', (_event, _preloadPath, error) => {

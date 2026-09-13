@@ -48,26 +48,34 @@ type StockQuoteLike = {
 
 type OpportunityAiVersion = 'v1' | 'v2' | 'v3' | 'v4' | 'v5' | 'v6' | 'v7';
 
+/**
+ * ⚠️ 当前项目仅使用 v5.0，其余版本已注释，避免生成/加载多余 chunk。
+ * 需要恢复时取消下方对应分支注释即可。
+ */
 async function loadPerformAIAnalysis(aiVersion: OpportunityAiVersion) {
-  if (aiVersion === 'v7') {
-    return (await import('./ai-v7.0')).performAIAnalysis;
+  if (aiVersion && aiVersion !== 'v5') {
+    logger.warn(`[Analyzer] AI 版本 ${aiVersion} 当前未启用，已回退到 v5.0`);
   }
-  if (aiVersion === 'v6') {
-    return (await import('./ai-v6.0')).performAIAnalysis;
-  }
-  if (aiVersion === 'v5') {
-    return (await import('./ai-v5.0')).performAIAnalysis;
-  }
-  if (aiVersion === 'v3') {
-    return (await import('./ai-v3.0')).performAIAnalysis;
-  }
-  if (aiVersion === 'v2') {
-    return (await import('./ai-v2.0')).performAIAnalysis;
-  }
-  if (aiVersion === 'v4') {
-    return (await import('./ai-v4.0')).performAIAnalysis;
-  }
-  return (await import('./ai')).performAIAnalysis;
+  return (await import('./ai-v5.0')).performAIAnalysis;
+  // if (aiVersion === 'v7') {
+  //   return (await import('./ai-v7.0')).performAIAnalysis;
+  // }
+  // if (aiVersion === 'v6') {
+  //   return (await import('./ai-v6.0')).performAIAnalysis;
+  // }
+  // if (aiVersion === 'v5') {
+  //   return (await import('./ai-v5.0')).performAIAnalysis;
+  // }
+  // if (aiVersion === 'v3') {
+  //   return (await import('./ai-v3.0')).performAIAnalysis;
+  // }
+  // if (aiVersion === 'v2') {
+  //   return (await import('./ai-v2.0')).performAIAnalysis;
+  // }
+  // if (aiVersion === 'v4') {
+  //   return (await import('./ai-v4.0')).performAIAnalysis;
+  // }
+  // return (await import('./ai')).performAIAnalysis;
 }
 
 async function loadKlineForAnalysis(

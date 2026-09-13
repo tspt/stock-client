@@ -89,16 +89,41 @@ interface BiyingHsltListCache {
   stocks: StockInfo[];
 }
 
+/**
+ * 最近一次解析结果缓存。
+ * 只有 localStorage 中的原始字符串发生变化时才重新 JSON.parse，
+ * 否则复用已解析的对象，避免每次进入页面都重新解析 5000+ 条股票。
+ * 注意：返回的是共享数组，调用方不应修改其内容。
+ */
+let biyingListCacheRaw: string | null = null;
+let biyingListCacheParsed: BiyingHsltListCache | null = null;
+
 function readBiyingHsltListCache(): StockInfo[] | null {
-  const raw = getStorage<BiyingHsltListCache | null>(CACHE_KEYS.BIYING_STOCK_LIST, null);
+  let parsed: BiyingHsltListCache | null = null;
+
+  try {
+    const raw = localStorage.getItem(CACHE_KEYS.BIYING_STOCK_LIST);
+    if (raw === null) {
+      return null;
+    }
+    if (raw !== biyingListCacheRaw) {
+      biyingListCacheParsed = JSON.parse(raw) as BiyingHsltListCache;
+      biyingListCacheRaw = raw;
+    }
+    parsed = biyingListCacheParsed;
+  } catch (error) {
+    logger.error(`[getAllStocks] 读取股票列表缓存失败:`, error);
+    return null;
+  }
+
   if (
-    raw &&
-    typeof raw.savedAt === 'number' &&
-    Array.isArray(raw.stocks) &&
-    raw.stocks.length > 0 &&
-    Date.now() - raw.savedAt < CACHE_TTL.STOCK_LIST
+    parsed &&
+    typeof parsed.savedAt === 'number' &&
+    Array.isArray(parsed.stocks) &&
+    parsed.stocks.length > 0 &&
+    Date.now() - parsed.savedAt < CACHE_TTL.STOCK_LIST
   ) {
-    return raw.stocks;
+    return parsed.stocks;
   }
   return null;
 }
