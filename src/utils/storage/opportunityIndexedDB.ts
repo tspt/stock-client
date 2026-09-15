@@ -14,6 +14,7 @@ import {
   OPPORTUNITY_DB_VERSION,
   OPPORTUNITY_STORE_NAME,
   OPPORTUNITY_KLINE_STORE_NAME,
+  WEEKLY_KLINE_STORE_NAME,
   STOCK_HISTORY_STORE_NAME,
 } from '../config/constants';
 
@@ -23,8 +24,18 @@ let dbInstance: IDBDatabase | null = null;
  * 初始化数据库
  */
 export async function initOpportunityDB(): Promise<IDBDatabase> {
+  // 缓存的连接版本落后（如 HMR 后代码已升到新版本、旧连接仍是旧版本）时，
+  // 必须关闭后重开，否则新版本要建的 store 不存在，读写会直接失败。
   if (dbInstance) {
-    return dbInstance;
+    if (dbInstance.version >= OPPORTUNITY_DB_VERSION) {
+      return dbInstance;
+    }
+    try {
+      dbInstance.close();
+    } catch {
+      // 关闭失败不影响后续重开
+    }
+    dbInstance = null;
   }
 
   return new Promise((resolve, reject) => {
@@ -32,6 +43,11 @@ export async function initOpportunityDB(): Promise<IDBDatabase> {
 
     request.onerror = () => {
       reject(new Error('打开IndexedDB失败'));
+    };
+
+    // 有其他连接未关闭时版本升级会被阻塞：显式报错，避免请求静默挂起
+    request.onblocked = () => {
+      reject(new Error('IndexedDB 版本升级被其他连接阻塞，请关闭其他页面后重试'));
     };
 
     request.onsuccess = () => {
@@ -68,6 +84,11 @@ export async function initOpportunityDB(): Promise<IDBDatabase> {
       // v7: K 线缓存从主记录拆分为独立存储，避免单条记录过大导致读取缓慢
       if (!db.objectStoreNames.contains(OPPORTUNITY_KLINE_STORE_NAME)) {
         db.createObjectStore(OPPORTUNITY_KLINE_STORE_NAME, { keyPath: 'code' });
+      }
+
+      // v8: 周K 数据独立存储（周线选股页面专用，不与日线历史互相覆盖）
+      if (!db.objectStoreNames.contains(WEEKLY_KLINE_STORE_NAME)) {
+        db.createObjectStore(WEEKLY_KLINE_STORE_NAME, { keyPath: 'code' });
       }
     };
   });

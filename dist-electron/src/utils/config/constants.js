@@ -237,18 +237,24 @@ export const ALERT_TIME_PERIODS = [
 /** 机会分析相关常量 */
 /** IndexedDB 数据库名 */
 export const OPPORTUNITY_DB_NAME = 'StockOpportunityDB';
-/** IndexedDB 版本 */
-export const OPPORTUNITY_DB_VERSION = 7;
+/** IndexedDB 版本（v8：新增周K缓存存储） */
+export const OPPORTUNITY_DB_VERSION = 8;
 /** 对象存储名称 */
 export const OPPORTUNITY_STORE_NAME = 'opportunityData';
 /** 分析结果 K 线缓存存储名称（v7 起从主记录拆分出来，避免单条记录过大） */
 export const OPPORTUNITY_KLINE_STORE_NAME = 'opportunityKlineCache';
 /** 股票历史数据存储名称 */
 export const STOCK_HISTORY_STORE_NAME = 'stockHistory';
+/** 周K数据缓存存储名称（v8 起，独立于日线历史，避免周线覆盖日线数据） */
+export const WEEKLY_KLINE_STORE_NAME = 'weeklyKlineCache';
 /** 默认并发数（每批股票数，与 OPPORTUNITY_BATCH_DELAY 配合控频） */
 export const OPPORTUNITY_CONCURRENT_LIMIT = 8;
 /** 批次间延迟（毫秒） */
 export const OPPORTUNITY_BATCH_DELAY = 500;
+/** 周K拉取批次间延迟（毫秒） */
+export const WEEKLY_KLINE_BATCH_DELAY = 300;
+/** 周K默认拉取根数（约 5 年） */
+export const WEEKLY_KLINE_DEFAULT_COUNT = 260;
 /** 行情批次间延迟（毫秒） */
 export const QUOTES_BATCH_DELAY = 100;
 /** 行情并发数 */

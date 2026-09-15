@@ -1,0 +1,1311 @@
+{
+  "version": "1.1",
+  "kind": "hot-rank",
+  "date": "2026-09-14",
+  "period": "day",
+  "createdAt": 1789360616387,
+  "updatedAt": 1789360616387,
+  "source": "ths",
+  "day": [
+    {
+      "rank": 1,
+      "code": "000636",
+      "name": "风华高科",
+      "hotValue": 6851857,
+      "changePercent": 6.144,
+      "rankChange": 0,
+      "popularityTag": "2天1板",
+      "conceptTags": [
+        "MLCC概念",
+        "超级电容"
+      ]
+    },
+    {
+      "rank": 2,
+      "code": "000823",
+      "name": "超声电子",
+      "hotValue": 4469913,
+      "changePercent": 10.0146,
+      "rankChange": 0,
+      "popularityTag": "3天3板",
+      "conceptTags": [
+        "PCB概念",
+        "共封装光学(CPO)"
+      ]
+    },
+    {
+      "rank": 3,
+      "code": "600869",
+      "name": "远东股份",
+      "hotValue": 3526224,
+      "changePercent": -1.3807,
+      "rankChange": 2,
+      "popularityTag": "持续上榜",
+      "conceptTags": [
+        "光纤概念",
+        "PET铜箔"
+      ]
+    },
+    {
+      "rank": 4,
+      "code": "000981",
+      "name": "山子高科",
+      "hotValue": 3354582,
+      "changePercent": 10.0386,
+      "rankChange": -1,
+      "popularityTag": "首板涨停",
+      "conceptTags": [
+        "无人驾驶",
+        "汽车拆解概念"
+      ]
+    },
+    {
+      "rank": 5,
+      "code": "601086",
+      "name": "国芳集团",
+      "hotValue": 3300860,
+      "changePercent": 7.156,
+      "rankChange": -1,
+      "popularityTag": "12天6板",
+      "conceptTags": [
+        "IP经济(谷子经济)",
+        "参股券商"
+      ]
+    },
+    {
+      "rank": 6,
+      "code": "600127",
+      "name": "金健米业",
+      "hotValue": 3119148,
+      "changePercent": 0.738,
+      "rankChange": 1,
+      "popularityTag": "",
+      "conceptTags": [
+        "玉米",
+        "粮食概念"
+      ]
+    },
+    {
+      "rank": 7,
+      "code": "000993",
+      "name": "闽东电力",
+      "hotValue": 2842355,
+      "changePercent": 10.0144,
+      "rankChange": -1,
+      "popularityTag": "4天4板",
+      "conceptTags": [
+        "航运概念",
+        "碳交易"
+      ]
+    },
+    {
+      "rank": 8,
+      "code": "600172",
+      "name": "黄河旋风",
+      "hotValue": 2826870,
+      "changePercent": 9.98,
+      "rankChange": 47,
+      "popularityTag": "首板涨停",
+      "conceptTags": [
+        "培育钻石",
+        "第三代半导体"
+      ]
+    },
+    {
+      "rank": 9,
+      "code": "300308",
+      "name": "中际旭创",
+      "hotValue": 2653856,
+      "changePercent": -4.9514,
+      "rankChange": 3,
+      "popularityTag": "",
+      "conceptTags": [
+        "共封装光学(CPO)",
+        "F5G概念"
+      ]
+    },
+    {
+      "rank": 10,
+      "code": "002636",
+      "name": "金安国纪",
+      "hotValue": 2622287,
+      "changePercent": 2.292,
+      "rankChange": 0,
+      "popularityTag": "",
+      "conceptTags": [
+        "PCB概念",
+        "2026中报预增"
+      ]
+    },
+    {
+      "rank": 11,
+      "code": "000978",
+      "name": "桂林旅游",
+      "hotValue": 2621082,
+      "changePercent": 10.0304,
+      "rankChange": 0,
+      "popularityTag": "6天5板",
+      "conceptTags": [
+        "旅游概念",
+        "国企改革"
+      ]
+    },
+    {
+      "rank": 12,
+      "code": "688836",
+      "name": "宇树科技",
+      "hotValue": 2599633,
+      "changePercent": -1.0941,
+      "rankChange": 1,
+      "popularityTag": "",
+      "conceptTags": [
+        "科创次新股",
+        "注册制次新股"
+      ]
+    },
+    {
+      "rank": 13,
+      "code": "600410",
+      "name": "华胜天成",
+      "hotValue": 2504912,
+      "changePercent": 2.9183,
+      "rankChange": -4,
+      "popularityTag": "2天1板",
+      "conceptTags": [
+        "云计算",
+        "华为鲲鹏"
+      ]
+    },
+    {
+      "rank": 14,
+      "code": "600176",
+      "name": "中国巨石",
+      "hotValue": 2352189,
+      "changePercent": 1.9928,
+      "rankChange": 5,
+      "popularityTag": "",
+      "conceptTags": [
+        "PCB概念",
+        "2026一季报预增"
+      ]
+    },
+    {
+      "rank": 15,
+      "code": "002579",
+      "name": "中京电子",
+      "hotValue": 2348196,
+      "changePercent": 10.0117,
+      "rankChange": 12,
+      "popularityTag": "首板涨停",
+      "conceptTags": [
+        "共封装光学(CPO)",
+        "先进封装"
+      ]
+    },
+    {
+      "rank": 16,
+      "code": "002585",
+      "name": "双星新材",
+      "hotValue": 2327708,
+      "changePercent": 10.0402,
+      "rankChange": -8,
+      "popularityTag": "2天2板",
+      "conceptTags": [
+        "PET铜箔",
+        "柔性屏(折叠屏)"
+      ]
+    },
+    {
+      "rank": 17,
+      "code": "600186",
+      "name": "莲花控股",
+      "hotValue": 2152242,
+      "changePercent": 10.0167,
+      "rankChange": 50,
+      "popularityTag": "首板涨停",
+      "conceptTags": [
+        "东数西算(算力)",
+        "算力租赁"
+      ]
+    },
+    {
+      "rank": 18,
+      "code": "605577",
+      "name": "龙版传媒",
+      "hotValue": 2135713,
+      "changePercent": -10.0161,
+      "rankChange": -4,
+      "popularityTag": "11天6板",
+      "conceptTags": [
+        "IP经济(谷子经济)",
+        "文化传媒概念"
+      ]
+    },
+    {
+      "rank": 19,
+      "code": "000980",
+      "name": "众泰汽车",
+      "hotValue": 2044026,
+      "changePercent": 9.9057,
+      "rankChange": -4,
+      "popularityTag": "5天4板",
+      "conceptTags": [
+        "中俄贸易概念",
+        "一带一路"
+      ]
+    },
+    {
+      "rank": 20,
+      "code": "600667",
+      "name": "太极实业",
+      "hotValue": 2004895,
+      "changePercent": -3.2308,
+      "rankChange": -3,
+      "popularityTag": "",
+      "conceptTags": [
+        "存储芯片",
+        "先进封装"
+      ]
+    },
+    {
+      "rank": 21,
+      "code": "601869",
+      "name": "长飞光纤",
+      "hotValue": 1900133,
+      "changePercent": -2.6182,
+      "rankChange": -3,
+      "popularityTag": "",
+      "conceptTags": [
+        "光纤概念",
+        "共封装光学(CPO)"
+      ]
+    },
+    {
+      "rank": 22,
+      "code": "600487",
+      "name": "亨通光电",
+      "hotValue": 1870804,
+      "changePercent": -2.008,
+      "rankChange": -2,
+      "popularityTag": "",
+      "conceptTags": [
+        "光纤概念",
+        "共封装光学(CPO)"
+      ]
+    },
+    {
+      "rank": 23,
+      "code": "000759",
+      "name": "中百集团",
+      "hotValue": 1778259,
+      "changePercent": -2.337,
+      "rankChange": -7,
+      "popularityTag": "6天3板",
+      "conceptTags": [
+        "免税店",
+        "预制菜"
+      ]
+    },
+    {
+      "rank": 24,
+      "code": "688825",
+      "name": "长鑫科技",
+      "hotValue": 1739674,
+      "changePercent": -3.0319,
+      "rankChange": 0,
+      "popularityTag": "",
+      "conceptTags": [
+        "消费电子概念",
+        "小米概念"
+      ]
+    },
+    {
+      "rank": 25,
+      "code": "300285",
+      "name": "国瓷材料",
+      "hotValue": 1685265,
+      "changePercent": 6.1813,
+      "rankChange": 7,
+      "popularityTag": "",
+      "conceptTags": [
+        "共封装光学(CPO)",
+        "MLCC概念"
+      ]
+    },
+    {
+      "rank": 26,
+      "code": "603618",
+      "name": "杭电股份",
+      "hotValue": 1660027,
+      "changePercent": -3.0705,
+      "rankChange": -4,
+      "popularityTag": "",
+      "conceptTags": [
+        "光纤概念",
+        "PCB概念"
+      ]
+    },
+    {
+      "rank": 27,
+      "code": "603936",
+      "name": "博敏电子",
+      "hotValue": 1590647,
+      "changePercent": 7.0402,
+      "rankChange": -4,
+      "popularityTag": "2天1板",
+      "conceptTags": [
+        "先进封装",
+        "存储芯片"
+      ]
+    },
+    {
+      "rank": 28,
+      "code": "600722",
+      "name": "金牛化工",
+      "hotValue": 1578830,
+      "changePercent": 4.2992,
+      "rankChange": -3,
+      "popularityTag": "",
+      "conceptTags": [
+        "煤化工概念",
+        "国企改革"
+      ]
+    },
+    {
+      "rank": 29,
+      "code": "301526",
+      "name": "国际复材",
+      "hotValue": 1557622,
+      "changePercent": 2.737,
+      "rankChange": 18,
+      "popularityTag": "",
+      "conceptTags": [
+        "PCB概念",
+        "华为手机"
+      ]
+    },
+    {
+      "rank": 30,
+      "code": "600396",
+      "name": "华电辽能",
+      "hotValue": 1499495,
+      "changePercent": 0.411,
+      "rankChange": -4,
+      "popularityTag": "",
+      "conceptTags": [
+        "超超临界发电",
+        "风电"
+      ]
+    },
+    {
+      "rank": 31,
+      "code": "002201",
+      "name": "九鼎新材",
+      "hotValue": 1493487,
+      "changePercent": 1.4427,
+      "rankChange": -3,
+      "popularityTag": "3天2板",
+      "conceptTags": [
+        "商业航天",
+        "比亚迪概念"
+      ]
+    },
+    {
+      "rank": 32,
+      "code": "600967",
+      "name": "内蒙一机",
+      "hotValue": 1493436,
+      "changePercent": -4.2056,
+      "rankChange": -11,
+      "popularityTag": "2天1板",
+      "conceptTags": [
+        "军民融合",
+        "中俄贸易概念"
+      ]
+    },
+    {
+      "rank": 33,
+      "code": "300408",
+      "name": "三环集团",
+      "hotValue": 1469761,
+      "changePercent": 2.9994,
+      "rankChange": 1,
+      "popularityTag": "",
+      "conceptTags": [
+        "共封装光学(CPO)",
+        "光纤概念"
+      ]
+    },
+    {
+      "rank": 34,
+      "code": "600105",
+      "name": "永鼎股份",
+      "hotValue": 1466001,
+      "changePercent": -2.1564,
+      "rankChange": -4,
+      "popularityTag": "",
+      "conceptTags": [
+        "共封装光学(CPO)",
+        "光纤概念"
+      ]
+    },
+    {
+      "rank": 35,
+      "code": "600522",
+      "name": "中天科技",
+      "hotValue": 1455535,
+      "changePercent": -1.2467,
+      "rankChange": -2,
+      "popularityTag": "",
+      "conceptTags": [
+        "光纤概念",
+        "共封装光学(CPO)"
+      ]
+    },
+    {
+      "rank": 36,
+      "code": "600664",
+      "name": "哈药股份",
+      "hotValue": 1392529,
+      "changePercent": 4.0057,
+      "rankChange": 18,
+      "popularityTag": "",
+      "conceptTags": [
+        "民营医院",
+        "仿制药一致性评价"
+      ]
+    },
+    {
+      "rank": 37,
+      "code": "002297",
+      "name": "博云新材",
+      "hotValue": 1360955,
+      "changePercent": -3.5274,
+      "rankChange": -8,
+      "popularityTag": "",
+      "conceptTags": [
+        "航空发动机",
+        "成飞概念"
+      ]
+    },
+    {
+      "rank": 38,
+      "code": "300502",
+      "name": "新易盛",
+      "hotValue": 1318685,
+      "changePercent": -4.0757,
+      "rankChange": 0,
+      "popularityTag": "",
+      "conceptTags": [
+        "共封装光学(CPO)",
+        "中国AI 50"
+      ]
+    },
+    {
+      "rank": 39,
+      "code": "002384",
+      "name": "东山精密",
+      "hotValue": 1301542,
+      "changePercent": -3.6725,
+      "rankChange": 3,
+      "popularityTag": "",
+      "conceptTags": [
+        "共封装光学(CPO)",
+        "同花顺果指数"
+      ]
+    },
+    {
+      "rank": 40,
+      "code": "000977",
+      "name": "浪潮信息",
+      "hotValue": 1291438,
+      "changePercent": -1.8004,
+      "rankChange": -4,
+      "popularityTag": "",
+      "conceptTags": [
+        "中国AI 50",
+        "英伟达概念"
+      ]
+    },
+    {
+      "rank": 41,
+      "code": "001896",
+      "name": "豫能控股",
+      "hotValue": 1236801,
+      "changePercent": 9.9915,
+      "rankChange": 10,
+      "popularityTag": "首板涨停",
+      "conceptTags": [
+        "超超临界发电",
+        "抽水蓄能"
+      ]
+    },
+    {
+      "rank": 42,
+      "code": "002815",
+      "name": "崇达技术",
+      "hotValue": 1233388,
+      "changePercent": 3.3865,
+      "rankChange": -3,
+      "popularityTag": "2天1板",
+      "conceptTags": [
+        "共封装光学(CPO)",
+        "PCB概念"
+      ]
+    },
+    {
+      "rank": 43,
+      "code": "600108",
+      "name": "亚盛集团",
+      "hotValue": 1202889,
+      "changePercent": -9.0909,
+      "rankChange": -3,
+      "popularityTag": "8天4板",
+      "conceptTags": [
+        "玉米",
+        "粮食概念"
+      ]
+    },
+    {
+      "rank": 44,
+      "code": "002436",
+      "name": "兴森科技",
+      "hotValue": 1190971,
+      "changePercent": 2.924,
+      "rankChange": 28,
+      "popularityTag": "",
+      "conceptTags": [
+        "共封装光学(CPO)",
+        "PCB概念"
+      ]
+    },
+    {
+      "rank": 45,
+      "code": "600206",
+      "name": "有研新材",
+      "hotValue": 1183198,
+      "changePercent": 4.2151,
+      "rankChange": 50,
+      "popularityTag": "",
+      "conceptTags": [
+        "中芯国际概念",
+        "国家大基金持股"
+      ]
+    },
+    {
+      "rank": 46,
+      "code": "603986",
+      "name": "兆易创新",
+      "hotValue": 1182669,
+      "changePercent": -2.3888,
+      "rankChange": 3,
+      "popularityTag": "",
+      "conceptTags": [
+        "存储芯片",
+        "汽车芯片"
+      ]
+    },
+    {
+      "rank": 47,
+      "code": "603186",
+      "name": "华正新材",
+      "hotValue": 1179074,
+      "changePercent": 3.2098,
+      "rankChange": 3,
+      "popularityTag": "",
+      "conceptTags": [
+        "PCB概念",
+        "先进封装"
+      ]
+    },
+    {
+      "rank": 48,
+      "code": "300750",
+      "name": "宁德时代",
+      "hotValue": 1175597,
+      "changePercent": 3.1739,
+      "rankChange": -2,
+      "popularityTag": "",
+      "conceptTags": [
+        "同花顺漂亮100",
+        "动力电池回收"
+      ]
+    },
+    {
+      "rank": 49,
+      "code": "600183",
+      "name": "生益科技",
+      "hotValue": 1170371,
+      "changePercent": 0.1684,
+      "rankChange": 8,
+      "popularityTag": "",
+      "conceptTags": [
+        "共封装光学(CPO)",
+        "PCB概念"
+      ]
+    },
+    {
+      "rank": 50,
+      "code": "000725",
+      "name": "京东方A",
+      "hotValue": 1167066,
+      "changePercent": 0.1876,
+      "rankChange": 6,
+      "popularityTag": "",
+      "conceptTags": [
+        "MicroLED概念",
+        "先进封装"
+      ]
+    },
+    {
+      "rank": 51,
+      "code": "300394",
+      "name": "天孚通信",
+      "hotValue": 1150188,
+      "changePercent": -1.527,
+      "rankChange": 23,
+      "popularityTag": "",
+      "conceptTags": [
+        "共封装光学(CPO)",
+        "光纤概念"
+      ]
+    },
+    {
+      "rank": 52,
+      "code": "002600",
+      "name": "领益智造",
+      "hotValue": 1122763,
+      "changePercent": 1.6031,
+      "rankChange": 9,
+      "popularityTag": "",
+      "conceptTags": [
+        "同花顺果指数",
+        "无线充电"
+      ]
+    },
+    {
+      "rank": 53,
+      "code": "000592",
+      "name": "平潭发展",
+      "hotValue": 1086562,
+      "changePercent": -1.0323,
+      "rankChange": 5,
+      "popularityTag": "",
+      "conceptTags": [
+        "乡村振兴",
+        "福建自贸区"
+      ]
+    },
+    {
+      "rank": 54,
+      "code": "601360",
+      "name": "三六零",
+      "hotValue": 1074976,
+      "changePercent": 4.2334,
+      "rankChange": -11,
+      "popularityTag": "",
+      "conceptTags": [
+        "云办公",
+        "ChatGPT概念"
+      ]
+    },
+    {
+      "rank": 55,
+      "code": "600737",
+      "name": "中粮糖业",
+      "hotValue": 1055475,
+      "changePercent": -6.6009,
+      "rankChange": 7,
+      "popularityTag": "",
+      "conceptTags": [
+        "乡村振兴",
+        "央企国企改革"
+      ]
+    },
+    {
+      "rank": 56,
+      "code": "603938",
+      "name": "三孚股份",
+      "hotValue": 1055202,
+      "changePercent": 2.2195,
+      "rankChange": -15,
+      "popularityTag": "2天1板",
+      "conceptTags": [
+        "存储芯片",
+        "光纤概念"
+      ]
+    },
+    {
+      "rank": 57,
+      "code": "688432",
+      "name": "有研硅",
+      "hotValue": 1051824,
+      "changePercent": 12.5608,
+      "rankChange": -13,
+      "popularityTag": "",
+      "conceptTags": [
+        "中芯国际概念",
+        "存储芯片"
+      ]
+    },
+    {
+      "rank": 58,
+      "code": "600371",
+      "name": "万向德农",
+      "hotValue": 1047581,
+      "changePercent": -6.4953,
+      "rankChange": -6,
+      "popularityTag": "",
+      "conceptTags": [
+        "转基因",
+        "粮食概念"
+      ]
+    },
+    {
+      "rank": 59,
+      "code": "002212",
+      "name": "天融信",
+      "hotValue": 1046778,
+      "changePercent": 9.9554,
+      "rankChange": -24,
+      "popularityTag": "首板涨停",
+      "conceptTags": [
+        "数字货币",
+        "跨境支付(CIPS)"
+      ]
+    },
+    {
+      "rank": 60,
+      "code": "002912",
+      "name": "中新赛克",
+      "hotValue": 1039719,
+      "changePercent": 9.9957,
+      "rankChange": -29,
+      "popularityTag": "3天3板",
+      "conceptTags": [
+        "智慧政务",
+        "财税数字化"
+      ]
+    },
+    {
+      "rank": 61,
+      "code": "002560",
+      "name": "通达股份",
+      "hotValue": 1031294,
+      "changePercent": 10.0291,
+      "rankChange": -24,
+      "popularityTag": "2天2板",
+      "conceptTags": [
+        "柔性直流输电",
+        "特高压"
+      ]
+    },
+    {
+      "rank": 62,
+      "code": "603629",
+      "name": "利通电子",
+      "hotValue": 1020391,
+      "changePercent": 2.0517,
+      "rankChange": 11,
+      "popularityTag": "",
+      "conceptTags": [
+        "英伟达概念",
+        "OLED"
+      ]
+    },
+    {
+      "rank": 63,
+      "code": "300179",
+      "name": "四方达",
+      "hotValue": 1016590,
+      "changePercent": 7.0987,
+      "rankChange": 146,
+      "popularityTag": "关注激增",
+      "conceptTags": [
+        "培育钻石",
+        "PCB概念"
+      ]
+    },
+    {
+      "rank": 64,
+      "code": "600744",
+      "name": "华银电力",
+      "hotValue": 1011332,
+      "changePercent": -1.2748,
+      "rankChange": -5,
+      "popularityTag": "",
+      "conceptTags": [
+        "超超临界发电",
+        "碳交易"
+      ]
+    },
+    {
+      "rank": 65,
+      "code": "600330",
+      "name": "天通股份",
+      "hotValue": 1006617,
+      "changePercent": 10.0073,
+      "rankChange": 126,
+      "popularityTag": "关注激增",
+      "conceptTags": [
+        "PCB概念",
+        "先进封装"
+      ]
+    },
+    {
+      "rank": 66,
+      "code": "601606",
+      "name": "长城军工",
+      "hotValue": 992135,
+      "changePercent": -5.6478,
+      "rankChange": -1,
+      "popularityTag": "",
+      "conceptTags": [
+        "兵装重组概念",
+        "军民融合"
+      ]
+    },
+    {
+      "rank": 67,
+      "code": "600354",
+      "name": "敦煌种业",
+      "hotValue": 989283,
+      "changePercent": -10.0273,
+      "rankChange": -14,
+      "popularityTag": "",
+      "conceptTags": [
+        "转基因",
+        "玉米"
+      ]
+    },
+    {
+      "rank": 68,
+      "code": "300903",
+      "name": "科翔股份",
+      "hotValue": 981647,
+      "changePercent": 20,
+      "rankChange": 159,
+      "popularityTag": "关注激增",
+      "conceptTags": [
+        "共封装光学(CPO)",
+        "存储芯片"
+      ]
+    },
+    {
+      "rank": 69,
+      "code": "603083",
+      "name": "剑桥科技",
+      "hotValue": 957705,
+      "changePercent": -2.6374,
+      "rankChange": 0,
+      "popularityTag": "",
+      "conceptTags": [
+        "共封装光学(CPO)",
+        "F5G概念"
+      ]
+    },
+    {
+      "rank": 70,
+      "code": "605006",
+      "name": "山东玻纤",
+      "hotValue": 954156,
+      "changePercent": -2.0574,
+      "rankChange": -2,
+      "popularityTag": "",
+      "conceptTags": [
+        "2026中报预增",
+        "风电"
+      ]
+    },
+    {
+      "rank": 71,
+      "code": "603002",
+      "name": "宏昌电子",
+      "hotValue": 945391,
+      "changePercent": 8.0756,
+      "rankChange": 32,
+      "popularityTag": "",
+      "conceptTags": [
+        "PCB概念",
+        "先进封装"
+      ]
+    },
+    {
+      "rank": 72,
+      "code": "603466",
+      "name": "风语筑",
+      "hotValue": 939210,
+      "changePercent": -0.9043,
+      "rankChange": -27,
+      "popularityTag": "2天1板",
+      "conceptTags": [
+        "AI视频",
+        "空间计算"
+      ]
+    },
+    {
+      "rank": 73,
+      "code": "002428",
+      "name": "云南锗业",
+      "hotValue": 937285,
+      "changePercent": 2.9854,
+      "rankChange": 57,
+      "popularityTag": "",
+      "conceptTags": [
+        "第三代半导体",
+        "光纤概念"
+      ]
+    },
+    {
+      "rank": 74,
+      "code": "300274",
+      "name": "阳光电源",
+      "hotValue": 934059,
+      "changePercent": 0.9242,
+      "rankChange": -8,
+      "popularityTag": "",
+      "conceptTags": [
+        "虚拟电厂",
+        "宁德时代概念"
+      ]
+    },
+    {
+      "rank": 75,
+      "code": "000938",
+      "name": "紫光股份",
+      "hotValue": 920269,
+      "changePercent": 0.0305,
+      "rankChange": 13,
+      "popularityTag": "",
+      "conceptTags": [
+        "中国AI 50",
+        "WiFi 6"
+      ]
+    },
+    {
+      "rank": 76,
+      "code": "002015",
+      "name": "协鑫能科",
+      "hotValue": 917140,
+      "changePercent": 4.0122,
+      "rankChange": 1,
+      "popularityTag": "",
+      "conceptTags": [
+        "抽水蓄能",
+        "虚拟电厂"
+      ]
+    },
+    {
+      "rank": 77,
+      "code": "002552",
+      "name": "宝鼎科技",
+      "hotValue": 915667,
+      "changePercent": 10,
+      "rankChange": 89,
+      "popularityTag": "首板涨停",
+      "conceptTags": [
+        "PCB概念",
+        "5G"
+      ]
+    },
+    {
+      "rank": 78,
+      "code": "603421",
+      "name": "鼎信通讯",
+      "hotValue": 904864,
+      "changePercent": -4.7382,
+      "rankChange": -30,
+      "popularityTag": "4天3板",
+      "conceptTags": [
+        "智能电网",
+        "充电桩"
+      ]
+    },
+    {
+      "rank": 79,
+      "code": "002790",
+      "name": "瑞尔特",
+      "hotValue": 899756,
+      "changePercent": -5.5854,
+      "rankChange": -19,
+      "popularityTag": "5天4板",
+      "conceptTags": [
+        "跨境电商",
+        "养老概念"
+      ]
+    },
+    {
+      "rank": 80,
+      "code": "603601",
+      "name": "再升科技",
+      "hotValue": 899254,
+      "changePercent": -2.5023,
+      "rankChange": -16,
+      "popularityTag": "",
+      "conceptTags": [
+        "商业航天",
+        "大飞机"
+      ]
+    },
+    {
+      "rank": 81,
+      "code": "301520",
+      "name": "万邦医药",
+      "hotValue": 886048,
+      "changePercent": 20,
+      "rankChange": 191,
+      "popularityTag": "关注激增",
+      "conceptTags": [
+        "减肥药",
+        "CRO概念"
+      ]
+    },
+    {
+      "rank": 82,
+      "code": "300311",
+      "name": "任子行",
+      "hotValue": 885735,
+      "changePercent": 14.1593,
+      "rankChange": 2,
+      "popularityTag": "",
+      "conceptTags": [
+        "电子身份证",
+        "人脸识别"
+      ]
+    },
+    {
+      "rank": 83,
+      "code": "002491",
+      "name": "通鼎互联",
+      "hotValue": 885338,
+      "changePercent": -4.0113,
+      "rankChange": -1,
+      "popularityTag": "",
+      "conceptTags": [
+        "光纤概念",
+        "5G"
+      ]
+    },
+    {
+      "rank": 84,
+      "code": "605011",
+      "name": "杭州热电",
+      "hotValue": 877189,
+      "changePercent": 6.4635,
+      "rankChange": -21,
+      "popularityTag": "2天1板",
+      "conceptTags": [
+        "煤炭概念",
+        "绿色电力"
+      ]
+    },
+    {
+      "rank": 85,
+      "code": "002463",
+      "name": "沪电股份",
+      "hotValue": 869086,
+      "changePercent": -1.3333,
+      "rankChange": -4,
+      "popularityTag": "",
+      "conceptTags": [
+        "PCB概念",
+        "5G"
+      ]
+    },
+    {
+      "rank": 86,
+      "code": "600865",
+      "name": "百大集团",
+      "hotValue": 856050,
+      "changePercent": -1.2889,
+      "rankChange": -16,
+      "popularityTag": "8天5板",
+      "conceptTags": [
+        "物业管理",
+        "信托概念"
+      ]
+    },
+    {
+      "rank": 87,
+      "code": "603259",
+      "name": "药明康德",
+      "hotValue": 855118,
+      "changePercent": 4.1523,
+      "rankChange": 75,
+      "popularityTag": "",
+      "conceptTags": [
+        "CRO概念",
+        "创新药"
+      ]
+    },
+    {
+      "rank": 88,
+      "code": "601138",
+      "name": "工业富联",
+      "hotValue": 854230,
+      "changePercent": -3.0435,
+      "rankChange": 5,
+      "popularityTag": "",
+      "conceptTags": [
+        "共封装光学(CPO)",
+        "英伟达概念"
+      ]
+    },
+    {
+      "rank": 89,
+      "code": "600584",
+      "name": "长电科技",
+      "hotValue": 847458,
+      "changePercent": -1.0924,
+      "rankChange": 10,
+      "popularityTag": "",
+      "conceptTags": [
+        "国家大基金持股",
+        "中芯国际概念"
+      ]
+    },
+    {
+      "rank": 90,
+      "code": "600498",
+      "name": "烽火通信",
+      "hotValue": 845947,
+      "changePercent": -0.8098,
+      "rankChange": 4,
+      "popularityTag": "",
+      "conceptTags": [
+        "光纤概念",
+        "共封装光学(CPO)"
+      ]
+    },
+    {
+      "rank": 91,
+      "code": "002141",
+      "name": "贤丰控股",
+      "hotValue": 838882,
+      "changePercent": 9.9369,
+      "rankChange": 185,
+      "popularityTag": "关注激增",
+      "conceptTags": [
+        "PCB概念",
+        "消费电子概念"
+      ]
+    },
+    {
+      "rank": 92,
+      "code": "000523",
+      "name": "红棉股份",
+      "hotValue": 838850,
+      "changePercent": -9.7257,
+      "rankChange": -12,
+      "popularityTag": "",
+      "conceptTags": [
+        "代糖概念",
+        "啤酒概念"
+      ]
+    },
+    {
+      "rank": 93,
+      "code": "600150",
+      "name": "中国船舶",
+      "hotValue": 835697,
+      "changePercent": -0.3019,
+      "rankChange": -15,
+      "popularityTag": "",
+      "conceptTags": [
+        "国产航母",
+        "航运概念"
+      ]
+    },
+    {
+      "rank": 94,
+      "code": "002185",
+      "name": "华天科技",
+      "hotValue": 835356,
+      "changePercent": -0.8025,
+      "rankChange": 8,
+      "popularityTag": "",
+      "conceptTags": [
+        "国家大基金持股",
+        "存储芯片"
+      ]
+    },
+    {
+      "rank": 95,
+      "code": "300058",
+      "name": "蓝色光标",
+      "hotValue": 832300,
+      "changePercent": -1.673,
+      "rankChange": 9,
+      "popularityTag": "",
+      "conceptTags": [
+        "快手概念",
+        "AI视频"
+      ]
+    },
+    {
+      "rank": 96,
+      "code": "300319",
+      "name": "麦捷科技",
+      "hotValue": 826389,
+      "changePercent": 2.3742,
+      "rankChange": 14,
+      "popularityTag": "",
+      "conceptTags": [
+        "共封装光学(CPO)",
+        "存储芯片"
+      ]
+    },
+    {
+      "rank": 97,
+      "code": "002349",
+      "name": "精华制药",
+      "hotValue": 815697,
+      "changePercent": 9.9875,
+      "rankChange": 30,
+      "popularityTag": "5天3板",
+      "conceptTags": [
+        "医药电商",
+        "流感"
+      ]
+    },
+    {
+      "rank": 98,
+      "code": "600237",
+      "name": "铜峰电子",
+      "hotValue": 810689,
+      "changePercent": 6.7245,
+      "rankChange": 2,
+      "popularityTag": "2天1板",
+      "conceptTags": [
+        "PET铜箔",
+        "宁德时代概念"
+      ]
+    },
+    {
+      "rank": 99,
+      "code": "600792",
+      "name": "云煤能源",
+      "hotValue": 808558,
+      "changePercent": -1.7476,
+      "rankChange": -28,
+      "popularityTag": "5天3板",
+      "conceptTags": [
+        "煤炭概念",
+        "煤化工概念"
+      ]
+    },
+    {
+      "rank": 100,
+      "code": "600876",
+      "name": "凯盛新能",
+      "hotValue": 794447,
+      "changePercent": 10,
+      "rankChange": -13,
+      "popularityTag": "3天3板",
+      "conceptTags": [
+        "光热发电",
+        "碳中和"
+      ]
+    }
+  ]
+}

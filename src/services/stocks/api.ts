@@ -399,6 +399,38 @@ export async function getStockDetail(code: string): Promise<StockDetail | null> 
 }
 
 /**
+ * 日线数据同步到 IndexedDB（stockHistory）。
+ * 只有日线才允许写入，避免周/月/年线覆盖 dailyLines。
+ */
+function syncDailyHistoryToIndexedDB(code: string, klineData: KLineData[], stockName: string): void {
+  const latestItem = klineData[klineData.length - 1];
+  const latestQuote: StockQuote | null = latestItem
+    ? {
+        code,
+        name: '', // 接口未直接返回名称，后续可由调用方补充
+        price: latestItem.close,
+        change: 0,
+        changePercent: 0,
+        open: latestItem.open,
+        prevClose: 0,
+        high: latestItem.high,
+        low: latestItem.low,
+        volume: latestItem.volume,
+        amount: 0, // K线数据中没有成交额字段，设为0
+        timestamp: latestItem.time,
+      }
+    : null;
+
+  saveStockHistory({
+    code,
+    name: stockName,
+    dailyLines: klineData,
+    latestQuote,
+    updatedAt: Date.now(),
+  }).catch((err) => logger.warn(`[IndexDB] 同步股票 ${code} 历史数据失败:`, err));
+}
+
+/**
  * 获取K线数据
  * @param code 股票代码（统一格式：SH600000, SZ000001）
  * @param period K线周期
@@ -595,33 +627,11 @@ export async function getKLineData(
 
     // 如果解析到数据，存入缓存并返回
     if (klineData.length > 0) {
-      // 同步到 IndexDB (全量存储)
-      const latestItem = klineData[klineData.length - 1];
-      const latestQuote: StockQuote | null = latestItem
-        ? {
-            code,
-            name: '', // 接口未直接返回名称，后续可由调用方补充
-            price: latestItem.close,
-            change: 0,
-            changePercent: 0,
-            open: latestItem.open,
-            prevClose: 0,
-            high: latestItem.high,
-            low: latestItem.low,
-            volume: latestItem.volume,
-            amount: 0, // K线数据中没有成交额字段，设为0
-            timestamp: latestItem.time,
-          }
-        : null;
-
-      saveStockHistory({
-        code,
-        name: stockName,
-        dailyLines: klineData,
-        latestQuote,
-        updatedAt: Date.now(),
-      }).catch((err) => logger.warn(`[IndexDB] 同步股票 ${code} 历史数据失败:`, err));
-
+      // 仅日线写入 stockHistory：stockHistory.dailyLines 被机会分析/导出当日线数据源使用，
+      // 周/月/年线若写入会覆盖日线数据，导致分析结果与导出文件失真。
+      if (period === 'day') {
+        syncDailyHistoryToIndexedDB(code, klineData, stockName);
+      }
       // 根据周期设置不同的 TTL：分时数据 1 分钟，日K及以上 5 分钟
       const ttlMap: Record<string, number> = {
         '1min': 60 * 1000,

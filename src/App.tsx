@@ -4,7 +4,7 @@
 
 import { Suspense, lazy, useEffect, useState } from 'react';
 import { ConfigProvider, App as AntdApp, theme, Layout, Tabs, Spin } from 'antd';
-import { StockOutlined, BellOutlined, BarChartOutlined, FireOutlined, ClusterOutlined, AppstoreOutlined, PartitionOutlined, KeyOutlined, DatabaseOutlined, SafetyCertificateOutlined, TrophyOutlined, HistoryOutlined, ExperimentOutlined } from '@ant-design/icons';
+import { StockOutlined, BellOutlined, BarChartOutlined, FireOutlined, ClusterOutlined, AppstoreOutlined, PartitionOutlined, KeyOutlined, DatabaseOutlined, SafetyCertificateOutlined, TrophyOutlined, HistoryOutlined, ExperimentOutlined, LineChartOutlined } from '@ant-design/icons';
 import zhCN from 'antd/locale/zh_CN';
 import { useTheme } from '@/hooks/useTheme';
 import { useStockStore, setAppInstance } from '@/stores/stockStore';
@@ -24,6 +24,9 @@ const OpportunityPage = lazy(() =>
 );
 const AnalysisRecordPage = lazy(() =>
   import('@/pages/AnalysisRecordPage/AnalysisRecordPage').then((m) => ({ default: m.AnalysisRecordPage }))
+);
+const WeeklyKlinePage = lazy(() =>
+  import('@/pages/WeeklyKPage/WeeklyKPage').then((m) => ({ default: m.WeeklyKPage }))
 );
 const HotPage = lazy(() => import('@/pages/HotPage/HotPage').then((m) => ({ default: m.HotPage })));
 const IndustrySectorPage = lazy(() => import('@/pages/IndustrySectorPage/IndustrySectorPage').then((m) => ({ default: m.IndustrySectorPage })));
@@ -322,6 +325,28 @@ function AppContent() {
                         >
                           <div className={styles.opportunityLayout}>
                             <OpportunityPage />
+                          </div>
+                        </Suspense>
+                      ),
+                    },
+                    {
+                      key: 'weekly-kline',
+                      label: (
+                        <span>
+                          <LineChartOutlined className={styles.mgr6} />
+                          周线选股
+                        </span>
+                      ),
+                      children: (
+                        <Suspense
+                          fallback={
+                            <div className={styles.suspenseFallback}>
+                              <Spin size="large" />
+                            </div>
+                          }
+                        >
+                          <div className={styles.opportunityLayout}>
+                            <WeeklyKlinePage />
                           </div>
                         </Suspense>
                       ),
