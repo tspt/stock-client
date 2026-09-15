@@ -5,7 +5,7 @@
  * 与 stockNamesExportUtils 保持一致的白色底 + 微软雅黑风格。
  */
 
-import type { WeeklyKlineAnalysis } from '@/utils/analysis/weeklyKlineAnalysis';
+import { YI, type WeeklyAnalysis } from '@/utils/analysis/weekly';
 
 const FONT_FAMILY = '"Microsoft YaHei", "PingFang SC", "Noto Sans SC", sans-serif';
 const FONT_SIZE = 13;
@@ -18,7 +18,7 @@ interface WeeklyExportColumn {
   title: string;
   width: number;
   align: 'left' | 'right';
-  get: (row: WeeklyKlineAnalysis) => string;
+  get: (row: WeeklyAnalysis) => string;
 }
 
 function fixed(value: number | undefined, digits = 2): string {
@@ -39,22 +39,48 @@ const EXPORT_COLUMNS: WeeklyExportColumn[] = [
   { title: '最新价', width: 70, align: 'right', get: (r) => fixed(r.close) },
   {
     title: '本周涨幅',
-    width: 80,
+    width: 84,
     align: 'right',
     get: (r) => formatPercent(r.weekChangePercent),
   },
-  { title: 'MA5周', width: 70, align: 'right', get: (r) => fixed(r.ma5) },
-  { title: 'MA10周', width: 70, align: 'right', get: (r) => fixed(r.ma10) },
-  { title: 'MA20周', width: 70, align: 'right', get: (r) => fixed(r.ma20) },
-  { title: '量比5周', width: 76, align: 'right', get: (r) => fixed(r.volumeRatio5) },
-  { title: '20周涨幅', width: 84, align: 'right', get: (r) => formatPercent(r.change20w, 1) },
-  { title: '偏离MA20', width: 84, align: 'right', get: (r) => formatPercent(r.bias20, 1) },
   { title: '评分', width: 56, align: 'right', get: (r) => String(r.score) },
   {
+    title: 'RS分位',
+    width: 70,
+    align: 'right',
+    get: (r) => (r.rsRank === undefined ? '-' : r.rsRank.toFixed(0)),
+  },
+  {
+    title: '52周位置',
+    width: 84,
+    align: 'right',
+    get: (r) => (r.pos52w === undefined ? '-' : r.pos52w.toFixed(0)),
+  },
+  {
+    title: '乖离(ATR)',
+    width: 84,
+    align: 'right',
+    get: (r) => fixed(r.extBias, 2),
+  },
+  {
+    title: '周均成交额',
+    width: 96,
+    align: 'right',
+    get: (r) => (r.avgAmount20w === undefined ? '-' : `${(r.avgAmount20w / YI).toFixed(1)}亿`),
+  },
+  {
+    title: '周波动',
+    width: 74,
+    align: 'right',
+    get: (r) => formatPercent(r.atrPct, 1),
+  },
+  { title: '止损位', width: 70, align: 'right', get: (r) => fixed(r.stopLoss) },
+  { title: 'MA20周', width: 74, align: 'right', get: (r) => fixed(r.ma20) },
+  {
     title: '周线信号',
-    width: 260,
+    width: 240,
     align: 'left',
-    get: (r) => r.signals.map((s) => s.label).join('、') || '-',
+    get: (r) => r.signals.join('、') || '-',
   },
 ];
 
@@ -91,7 +117,7 @@ export function downloadDataUrl(dataUrl: string, filename: string): void {
  * 将周线选股结果导出为 PNG 表格
  */
 export function exportWeeklyResultToPng(
-  rows: WeeklyKlineAnalysis[],
+  rows: WeeklyAnalysis[],
   options?: {
     fileNamePrefix?: string;
     /** 顶部摘要（每行一条，自动换行绘制） */
@@ -188,8 +214,8 @@ export function exportWeeklyResultToPng(
     EXPORT_COLUMNS.forEach((col, colIndex) => {
       const text = col.get(row);
       let color = '#262626';
-      if (col.title === '本周涨幅' || col.title === '20周涨幅') {
-        const value = col.title === '本周涨幅' ? row.weekChangePercent : row.change20w;
+      if (col.title === '本周涨幅') {
+        const value = row.weekChangePercent;
         if (typeof value === 'number') {
           color = value > 0 ? '#cf1322' : value < 0 ? '#389e0d' : '#595959';
         }

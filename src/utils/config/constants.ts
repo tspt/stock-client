@@ -282,8 +282,20 @@ export const OPPORTUNITY_CONCURRENT_LIMIT = 8;
 export const OPPORTUNITY_BATCH_DELAY = 500;
 /** 周K拉取批次间延迟（毫秒） */
 export const WEEKLY_KLINE_BATCH_DELAY = 300;
-/** 周K默认拉取根数（约 5 年） */
-export const WEEKLY_KLINE_DEFAULT_COUNT = 260;
+/** 周K默认拉取根数（约 10 年，兼顾长周期位置判定与信号回测） */
+export const WEEKLY_KLINE_DEFAULT_COUNT = 500;
+/**
+ * 周K缓存结构版本。
+ * 复权方式或字段结构变更时递增，旧缓存在读取时自动失效并重新拉取，
+ * 避免「不复权历史数据」与新逻辑混用导致信号失真。
+ */
+export const WEEKLY_KLINE_SCHEMA_VERSION = 2;
+/**
+ * 周K复权方式：前复权。
+ * 周线窗口必然覆盖除权除息日，不复权会留下跳空缺口，
+ * 直接污染箱体箱顶、区间涨幅、MA/MACD 等判定，因此周线必须使用前复权。
+ */
+export const WEEKLY_KLINE_ADJUST = 'qfq';
 /** 行情批次间延迟（毫秒） */
 export const QUOTES_BATCH_DELAY = 100;
 /** 行情并发数 */

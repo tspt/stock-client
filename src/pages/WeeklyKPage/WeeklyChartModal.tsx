@@ -9,7 +9,7 @@ import ReactECharts from 'echarts-for-react';
 import type { EChartsOption } from 'echarts';
 import type { KLineData } from '@/types/stock';
 import { calculateMA, calculateMACD } from '@/utils/analysis/indicators';
-import { WEEKLY_STRUCTURE_LABELS, type WeeklyKlineAnalysis } from '@/utils/analysis/weeklyKlineAnalysis';
+import { WEEKLY_STRUCTURE_LABELS, YI, type WeeklyAnalysis } from '@/utils/analysis/weekly';
 import { formatVolume } from '@/utils/format/format';
 import { downloadDataUrl } from '@/utils/export/weeklyKlineExportUtils';
 import { logger } from '@/utils/business/logger';
@@ -21,7 +21,7 @@ interface WeeklyChartModalProps {
   code: string;
   name: string;
   kline: KLineData[];
-  analysis: WeeklyKlineAnalysis | null;
+  analysis: WeeklyAnalysis | null;
   onClose: () => void;
 }
 
@@ -251,17 +251,33 @@ export function WeeklyChartModal({ open, code, name, kline, analysis, onClose }:
           <Space wrap size={[6, 6]}>
             <Text strong>评分 {analysis.score}</Text>
             <Tag color="blue">结构：{WEEKLY_STRUCTURE_LABELS[analysis.structure]}</Tag>
-            {analysis.maBullish && <Tag color="red">均线多头</Tag>}
-            {analysis.aboveMa10 && <Tag color={analysis.ma10Rising ? 'red' : 'orange'}>站上MA10</Tag>}
-            {analysis.macdGoldenCross && (
-              <Tag color={analysis.macdGoldenAboveZero ? 'red' : 'orange'}>MACD金叉</Tag>
+            {analysis.rsRank !== undefined && (
+              <Tag color={analysis.rsRank >= 70 ? 'red' : analysis.rsRank <= 30 ? 'green' : 'default'}>
+                RS分位 {analysis.rsRank.toFixed(0)}
+              </Tag>
             )}
-            {analysis.boxBreakout && <Tag color="volcano">箱体突破</Tag>}
+            {analysis.pos52w !== undefined && <Tag color="geekblue">52周位置 {analysis.pos52w.toFixed(0)}</Tag>}
+            {analysis.boxBreakoutFirst && <Tag color="volcano">首次箱体突破</Tag>}
+            {analysis.maStack && <Tag color="red">均线多头</Tag>}
+            {analysis.pxAboveMa20 && <Tag color="orange">站上周MA20</Tag>}
             {analysis.runningWeekIncluded && <Tag color="default">含未完成本周</Tag>}
           </Space>
           <div style={{ marginTop: 8 }}>
             <Text type="secondary" style={{ fontSize: 12 }}>
-              信号：{analysis.signals.map((s) => `${s.label}(${s.detail})`).join('；') || '无'}
+              信号：{analysis.signals.join('；') || '无'}
+            </Text>
+          </div>
+          <div style={{ marginTop: 4 }}>
+            <Text type="secondary" style={{ fontSize: 12 }}>
+              乖离 {(analysis.extBias ?? 0).toFixed(2)} ATR（相对周MA20）｜周波动{' '}
+              {(analysis.atrPct ?? 0).toFixed(2)}%｜周均成交额{' '}
+              {analysis.avgAmount20w === undefined ? '-' : `${(analysis.avgAmount20w / YI).toFixed(1)}亿`}
+              {analysis.stopLoss !== undefined && (
+                <>
+                  ｜参考止损 {analysis.stopLoss.toFixed(2)}
+                  {analysis.riskPct !== undefined && `（风险 ${analysis.riskPct.toFixed(1)}%）`}
+                </>
+              )}
             </Text>
           </div>
           {analysis.warnings.length > 0 && (

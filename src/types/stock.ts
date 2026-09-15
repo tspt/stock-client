@@ -132,6 +132,11 @@ export interface KLineData {
   low: number;
   /** 成交量 */
   volume: number;
+  /**
+   * 成交额（元）。
+   * 部分数据源不返回该字段，缺失时可用 volume * close 近似。
+   */
+  amount?: number;
 }
 
 /**

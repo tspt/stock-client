@@ -18,6 +18,10 @@ export interface WeeklyKlineRecord {
   kline: KLineData[];
   /** 写入时间戳 */
   updatedAt: number;
+  /** 缓存结构版本，与 WEEKLY_KLINE_SCHEMA_VERSION 不一致时视为过期 */
+  version?: number;
+  /** 复权方式（qfq / hfq / ''），用于校验缓存数据可用性 */
+  adjust?: string;
 }
 
 function txDone(tx: IDBTransaction, rejectMessage: string): Promise<void> {

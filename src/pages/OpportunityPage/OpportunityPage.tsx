@@ -1579,60 +1579,12 @@ export function OpportunityPage() {
       return;
     }
     try {
-      // 生成筛选条件摘要
-      const filterSummaryBase = buildOpportunityFilterSummary({
-        priceRange,
-        marketCapRange,
-        totalSharesRange,
-        turnoverRateRange,
-        peRatioRange,
-        kdjJRange,
-        recentLimitUpCount,
-        recentLimitDownCount,
-        limitUpPeriod,
-        limitDownPeriod,
-        consolidationFilterEnabled,
-        consolidationTypes,
-        consolidationLookback,
-        consolidationConsecutive,
-        consolidationThreshold,
-        consolidationRequireAboveMa10,
-        consolidationTypeOptions: CONSOLIDATION_TYPE_OPTIONS,
-        trendLineFilterEnabled,
-        trendLineLookback,
-        trendLineConsecutive,
-        sharpMoveFilterEnabled,
-        sharpMoveWindowBars,
-        sharpMoveMagnitude,
-        sharpMoveFlatThreshold,
-        sharpMoveOnlyDrop,
-        sharpMoveOnlyRise,
-        sharpMoveDropThenRiseLoose,
-        sharpMoveRiseThenDropLoose,
-        sharpMoveDropFlatRise,
-        sharpMoveRiseFlatDrop,
-        rsiRange,
-        aiAnalysisEnabled,
-        aiTrendUp,
-        aiTrendDown,
-        aiTrendSideways,
-        aiConfidenceRange,
-        aiRecommendScoreRange,
-        aiTechnicalScoreRange,
-        aiPatternScoreRange,
-        aiTrendScoreRange,
-        aiRiskScoreRange,
-        excludedNameKeywords,
-        excludedExactNames,
-        excludedShortTermNames,
-      });
-
-      // 构建包含两行时间的完整文案
+      // 导出图片仅保留两行时间信息（不展示筛选条件）
       const analysisTime = analysisTimestamp
         ? new Date(analysisTimestamp).toLocaleString('zh-CN')
         : '未知';
       const exportTime = new Date().toLocaleString('zh-CN');
-      const filterSummary = `分析时间: ${analysisTime}\n导出时间: ${exportTime}${filterSummaryBase ? '\n筛选条件: ' + filterSummaryBase : ''}`;
+      const filterSummary = `分析时间: ${analysisTime}\n导出时间: ${exportTime}`;
 
       await exportStockNamesToPng(names, {
         fileNamePrefix: '机会分析_股票名称',

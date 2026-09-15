@@ -435,14 +435,20 @@ function syncDailyHistoryToIndexedDB(code: string, klineData: KLineData[], stock
  * @param code 股票代码（统一格式：SH600000, SZ000001）
  * @param period K线周期
  * @param count 数据条数
+ * @param options.adjust 复权方式：'qfq' 前复权 / 'hfq' 后复权 / '' 或不传为不复权
+ *
+ * 注意：除权除息会在不复权数据上留下跳空缺口，导致 MA/MACD/区间涨幅等指标失真，
+ * 跨周期越长失真越严重。凡是做中长期形态判定的场景（尤其周线）都应使用前复权。
  */
 export async function getKLineData(
   code: string,
   period: string,
-  count: number = 500
+  count: number = 500,
+  options: { adjust?: 'qfq' | 'hfq' | '' } = {}
 ): Promise<KLineData[]> {
-  // 生成缓存 key
-  const cacheKey = `kline:${code}:${period}:${count}`;
+  const adjust = options.adjust ?? '';
+  // 生成缓存 key（复权方式必须参与，否则复权/不复权数据会互相污染）
+  const cacheKey = `kline:${code}:${period}:${count}:${adjust || 'none'}`;
 
   // 1. 尝试从内存缓存获取（根据周期设置不同的 TTL）
   const cached = apiCache.get<KLineData[]>(cacheKey);
@@ -494,7 +500,8 @@ export async function getKLineData(
       ? `${API_BASE.KLINE}${apiPath}`
       : `https://proxy.finance.qq.com${apiPath}`;
 
-    const param = `${marketCode},${apiType},,,${count},`;
+    // 第 6 位为复权参数：qfq 前复权 / hfq 后复权 / 留空不复权
+    const param = `${marketCode},${apiType},,,${count},${adjust}`;
     const url = `${baseUrl}?_var=kline_${apiType}&param=${encodeURIComponent(
       param
     )}&r=${Math.random()}`;
@@ -520,9 +527,11 @@ export async function getKLineData(
         try {
           data = JSON.parse(match[1]);
         } catch (e) {
+          logger.warn(`[getKLineData:${code}] JSONP 响应解析 JSON 失败`);
           return [];
         }
       } else {
+        logger.warn(`[getKLineData:${code}] 响应中未匹配到 kline_${apiType} 变量`);
         return [];
       }
     }
@@ -560,9 +569,19 @@ export async function getKLineData(
       // 从 qt 字段中提取股票名称
       stockName = stockData.qt?.[stockCodeKey]?.[1] || '';
 
-      // 获取对应周期的K线数据
-      const klines = stockData[apiType];
+      // 获取对应周期的K线数据。
+      // 注意：带复权参数时腾讯会把数据放在带前缀的 key 下（如 qfqweek / hfqday），
+      // 而不是原始的 week/day，因此按优先级依次尝试。
+      const periodKeys = adjust ? [`qfq${apiType}`, `hfq${apiType}`, apiType] : [apiType];
+      const klines = periodKeys
+        .map((key) => stockData[key])
+        .find((value) => Array.isArray(value));
       if (!Array.isArray(klines)) {
+        logger.warn(
+          `[getKLineData:${code}] 响应中未找到K线数据（period=${apiType}, adjust=${adjust || 'none'}），可用 key: ${Object.keys(
+            stockData
+          ).join(',')}`
+        );
         return [];
       }
 

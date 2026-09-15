@@ -15,10 +15,18 @@ import {
 } from '@/utils/storage/weeklyKlineDB';
 import {
   OPPORTUNITY_CONCURRENT_LIMIT,
+  WEEKLY_KLINE_ADJUST,
   WEEKLY_KLINE_BATCH_DELAY,
   WEEKLY_KLINE_DEFAULT_COUNT,
+  WEEKLY_KLINE_SCHEMA_VERSION,
 } from '@/utils/config/constants';
 import { logger } from '@/utils/business/logger';
+
+/**
+ * 周K缓存复用的最少根数。
+ * 低于该值时即使有缓存也重新拉取，避免「旧参数拉到的短历史」被长期复用。
+ */
+const MIN_WEEKLY_CACHE_BARS = 120;
 
 export interface WeeklyFetchProgress {
   completed: number;
@@ -65,19 +73,41 @@ function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-/** 读取 IndexedDB 中的全部周K缓存 */
+/** 判断周K缓存记录是否与当前结构版本/复权方式兼容 */
+function isCacheUsable(record: WeeklyKlineRecord): boolean {
+  if (!record.kline || record.kline.length === 0) {
+    return false;
+  }
+  if (record.version !== undefined && record.version !== WEEKLY_KLINE_SCHEMA_VERSION) {
+    return false;
+  }
+  if (record.adjust !== undefined && record.adjust !== WEEKLY_KLINE_ADJUST) {
+    return false;
+  }
+  return true;
+}
+
+/** 读取 IndexedDB 中的全部周K缓存（自动忽略结构版本/复权方式不兼容的旧数据） */
 export async function loadCachedWeeklyKlines(): Promise<{
   klines: Map<string, KLineData[]>;
   names: Map<string, string>;
   updatedAt: number | null;
+  /** 因版本或复权方式不兼容而被丢弃的条数 */
+  stale: number;
 }> {
   const records = await getAllWeeklyKlines();
   const klines = new Map<string, KLineData[]>();
   const names = new Map<string, string>();
   let updatedAt: number | null = null;
+  let stale = 0;
 
   records.forEach((record) => {
-    if (!record.kline || record.kline.length === 0) {
+    if (!isCacheUsable(record)) {
+      stale += 1;
+      return;
+    }
+    if (record.kline.length < MIN_WEEKLY_CACHE_BARS) {
+      stale += 1;
       return;
     }
     klines.set(record.code, record.kline);
@@ -87,7 +117,7 @@ export async function loadCachedWeeklyKlines(): Promise<{
     }
   });
 
-  return { klines, names, updatedAt };
+  return { klines, names, updatedAt, stale };
 }
 
 /** 清空周K缓存 */
@@ -116,9 +146,10 @@ export async function fetchWeeklyKlines(
 
   if (!forceRefresh) {
     const cached = await loadCachedWeeklyKlines();
+    const minBars = Math.min(count, MIN_WEEKLY_CACHE_BARS);
     cached.klines.forEach((kline, code) => {
       // 缓存根数不足目标根数时重新拉取
-      if (kline.length >= Math.min(count, 60)) {
+      if (kline.length >= minBars) {
         klines.set(code, kline);
         names.set(code, cached.names.get(code) || '');
       }
@@ -146,7 +177,9 @@ export async function fetchWeeklyKlines(
     await Promise.all(
       batch.map(async (stock) => {
         try {
-          const kline = await getKLineData(stock.code, 'week', count);
+          const kline = await getKLineData(stock.code, 'week', count, {
+            adjust: WEEKLY_KLINE_ADJUST as 'qfq',
+          });
           if (kline.length > 0) {
             klines.set(stock.code, kline);
             names.set(stock.code, stock.name);
@@ -155,6 +188,8 @@ export async function fetchWeeklyKlines(
               name: stock.name,
               kline,
               updatedAt: now,
+              version: WEEKLY_KLINE_SCHEMA_VERSION,
+              adjust: WEEKLY_KLINE_ADJUST,
             });
           } else {
             failures.push({ code: stock.code, name: stock.name, error: '接口返回空数据' });
