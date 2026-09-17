@@ -48,9 +48,11 @@ export interface WeeklyFactors {
 
   // ===== 趋势 =====
   ma5?: number;
+  ma8?: number;
   ma10?: number;
   ma20?: number;
   ma30?: number;
+  pxAboveMa8: boolean;
   /** MA5>MA10>MA20 且 MA20 向上 */
   maStack: boolean;
   /** MA20 近 4 周变化率（%），衡量中期趋势方向 */
@@ -60,8 +62,14 @@ export interface WeeklyFactors {
 
   // ===== 动量 =====
   ret13w?: number;
+  /** 13 周动量但丢掉最近 1 周（skip last week） */
+  ret13wSkip1?: number;
+  /** 最近已收盘 1 周收益（%） */
+  ret1w?: number;
   ret26w?: number;
   ret52w?: number;
+  /** 近 13 周周收益标准差（%） */
+  vol13w?: number;
 
   // ===== 位置 =====
   high52w?: number;
@@ -76,8 +84,18 @@ export interface WeeklyFactors {
   // ===== 量能 =====
   /** 近 20 周平均周成交额（元），用于流动性过滤 */
   avgAmount20w?: number;
+  /** 近 8 周成交额中位数（元） */
+  amount8wMedian?: number;
+  /** 最新周成交额 / 近 8 周中位数：拥挤度原始值 */
+  amountCrowd8w?: number;
+  /** 所属行业代码（来自股票池，缺省为未知） */
+  industryCode?: string;
+  /** 所属行业名称 */
+  industryName?: string;
   /** 最新周量能 / 前 5 周均量 */
   volRatio5?: number;
+  /** 近 4 周均量 / 近 26 周均量：衡量量能是趋势性放大还是单周脉冲 */
+  volTrend4_26?: number;
 
   // ===== 波动与风险 =====
   /** ATR20 / 收盘价（%），周波动率 */
@@ -93,6 +111,14 @@ export interface WeeklyFactors {
   boxBreakout: boolean;
   /** 首次突破：前一周收盘仍在箱顶之下，避免把「连涨三周」当成突破 */
   boxBreakoutFirst: boolean;
+  /** 当前价距箱顶的距离（%，正值=已突破，负值=仍在箱体内） */
+  distToBoxHigh?: number;
+
+  // ===== 估值（需额外拉取财报，缺省为 undefined） =====
+  /** 市净率 = 最新价 / 每股净资产 */
+  pb?: number;
+  /** 市盈率(TTM) = 最新价 / 最近已披露 4 期每股收益之和 */
+  peTtm?: number;
   structure: WeeklyStructure;
   /** 趋势回归年化斜率（%） */
   annualSlope?: number;
@@ -119,20 +145,18 @@ export interface WeeklyFactors {
   quality: WeeklyDataQuality;
 }
 
-/** 评分各分项（均为 0~100 分位或离散分） */
+/**
+ * 评分各分项（均为 0~100）
+ */
 export interface WeeklyScoreParts {
-  /** 相对强度分位 */
-  rs: number;
-  /** 趋势分位 */
-  trend: number;
-  /** 动量分位 */
+  /** 中期动量：13 周 skip-1 的正向分位 */
   momentum: number;
-  /** 量能分位 */
-  volume: number;
-  /** 形态离散分 */
-  pattern: number;
-  /** 位置分（倒 U 型：过低=弱势，过高=过热） */
-  position: number;
+  /** 低波动：近 13 周波动的反向分位 */
+  lowVol: number;
+  /** 短期反转：近 1 周涨幅的反向分位（过热降权） */
+  reversal: number;
+  /** 拥挤：近 1 周成交额相对 8 周中位数的反向分位 */
+  crowding: number;
 }
 
 /** 硬性门槛通过情况 */
@@ -146,6 +170,8 @@ export interface WeeklyGates {
 export interface WeeklyAnalysis extends WeeklyFactors {
   /** 综合评分 0~100（横截面加权分位） */
   score: number;
+  /** 综合分在有效样本中的分位（100=最高） */
+  scoreRank?: number;
   /** 相对强度原始值（-50~50，正数表示跑赢市场中位数） */
   rs?: number;
   /** 相对强度分位 0~100 */
@@ -165,15 +191,29 @@ export interface WeeklyAnalysis extends WeeklyFactors {
   insufficientData: boolean;
 }
 
-/** 评分权重配置 */
+/**
+ * 评分权重：中期动量、低波动、近 1 周过热反向、拥挤反向
+ */
 export interface WeeklyScoreWeights {
-  rs: number;
-  trend: number;
   momentum: number;
-  volume: number;
-  pattern: number;
-  position: number;
+  lowVol: number;
+  reversal: number;
+  crowding: number;
 }
+
+/** 持仓与组合层默认参数 */
+export const WEEKLY_HOLD_DEFAULTS = {
+  minHoldWeeks: 2,
+  maxHoldWeeks: 6,
+  maxHoldings: 10,
+  maxPerIndustry: 2,
+  /** 满 2 周后，分数分位低于该值则退出（60 = 掉出前 40%） */
+  exitScoreRank: 60,
+  /** 站上周MA20 的占比低于该值时进入防御：停止新开仓 */
+  defenseBreadth: 50,
+  minConfirmedBars: 26,
+  minLiquidity: 3e8,
+} as const;
 
 /** 分析与筛选配置 */
 export interface WeeklyConfig {
@@ -214,56 +254,6 @@ export interface WeeklyConfig {
 export interface WeeklyFilterOptions {
   /** 最小综合评分 */
   minScore: number;
-  /** 最低周均成交额（元） */
+  /** 近 8 周成交额中位数下限（元） */
   minAvgAmount: number;
-  /** 最小相对强度分位 */
-  minRsRank: number;
-  /** 52 周分位上限（排除绝对高位） */
-  maxPos52w: number;
-  /** ATR 归一化乖离上限 */
-  maxExtBias: number;
-  /** 最大周波动率（%） */
-  maxAtrPct: number;
-  /** 要求中期趋势向上 */
-  requireUptrend: boolean;
-  /** 要求站上周 MA20 */
-  requireAboveMa20: boolean;
-  /** 要求出现形态信号（箱体突破或趋势确立） */
-  requirePattern: boolean;
-  /** 排除下降结构 */
-  excludeDowntrend: boolean;
-}
-
-/** 单持有期的回测统计 */
-export interface BacktestHorizonStat {
-  /** 持有周数 */
-  weeks: number;
-  /** 信号样本数 */
-  samples: number;
-  /** 胜率（%） */
-  winRate: number;
-  /** 平均收益（%） */
-  avgReturn: number;
-  /** 收益中位数（%） */
-  medianReturn: number;
-  /** 同期全市场中位收益（%），即「什么都不做」的基准 */
-  benchmarkReturn: number;
-  /** 超额收益（%，avgReturn - benchmarkReturn） */
-  excessReturn: number;
-  /** 盈亏比（平均盈利 / 平均亏损） */
-  profitFactor: number;
-  /** 最差单笔（%） */
-  worstReturn: number;
-}
-
-/** 回测汇总结果 */
-export interface WeeklyBacktestResult {
-  /** 参与回测的股票数 */
-  stockCount: number;
-  /** 触发信号的总次数 */
-  signalCount: number;
-  /** 各持有期统计 */
-  horizons: BacktestHorizonStat[];
-  /** 抽样提示 */
-  sampled: boolean;
 }

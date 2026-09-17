@@ -1,14 +1,5 @@
 /**
- * 周线选股页面（挂在「机会分析」下方）
- *
- * 流程：构建股票池 → 拉取前复权周K → 写入 IndexedDB
- *      → 计算单票因子 → 横截面评分 → 条件筛选 → 导出 / 回测验证
- *
- * 与旧版的关键差异：
- * 1. 数据源改为前复权，除权跳空不再污染箱顶与区间涨幅。
- * 2. 评分改为横截面分位，含义是「在股票池里排第几」，不再是固定加分累加。
- * 3. 新增流动性、相对强度、ATR 归一化乖离、止损位等维度。
- * 4. 新增回测：可直接验证当前筛选条件在历史上是否有效。
+ * 周线选股：市场池 → 周K → 动量/低波/过热/拥挤评分 → 行业配额名单 → 2–6 周持仓回测
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -51,17 +42,16 @@ import { useAllStocks } from '@/hooks/useAllStocks';
 import { getPureCode } from '@/utils/format/format';
 import { apiCache } from '@/utils/storage/apiCache';
 import {
-  DEFAULT_WEEKLY_FILTERS,
-  WEEKLY_PRESETS,
-  WEEKLY_STRUCTURE_LABELS,
+  WEEKLY_HOLD_DEFAULTS,
   YI,
   analyzeWeeklyKlines,
   applyWeeklyFilters,
-  backtestWeeklySignals,
-  toSignalRule,
+  backtestHoldStrategy,
+  isRunningWeek,
+  pickByIndustryCap,
+  type HoldPositionView,
+  type HoldStrategyResult,
   type WeeklyAnalysis,
-  type WeeklyBacktestResult,
-  type WeeklyFilterOptions,
 } from '@/utils/analysis/weekly';
 import {
   clearWeeklyKlineCache,
@@ -72,6 +62,7 @@ import {
 import { exportWeeklyResultToPng } from '@/utils/export/weeklyKlineExportUtils';
 import { logger } from '@/utils/business/logger';
 import { WEEKLY_KLINE_DEFAULT_COUNT } from '@/utils/config/constants';
+import { OPPORTUNITY_DEFAULT_BASIC_FILTERS } from '@/utils/config/opportunityAnalysisDefaults';
 import type { KLineData } from '@/types/stock';
 import { WeeklyChartModal } from './WeeklyChartModal';
 import { WeeklyBacktestPanel } from './WeeklyBacktestPanel';
@@ -81,20 +72,9 @@ const { Content } = Layout;
 const { Text } = Typography;
 
 const MARKET_OPTIONS = [
-  { label: '全部A股（推荐）', value: 'all_a' },
   { label: '沪深主板', value: 'hs_main' },
   { label: '创业板', value: 'sz_gem' },
-  { label: '科创板', value: 'star' },
 ];
-
-const NAME_TYPE_OPTIONS = [
-  { label: '不限', value: 'all' },
-  { label: 'ST', value: 'st' },
-  { label: '非ST', value: 'non_st' },
-];
-
-/** 列表最多渲染条数，避免超大表格卡顿 */
-const MAX_DISPLAY_ROWS = 500;
 
 function fixed(value: number | undefined, digits = 2): string {
   return value === undefined || !Number.isFinite(value) ? '-' : value.toFixed(digits);
@@ -106,28 +86,34 @@ function percentNode(value: number | undefined, digits = 2) {
   return <span style={{ color }}>{value.toFixed(digits)}%</span>;
 }
 
-/** 成交额（元）转为「亿元」文本 */
 function amountYi(value: number | undefined): string {
   if (value === undefined || !Number.isFinite(value)) return '-';
   return `${(value / YI).toFixed(1)}亿`;
+}
+
+function actionColor(action: HoldPositionView['action']): string {
+  if (action === '新开') return 'red';
+  if (action === '到期退出') return 'gold';
+  if (action === '可卖') return 'orange';
+  return 'blue';
 }
 
 export function WeeklyKPage() {
   const { message } = App.useApp();
   const { allStocks } = useAllStocks();
 
-  const [selectedMarket, setSelectedMarket] = useState<string[]>(['all_a']);
-  const [nameType, setNameType] = useState<string>('non_st');
+  const [selectedMarket, setSelectedMarket] = useState<string[]>([
+    ...OPPORTUNITY_DEFAULT_BASIC_FILTERS.selectedMarket,
+  ]);
   const [klineCount, setKlineCount] = useState<number>(WEEKLY_KLINE_DEFAULT_COUNT);
   const [forceRefresh, setForceRefresh] = useState(false);
-
-  const [presetKey, setPresetKey] = useState<string>(WEEKLY_PRESETS[0].key);
-  const [filters, setFilters] = useState<WeeklyFilterOptions>({ ...WEEKLY_PRESETS[0].filters });
+  const [minAmountYi, setMinAmountYi] = useState(WEEKLY_HOLD_DEFAULTS.minLiquidity / YI);
   const [searchKeyword, setSearchKeyword] = useState('');
   const [showAddToWatchList, setShowAddToWatchList] = useState(false);
 
   const [rows, setRows] = useState<WeeklyAnalysis[]>([]);
   const [klines, setKlines] = useState<Map<string, KLineData[]>>(new Map());
+  const [nameMap, setNameMap] = useState<Map<string, string>>(new Map());
   const [updatedAt, setUpdatedAt] = useState<number | null>(null);
 
   const [loading, setLoading] = useState(false);
@@ -137,40 +123,36 @@ export function WeeklyKPage() {
   const [staleCache, setStaleCache] = useState(0);
 
   const [chartState, setChartState] = useState<{ code: string; name: string } | null>(null);
-  const [backtest, setBacktest] = useState<WeeklyBacktestResult | null>(null);
+  const [backtest, setBacktest] = useState<HoldStrategyResult | null>(null);
   const [backtesting, setBacktesting] = useState(false);
 
   const cancelRef = useRef(false);
   const hydratedRef = useRef(false);
 
-  const patchFilters = useCallback((patch: Partial<WeeklyFilterOptions>) => {
-    setFilters((prev) => ({ ...prev, ...patch }));
-    // 手动改动后不再是任何预设，提示文案同步切换
-    setPresetKey('custom');
-    setBacktest(null);
-  }, []);
+  const industryMap = useMemo(() => {
+    const map = new Map<string, { code: string; name: string }>();
+    allStocks.forEach((stock) => {
+      if (stock.industry?.code) {
+        map.set(stock.code, { code: stock.industry.code, name: stock.industry.name });
+      }
+    });
+    return map;
+  }, [allStocks]);
 
-  const applyPreset = useCallback((key: string) => {
-    const preset = WEEKLY_PRESETS.find((item) => item.key === key);
-    setPresetKey(key);
-    if (preset) {
-      setFilters({ ...preset.filters });
-      setBacktest(null);
-    }
-  }, []);
-
-  const presetHint = useMemo(() => {
-    const preset = WEEKLY_PRESETS.find((item) => item.key === presetKey);
-    return preset ? preset.hint : '自定义条件：按下方自由组合';
-  }, [presetKey]);
-
-  /** 统一的「数据 → 分析」流程 */
   const runAnalysis = useCallback(
-    (klineMap: Map<string, KLineData[]>, nameMap: Map<string, string>) => {
-      const analyzed = analyzeWeeklyKlines(klineMap, nameMap);
+    (
+      klineMap: Map<string, KLineData[]>,
+      names: Map<string, string>,
+      poolCodes: Set<string> | null
+    ) => {
+      const analyzed = analyzeWeeklyKlines(klineMap, names, {
+        poolCodes,
+        industries: industryMap,
+        minLiquidity: minAmountYi * YI,
+      });
       setRows(analyzed);
     },
-    []
+    [industryMap, minAmountYi]
   );
 
   const hydrateFromCache = useCallback(
@@ -180,24 +162,17 @@ export function WeeklyKPage() {
         const cached = await loadCachedWeeklyKlines();
         setStaleCache(cached.stale);
         if (cached.klines.size === 0) {
-          if (manual) {
-            message.info('IndexedDB 中暂无可用周K缓存，请点击「一键分析」');
-          }
+          if (manual) message.info('IndexedDB 中暂无可用周K缓存，请点击「一键分析」');
           setUpdatedAt(null);
           return false;
         }
-
-        const nameMap = new Map(cached.names);
-        allStocks.forEach((stock) => nameMap.set(stock.code, stock.name));
-
+        const restoredNames = new Map(cached.names);
+        allStocks.forEach((stock) => restoredNames.set(stock.code, stock.name));
         setKlines(cached.klines);
-        runAnalysis(cached.klines, nameMap);
+        setNameMap(restoredNames);
         setUpdatedAt(cached.updatedAt);
         setBacktest(null);
-
-        if (manual) {
-          message.success(`已恢复 ${cached.klines.size} 只周K数据`);
-        }
+        if (manual) message.success(`已恢复 ${cached.klines.size} 只周K数据`);
         return true;
       } catch (error) {
         logger.error('[WeeklyKPage] 读取周K缓存失败:', error);
@@ -207,7 +182,7 @@ export function WeeklyKPage() {
         setHydrating(false);
       }
     },
-    [allStocks, message, runAnalysis]
+    [allStocks, message]
   );
 
   useEffect(() => {
@@ -223,49 +198,43 @@ export function WeeklyKPage() {
     };
   }, [hydrateFromCache]);
 
-  // 股票池：横截面评分要求样本足够大，默认用全部A股
   const stockPool = useMemo(() => {
     if (allStocks.length === 0 || selectedMarket.length === 0) return [];
     const matchers: Array<(pureCode: string) => boolean> = [];
     selectedMarket.forEach((market) => {
-      if (market === 'all_a') {
-        matchers.push((pureCode) => /^(60|00|30|688)/.test(pureCode));
-      } else if (market === 'hs_main') {
+      if (market === 'hs_main') {
         matchers.push((pureCode) => pureCode.startsWith('60') || pureCode.startsWith('00'));
       } else if (market === 'sz_gem') {
         matchers.push((pureCode) => pureCode.startsWith('30'));
-      } else if (market === 'star') {
-        matchers.push((pureCode) => pureCode.startsWith('688'));
       }
     });
     if (matchers.length === 0) return [];
-
     return allStocks.filter((stock) => {
       const pureCode = getPureCode(stock.code);
       if (!matchers.some((m) => m(pureCode))) return false;
-      const isST = stock.name.includes('ST');
-      if (nameType === 'st' && !isST) return false;
-      if (nameType === 'non_st' && isST) return false;
+      if (stock.name.includes('ST')) return false;
       return true;
     });
-  }, [allStocks, selectedMarket, nameType]);
+  }, [allStocks, selectedMarket]);
+
+  const poolCodes = useMemo(() => new Set(stockPool.map((stock) => stock.code)), [stockPool]);
+
+  useEffect(() => {
+    if (klines.size === 0) return;
+    runAnalysis(klines, nameMap, poolCodes.size > 0 ? poolCodes : null);
+  }, [klines, nameMap, poolCodes, runAnalysis]);
 
   const handleAnalyze = async () => {
     if (stockPool.length === 0) {
-      message.warning('当前筛选条件下暂无股票');
+      message.warning(selectedMarket.length === 0 ? '请至少选择一个市场' : '当前筛选条件下暂无股票');
       return;
     }
-
     cancelRef.current = false;
     setLoading(true);
     setFailures([]);
     setBacktest(null);
     setProgress({ completed: 0, total: stockPool.length, failed: 0 });
-
-    if (forceRefresh) {
-      apiCache.clear();
-    }
-
+    if (forceRefresh) apiCache.clear();
     try {
       const result = await fetchWeeklyKlines(stockPool, {
         count: klineCount,
@@ -273,13 +242,11 @@ export function WeeklyKPage() {
         onProgress: setProgress,
         shouldCancel: () => cancelRef.current,
       });
-
       setKlines(result.klines);
-      runAnalysis(result.klines, result.names);
+      setNameMap(result.names);
       setUpdatedAt(result.updatedAt);
       setFailures(result.failures);
       setStaleCache(0);
-
       if (result.persistFailed) {
         message.warning('周K写入 IndexedDB 失败，下次打开将无法自动恢复（本次结果仍可查看）');
       }
@@ -305,6 +272,15 @@ export function WeeklyKPage() {
     message.info('正在取消…');
   };
 
+  const runningWeek = useMemo(() => {
+    if (klines.size === 0) return false;
+    for (const bars of klines.values()) {
+      if (bars.length === 0) continue;
+      if (isRunningWeek(bars[bars.length - 1].time, Date.now())) return true;
+    }
+    return false;
+  }, [klines]);
+
   const handleBacktest = async () => {
     if (klines.size === 0) {
       message.warning('暂无周K数据，请先执行分析');
@@ -312,10 +288,13 @@ export function WeeklyKPage() {
     }
     setBacktesting(true);
     setBacktest(null);
-    // 让出一帧，保证 loading 状态能渲染出来（回测为同步密集计算）
     await new Promise((resolve) => setTimeout(resolve, 30));
     try {
-      const result = backtestWeeklySignals(klines, toSignalRule(filters), { sampleSize: 400 });
+      const result = backtestHoldStrategy(klines, nameMap, poolCodes.size > 0 ? poolCodes : null, {
+        industries: industryMap,
+        minLiquidity: minAmountYi * YI,
+        runningWeek,
+      });
       setBacktest(result);
     } catch (error) {
       logger.error('[WeeklyKPage] 回测失败:', error);
@@ -326,14 +305,20 @@ export function WeeklyKPage() {
   };
 
   const filteredRows = useMemo(
-    () => applyWeeklyFilters(rows, filters),
-    [rows, filters]
+    () =>
+      applyWeeklyFilters(rows, {
+        minScore: 0,
+        minAvgAmount: minAmountYi * YI,
+      }),
+    [rows, minAmountYi]
   );
+
+  const watchlist = useMemo(() => pickByIndustryCap(filteredRows), [filteredRows]);
 
   const displayRows = useMemo(() => {
     const kw = searchKeyword.trim().toLowerCase();
     const matched = kw
-      ? filteredRows.filter((row) => {
+      ? watchlist.filter((row) => {
           const pureCode = row.code.replace(/^(sh|sz|bj)/i, '');
           return (
             row.name.toLowerCase().includes(kw) ||
@@ -341,31 +326,33 @@ export function WeeklyKPage() {
             pureCode.includes(kw)
           );
         })
-      : filteredRows;
-    return matched.slice().sort((a, b) => b.score - a.score).slice(0, MAX_DISPLAY_ROWS);
-  }, [filteredRows, searchKeyword]);
+      : watchlist;
+    return matched.slice().sort((a, b) => b.score - a.score);
+  }, [watchlist, searchKeyword]);
 
   const validCount = useMemo(() => rows.filter((r) => !r.insufficientData).length, [rows]);
+  const marketBreadth = useMemo(() => {
+    const valid = rows.filter((r) => !r.insufficientData && r.passed);
+    if (valid.length === 0) return undefined;
+    const above = valid.filter((r) => r.pxAboveMa20).length;
+    return (above / valid.length) * 100;
+  }, [rows]);
+  const defenseMode =
+    backtest?.defenseMode ??
+    (marketBreadth !== undefined && marketBreadth < WEEKLY_HOLD_DEFAULTS.defenseBreadth);
 
   const handleExportPng = async () => {
     if (displayRows.length === 0) {
       message.warning('没有可导出的数据');
       return;
     }
-
     const summaryLines = [
       `分析时间：${updatedAt ? new Date(updatedAt).toLocaleString('zh-CN') : '-'}`,
       `导出时间：${new Date().toLocaleString('zh-CN')}`,
-      `筛选：评分≥${filters.minScore}、周均成交额≥${(filters.minAvgAmount / YI).toFixed(0)}亿${
-        filters.minRsRank > 0 ? `、RS分位≥${filters.minRsRank}` : ''
-      }${filters.maxPos52w < 100 ? `、52周分位≤${filters.maxPos52w}` : ''}${
-        filters.requireUptrend ? '、中期趋势向上' : ''
-      }${filters.requireAboveMa20 ? '、站上周MA20' : ''}${
-        filters.requirePattern ? '、箱体突破' : ''
-      }`,
-      `候选 ${displayRows.length} 只（有效样本 ${validCount} 只）`,
+      `市场：${selectedMarket.join('+')}，非ST，近8周成交额中位数≥${minAmountYi}亿`,
+      `规则：行业最多2只，目标10只；持有2–6周；这周收盘买`,
+      runningWeek ? '本周未收盘，名单为预览' : '已按最近收盘周出正式名单',
     ];
-
     try {
       await exportWeeklyResultToPng(displayRows, { fileNamePrefix: '周线选股', summaryLines });
       message.success('已导出为图片');
@@ -398,6 +385,7 @@ export function WeeklyKPage() {
       await clearWeeklyKlineCache();
       setRows([]);
       setKlines(new Map());
+      setNameMap(new Map());
       setUpdatedAt(null);
       setBacktest(null);
       setStaleCache(0);
@@ -408,7 +396,7 @@ export function WeeklyKPage() {
     }
   };
 
-  const columns = useMemo<ColumnsType<WeeklyAnalysis>>(
+  const watchColumns = useMemo<ColumnsType<WeeklyAnalysis>>(
     () => [
       {
         title: '代码',
@@ -424,160 +412,116 @@ export function WeeklyKPage() {
         fixed: 'left',
         render: (name: string) => <span className={styles.nameCell}>{name}</span>,
       },
+      {
+        title: '行业',
+        dataIndex: 'industryName',
+        width: 96,
+        render: (v: string | undefined) => v || '未知',
+      },
       { title: '最新价', dataIndex: 'close', width: 84, align: 'right', render: (v: number) => fixed(v) },
       {
         title: '本周涨幅',
         dataIndex: 'weekChangePercent',
         width: 96,
         align: 'right',
-        sorter: (a, b) => a.weekChangePercent - b.weekChangePercent,
         render: (v: number) => percentNode(v),
       },
       {
-        title: '评分',
+        title: <Tooltip title="13周动量(跳过最近1周)×0.5 + 低波动×0.25 + 近1周过热反向×0.15 + 拥挤反向×0.10">综合分</Tooltip>,
         dataIndex: 'score',
-        width: 76,
+        width: 84,
         align: 'right',
         defaultSortOrder: 'descend',
         sorter: (a, b) => a.score - b.score,
-        render: (v: number) => <strong style={{ color: v >= 70 ? '#cf1322' : '#595959' }}>{v}</strong>,
+        render: (v: number) => <strong style={{ color: v >= 60 ? '#cf1322' : '#595959' }}>{v}</strong>,
       },
       {
-        title: (
-          <Tooltip title="相对强度分位：个股在股票池中跑赢了多少对手，>50 表示跑赢市场中位数">
-            RS分位
-          </Tooltip>
-        ),
-        dataIndex: 'rsRank',
-        width: 88,
+        title: '分位',
+        dataIndex: 'scoreRank',
+        width: 72,
         align: 'right',
-        sorter: (a, b) => (a.rsRank ?? -1) - (b.rsRank ?? -1),
-        render: (v: number | undefined) =>
-          v === undefined ? (
-            '-'
-          ) : (
-            <span style={{ color: v >= 70 ? '#cf1322' : v <= 30 ? '#389e0d' : '#595959' }}>
-              {v.toFixed(0)}
-            </span>
-          ),
-      },
-      {
-        title: (
-          <Tooltip title="当前价在 52 周高低区间中的位置：0=区间最低，100=区间最高">52周位置</Tooltip>
-        ),
-        dataIndex: 'pos52w',
-        width: 96,
-        align: 'right',
-        sorter: (a, b) => (a.pos52w ?? -1) - (b.pos52w ?? -1),
         render: (v: number | undefined) => (v === undefined ? '-' : v.toFixed(0)),
       },
       {
-        title: (
-          <Tooltip title="相对周MA20 的乖离，以 ATR 为单位。>2 开始有追高风险，>3.5 通常已透支">
-            乖离(ATR)
-          </Tooltip>
-        ),
-        dataIndex: 'extBias',
-        width: 100,
+        title: '13周动量',
+        dataIndex: 'ret13wSkip1',
+        width: 96,
         align: 'right',
-        sorter: (a, b) => (a.extBias ?? -99) - (b.extBias ?? -99),
-        render: (v: number | undefined) =>
-          v === undefined ? (
-            '-'
-          ) : (
-            <span style={{ color: v > 2 ? '#cf1322' : '#595959' }}>{v.toFixed(1)}</span>
-          ),
+        render: (v: number | undefined) => percentNode(v),
       },
       {
-        title: (
-          <Tooltip title="近 20 周平均周成交额。低于 3 亿时突破信号多为噪音">周均成交额</Tooltip>
-        ),
-        dataIndex: 'avgAmount20w',
-        width: 108,
+        title: '近1周',
+        dataIndex: 'ret1w',
+        width: 84,
         align: 'right',
-        sorter: (a, b) => (a.avgAmount20w ?? -1) - (b.avgAmount20w ?? -1),
-        render: (v: number | undefined) => amountYi(v),
+        render: (v: number | undefined, row) => percentNode(v ?? row.weekChangePercent),
       },
       {
-        title: (
-          <Tooltip title="ATR20 / 价格，衡量周波动率。数值越大越投机">周波动</Tooltip>
-        ),
-        dataIndex: 'atrPct',
-        width: 88,
+        title: '波动',
+        dataIndex: 'vol13w',
+        width: 80,
         align: 'right',
-        sorter: (a, b) => (a.atrPct ?? -1) - (b.atrPct ?? -1),
         render: (v: number | undefined) => (v === undefined ? '-' : `${v.toFixed(1)}%`),
       },
       {
-        title: (
-          <Tooltip title="参考止损：突破看箱顶，趋势看周MA20，其余看周MA10">止损位</Tooltip>
-        ),
-        dataIndex: 'stopLoss',
-        width: 84,
-        align: 'right',
-        render: (v: number | undefined) => fixed(v),
-      },
-      {
-        title: (
-          <Tooltip title="从当前价到止损位的距离，即这笔交易的风险敞口">风险</Tooltip>
-        ),
-        dataIndex: 'riskPct',
-        width: 80,
+        title: '拥挤',
+        dataIndex: 'amountCrowd8w',
+        width: 72,
         align: 'right',
         render: (v: number | undefined) =>
-          v === undefined ? '-' : <span style={{ color: v > 20 ? '#d46b08' : '#595959' }}>{v.toFixed(1)}%</span>,
+          v === undefined ? '-' : <span style={{ color: v >= 2 ? '#d46b08' : '#595959' }}>{v.toFixed(2)}</span>,
       },
       {
-        title: 'MA20周',
-        dataIndex: 'ma20',
+        title: '成交额中位数',
+        dataIndex: 'amount8wMedian',
+        width: 108,
+        align: 'right',
+        render: (_: unknown, row: WeeklyAnalysis) => amountYi(row.amount8wMedian ?? row.avgAmount20w),
+      },
+      {
+        title: '建议',
+        width: 88,
+        render: (_: unknown, row: WeeklyAnalysis) => {
+          const pos = backtest?.currentPositions.find((p) => p.code === row.code);
+          const action = pos?.action ?? (defenseMode ? '持有' : '新开');
+          const label = defenseMode && action === '新开' ? '观望' : action;
+          return <Tag color={actionColor(pos?.action ?? '新开')}>{label}</Tag>;
+        },
+      },
+      {
+        title: '过热',
+        width: 72,
+        render: (_: unknown, row: WeeklyAnalysis) =>
+          (row.ret1w ?? 0) >= 10 ? <Tag color="gold">是</Tag> : <Text type="secondary">否</Text>,
+      },
+    ],
+    [backtest, defenseMode]
+  );
+
+  const holdColumns = useMemo<ColumnsType<HoldPositionView>>(
+    () => [
+      { title: '代码', dataIndex: 'code', width: 76, render: (code: string) => code.replace(/^(SH|SZ|BJ)/i, '') },
+      { title: '名称', dataIndex: 'name', width: 96 },
+      { title: '行业', dataIndex: 'industryName', width: 96 },
+      { title: '综合分', dataIndex: 'score', width: 80, align: 'right' },
+      { title: '已持周数', dataIndex: 'heldWeeks', width: 88, align: 'right' },
+      {
+        title: '最早可卖',
         width: 88,
         align: 'right',
-        render: (v: number) => fixed(v),
+        render: (_: unknown, row) => Math.max(0, row.minHoldWeeks - row.heldWeeks),
       },
       {
-        title: '结构',
-        dataIndex: 'structure',
-        width: 92,
-        render: (v: WeeklyAnalysis['structure']) => (
-          <Tag color={v === 'up' ? 'red' : v === 'down' ? 'green' : 'default'}>
-            {WEEKLY_STRUCTURE_LABELS[v]}
-          </Tag>
-        ),
+        title: '最迟必须卖',
+        width: 100,
+        align: 'right',
+        render: (_: unknown, row) => Math.max(0, row.maxHoldWeeks - row.heldWeeks),
       },
       {
-        title: '信号',
-        dataIndex: 'signals',
-        width: 200,
-        render: (_: unknown, row: WeeklyAnalysis) => (
-          <Space size={[4, 4]} wrap>
-            {row.signals.length === 0 && <Text type="secondary">-</Text>}
-            {row.signals.map((label) => (
-              <Tag
-                key={label}
-                color={
-                  label.includes('首次') || label.includes('相对强度') ? 'red' : 'blue'
-                }
-              >
-                {label}
-              </Tag>
-            ))}
-          </Space>
-        ),
-      },
-      {
-        title: '风险',
-        dataIndex: 'warnings',
-        width: 220,
-        render: (_: unknown, row: WeeklyAnalysis) =>
-          row.warnings.length === 0 ? (
-            <Text type="secondary">-</Text>
-          ) : (
-            <Tooltip title={row.warnings.join('；')}>
-              <Text type="danger" ellipsis style={{ maxWidth: 200 }}>
-                {row.warnings.join('；')}
-              </Text>
-            </Tooltip>
-          ),
+        title: '状态',
+        dataIndex: 'action',
+        width: 88,
+        render: (v: HoldPositionView['action']) => <Tag color={actionColor(v)}>{v}</Tag>,
       },
     ],
     []
@@ -590,22 +534,13 @@ export function WeeklyKPage() {
           <Space.Compact className={styles.spaceCompact}>
             <span className={styles.label}>市场：</span>
             <Select
-              value={selectedMarket[0] ?? 'all_a'}
+              mode="multiple"
+              value={selectedMarket}
               options={MARKET_OPTIONS}
-              style={{ width: 140 }}
+              style={{ width: 200 }}
               disabled={loading}
-              onChange={(value: string) => setSelectedMarket([value])}
-            />
-          </Space.Compact>
-
-          <Space.Compact className={styles.spaceCompact}>
-            <span className={styles.label}>名称：</span>
-            <Select
-              value={nameType}
-              options={NAME_TYPE_OPTIONS}
-              style={{ width: 100 }}
-              disabled={loading}
-              onChange={(value: string) => setNameType(value)}
+              maxTagCount={2}
+              onChange={(value: string[]) => setSelectedMarket(value)}
             />
           </Space.Compact>
 
@@ -613,7 +548,7 @@ export function WeeklyKPage() {
             <span className={styles.label}>周K根数：</span>
             <InputNumber
               value={klineCount}
-              min={120}
+              min={80}
               max={800}
               step={20}
               style={{ width: 100 }}
@@ -624,6 +559,20 @@ export function WeeklyKPage() {
                 )
               }
             />
+          </Space.Compact>
+
+          <Space.Compact className={styles.spaceCompact}>
+            <span className={styles.label}>近8周成交额中位数≥</span>
+            <InputNumber
+              value={minAmountYi}
+              min={0}
+              max={50}
+              step={1}
+              style={{ width: 84 }}
+              disabled={loading}
+              onChange={(v) => setMinAmountYi(typeof v === 'number' && isFinite(v) ? v : 3)}
+            />
+            <span className={styles.label}>亿</span>
           </Space.Compact>
 
           <Checkbox checked={forceRefresh} onChange={(e) => setForceRefresh(e.target.checked)} disabled={loading}>
@@ -698,128 +647,15 @@ export function WeeklyKPage() {
           >
             加载缓存
           </Button>
-
-          <Button
-            disabled={loading}
-            onClick={() => {
-              setFilters({ ...DEFAULT_WEEKLY_FILTERS });
-              setPresetKey('custom');
-              setBacktest(null);
-            }}
-          >
-            重置筛选
-          </Button>
         </Space>
       </div>
 
       <div className={styles.filterBar}>
-        <Space wrap size="middle" align="center">
-          <Space size={4}>
-            <span className={styles.label}>预设策略：</span>
-            <Select
-              value={presetKey}
-              style={{ width: 170 }}
-              onChange={(value: string) => applyPreset(value)}
-              options={[
-                { value: 'custom', label: '自定义' },
-                ...WEEKLY_PRESETS.map((preset) => ({ value: preset.key, label: preset.label })),
-              ]}
-            />
-          </Space>
-
-          <Space size={4}>
-            <span className={styles.label}>最小评分：</span>
-            <InputNumber
-              value={filters.minScore}
-              min={0}
-              max={100}
-              style={{ width: 76 }}
-              onChange={(v) => patchFilters({ minScore: typeof v === 'number' ? v : 0 })}
-            />
-          </Space>
-
-          <Space size={4}>
-            <span className={styles.label}>周均成交额≥：</span>
-            <InputNumber
-              value={Number((filters.minAvgAmount / YI).toFixed(1))}
-              min={0}
-              max={200}
-              step={1}
-              style={{ width: 84 }}
-              onChange={(v) =>
-                patchFilters({ minAvgAmount: typeof v === 'number' ? v * YI : 0 })
-              }
-            />
-            <span className={styles.label}>亿</span>
-          </Space>
-
-          <Space size={4}>
-            <span className={styles.label}>RS分位≥：</span>
-            <InputNumber
-              value={filters.minRsRank}
-              min={0}
-              max={100}
-              style={{ width: 76 }}
-              onChange={(v) => patchFilters({ minRsRank: typeof v === 'number' ? v : 0 })}
-            />
-          </Space>
-
-          <Space size={4}>
-            <span className={styles.label}>52周位置≤：</span>
-            <InputNumber
-              value={filters.maxPos52w}
-              min={0}
-              max={100}
-              style={{ width: 76 }}
-              onChange={(v) => patchFilters({ maxPos52w: typeof v === 'number' ? v : 100 })}
-            />
-          </Space>
-
-          <Space size={4}>
-            <span className={styles.label}>乖离≤：</span>
-            <InputNumber
-              value={filters.maxExtBias}
-              min={0}
-              max={20}
-              step={0.5}
-              style={{ width: 76 }}
-              onChange={(v) => patchFilters({ maxExtBias: typeof v === 'number' ? v : 99 })}
-            />
-          </Space>
-
-          <Space size={4}>
-            <span className={styles.label}>周波动≤：</span>
-            <InputNumber
-              value={filters.maxAtrPct}
-              min={0}
-              max={50}
-              step={1}
-              style={{ width: 76 }}
-              onChange={(v) => patchFilters({ maxAtrPct: typeof v === 'number' ? v : 99 })}
-            />
-            <span className={styles.label}>%</span>
-          </Space>
-
-          <Checkbox
-            checked={filters.requireUptrend}
-            onChange={(e) => patchFilters({ requireUptrend: e.target.checked })}
-          >
-            中期趋势向上
-          </Checkbox>
-          <Checkbox
-            checked={filters.requireAboveMa20}
-            onChange={(e) => patchFilters({ requireAboveMa20: e.target.checked })}
-          >
-            站上周MA20
-          </Checkbox>
-          <Checkbox
-            checked={filters.requirePattern}
-            onChange={(e) => patchFilters({ requirePattern: e.target.checked })}
-          >
-            箱体突破
-          </Checkbox>
-        </Space>
-        <div className={styles.presetHint}>💡 {presetHint}</div>
+        <div className={styles.presetHint}>
+          硬过滤仅非ST + 流动性。评分：13周动量(跳过最近1周) 50%、低波动 25%、近1周过热反向 15%、拥挤反向 10%。
+          同一行业最多 2 只，目标 10 只等权。周五收盘买入，锁仓 2 周，最长 6 周；满 2 周后跌破周MA8 或分数掉出前 40% 则卖。
+          池内站上周MA20 不足 50% 时进入防御，停止新开仓。
+        </div>
       </div>
 
       <Content className={styles.content}>
@@ -841,7 +677,16 @@ export function WeeklyKPage() {
             type="warning"
             showIcon
             style={{ marginBottom: 12 }}
-            message={`已忽略 ${staleCache} 只不兼容的旧周K缓存（非前复权或历史过短），重新分析后即可更新`}
+            message={`已忽略 ${staleCache} 只不兼容的旧周K缓存，重新分析后即可更新`}
+          />
+        )}
+
+        {runningWeek && rows.length > 0 && (
+          <Alert
+            type="info"
+            showIcon
+            style={{ margin: '12px 16px 0' }}
+            message="本周周K尚未收盘：下面名单是预览分，正式成交以本周五收盘后为准。"
           />
         )}
 
@@ -854,24 +699,31 @@ export function WeeklyKPage() {
           </Card>
         )}
 
-        <WeeklyBacktestPanel result={backtest} loading={backtesting} />
+        <div style={{ padding: '0 16px' }}>
+          <WeeklyBacktestPanel result={backtest} loading={backtesting} />
+        </div>
 
         <div className={styles.resultBar}>
           <span>
-            命中 <strong>{filteredRows.length}</strong> 只 / 有效样本 {validCount} 只
-            {filteredRows.length > MAX_DISPLAY_ROWS ? `（列表仅展示评分前 ${MAX_DISPLAY_ROWS} 只）` : ''}
+            本周名单 <strong>{watchlist.length}</strong> 只 / 评分池 {validCount} 只
           </span>
+          {marketBreadth !== undefined && (
+            <span className={styles.timeText}>
+              市场宽度{' '}
+              <strong style={{ color: marketBreadth >= 50 ? '#cf1322' : '#389e0d' }}>
+                {marketBreadth.toFixed(0)}%
+              </strong>
+              （{defenseMode ? '防御' : '正常'}）
+            </span>
+          )}
           {updatedAt && (
             <span className={styles.timeText}>数据时间：{new Date(updatedAt).toLocaleString('zh-CN')}</span>
           )}
-          <span className={styles.tipText}>
-            信号基于「已收盘周」判定，进行中的本周不参与；评分与RS为股票池内横截面分位
-          </span>
         </div>
 
         <Card
           className={styles.tableCard}
-          title="周线选股结果"
+          title="本周名单"
           extra={
             <Input
               allowClear
@@ -892,17 +744,32 @@ export function WeeklyKPage() {
           <Table<WeeklyAnalysis>
             rowKey="code"
             size="small"
-            columns={columns}
+            columns={watchColumns}
             dataSource={displayRows}
-            scroll={{ x: 1880, y: 'calc(100vh - 400px)' }}
-            pagination={{ pageSize: 50, showSizeChanger: true, pageSizeOptions: [50, 100, 200] }}
+            scroll={{ x: 1400 }}
+            pagination={false}
             onRow={(record) => ({
               onClick: () => setChartState({ code: record.code, name: record.name }),
               className: styles.clickableRow,
             })}
             locale={{
-              emptyText: rows.length === 0 ? '点击「一键分析」拉取周K数据' : '当前筛选条件下无结果',
+              emptyText: rows.length === 0 ? '点击「一键分析」拉取周K数据' : '当前条件下无名单',
             }}
+          />
+        </Card>
+
+        <Card className={styles.tableCard} title="持仓时钟（需先点回测）" style={{ marginTop: 12 }}>
+          <Table<HoldPositionView>
+            rowKey="code"
+            size="small"
+            columns={holdColumns}
+            dataSource={backtest?.currentPositions ?? []}
+            pagination={false}
+            locale={{ emptyText: '点击「验证策略（回测）」后，这里显示模拟持仓的已持周数与卖出窗口' }}
+            onRow={(record) => ({
+              onClick: () => setChartState({ code: record.code, name: record.name }),
+              className: styles.clickableRow,
+            })}
           />
         </Card>
       </Content>

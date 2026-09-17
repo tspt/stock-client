@@ -22,7 +22,9 @@ import {
   PlusOutlined,
   CloseOutlined,
   HolderOutlined,
+  ClearOutlined,
 } from '@ant-design/icons';
+import { App } from 'antd';
 import type { Group, StockInfo } from '@/types/stock';
 import { useStockStore } from '@/stores/stockStore';
 import { PRESET_COLORS, MAX_GROUP_COUNT } from '@/utils/config/constants';
@@ -36,6 +38,7 @@ interface GroupManagerProps {
 }
 
 export function GroupManager({ visible, onClose }: GroupManagerProps) {
+  const { message } = App.useApp();
   const {
     groups,
     watchList,
@@ -44,6 +47,7 @@ export function GroupManager({ visible, onClose }: GroupManagerProps) {
     deleteGroup,
     reorderGroups,
     removeStockFromGroup,
+    clearGroup,
   } = useStockStore();
 
   const [editingGroup, setEditingGroup] = useState<Group | null>(null);
@@ -131,6 +135,17 @@ export function GroupManager({ visible, onClose }: GroupManagerProps) {
   // 处理删除分组
   const handleDeleteGroup = (groupId: string) => {
     deleteGroup(groupId);
+  };
+
+  // 处理清空分组下的股票
+  const handleClearGroup = (group: Group) => {
+    const count = clearGroup(group.id);
+    if (count > 0) {
+      message.success(`已清空分组"${group.name}"下的 ${count} 只股票`);
+    }
+    if (selectedGroupForDetail?.id === group.id) {
+      setSelectedStocks([]);
+    }
   };
 
   // 处理批量删除股票
@@ -321,6 +336,23 @@ export function GroupManager({ visible, onClose }: GroupManagerProps) {
                         title="编辑"
                       />
                       <Popconfirm
+                        title="确认清空"
+                        description={`确定要清空分组"${group.name}"下的 ${stocksCount} 只股票吗？`}
+                        onConfirm={() => handleClearGroup(group)}
+                        okText="清空"
+                        okType="danger"
+                        cancelText="取消"
+                        disabled={stocksCount === 0}
+                      >
+                        <Button
+                          type="text"
+                          size="small"
+                          icon={<ClearOutlined />}
+                          disabled={stocksCount === 0}
+                          title="清空分组"
+                        />
+                      </Popconfirm>
+                      <Popconfirm
                         title="确认删除"
                         description={`确定要删除分组"${group.name}"吗？该分组下的 ${stocksCount} 只股票将一起被删除。`}
                         onConfirm={() => handleDeleteGroup(group.id)}
@@ -422,20 +454,36 @@ export function GroupManager({ visible, onClose }: GroupManagerProps) {
                     ? `分组详情：${selectedGroupForDetail.name}`
                     : '分组详情'}
                 </span>
-                {selectedGroupForDetail && selectedStocks.length > 0 && (
-                  <Popconfirm
-                    title="确认删除"
-                    description={`确定要从分组"${selectedGroupForDetail.name}"中移除选中的 ${selectedStocks.length} 只股票吗？`}
-                    onConfirm={handleBatchDeleteStocks}
-                    okText="删除"
-                    okType="danger"
-                    cancelText="取消"
-                  >
-                    <Button type="primary" danger size="small">
-                      批量删除 ({selectedStocks.length})
-                    </Button>
-                  </Popconfirm>
-                )}
+                <Space size="small">
+                  {selectedGroupForDetail && getStocksInGroup(selectedGroupForDetail.id).length > 0 && (
+                    <Popconfirm
+                      title="确认清空"
+                      description={`确定要清空分组"${selectedGroupForDetail.name}"下的 ${getStocksInGroup(selectedGroupForDetail.id).length} 只股票吗？`}
+                      onConfirm={() => handleClearGroup(selectedGroupForDetail)}
+                      okText="清空"
+                      okType="danger"
+                      cancelText="取消"
+                    >
+                      <Button danger size="small" icon={<ClearOutlined />}>
+                        清空分组
+                      </Button>
+                    </Popconfirm>
+                  )}
+                  {selectedGroupForDetail && selectedStocks.length > 0 && (
+                    <Popconfirm
+                      title="确认删除"
+                      description={`确定要从分组"${selectedGroupForDetail.name}"中移除选中的 ${selectedStocks.length} 只股票吗？`}
+                      onConfirm={handleBatchDeleteStocks}
+                      okText="删除"
+                      okType="danger"
+                      cancelText="取消"
+                    >
+                      <Button type="primary" danger size="small">
+                        批量删除 ({selectedStocks.length})
+                      </Button>
+                    </Popconfirm>
+                  )}
+                </Space>
               </div>
               <div className={styles.stockList}>
                 {selectedGroupForDetail ? (

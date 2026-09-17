@@ -9,7 +9,7 @@ import ReactECharts from 'echarts-for-react';
 import type { EChartsOption } from 'echarts';
 import type { KLineData } from '@/types/stock';
 import { calculateMA, calculateMACD } from '@/utils/analysis/indicators';
-import { WEEKLY_STRUCTURE_LABELS, YI, type WeeklyAnalysis } from '@/utils/analysis/weekly';
+import { YI, type WeeklyAnalysis } from '@/utils/analysis/weekly';
 import { formatVolume } from '@/utils/format/format';
 import { downloadDataUrl } from '@/utils/export/weeklyKlineExportUtils';
 import { logger } from '@/utils/business/logger';
@@ -250,16 +250,11 @@ export function WeeklyChartModal({ open, code, name, kline, analysis, onClose }:
         <div style={{ marginBottom: 12 }}>
           <Space wrap size={[6, 6]}>
             <Text strong>评分 {analysis.score}</Text>
-            <Tag color="blue">结构：{WEEKLY_STRUCTURE_LABELS[analysis.structure]}</Tag>
-            {analysis.rsRank !== undefined && (
-              <Tag color={analysis.rsRank >= 70 ? 'red' : analysis.rsRank <= 30 ? 'green' : 'default'}>
-                RS分位 {analysis.rsRank.toFixed(0)}
-              </Tag>
+            {analysis.industryName && <Tag>{analysis.industryName}</Tag>}
+            {analysis.ret13wSkip1 !== undefined && (
+              <Tag color="red">13周动量 {analysis.ret13wSkip1.toFixed(1)}%</Tag>
             )}
-            {analysis.pos52w !== undefined && <Tag color="geekblue">52周位置 {analysis.pos52w.toFixed(0)}</Tag>}
-            {analysis.boxBreakoutFirst && <Tag color="volcano">首次箱体突破</Tag>}
-            {analysis.maStack && <Tag color="red">均线多头</Tag>}
-            {analysis.pxAboveMa20 && <Tag color="orange">站上周MA20</Tag>}
+            {analysis.pxAboveMa8 && <Tag color="orange">站上周MA8</Tag>}
             {analysis.runningWeekIncluded && <Tag color="default">含未完成本周</Tag>}
           </Space>
           <div style={{ marginTop: 8 }}>

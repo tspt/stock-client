@@ -40,3 +40,9 @@
   flex-shrink: 0;
 }
 
+.clearBtn {
+  padding: 4px 8px;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+

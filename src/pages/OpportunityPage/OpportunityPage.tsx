@@ -167,7 +167,7 @@ const INITIAL_FILTER_STATE = {
   aiTrendSideways: OPPORTUNITY_DEFAULT_AI_ANALYSIS.trendSideways,
   aiConfidenceRange: { min: OPPORTUNITY_DEFAULT_AI_ANALYSIS.confidenceMin },
   aiRecommendScoreRange: {},
-  aiTechnicalScoreRange: {},
+  aiTechnicalScoreRange: { min: OPPORTUNITY_DEFAULT_AI_ANALYSIS.technicalScoreMin },
   aiPatternScoreRange: { min: OPPORTUNITY_DEFAULT_AI_ANALYSIS.patternScoreMin },
   aiTrendScoreRange: { min: OPPORTUNITY_DEFAULT_AI_ANALYSIS.trendScoreMin },
   aiRiskScoreRange: { min: OPPORTUNITY_DEFAULT_AI_ANALYSIS.riskScoreMin },

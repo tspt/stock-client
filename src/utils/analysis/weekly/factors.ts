@@ -16,16 +16,18 @@ import {
   lastValid,
   maxDrawdown,
   mean,
+  median,
   regressLogPrice,
   safe,
   sma,
   startOfWeek,
+  stdev,
 } from './math';
 import type { WeeklyConfig, WeeklyDataQuality, WeeklyFactors, WeeklyStructure } from './types';
 
 export const DEFAULT_WEEKLY_CONFIG: WeeklyConfig = {
-  /** 少于 60 根已收盘周K（约 14 个月）无法可靠计算 52 周位置与回撤 */
-  minConfirmedBars: 60,
+  /** 至少 26 根已收盘周K，才能算 13 周动量、MA20 与波动 */
+  minConfirmedBars: 26,
   boxLookback: 10,
   /** 振幅下限：极窄箱体往往是「织布机」，突破质量差 */
   boxAmplitudeMin: 8,
@@ -46,13 +48,16 @@ export const DEFAULT_WEEKLY_CONFIG: WeeklyConfig = {
   trendSlopeMin: 15,
   gapThreshold: 40,
   maxSuspectedGaps: 2,
+  /**
+   * 权重（v2 回踩低吸）。
+   * 依据：docs/回测优化/周线因子IC 的检验结果——剔除成交额后动量/趋势/MACD 的 IC 归零，
+   * 只有乖离、量能、距支点距离、位置具备独立信息，且均为负向。
+   */
   weights: {
-    rs: 0.3,
-    trend: 0.2,
-    momentum: 0.15,
-    volume: 0.1,
-    pattern: 0.1,
-    position: 0.15,
+    momentum: 0.5,
+    lowVol: 0.25,
+    reversal: 0.15,
+    crowding: 0.1,
   },
 };
 
@@ -97,7 +102,7 @@ export function splitConfirmedWeeklyKlines(
  * 腾讯接口 volume 单位为「手」，1 手 = 100 股；
  * 直接用收盘价近似均价，误差通常在 5% 以内，对流动性分层足够。
  */
-function estimateAmount(bar: KLineData): number {
+export function estimateAmount(bar: KLineData): number {
   if (typeof bar.amount === 'number' && bar.amount > 0) return bar.amount;
   return bar.volume * bar.close * 100;
 }
@@ -117,6 +122,11 @@ function checkQuality(confirmed: KLineData[], config: WeeklyConfig): WeeklyDataQ
   if (pausedWeeks > 4) {
     reasons.push(`近 52 周有 ${pausedWeeks} 周零成交（长期停牌），形态连续性不可靠`);
   }
+  const recent8 = confirmed.slice(-8);
+  const paused8 = recent8.filter((bar) => !bar.volume || bar.volume <= 0).length;
+  if (paused8 > 0) {
+    reasons.push(`近 8 周有 ${paused8} 周零成交，流动性不连续`);
+  }
 
   // 前复权数据不应出现单周 40% 以上的跳空，出现则说明复权缺失或数据异常
   const scanFrom = Math.max(1, confirmed.length - 104);
@@ -134,7 +144,7 @@ function checkQuality(confirmed: KLineData[], config: WeeklyConfig): WeeklyDataQ
   }
 
   return {
-    ok: confirmed.length >= config.minConfirmedBars && pausedWeeks <= 4,
+    ok: confirmed.length >= config.minConfirmedBars && pausedWeeks <= 4 && paused8 === 0,
     reasons,
     suspectedGaps,
     pausedWeeks,
@@ -157,7 +167,7 @@ function retOver(confirmed: KLineData[], weeks: number): number | undefined {
  * 旧实现在窗口内同时判定金叉与死叉，震荡市里会同时为真（又加分又扣分）。
  * 这里从最近一周倒序查找，只取「最近一次」交叉，语义唯一。
  */
-function resolveMacdState(
+export function resolveMacdState(
   dif: number[],
   dea: number[],
   last: number,
@@ -208,6 +218,7 @@ export function computeWeeklyFactors(
     close: kline.length > 0 ? kline[kline.length - 1].close : 0,
     weekChangePercent: 0,
     maStack: false,
+    pxAboveMa8: false,
     pxAboveMa10: false,
     pxAboveMa20: false,
     boxBreakout: false,
@@ -245,11 +256,13 @@ export function computeWeeklyFactors(
   const closes = confirmed.map((d) => d.close);
 
   const ma5Arr = sma(closes, 5);
+  const ma8Arr = sma(closes, 8);
   const ma10Arr = sma(closes, 10);
   const ma20Arr = sma(closes, 20);
   const ma30Arr = sma(closes, 30);
 
   const ma5 = safe(ma5Arr, last);
+  const ma8 = safe(ma8Arr, last);
   const ma10 = safe(ma10Arr, last);
   const ma20 = safe(ma20Arr, last);
   const ma30 = safe(ma30Arr, last);
@@ -268,13 +281,31 @@ export function computeWeeklyFactors(
     ma10 > ma20 &&
     (ma20Slope ?? 0) > 0;
   const lastClose = safe(closes, last);
+  const pxAboveMa8 = lastClose !== undefined && ma8 !== undefined && lastClose >= ma8;
   const pxAboveMa10 = lastClose !== undefined && ma10 !== undefined && lastClose >= ma10;
   const pxAboveMa20 = lastClose !== undefined && ma20 !== undefined && lastClose >= ma20;
 
   // ===== 动量 =====
   const ret13w = retOver(confirmed, 13);
+  const ret1w = retOver(confirmed, 1);
+  const ret13wSkip1 = (() => {
+    const end = last - 1;
+    const start = last - 13;
+    if (start < 0 || end < 0) return undefined;
+    const a = safe(closes, start);
+    const b = safe(closes, end);
+    if (a === undefined || b === undefined || a <= 0) return undefined;
+    return ((b - a) / a) * 100;
+  })();
   const ret26w = retOver(confirmed, 26);
   const ret52w = retOver(confirmed, 52);
+  const weeklyRets: number[] = [];
+  for (let i = Math.max(1, last - 12); i <= last; i += 1) {
+    const prev = closes[i - 1];
+    const cur = closes[i];
+    if (prev > 0 && Number.isFinite(cur)) weeklyRets.push((cur / prev - 1) * 100);
+  }
+  const vol13w = stdev(weeklyRets);
 
   // ===== 位置 =====
   const window52 = confirmed.slice(-52);
@@ -307,10 +338,24 @@ export function computeWeeklyFactors(
   const amounts = confirmed.map(estimateAmount);
   const recent20Amounts = amounts.slice(-20);
   const avgAmount20w = mean(recent20Amounts);
+  const recent8Amounts = amounts.slice(-8);
+  const amount8wMedian = median(recent8Amounts);
+  const lastAmount = amounts[last];
+  const amountCrowd8w =
+    amount8wMedian !== undefined && amount8wMedian > 0 && Number.isFinite(lastAmount)
+      ? lastAmount / amount8wMedian
+      : undefined;
 
   const volBase = mean(confirmed.slice(Math.max(0, last - 5), last).map((d) => d.volume));
   const volRatio5 =
     volBase !== undefined && volBase > 0 ? confirmed[last].volume / volBase : undefined;
+  // 量能趋势：近 4 周均量 / 近 26 周均量。单周脉冲与持续放量在周线级别含义不同
+  const volRecent4 = mean(confirmed.slice(Math.max(0, last - 3), last + 1).map((d) => d.volume));
+  const volBase26 = mean(confirmed.slice(Math.max(0, last - 25), last + 1).map((d) => d.volume));
+  const volTrend4_26 =
+    volRecent4 !== undefined && volBase26 !== undefined && volBase26 > 0
+      ? volRecent4 / volBase26
+      : undefined;
 
   // ===== 形态：箱体突破（要求首次） =====
   const boxSource = confirmed.slice(Math.max(0, last - config.boxLookback), last);
@@ -336,6 +381,10 @@ export function computeWeeklyFactors(
     volumeOk;
   const boxBreakoutFirst =
     boxBreakout && prevClose !== undefined && boxHigh !== undefined && prevClose <= boxHigh;
+  const distToBoxHigh =
+    boxHigh !== undefined && boxHigh > 0 && lastClose !== undefined
+      ? ((lastClose - boxHigh) / boxHigh) * 100
+      : undefined;
 
   // ===== 形态：趋势结构（回归判定） =====
   const trendWindow = closes.slice(-config.trendLookback);
@@ -368,23 +417,31 @@ export function computeWeeklyFactors(
     close: lastBar.close,
     weekChangePercent,
     ma5,
+    ma8,
     ma10,
     ma20,
     ma30,
     maStack,
     ma20Slope,
+    pxAboveMa8,
     pxAboveMa10,
     pxAboveMa20,
     ret13w,
+    ret13wSkip1,
+    ret1w,
     ret26w,
     ret52w,
+    vol13w,
     high52w,
     low52w,
     pos52w,
     bias20,
     extBias,
     avgAmount20w,
+    amount8wMedian,
+    amountCrowd8w,
     volRatio5,
+    volTrend4_26,
     atrPct,
     maxDD52w,
     boxHigh,
@@ -392,6 +449,7 @@ export function computeWeeklyFactors(
     boxAmplitude,
     boxBreakout,
     boxBreakoutFirst,
+    distToBoxHigh,
     structure,
     annualSlope: regression.annualized,
     trendR2: regression.r2,

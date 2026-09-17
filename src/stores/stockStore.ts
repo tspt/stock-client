@@ -84,6 +84,7 @@ interface StockState {
   setGroupManagerVisible: (visible: boolean) => void;
   addStockToGroups: (stockCode: string, groupIds: string[]) => void;
   removeStockFromGroup: (stockCode: string, groupId: string) => void;
+  clearGroup: (groupId: string) => number;
   moveGroup: (id: string, direction: 'up' | 'down') => void;
   reorderGroups: (groups: Group[]) => void;
   loadGroups: () => void;
@@ -462,6 +463,54 @@ export const useStockStore = create<StockState>((set, get) => ({
     );
     set({ watchList: newWatchList });
     get().saveWatchList();
+  },
+
+  /**
+   * 清空分组下的所有股票：
+   * - 仅属于该分组的股票会从自选列表中移除
+   * - 同时属于其他分组的股票只移除该分组标记
+   * @returns 实际从自选列表中移除的股票数量
+   */
+  clearGroup: (groupId) => {
+    const { watchList, quotes, selectedStock } = get();
+
+    const inGroup = watchList.filter((s) => s.groupIds && s.groupIds.includes(groupId));
+    if (inGroup.length === 0) {
+      return 0;
+    }
+
+    const newWatchList: StockInfo[] = [];
+    watchList.forEach((s) => {
+      if (!s.groupIds || !s.groupIds.includes(groupId)) {
+        newWatchList.push(s);
+        return;
+      }
+      const restGroupIds = s.groupIds.filter((id) => id !== groupId);
+      // 仍属于其他分组的股票保留，仅移除该分组标记
+      if (restGroupIds.length > 0) {
+        newWatchList.push({ ...s, groupIds: restGroupIds });
+      }
+    });
+
+    // 完全被移除的股票，同步清理行情与选中态
+    const removedCodes = new Set<string>();
+    newWatchList.forEach((s) => removedCodes.add(s.code));
+    const newQuotes = { ...quotes };
+    inGroup.forEach((s) => {
+      if (!removedCodes.has(s.code)) {
+        delete newQuotes[s.code];
+      }
+    });
+
+    set({
+      watchList: newWatchList,
+      quotes: newQuotes,
+      selectedStock:
+        selectedStock && !removedCodes.has(selectedStock) ? null : selectedStock,
+    });
+    get().saveWatchList();
+
+    return inGroup.length;
   },
 
   moveGroup: (id, direction) => {

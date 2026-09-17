@@ -184,6 +184,8 @@ export const OPPORTUNITY_DEFAULT_AI_ANALYSIS = {
   trendDown: false,
   /** AI趋势判断 - 横盘 */
   trendSideways: false,
+  /** 技术指标评分最小值 */
+  technicalScoreMin: 30,
   /** AI置信度最小值（%） */
   confidenceMin: 65,
   /** AI形态评分最小值 */

@@ -844,26 +844,40 @@ export interface ConceptSectorsResponse {
 export interface FinancialStatement {
   /** 报告期 */
   reportPeriod: string;
+  /**
+   * 公告日期（财报实际披露日）。
+   * 关键：报告期 ≠ 可获取日。用报告期对齐会引入未来函数（一季报 4 月底才披露），
+   * 所有回测与因子计算都必须以公告日期为准。
+   */
+  noticeDate?: string;
   /** 营业收入（元） */
   revenue?: number;
-  /** 净利润（元） */
+  /** 净利润（元，归母） */
   netProfit?: number;
   /** 扣非净利润（元） */
   deductNetProfit?: number;
-  /** 经营现金流（元） */
-  operatingCashFlow?: number;
+  /** 每股经营现金流（元） */
+  operatingCashFlowPerShare?: number;
   /** 总资产（元） */
   totalAssets?: number;
   /** 净资产（元） */
   netAssets?: number;
   /** 每股收益（元） */
   eps?: number;
-  /** 净资产收益率（%） */
+  /** 每股净资产（元），用于计算 PB */
+  bps?: number;
+  /** 净资产收益率（%，加权） */
   roe?: number;
   /** 毛利率（%） */
   grossMargin?: number;
   /** 净利率（%） */
   netMargin?: number;
+  /** 营业收入同比增长（%） */
+  revenueGrowth?: number;
+  /** 归母净利润同比增长（%） */
+  netProfitGrowth?: number;
+  /** 资产负债率（%） */
+  debtRatio?: number;
 }
 
 /**

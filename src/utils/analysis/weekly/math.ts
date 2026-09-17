@@ -39,6 +39,19 @@ export function median(values: number[]): number | undefined {
   return sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
 }
 
+/** 样本标准差；不足 2 个有效值时返回 undefined */
+export function stdev(values: number[]): number | undefined {
+  if (values.length < 2) return undefined;
+  const avg = mean(values);
+  if (avg === undefined) return undefined;
+  let sum = 0;
+  for (let i = 0; i < values.length; i += 1) {
+    const d = values[i] - avg;
+    sum += d * d;
+  }
+  return Math.sqrt(sum / (values.length - 1));
+}
+
 /** 简单移动平均，前 period-1 项为 NaN */
 export function sma(values: number[], period: number): number[] {
   const out: number[] = new Array(values.length).fill(NaN);
@@ -182,6 +195,118 @@ export function maxDrawdown(closes: number[]): number {
     }
   }
   return worst;
+}
+
+/**
+ * 滚动区间极值：out.max[i] / out.min[i] 为 [i-window+1, i] 的极值，窗口不足处为 NaN。
+ * 窗口内的高/低点只影响当周及之后的判定，不含未来数据。
+ */
+export function rollingExtremes(
+  values: number[],
+  window: number
+): { max: number[]; min: number[] } {
+  const n = values.length;
+  const max = new Array<number>(n).fill(NaN);
+  const min = new Array<number>(n).fill(NaN);
+  for (let i = window - 1; i < n; i += 1) {
+    let hi = -Infinity;
+    let lo = Infinity;
+    for (let j = i - window + 1; j <= i; j += 1) {
+      if (values[j] > hi) hi = values[j];
+      if (values[j] < lo) lo = values[j];
+    }
+    max[i] = hi;
+    min[i] = lo;
+  }
+  return { max, min };
+}
+
+/**
+ * 滚动最大回撤（%，返回正数）：对每个位置 i 计算 [i-window+1, i] 区间的最大回撤。
+ * 用于回测中逐周复现「52 周最大回撤」这一风险项，窗口内只含 i 及之前的数据。
+ */
+export function rollingMaxDrawdown(values: number[], window: number): number[] {
+  const n = values.length;
+  const out: number[] = new Array(n).fill(NaN);
+  if (window < 2) return out;
+  for (let i = window - 1; i < n; i += 1) {
+    let peak = values[i - window + 1];
+    let worst = 0;
+    for (let j = i - window + 1; j <= i; j += 1) {
+      const v = values[j];
+      if (v > peak) {
+        peak = v;
+        continue;
+      }
+      if (peak > 0) {
+        const dd = ((peak - v) / peak) * 100;
+        if (dd > worst) worst = dd;
+      }
+    }
+    out[i] = worst;
+  }
+  return out;
+}
+
+/**
+ * 滚动对数价格回归：对每个位置 i 计算 [i-window+1, i] 区间的 slope / r2 / 年化。
+ *
+ * 与 regressLogPrice 结果一致（回归只依赖相对位置），但用前缀和把复杂度从
+ * O(n*window) 降到 O(n)，回测里要对几百只股票逐周计算，这个优化是必要的。
+ */
+export function rollingLogRegression(
+  values: number[],
+  window: number
+): { slope: number[]; r2: number[]; annualized: number[] } {
+  const n = values.length;
+  const slopeOut = new Array<number>(n).fill(NaN);
+  const r2Out = new Array<number>(n).fill(NaN);
+  const annualOut = new Array<number>(n).fill(NaN);
+  if (n < 3 || window < 3) return { slope: slopeOut, r2: r2Out, annualized: annualOut };
+
+  // 前缀和：Σy、Σy²、Σ(j*y)，j 为全局下标
+  const py = new Array<number>(n + 1).fill(0);
+  const pyy = new Array<number>(n + 1).fill(0);
+  const pjy = new Array<number>(n + 1).fill(0);
+  for (let i = 0; i < n; i += 1) {
+    const v = values[i];
+    if (!Number.isFinite(v) || v <= 0) {
+      // 非正值无法取对数，直接把该窗口作废（用 NaN 污染前缀和）
+      py[i + 1] = NaN;
+      pyy[i + 1] = NaN;
+      pjy[i + 1] = NaN;
+      continue;
+    }
+    const y = Math.log(v);
+    py[i + 1] = py[i] + y;
+    pyy[i + 1] = pyy[i] + y * y;
+    pjy[i + 1] = pjy[i] + i * y;
+  }
+
+  const sx = (window * (window - 1)) / 2;
+  const sxx = ((window - 1) * window * (2 * window - 1)) / 6;
+  const denom = window * sxx - sx * sx;
+  if (denom === 0) return { slope: slopeOut, r2: r2Out, annualized: annualOut };
+
+  for (let e = window - 1; e < n; e += 1) {
+    const s = e - window + 1;
+    const sy = py[e + 1] - py[s];
+    const syy = pyy[e + 1] - pyy[s];
+    const sjy = pjy[e + 1] - pjy[s];
+    if (!Number.isFinite(sy) || !Number.isFinite(syy) || !Number.isFinite(sjy)) continue;
+
+    const sxy = sjy - s * sy;
+    const slope = (window * sxy - sx * sy) / denom;
+    const ssTot = syy - (sy * sy) / window;
+    const centeredSxx = sxx - (sx * sx) / window;
+    const r2 = ssTot <= 0 ? 0 : clamp((slope * slope * centeredSxx) / ssTot, 0, 1);
+
+    slopeOut[e] = slope;
+    r2Out[e] = r2;
+    annualOut[e] = (Math.exp(slope * 52) - 1) * 100;
+  }
+
+  return { slope: slopeOut, r2: r2Out, annualized: annualOut };
 }
 
 /**

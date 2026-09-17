@@ -2,8 +2,8 @@
  * 分组标签页组件
  */
 
-import { Tabs, Button } from 'antd';
-import { SettingOutlined } from '@ant-design/icons';
+import { Tabs, Button, Popconfirm } from 'antd';
+import { SettingOutlined, ClearOutlined } from '@ant-design/icons';
 import type { Group } from '@/types/stock';
 import { BUILTIN_GROUP_SELF_COLOR, BUILTIN_GROUP_SELF_ID, BUILTIN_GROUP_SELF_NAME } from '@/utils/config/constants';
 import styles from './GroupTabs.module.css';
@@ -17,6 +17,12 @@ interface GroupTabsProps {
   onSelect: (groupId: string) => void;
   /** 打开分组管理弹窗回调 */
   onManageClick: () => void;
+  /** 当前分组名称（用于清空确认文案） */
+  currentGroupName: string;
+  /** 当前分组下的股票数量 */
+  currentGroupStockCount: number;
+  /** 清空当前分组回调 */
+  onClearGroup: () => void;
 }
 
 export function GroupTabs({
@@ -24,6 +30,9 @@ export function GroupTabs({
   selectedGroupId,
   onSelect,
   onManageClick,
+  currentGroupName,
+  currentGroupStockCount,
+  onClearGroup,
 }: GroupTabsProps) {
   // 按order排序分组
   const sortedGroups = [...groups].sort((a, b) => a.order - b.order);
@@ -89,6 +98,26 @@ export function GroupTabs({
         type="card"
         className={styles.tabs}
       />
+      <Popconfirm
+        title="确认清空"
+        description={`确定要清空分组"${currentGroupName}"下的 ${currentGroupStockCount} 只股票吗？`}
+        onConfirm={onClearGroup}
+        okText="清空"
+        okType="danger"
+        cancelText="取消"
+        disabled={currentGroupStockCount === 0}
+      >
+        <Button
+          type="text"
+          icon={<ClearOutlined />}
+          size="small"
+          disabled={currentGroupStockCount === 0}
+          className={styles.clearBtn}
+          title="清空当前分组"
+        >
+          清空
+        </Button>
+      </Popconfirm>
       <Button
         type="text"
         icon={<SettingOutlined />}

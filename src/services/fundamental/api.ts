@@ -46,7 +46,7 @@ export async function getFundamentalAnalysis(code: string): Promise<FundamentalA
 
     // 并行获取各类数据
     const [financials, valuation, industry, reports] = await Promise.allSettled([
-      getFinancialStatements(pureCode, market),
+      fetchFinancialStatements(pureCode, market as 'SH' | 'SZ'),
       getValuationAnalysis(pureCode, market),
       getIndustryComparison(pureCode, market),
       getResearchReports(pureCode, market),
@@ -87,23 +87,49 @@ export async function getFundamentalAnalysis(code: string): Promise<FundamentalA
  * 获取财务报表数据
  * 使用东方财富API获取主要财务指标
  */
-async function getFinancialStatements(
+export async function getFinancialStatements(
+  code: string
+): Promise<FinancialStatement[]> {
+  const pureCode = getPureCode(code);
+  const market = getMarketFromCode(code);
+  if (!market) return [];
+  return fetchFinancialStatements(pureCode, market as 'SH' | 'SZ');
+}
+
+async function fetchFinancialStatements(
   pureCode: string,
   market: 'SH' | 'SZ'
 ): Promise<FinancialStatement[]> {
   try {
     // 东方财富财务指标API
-    const secid = market === 'SH' ? `1.${pureCode}` : `0.${pureCode}`;
+    // 注意：字段名随东财版本变化，2024 后的版本为 EPSJB / ROEJQ / PARENTNETPROFIT 等，
+    // 旧的 BASIC_EPS / WEIGHTED_ROE / NETPROFIT 已被移除（请求会直接报「字段不存在」）。
+    const secid = `${pureCode}.${market}`;
     const url = `${API_BASE.EASTMONEY}/api/data/v1/get`;
 
     const response = await axios.get(url, {
       params: {
         reportName: 'RPT_F10_FINANCE_MAINFINADATA',
-        columns:
-          'REPORT_DATE,BASIC_EPS,WEIGHTED_ROE,NETPROFIT,GROSSSALES,MGSGRO,OPERATE_CASHFLOW,TOTAL_ASSETS,NET_ASSETS',
+        columns: [
+          'REPORT_DATE',
+          'NOTICE_DATE',
+          'EPSJB', // 基本每股收益
+          'BPS', // 每股净资产（算 PB 用）
+          'ROEJQ', // 加权净资产收益率
+          'PARENTNETPROFIT', // 归母净利润
+          'KCFJCXSYJLR', // 扣非净利润
+          'TOTALOPERATEREVE', // 营业总收入
+          'TOTALOPERATEREVETZ', // 营收同比
+          'PARENTNETPROFITTZ', // 归母净利润同比
+          'XSMLL', // 销售毛利率
+          'MGJYXJJE', // 每股经营现金流
+          'TOTAL_ASSETS_PK', // 总资产
+          'TOTAL_EQUITY_PK', // 所有者权益
+          'ZCFZL', // 资产负债率
+        ].join(','),
         filter: `(SECUCODE="${secid}")`,
         pageNumber: 1,
-        pageSize: 8, // 最近8个季度
+        pageSize: 24, // 最近 6 年（24 个季度）
         sortTypes: '-1',
         sortColumns: 'REPORT_DATE',
       },
@@ -113,14 +139,20 @@ async function getFinancialStatements(
     if (response.data?.result?.data && Array.isArray(response.data.result.data)) {
       return response.data.result.data.map((item: any) => ({
         reportPeriod: item.REPORT_DATE,
-        eps: parseFloat(item.BASIC_EPS) || undefined,
-        roe: parseFloat(item.WEIGHTED_ROE) || undefined,
-        netProfit: parseFloat(item.NETPROFIT) || undefined,
-        revenue: parseFloat(item.GROSSSALES) || undefined,
-        grossMargin: parseFloat(item.MGSGRO) || undefined,
-        operatingCashFlow: parseFloat(item.OPERATE_CASHFLOW) || undefined,
-        totalAssets: parseFloat(item.TOTAL_ASSETS) || undefined,
-        netAssets: parseFloat(item.NET_ASSETS) || undefined,
+        noticeDate: item.NOTICE_DATE,
+        eps: parseFloat(item.EPSJB) || undefined,
+        bps: parseFloat(item.BPS) || undefined,
+        roe: parseFloat(item.ROEJQ) || undefined,
+        netProfit: parseFloat(item.PARENTNETPROFIT) || undefined,
+        deductNetProfit: parseFloat(item.KCFJCXSYJLR) || undefined,
+        revenue: parseFloat(item.TOTALOPERATEREVE) || undefined,
+        revenueGrowth: parseFloat(item.TOTALOPERATEREVETZ) || undefined,
+        netProfitGrowth: parseFloat(item.PARENTNETPROFITTZ) || undefined,
+        grossMargin: parseFloat(item.XSMLL) || undefined,
+        operatingCashFlowPerShare: parseFloat(item.MGJYXJJE) || undefined,
+        totalAssets: parseFloat(item.TOTAL_ASSETS_PK) || undefined,
+        netAssets: parseFloat(item.TOTAL_EQUITY_PK) || undefined,
+        debtRatio: parseFloat(item.ZCFZL) || undefined,
       }));
     }
 

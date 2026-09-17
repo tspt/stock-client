@@ -104,11 +104,22 @@
 
 .tableCard {
   position: relative;
-  flex: 1;
-  min-height: 0;
+  flex: none;
+  z-index: 0;
   margin: 0 16px 16px;
   border: 1px solid var(--ant-color-border-secondary);
   background: var(--ant-color-bg-container);
+  overflow: hidden;
+}
+
+.tableCard :global(.ant-card-body) {
+  overflow: auto;
+}
+
+.tableCard :global(.ant-table-sticky-holder),
+.tableCard :global(.ant-table-header) {
+  position: static !important;
+  top: auto !important;
 }
 
 .nameCell {
