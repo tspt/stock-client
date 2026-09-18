@@ -21,7 +21,7 @@ export { scoreWeeklyFactors } from './score';
 export { buildWeeklyPanel, snapshotAt } from './panel';
 export { backtestHoldStrategy } from './holdStrategy';
 export type { HoldStrategyResult, HoldPositionView, HoldStrategyOptions } from './holdStrategy';
-export { pickByIndustryCap, industryKeyOf } from './select';
+export { pickByIndustryCap, industryKeyOf, applyWeeklyFilters } from './select';
 export type { WeeklyPanel } from './panel';
 
 /** 1 亿元（成交额单位：元） */
@@ -30,6 +30,11 @@ export const YI = 1e8;
 export const DEFAULT_WEEKLY_FILTERS: WeeklyFilterOptions = {
   minScore: 0,
   minAvgAmount: 3 * YI,
+  minRet13wSkip1: 5,
+  minRet26w: 10,
+  minPos52w: 30,
+  maxPos52w: 85,
+  minVolTrend4_26: 1.2,
 };
 
 export interface WeeklyAnalyzeOptions {
@@ -69,20 +74,4 @@ export function analyzeWeeklyKlines(
     return { ...f, industryCode: ind.code, industryName: ind.name };
   });
   return scoreWeeklyFactors(factors, config, options.minLiquidity);
-}
-
-/** 按流动性与最低分过滤 */
-export function applyWeeklyFilters(
-  rows: WeeklyAnalysis[],
-  filters: WeeklyFilterOptions
-): WeeklyAnalysis[] {
-  return rows.filter((row) => {
-    if (row.insufficientData || !row.quality.ok) return false;
-    if (row.score < filters.minScore) return false;
-    if (filters.minAvgAmount > 0) {
-      const amt = row.amount8wMedian ?? row.avgAmount20w;
-      if (amt === undefined || amt < filters.minAvgAmount) return false;
-    }
-    return true;
-  });
 }

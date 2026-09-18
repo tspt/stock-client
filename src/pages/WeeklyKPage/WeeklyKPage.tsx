@@ -42,6 +42,7 @@ import { useAllStocks } from '@/hooks/useAllStocks';
 import { getPureCode } from '@/utils/format/format';
 import { apiCache } from '@/utils/storage/apiCache';
 import {
+  DEFAULT_WEEKLY_FILTERS,
   WEEKLY_HOLD_DEFAULTS,
   YI,
   analyzeWeeklyKlines,
@@ -52,6 +53,7 @@ import {
   type HoldPositionView,
   type HoldStrategyResult,
   type WeeklyAnalysis,
+  type WeeklyFilterOptions,
 } from '@/utils/analysis/weekly';
 import {
   clearWeeklyKlineCache,
@@ -107,7 +109,7 @@ export function WeeklyKPage() {
   ]);
   const [klineCount, setKlineCount] = useState<number>(WEEKLY_KLINE_DEFAULT_COUNT);
   const [forceRefresh, setForceRefresh] = useState(false);
-  const [minAmountYi, setMinAmountYi] = useState(WEEKLY_HOLD_DEFAULTS.minLiquidity / YI);
+  const [filters, setFilters] = useState<WeeklyFilterOptions>({ ...DEFAULT_WEEKLY_FILTERS });
   const [searchKeyword, setSearchKeyword] = useState('');
   const [showAddToWatchList, setShowAddToWatchList] = useState(false);
 
@@ -148,11 +150,11 @@ export function WeeklyKPage() {
       const analyzed = analyzeWeeklyKlines(klineMap, names, {
         poolCodes,
         industries: industryMap,
-        minLiquidity: minAmountYi * YI,
+        minLiquidity: filters.minAvgAmount,
       });
       setRows(analyzed);
     },
-    [industryMap, minAmountYi]
+    [industryMap, filters.minAvgAmount]
   );
 
   const hydrateFromCache = useCallback(
@@ -224,6 +226,11 @@ export function WeeklyKPage() {
     runAnalysis(klines, nameMap, poolCodes.size > 0 ? poolCodes : null);
   }, [klines, nameMap, poolCodes, runAnalysis]);
 
+  const patchFilters = useCallback((patch: Partial<WeeklyFilterOptions>) => {
+    setFilters((prev) => ({ ...prev, ...patch }));
+    setBacktest(null);
+  }, []);
+
   const handleAnalyze = async () => {
     if (stockPool.length === 0) {
       message.warning(selectedMarket.length === 0 ? '请至少选择一个市场' : '当前筛选条件下暂无股票');
@@ -292,7 +299,8 @@ export function WeeklyKPage() {
     try {
       const result = backtestHoldStrategy(klines, nameMap, poolCodes.size > 0 ? poolCodes : null, {
         industries: industryMap,
-        minLiquidity: minAmountYi * YI,
+        minLiquidity: filters.minAvgAmount,
+        filters,
         runningWeek,
       });
       setBacktest(result);
@@ -305,12 +313,8 @@ export function WeeklyKPage() {
   };
 
   const filteredRows = useMemo(
-    () =>
-      applyWeeklyFilters(rows, {
-        minScore: 0,
-        minAvgAmount: minAmountYi * YI,
-      }),
-    [rows, minAmountYi]
+    () => applyWeeklyFilters(rows, filters),
+    [rows, filters]
   );
 
   const watchlist = useMemo(() => pickByIndustryCap(filteredRows), [filteredRows]);
@@ -349,7 +353,8 @@ export function WeeklyKPage() {
     const summaryLines = [
       `分析时间：${updatedAt ? new Date(updatedAt).toLocaleString('zh-CN') : '-'}`,
       `导出时间：${new Date().toLocaleString('zh-CN')}`,
-      `市场：${selectedMarket.join('+')}，非ST，近8周成交额中位数≥${minAmountYi}亿`,
+      `市场：${selectedMarket.join('+')}，非ST，近8周成交额中位数≥${(filters.minAvgAmount / YI).toFixed(0)}亿`,
+      `硬门槛：13周动量≥${filters.minRet13wSkip1 ?? '-'}%、26周≥${filters.minRet26w ?? '-'}%、52周位置${filters.minPos52w ?? '-'}~${filters.maxPos52w ?? '-'}、量能趋势≥${filters.minVolTrend4_26 ?? '-'}`,
       `规则：行业最多2只，目标10只；持有2–6周；这周收盘买`,
       runningWeek ? '本周未收盘，名单为预览' : '已按最近收盘周出正式名单',
     ];
@@ -448,6 +453,32 @@ export function WeeklyKPage() {
         width: 96,
         align: 'right',
         render: (v: number | undefined) => percentNode(v),
+      },
+      {
+        title: '26周涨幅',
+        dataIndex: 'ret26w',
+        width: 96,
+        align: 'right',
+        render: (v: number | undefined) => percentNode(v),
+      },
+      {
+        title: (
+          <Tooltip title="当前价在 52 周高低区间中的位置：0=最低，100=最高">52周位置</Tooltip>
+        ),
+        dataIndex: 'pos52w',
+        width: 92,
+        align: 'right',
+        render: (v: number | undefined) => (v === undefined ? '-' : v.toFixed(0)),
+      },
+      {
+        title: (
+          <Tooltip title="近 4 周均量 / 近 26 周均量。>1.2 表示近期放量">量能趋势</Tooltip>
+        ),
+        dataIndex: 'volTrend4_26',
+        width: 88,
+        align: 'right',
+        render: (v: number | undefined) =>
+          v === undefined ? '-' : v.toFixed(2),
       },
       {
         title: '近1周',
@@ -564,15 +595,95 @@ export function WeeklyKPage() {
           <Space.Compact className={styles.spaceCompact}>
             <span className={styles.label}>近8周成交额中位数≥</span>
             <InputNumber
-              value={minAmountYi}
+              value={Number((filters.minAvgAmount / YI).toFixed(1))}
               min={0}
               max={50}
               step={1}
               style={{ width: 84 }}
               disabled={loading}
-              onChange={(v) => setMinAmountYi(typeof v === 'number' && isFinite(v) ? v : 3)}
+              onChange={(v) =>
+                patchFilters({ minAvgAmount: typeof v === 'number' && isFinite(v) ? v * YI : 3 * YI })
+              }
             />
             <span className={styles.label}>亿</span>
+          </Space.Compact>
+
+          <Space.Compact className={styles.spaceCompact}>
+            <Tooltip title="13 周动量跳过最近 1 周，要求已经在涨">
+              <span className={styles.label}>13周动量≥</span>
+            </Tooltip>
+            <InputNumber
+              value={filters.minRet13wSkip1}
+              min={0}
+              max={80}
+              step={1}
+              style={{ width: 72 }}
+              disabled={loading}
+              onChange={(v) =>
+                patchFilters({ minRet13wSkip1: typeof v === 'number' && isFinite(v) ? v : 5 })
+              }
+            />
+            <span className={styles.label}>%</span>
+          </Space.Compact>
+
+          <Space.Compact className={styles.spaceCompact}>
+            <span className={styles.label}>26周涨幅≥</span>
+            <InputNumber
+              value={filters.minRet26w}
+              min={0}
+              max={120}
+              step={1}
+              style={{ width: 72 }}
+              disabled={loading}
+              onChange={(v) =>
+                patchFilters({ minRet26w: typeof v === 'number' && isFinite(v) ? v : 10 })
+              }
+            />
+            <span className={styles.label}>%</span>
+          </Space.Compact>
+
+          <Space.Compact className={styles.spaceCompact}>
+            <Tooltip title="52 周位置过低是长期弱势，过高容易是权重慢牛顶">
+              <span className={styles.label}>52周位置</span>
+            </Tooltip>
+            <InputNumber
+              value={filters.minPos52w}
+              min={0}
+              max={100}
+              style={{ width: 64 }}
+              disabled={loading}
+              onChange={(v) =>
+                patchFilters({ minPos52w: typeof v === 'number' && isFinite(v) ? v : 30 })
+              }
+            />
+            <span className={styles.label}>~</span>
+            <InputNumber
+              value={filters.maxPos52w}
+              min={0}
+              max={100}
+              style={{ width: 64 }}
+              disabled={loading}
+              onChange={(v) =>
+                patchFilters({ maxPos52w: typeof v === 'number' && isFinite(v) ? v : 85 })
+              }
+            />
+          </Space.Compact>
+
+          <Space.Compact className={styles.spaceCompact}>
+            <Tooltip title="近 4 周均量 / 近 26 周均量，过滤不活跃的权重股">
+              <span className={styles.label}>量能趋势≥</span>
+            </Tooltip>
+            <InputNumber
+              value={filters.minVolTrend4_26}
+              min={0}
+              max={5}
+              step={0.1}
+              style={{ width: 72 }}
+              disabled={loading}
+              onChange={(v) =>
+                patchFilters({ minVolTrend4_26: typeof v === 'number' && isFinite(v) ? v : 1.2 })
+              }
+            />
           </Space.Compact>
 
           <Checkbox checked={forceRefresh} onChange={(e) => setForceRefresh(e.target.checked)} disabled={loading}>
@@ -652,9 +763,8 @@ export function WeeklyKPage() {
 
       <div className={styles.filterBar}>
         <div className={styles.presetHint}>
-          硬过滤仅非ST + 流动性。评分：13周动量(跳过最近1周) 50%、低波动 25%、近1周过热反向 15%、拥挤反向 10%。
-          同一行业最多 2 只，目标 10 只等权。周五收盘买入，锁仓 2 周，最长 6 周；满 2 周后跌破周MA8 或分数掉出前 40% 则卖。
-          池内站上周MA20 不足 50% 时进入防御，停止新开仓。
+          硬过滤：非ST + 流动性 + 13周动量≥{filters.minRet13wSkip1}% + 26周涨幅≥{filters.minRet26w}% + 52周位置 {filters.minPos52w}~{filters.maxPos52w} + 量能趋势≥{filters.minVolTrend4_26}。
+          评分仍按原权重排序。同一行业最多 2 只，目标 10 只。周五收盘买，锁仓 2 周、最长 6 周。
         </div>
       </div>
 
@@ -705,7 +815,7 @@ export function WeeklyKPage() {
 
         <div className={styles.resultBar}>
           <span>
-            本周名单 <strong>{watchlist.length}</strong> 只 / 评分池 {validCount} 只
+            本周名单 <strong>{watchlist.length}</strong> 只 / 硬门槛 {filteredRows.length} 只 / 评分池 {validCount} 只
           </span>
           {marketBreadth !== undefined && (
             <span className={styles.timeText}>

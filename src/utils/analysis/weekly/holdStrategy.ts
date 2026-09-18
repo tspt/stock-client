@@ -7,12 +7,13 @@ import { DEFAULT_WEEKLY_CONFIG } from './factors';
 import { startOfWeek } from './math';
 import { buildWeeklyPanel, snapshotAt, type WeeklyPanel } from './panel';
 import { createWeeklyScorer } from './score';
-import { industryKeyOf, pickByIndustryCap } from './select';
+import { industryKeyOf, pickByIndustryCap, applyWeeklyFilters } from './select';
 import {
   WEEKLY_HOLD_DEFAULTS,
   type WeeklyAnalysis,
   type WeeklyConfig,
   type WeeklyFactors,
+  type WeeklyFilterOptions,
 } from './types';
 
 export interface HoldPositionView {
@@ -69,6 +70,8 @@ export interface HoldStrategyOptions {
   initialCapital?: number;
   maxLookbackWeeks?: number;
   config?: WeeklyConfig;
+  /** 与页面名单同一套硬门槛 */
+  filters?: WeeklyFilterOptions;
   /** 本周是否未收盘：为 true 时名单仅作预览，不把未完成周当作成交周 */
   runningWeek?: boolean;
 }
@@ -161,6 +164,10 @@ export function backtestHoldStrategy(
   const maxLookback = options.maxLookbackWeeks ?? 156;
   const industries = options.industries;
   const runningWeek = options.runningWeek ?? false;
+  const gateFilters: WeeklyFilterOptions = options.filters ?? {
+    minScore: 0,
+    minAvgAmount: minLiq,
+  };
 
   const empty: HoldStrategyResult = {
     stockCount: 0,
@@ -349,7 +356,7 @@ export function backtestHoldStrategy(
       }
     }
 
-    lastWatch = pickByIndustryCap(scored, {
+    lastWatch = pickByIndustryCap(applyWeeklyFilters(scored, gateFilters), {
       maxPerIndustry,
       maxHoldings,
     });
@@ -369,7 +376,7 @@ export function backtestHoldStrategy(
         heldIndustry.set(key, (heldIndustry.get(key) ?? 0) + 1);
       });
 
-      const fills = pickByIndustryCap(scored, {
+      const fills = pickByIndustryCap(applyWeeklyFilters(scored, gateFilters), {
         maxPerIndustry,
         maxHoldings: maxHoldings - positions.length,
         excludeCodes: new Set(positions.map((pos) => panels[pos.pi].code)),

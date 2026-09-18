@@ -256,4 +256,14 @@ export interface WeeklyFilterOptions {
   minScore: number;
   /** 近 8 周成交额中位数下限（元） */
   minAvgAmount: number;
+  /** 13 周动量(跳过最近 1 周)下限（%） */
+  minRet13wSkip1?: number;
+  /** 26 周收益下限（%） */
+  minRet26w?: number;
+  /** 52 周位置下限（0–100） */
+  minPos52w?: number;
+  /** 52 周位置上限（0–100） */
+  maxPos52w?: number;
+  /** 近 4 周均量 / 近 26 周均量下限 */
+  minVolTrend4_26?: number;
 }
