@@ -276,6 +276,7 @@ export const QUOTES_BATCH_SIZE = 100;
 /** 默认列配置 */
 export const OPPORTUNITY_DEFAULT_COLUMNS = [
     { key: 'name', title: '股票名称', visible: true, width: 88 },
+    { key: 'industry', title: '所属行业', visible: true, width: 120 },
     { key: 'price', title: '当前价', visible: true, width: 88 },
     { key: 'change', title: '当日涨跌额', visible: false, width: 110 },
     { key: 'changePercent', title: '当日涨跌幅', visible: true, width: 110 },
@@ -293,7 +294,6 @@ export const OPPORTUNITY_DEFAULT_COLUMNS = [
     { key: 'highPrice', title: '区间最高价', visible: true, width: 110 },
     { key: 'lowPrice', title: '区间最低价', visible: true, width: 110 },
     { key: 'opportunityChangePercent', title: '区间最大值回撤比', visible: true, width: 150 },
-    { key: 'industry', title: '所属行业', visible: true, width: 120 },
     { key: 'concepts', title: '所属概念', visible: true, width: 300 },
     { key: 'tradingSignal', title: '交易信号', visible: true, width: 240 },
     { key: 'consolidationStatus', title: '横盘状态', visible: true, width: 100 },

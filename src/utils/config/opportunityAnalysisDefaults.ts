@@ -34,21 +34,6 @@ export const OPPORTUNITY_DEFAULT_LIMIT_MOVES = {
 export const OPPORTUNITY_DEFAULT_INDUSTRY_SECTORS = {
   /** 默认选中的行业代码列表（排除这些传统行业） */
   excludedIndustries: [
-    // // 医药相关:
-    // 'BK1040', // 中药Ⅱ
-    // 'BK1041', // 医疗器械
-    // 'BK1042', // 医药商业
-    // 'BK0465', // 化学制药
-    // 'BK0727', // 医疗服务
-    // 'BK1044', // 生物制品
-    // 'BK1253', // 医疗美容
-    // // 金属相关：
-    // 'BK1015', // 能源金属
-    // 'BK1287', // 工业金属
-    // 'BK1288', // 金属新材料
-    // 'BK0732', // 贵金属
-    // 'BK1027', // 小金属
-    // 'BK1228', // 冶钢原料
     // // 化工相关：
     // 'BK0538', // 化学制品
     // 'BK1019', // 化学原料
@@ -88,6 +73,21 @@ export const OPPORTUNITY_DEFAULT_INDUSTRY_SECTORS = {
     // 'BK1230', // 航海装备Ⅱ
     // 'BK1229', // 地面兵装Ⅱ
     // 'BK1233', // 军工电子Ⅱ
+    // // 医药相关:
+    // 'BK1040', // 中药Ⅱ
+    // 'BK1041', // 医疗器械
+    // 'BK1042', // 医药商业
+    // 'BK0465', // 化学制药
+    // 'BK0727', // 医疗服务
+    // 'BK1044', // 生物制品
+    // 'BK1253', // 医疗美容
+    // // 金属相关：
+    // 'BK1015', // 能源金属
+    // 'BK1287', // 工业金属
+    // 'BK1288', // 金属新材料
+    // 'BK0732', // 贵金属
+    // 'BK1027', // 小金属
+    // 'BK1228', // 冶钢原料
     // // 农业相关：
     // 'BK1254', // 动物保健Ⅱ
     // 'BK1255', // 林业Ⅱ
@@ -193,17 +193,17 @@ export const OPPORTUNITY_DEFAULT_INDUSTRY_SECTORS = {
 
 /** 名称筛选顶部：行业分组快捷勾选（与 excludedIndustries 分组顺序一致） */
 export const OPPORTUNITY_INDUSTRY_GROUPS: { label: string; codes: readonly string[] }[] = [
-  {
-    label: '医药相关',
-    codes: ['BK1040', 'BK1041', 'BK1042', 'BK0465', 'BK0727', 'BK1044', 'BK1253'],
-  },
-  { label: '金属相关', codes: ['BK1015', 'BK1287', 'BK1288', 'BK0732', 'BK1027', 'BK1228'] },
   { label: '化工相关', codes: ['BK0538', 'BK1019', 'BK0454', 'BK0731', 'BK0471', 'BK1020', 'BK1018'] },
   { label: '电子', codes: ['BK1036', 'BK0459', 'BK1038', 'BK1037', 'BK1223', 'BK1039'] },
   { label: '计算机通信', codes: ['BK0737', 'BK1238', 'BK0735', 'BK0448', 'BK0736'] },
   { label: '电力设备', codes: ['BK1031', 'BK1032', 'BK1033', 'BK0457', 'BK1034', 'BK1030'] },
   { label: '能源相关', codes: ['BK1250', 'BK1249', 'BK1028', 'BK0428'] },
   { label: '军工装备', codes: ['BK1231', 'BK1232', 'BK1230', 'BK1229', 'BK1233'] },
+  {
+    label: '医药相关',
+    codes: ['BK1040', 'BK1041', 'BK1042', 'BK0465', 'BK0727', 'BK1044', 'BK1253'],
+  },
+  { label: '金属相关', codes: ['BK1015', 'BK1287', 'BK1288', 'BK0732', 'BK1027', 'BK1228'] },
   {
     label: '农业相关',
     codes: ['BK1254', 'BK1255', 'BK1256', 'BK1257', 'BK1258', 'BK1260', 'BK1259', 'BK1261'],
