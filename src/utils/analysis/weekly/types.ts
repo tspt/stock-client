@@ -38,6 +38,18 @@ export const WEEKLY_SETUP_LABELS: Record<SetupKey, string> = {
 };
 
 /**
+ * 命中档位：对应各战法探测器里的分级分支（makeHit 的 ratio）。
+ * - full    满分档：文档里的完整形态，全部条件成立
+ * - partial 部分档：形态基本成型，但缺关键确认（尚未出止跌 K 线、尚未真正突破箱顶等）
+ */
+export type WeeklySetupGrade = 'full' | 'partial';
+
+export const WEEKLY_SETUP_GRADE_LABELS: Record<WeeklySetupGrade, string> = {
+  full: '满分档',
+  partial: '部分档',
+};
+
+/**
  * 各战法满分（对应文档「二、核心买入战法」）。
  * 平台突破在文档里描述最细、且明确「平台整理越久突破力度越强」，给最高分；
  * 三连阳回踩属于短线性买点，给最低分。
@@ -320,8 +332,6 @@ export const WEEKLY_HOLD_DEFAULTS = {
   maxPerIndustry: 2,
   /** 满 2 周后，分数分位低于该值则退出（60 = 掉出前 40%） */
   exitScoreRank: 60,
-  /** 站上周MA20 的占比低于该值时进入防御：停止新开仓 */
-  defenseBreadth: 50,
   /**
    * 60 根已收盘周K：MA60 是本轮的核心门槛（牛熊分界线），
    * 26 根只能算到 MA20，无法判定主升浪。代价是剔除上市不足约 15 个月的新股。
@@ -415,6 +425,11 @@ export interface WeeklyFilterOptions {
   requireSetup?: boolean;
   /** 战法白名单：只在名单内的战法才算命中 */
   allowedSetups?: SetupKey[];
+  /**
+   * 档位过滤：只保留命中指定档位战法的个股（单选传一个值，不传表示不限）。
+   * 与 allowedSetups 作用于「同一个战法」，且本身即隐含「命中战法」。
+   */
+  setupGrades?: WeeklySetupGrade[];
   /** 是否要求站上 60 周均线 */
   requireAboveMa60?: boolean;
   /** 是否剔除周线空头排列个股 */

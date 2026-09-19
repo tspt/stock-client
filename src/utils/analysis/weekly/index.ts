@@ -28,8 +28,27 @@ export {
 } from './factors';
 export { scoreWeeklyFactors, isBearStack } from './score';
 export { buildWeeklyPanel, snapshotAt } from './panel';
-export { detectSetups, totalSetupScore } from './setups';
+export { detectSetups, totalSetupScore, setupGradeOf } from './setups';
 export { computeStopLoss, detectExitSignals } from './exitRules';
+export {
+  backtestWeeklySetups,
+  createWeeklyBacktestSession,
+  summarizeBacktestTrades,
+  BACKTEST_SETUP_KEYS,
+  BACKTEST_EXCLUSION_LABELS,
+} from './backtest';
+export type {
+  BacktestExitKind,
+  BacktestExitPolicy,
+  BacktestExclusionReason,
+  WeeklyBacktestExcludedSample,
+  WeeklyBacktestExclusions,
+  WeeklyBacktestOptions,
+  WeeklyBacktestResult,
+  WeeklyBacktestSession,
+  WeeklyBacktestStats,
+  WeeklyBacktestTrade,
+} from './backtest';
 export { isDailyAboveMa, resonanceLayers, DAILY_MA_PERIOD } from './resonance';
 export { pickByIndustryCap, industryKeyOf, applyWeeklyFilters } from './select';
 export type { WeeklyPanel } from './panel';
@@ -54,7 +73,7 @@ export const DEFAULT_WEEKLY_FILTERS: WeeklyFilterOptions = {
    * 战法默认不当硬门槛：六大战法同时成立的机会极少，
    * 直接卡死会把名单筛空。勾选后才要求至少命中一个。
    */
-  requireSetup: false,
+  requireSetup: true,
   allowedSetups: undefined,
   /** 日线数据可能没拉，默认不阻断 */
   requireDailyAboveMa20: false,

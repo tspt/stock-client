@@ -2,6 +2,7 @@
  * 周线名单：硬门槛过滤 + 全池排序后按行业上限截取 Top N
  */
 
+import { setupGradeOf } from './setups';
 import { WEEKLY_HOLD_DEFAULTS, type WeeklyAnalysis, type WeeklyFilterOptions } from './types';
 
 const UNKNOWN_INDUSTRY = 'unknown';
@@ -28,6 +29,12 @@ export function applyWeeklyFilters(
   rows: WeeklyAnalysis[],
   filters: WeeklyFilterOptions
 ): WeeklyAnalysis[] {
+  const allowedSetups = filters.allowedSetups;
+  const allowedGrades = filters.setupGrades;
+  /** 档位过滤本质上就是「命中战法」的加强版，两者共用同一段判定 */
+  const setupFilterActive =
+    filters.requireSetup === true || (allowedGrades !== undefined && allowedGrades.length > 0);
+
   return rows.filter((row) => {
     if (row.insufficientData || !row.quality.ok) return false;
     if (row.score < filters.minScore) return false;
@@ -36,12 +43,18 @@ export function applyWeeklyFilters(
     // 无日线数据时跳过该项（与 WeeklyFilterOptions 注释一致），只有明确不达标才排除
     if (filters.requireDailyAboveMa20 && row.dailyAboveMa20 === false) return false;
 
-    if (filters.requireSetup) {
-      const allowed = filters.allowedSetups;
-      const hits =
-        allowed && allowed.length > 0
-          ? row.setups.filter((h) => allowed.includes(h.key))
-          : row.setups;
+    if (setupFilterActive) {
+      /**
+       * 白名单与档位必须落在「同一个战法」上：
+       * 若两者分开判定，「平台突破满分档 + 均线金叉部分档」这类组合会被错误放行。
+       */
+      const hits = row.setups.filter(
+        (h) =>
+          (allowedSetups === undefined ||
+            allowedSetups.length === 0 ||
+            allowedSetups.includes(h.key)) &&
+          (allowedGrades === undefined || allowedGrades.includes(setupGradeOf(h)))
+      );
       if (hits.length === 0) return false;
     }
     return true;

@@ -1,8 +1,8 @@
 /**
- * 周线选股：市场池 → 周K → 动量/低波/过热/拥挤评分 → 行业配额名单 → 2–6 周持仓回测
+ * 周线选股：市场池 → 周K → 趋势/战法/共振评分 → 硬门槛过滤 → 名单（单表展示）
  */
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import {
   Alert,
   App,
@@ -22,13 +22,13 @@ import {
   Tooltip,
   Typography,
 } from 'antd';
-import type { ColumnsType } from 'antd/es/table';
+import type { ColumnsType, TablePaginationConfig } from 'antd/es/table';
 import {
   ClearOutlined,
   DatabaseOutlined,
   DownOutlined,
-  ExportOutlined,
   ExperimentOutlined,
+  ExportOutlined,
   OrderedListOutlined,
   ReloadOutlined,
   RocketOutlined,
@@ -40,21 +40,22 @@ import { addStocksToTodayRecord } from '@/services/opportunity/recordService';
 import type { StockOpportunityData } from '@/types/stock';
 import { useAllStocks } from '@/hooks/useAllStocks';
 import { getPureCode } from '@/utils/format/format';
+import { getUnifiedSectorBasics } from '@/services/hot/unified-sectors';
 import { apiCache } from '@/utils/storage/apiCache';
 import {
   DEFAULT_WEEKLY_FILTERS,
-  WEEKLY_HOLD_DEFAULTS,
-  YI,
+  WEEKLY_SETUP_GRADE_LABELS,
+  WEEKLY_SETUP_LABELS,
   analyzeWeeklyKlines,
   applyWeeklyFilters,
-  backtestHoldStrategy,
   isRunningWeek,
-  pickByIndustryCap,
-  type HoldPositionView,
-  type HoldStrategyResult,
+  resonanceLayers,
+  type SetupKey,
   type WeeklyAnalysis,
   type WeeklyFilterOptions,
+  type WeeklySetupGrade,
 } from '@/utils/analysis/weekly';
+import { getOpportunityKlines, getStocksHistory } from '@/utils/storage/opportunityIndexedDB';
 import {
   clearWeeklyKlineCache,
   fetchWeeklyKlines,
@@ -63,11 +64,16 @@ import {
 } from '@/services/stocks/weeklyKlineService';
 import { exportWeeklyResultToPng } from '@/utils/export/weeklyKlineExportUtils';
 import { logger } from '@/utils/business/logger';
-import { WEEKLY_KLINE_DEFAULT_COUNT } from '@/utils/config/constants';
+import {
+  OPPORTUNITY_TABLE_HEIGHT_EXTRA_PADDING,
+  OPPORTUNITY_TABLE_HEIGHT_MARGIN,
+  OPPORTUNITY_TABLE_HEIGHT_PADDING,
+  WEEKLY_KLINE_DEFAULT_COUNT,
+} from '@/utils/config/constants';
 import { OPPORTUNITY_DEFAULT_BASIC_FILTERS } from '@/utils/config/opportunityAnalysisDefaults';
 import type { KLineData } from '@/types/stock';
 import { WeeklyChartModal } from './WeeklyChartModal';
-import { WeeklyBacktestPanel } from './WeeklyBacktestPanel';
+import { WeeklyBacktestDrawer } from './WeeklyBacktestDrawer';
 import styles from './WeeklyKPage.module.css';
 
 const { Content } = Layout;
@@ -77,6 +83,23 @@ const MARKET_OPTIONS = [
   { label: '沪深主板', value: 'hs_main' },
   { label: '创业板', value: 'sz_gem' },
 ];
+
+/** 名称类型：与机会分析页面保持一致 */
+const NAME_TYPE_OPTIONS = [
+  { label: '不限', value: 'all' },
+  { label: 'ST', value: 'st' },
+  { label: '非ST', value: 'non_st' },
+];
+
+const SETUP_OPTIONS = (Object.keys(WEEKLY_SETUP_LABELS) as SetupKey[]).map((key) => ({
+  label: WEEKLY_SETUP_LABELS[key],
+  value: key,
+}));
+
+/** 档位：满分档 = 战法全部条件成立，部分档 = 形态基本成型但缺关键确认 */
+const SETUP_GRADE_OPTIONS = (Object.keys(WEEKLY_SETUP_GRADE_LABELS) as WeeklySetupGrade[]).map(
+  (key) => ({ label: WEEKLY_SETUP_GRADE_LABELS[key], value: key })
+);
 
 function fixed(value: number | undefined, digits = 2): string {
   return value === undefined || !Number.isFinite(value) ? '-' : value.toFixed(digits);
@@ -88,18 +111,6 @@ function percentNode(value: number | undefined, digits = 2) {
   return <span style={{ color }}>{value.toFixed(digits)}%</span>;
 }
 
-function amountYi(value: number | undefined): string {
-  if (value === undefined || !Number.isFinite(value)) return '-';
-  return `${(value / YI).toFixed(1)}亿`;
-}
-
-function actionColor(action: HoldPositionView['action']): string {
-  if (action === '新开') return 'red';
-  if (action === '到期退出') return 'gold';
-  if (action === '可卖') return 'orange';
-  return 'blue';
-}
-
 export function WeeklyKPage() {
   const { message } = App.useApp();
   const { allStocks } = useAllStocks();
@@ -107,15 +118,24 @@ export function WeeklyKPage() {
   const [selectedMarket, setSelectedMarket] = useState<string[]>([
     ...OPPORTUNITY_DEFAULT_BASIC_FILTERS.selectedMarket,
   ]);
+  const [nameType, setNameType] = useState<string>(OPPORTUNITY_DEFAULT_BASIC_FILTERS.nameType);
+  const [industrySectors, setIndustrySectors] = useState<string[]>([]);
+  const [industrySectorInvert, setIndustrySectorInvert] = useState(false);
+  const [industrySectorOptions, setIndustrySectorOptions] = useState<
+    { label: string; value: string }[]
+  >([]);
   const [klineCount, setKlineCount] = useState<number>(WEEKLY_KLINE_DEFAULT_COUNT);
   const [forceRefresh, setForceRefresh] = useState(false);
   const [filters, setFilters] = useState<WeeklyFilterOptions>({ ...DEFAULT_WEEKLY_FILTERS });
   const [searchKeyword, setSearchKeyword] = useState('');
   const [showAddToWatchList, setShowAddToWatchList] = useState(false);
+  const [showBacktest, setShowBacktest] = useState(false);
 
   const [rows, setRows] = useState<WeeklyAnalysis[]>([]);
   const [klines, setKlines] = useState<Map<string, KLineData[]>>(new Map());
   const [nameMap, setNameMap] = useState<Map<string, string>>(new Map());
+  /** 日线数据：复用机会分析已落到 IndexedDB 的 stockHistory，不单独拉取 */
+  const [dailyKlines, setDailyKlines] = useState<Map<string, KLineData[]>>(new Map());
   const [updatedAt, setUpdatedAt] = useState<number | null>(null);
 
   const [loading, setLoading] = useState(false);
@@ -125,8 +145,17 @@ export function WeeklyKPage() {
   const [staleCache, setStaleCache] = useState(0);
 
   const [chartState, setChartState] = useState<{ code: string; name: string } | null>(null);
-  const [backtest, setBacktest] = useState<HoldStrategyResult | null>(null);
-  const [backtesting, setBacktesting] = useState(false);
+
+  /** 表格高度自适应 + 分页（与机会分析页一致） */
+  const [tableHeight, setTableHeight] = useState(400);
+  const [tablePagination, setTablePagination] = useState<TablePaginationConfig>({
+    current: 1,
+    pageSize: 100,
+    showSizeChanger: true,
+    showTotal: (total) => `共 ${total} 条`,
+    pageSizeOptions: ['50', '100', '200'],
+  });
+  const tableCardRef = useRef<HTMLDivElement>(null);
 
   const cancelRef = useRef(false);
   const hydratedRef = useRef(false);
@@ -141,6 +170,23 @@ export function WeeklyKPage() {
     return map;
   }, [allStocks]);
 
+  // 行业板块选项：与机会分析页面共用统一缓存服务
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const { industry } = await getUnifiedSectorBasics();
+        if (cancelled) return;
+        setIndustrySectorOptions(industry.map((s) => ({ label: s.name, value: s.code })));
+      } catch (error) {
+        logger.error('[WeeklyKPage] 加载行业板块选项失败:', error);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const runAnalysis = useCallback(
     (
       klineMap: Map<string, KLineData[]>,
@@ -150,21 +196,59 @@ export function WeeklyKPage() {
       const analyzed = analyzeWeeklyKlines(klineMap, names, {
         poolCodes,
         industries: industryMap,
-        minLiquidity: filters.minAvgAmount,
+        dailyKlines,
       });
       setRows(analyzed);
     },
-    [industryMap, filters.minAvgAmount]
+    [industryMap, dailyKlines]
   );
+
+  /**
+   * 载入日线数据用于「多周期共振」：机会分析页面已写入 IndexedDB，这里直接复用其全量缓存，
+   * 不额外发起网络请求。返回最终 Map，便于「一键分析」拿到最新日线后再触发评分。
+   */
+  const loadDailyKlines = useCallback(async (): Promise<Map<string, KLineData[]>> => {
+    try {
+      /**
+       * 首选机会分析的日线缓存 opportunityKlineCache：每次机会分析都会整表重写，
+       * 是最新的一份日线数据（也是文档第三章「日线站上20日均线」的判定依据）。
+       * 老版本数据可能只落在 stockHistory 里，故保留一次回退读取。
+       */
+      const map = new Map<string, KLineData[]>();
+      const cached = await getOpportunityKlines();
+      cached.forEach(([code, kline]) => {
+        if (kline && kline.length > 0) map.set(code, kline);
+      });
+      if (map.size === 0) {
+        const histories = await getStocksHistory([]);
+        histories.forEach((h) => {
+          if (h.dailyLines && h.dailyLines.length > 0) map.set(h.code, h.dailyLines);
+        });
+      }
+      setDailyKlines(map);
+      return map;
+    } catch (error) {
+      logger.error('[WeeklyKPage] 读取日线数据失败:', error);
+      return new Map<string, KLineData[]>();
+    }
+  }, []);
+
+  // 进入页面先读一次；「一键分析」前会再刷新一次，避免读到机会分析更新前的旧日线
+  useEffect(() => {
+    void loadDailyKlines();
+  }, [loadDailyKlines]);
 
   const hydrateFromCache = useCallback(
     async (manual = false): Promise<boolean> => {
       setHydrating(true);
       try {
-        const cached = await loadCachedWeeklyKlines();
+        const cached = await loadCachedWeeklyKlines({ count: klineCount });
         setStaleCache(cached.stale);
+        // 历史根数不足（多为次新股）属正常现象，不算过期缓存，只在手动加载时提一句
+        const shortHint =
+          cached.shortHistory > 0 ? `；另有 ${cached.shortHistory} 只历史周K不足，已跳过` : '';
         if (cached.klines.size === 0) {
-          if (manual) message.info('IndexedDB 中暂无可用周K缓存，请点击「一键分析」');
+          if (manual) message.info(`IndexedDB 中暂无可用周K缓存${shortHint}，请点击「一键分析」`);
           setUpdatedAt(null);
           return false;
         }
@@ -173,8 +257,7 @@ export function WeeklyKPage() {
         setKlines(cached.klines);
         setNameMap(restoredNames);
         setUpdatedAt(cached.updatedAt);
-        setBacktest(null);
-        if (manual) message.success(`已恢复 ${cached.klines.size} 只周K数据`);
+        if (manual) message.success(`已恢复 ${cached.klines.size} 只周K数据${shortHint}`);
         return true;
       } catch (error) {
         logger.error('[WeeklyKPage] 读取周K缓存失败:', error);
@@ -184,7 +267,7 @@ export function WeeklyKPage() {
         setHydrating(false);
       }
     },
-    [allStocks, message]
+    [allStocks, message, klineCount]
   );
 
   useEffect(() => {
@@ -211,13 +294,25 @@ export function WeeklyKPage() {
       }
     });
     if (matchers.length === 0) return [];
+    const industrySelected = new Set(industrySectors);
     return allStocks.filter((stock) => {
       const pureCode = getPureCode(stock.code);
       if (!matchers.some((m) => m(pureCode))) return false;
-      if (stock.name.includes('ST')) return false;
+
+      // 名称类型：默认非 ST
+      const isST = stock.name.includes('ST');
+      if (nameType === 'st' && !isST) return false;
+      if (nameType !== 'st' && nameType !== 'all' && isST) return false;
+
+      // 行业板块：可选反选（排除选中板块）
+      if (industrySelected.size > 0) {
+        const code = stock.industry?.code;
+        const hasIndustry = code ? industrySelected.has(code) : false;
+        if (industrySectorInvert ? hasIndustry : !hasIndustry) return false;
+      }
       return true;
     });
-  }, [allStocks, selectedMarket]);
+  }, [allStocks, selectedMarket, nameType, industrySectors, industrySectorInvert]);
 
   const poolCodes = useMemo(() => new Set(stockPool.map((stock) => stock.code)), [stockPool]);
 
@@ -228,8 +323,10 @@ export function WeeklyKPage() {
 
   const patchFilters = useCallback((patch: Partial<WeeklyFilterOptions>) => {
     setFilters((prev) => ({ ...prev, ...patch }));
-    setBacktest(null);
   }, []);
+
+  /** 当前生效的档位过滤（单选；undefined = 不限） */
+  const activeSetupGrade = filters.setupGrades?.[0];
 
   const handleAnalyze = async () => {
     if (stockPool.length === 0) {
@@ -239,7 +336,8 @@ export function WeeklyKPage() {
     cancelRef.current = false;
     setLoading(true);
     setFailures([]);
-    setBacktest(null);
+    // 先刷新机会分析写入的日线，保证「多周期共振」用到的不是过期数据
+    await loadDailyKlines();
     setProgress({ completed: 0, total: stockPool.length, failed: 0 });
     if (forceRefresh) apiCache.clear();
     try {
@@ -288,36 +386,16 @@ export function WeeklyKPage() {
     return false;
   }, [klines]);
 
-  const handleBacktest = async () => {
-    if (klines.size === 0) {
-      message.warning('暂无周K数据，请先执行分析');
-      return;
-    }
-    setBacktesting(true);
-    setBacktest(null);
-    await new Promise((resolve) => setTimeout(resolve, 30));
-    try {
-      const result = backtestHoldStrategy(klines, nameMap, poolCodes.size > 0 ? poolCodes : null, {
-        industries: industryMap,
-        minLiquidity: filters.minAvgAmount,
-        filters,
-        runningWeek,
-      });
-      setBacktest(result);
-    } catch (error) {
-      logger.error('[WeeklyKPage] 回测失败:', error);
-      message.error('回测失败');
-    } finally {
-      setBacktesting(false);
-    }
-  };
-
   const filteredRows = useMemo(
     () => applyWeeklyFilters(rows, filters),
     [rows, filters]
   );
 
-  const watchlist = useMemo(() => pickByIndustryCap(filteredRows), [filteredRows]);
+  /** 不做行业配额 / 总数量截断：硬门槛通过的个股全部进入名单，按综合分排序 */
+  const watchlist = useMemo(
+    () => filteredRows.slice().sort((a, b) => b.score - a.score),
+    [filteredRows]
+  );
 
   const displayRows = useMemo(() => {
     const kw = searchKeyword.trim().toLowerCase();
@@ -334,28 +412,58 @@ export function WeeklyKPage() {
     return matched.slice().sort((a, b) => b.score - a.score);
   }, [watchlist, searchKeyword]);
 
-  const validCount = useMemo(() => rows.filter((r) => !r.insufficientData).length, [rows]);
-  const marketBreadth = useMemo(() => {
-    const valid = rows.filter((r) => !r.insufficientData && r.passed);
-    if (valid.length === 0) return undefined;
-    const above = valid.filter((r) => r.pxAboveMa20).length;
-    return (above / valid.length) * 100;
-  }, [rows]);
-  const defenseMode =
-    backtest?.defenseMode ??
-    (marketBreadth !== undefined && marketBreadth < WEEKLY_HOLD_DEFAULTS.defenseBreadth);
+  // 表格高度自适应：卡片撑满剩余空间，扣掉分页器与内边距后交给 Table 内部滚动
+  const updateTableHeight = useCallback(() => {
+    const cardBody = tableCardRef.current?.querySelector('.ant-card-body') as HTMLElement | null;
+    if (!cardBody) return;
+    const bodyHeight = cardBody.clientHeight;
+    if (bodyHeight <= 0) return;
+    const pagination = cardBody.querySelector('.ant-pagination') as HTMLElement | null;
+    const paginationHeight = pagination ? pagination.offsetHeight : 24;
+    const height =
+      bodyHeight -
+      paginationHeight -
+      OPPORTUNITY_TABLE_HEIGHT_PADDING -
+      OPPORTUNITY_TABLE_HEIGHT_EXTRA_PADDING -
+      OPPORTUNITY_TABLE_HEIGHT_MARGIN;
+    setTableHeight(Math.max(100, height));
+  }, []);
 
+  useLayoutEffect(() => {
+    updateTableHeight();
+  }, [updateTableHeight, displayRows.length, tablePagination.pageSize]);
+
+  useEffect(() => {
+    const el = tableCardRef.current;
+    if (!el) return;
+    const observer = new ResizeObserver(() => updateTableHeight());
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [updateTableHeight]);
+
+  // 数据量变化后回到第一页，避免停留在已不存在的页码
+  useEffect(() => {
+    setTablePagination((prev) => (prev.current === 1 ? prev : { ...prev, current: 1 }));
+  }, [displayRows.length, searchKeyword]);
+
+  const validCount = useMemo(() => rows.filter((r) => !r.insufficientData).length, [rows]);
   const handleExportPng = async () => {
     if (displayRows.length === 0) {
       message.warning('没有可导出的数据');
       return;
     }
+    const nameLabel = nameType === 'st' ? '仅ST' : nameType === 'non_st' ? '非ST' : '不限名称';
+    const industryLabel =
+      industrySectors.length > 0
+        ? `，行业${industrySectorInvert ? '排除' : '仅保留'}${industrySectors.length}个`
+        : '';
     const summaryLines = [
       `分析时间：${updatedAt ? new Date(updatedAt).toLocaleString('zh-CN') : '-'}`,
       `导出时间：${new Date().toLocaleString('zh-CN')}`,
-      `市场：${selectedMarket.join('+')}，非ST，近8周成交额中位数≥${(filters.minAvgAmount / YI).toFixed(0)}亿`,
-      `硬门槛：13周动量≥${filters.minRet13wSkip1 ?? '-'}%、26周≥${filters.minRet26w ?? '-'}%、52周位置${filters.minPos52w ?? '-'}~${filters.maxPos52w ?? '-'}、量能趋势≥${filters.minVolTrend4_26 ?? '-'}`,
-      `规则：行业最多2只，目标10只；持有2–6周；这周收盘买`,
+      `市场：${selectedMarket.join('+')}，${nameLabel}${industryLabel}`,
+      `趋势门槛：${filters.requireAboveMa60 ? '站上60周线' : '不要求60周线'}；${
+        filters.requireSetup ? '要求至少命中1个战法' : '战法仅加分'
+      }${activeSetupGrade ? `（仅${WEEKLY_SETUP_GRADE_LABELS[activeSetupGrade]}）` : ''}`,
       runningWeek ? '本周未收盘，名单为预览' : '已按最近收盘周出正式名单',
     ];
     try {
@@ -392,7 +500,6 @@ export function WeeklyKPage() {
       setKlines(new Map());
       setNameMap(new Map());
       setUpdatedAt(null);
-      setBacktest(null);
       setStaleCache(0);
       message.success('周K缓存已清空');
     } catch (error) {
@@ -407,14 +514,12 @@ export function WeeklyKPage() {
         title: '代码',
         dataIndex: 'code',
         width: 76,
-        fixed: 'left',
         render: (code: string) => code.replace(/^(SH|SZ|BJ)/i, ''),
       },
       {
         title: '名称',
         dataIndex: 'name',
         width: 96,
-        fixed: 'left',
         render: (name: string) => <span className={styles.nameCell}>{name}</span>,
       },
       {
@@ -422,140 +527,153 @@ export function WeeklyKPage() {
         dataIndex: 'industryName',
         width: 96,
         render: (v: string | undefined) => v || '未知',
+        // 按中文拼音排序，未归类统一落入「未知」
+        sorter: (a, b) =>
+          (a.industryName || '未知').localeCompare(b.industryName || '未知', 'zh-Hans-CN'),
       },
-      { title: '最新价', dataIndex: 'close', width: 84, align: 'right', render: (v: number) => fixed(v) },
+      {
+        title: '最新价',
+        dataIndex: 'close',
+        width: 90,
+        render: (v: number) => fixed(v),
+        sorter: (a, b) => a.close - b.close,
+        sortDirections: ['descend', 'ascend'],
+      },
       {
         title: '本周涨幅',
         dataIndex: 'weekChangePercent',
         width: 96,
-        align: 'right',
         render: (v: number) => percentNode(v),
+        sorter: (a, b) => a.weekChangePercent - b.weekChangePercent,
+        sortDirections: ['descend', 'ascend'],
       },
       {
-        title: <Tooltip title="13周动量(跳过最近1周)×0.5 + 低波动×0.25 + 近1周过热反向×0.15 + 拥挤反向×0.10">综合分</Tooltip>,
+        title: (
+          <Tooltip title="三段式绝对分：趋势健康度(30) + 战法(50) + 多周期共振(20) − 风险惩罚">
+            综合分
+          </Tooltip>
+        ),
         dataIndex: 'score',
         width: 84,
-        align: 'right',
         defaultSortOrder: 'descend',
         sorter: (a, b) => a.score - b.score,
         render: (v: number) => <strong style={{ color: v >= 60 ? '#cf1322' : '#595959' }}>{v}</strong>,
       },
       {
-        title: '分位',
-        dataIndex: 'scoreRank',
-        width: 72,
-        align: 'right',
-        render: (v: number | undefined) => (v === undefined ? '-' : v.toFixed(0)),
+        title: (
+          <Tooltip title="趋势健康度 / 战法 / 多周期共振，各段上限 30 / 50 / 20">
+            趋势/战法/共振
+          </Tooltip>
+        ),
+        key: 'parts',
+        width: 120,
+        render: (_: unknown, row: WeeklyAnalysis) =>
+          `${row.parts.trend}/${row.parts.setup}/${row.parts.resonance}`,
       },
       {
-        title: '13周动量',
-        dataIndex: 'ret13wSkip1',
-        width: 96,
-        align: 'right',
-        render: (v: number | undefined) => percentNode(v),
+        title: '战法',
+        dataIndex: 'setups',
+        width: 260,
+        render: (_: unknown, row: WeeklyAnalysis) =>
+          row.setups.length === 0 ? (
+            <Text type="secondary">-</Text>
+          ) : (
+            <Space wrap size={[2, 2]}>
+              {row.setups.map((hit) => (
+                <Tooltip key={hit.key} title={hit.reasons.join('；')}>
+                  <Tag color="red" style={{ marginInlineEnd: 0 }}>
+                    {hit.label}
+                  </Tag>
+                </Tooltip>
+              ))}
+            </Space>
+          ),
       },
       {
-        title: '26周涨幅',
-        dataIndex: 'ret26w',
-        width: 96,
-        align: 'right',
-        render: (v: number | undefined) => percentNode(v),
+        title: <Tooltip title="MA20 与近 8 周结构低点取更近者">止损</Tooltip>,
+        dataIndex: 'stopLoss',
+        width: 78,
+        render: (v: number | undefined, row: WeeklyAnalysis) =>
+          v === undefined ? (
+            '-'
+          ) : (
+            <span>
+              {fixed(v)}
+              {row.riskPct !== undefined && (
+                <Text type="secondary" style={{ fontSize: 11 }}>
+                  {' '}
+                  ({row.riskPct.toFixed(1)}%)
+                </Text>
+              )}
+            </span>
+          ),
       },
       {
         title: (
-          <Tooltip title="当前价在 52 周高低区间中的位置：0=最低，100=最高">52周位置</Tooltip>
+          <Tooltip title="多周期共振：周线站上MA5 + 日线站上MA20（15分钟层无数据源，未接入）">
+            共振
+          </Tooltip>
         ),
-        dataIndex: 'pos52w',
-        width: 92,
-        align: 'right',
-        render: (v: number | undefined) => (v === undefined ? '-' : v.toFixed(0)),
-      },
-      {
-        title: (
-          <Tooltip title="近 4 周均量 / 近 26 周均量。>1.2 表示近期放量">量能趋势</Tooltip>
-        ),
-        dataIndex: 'volTrend4_26',
-        width: 88,
-        align: 'right',
-        render: (v: number | undefined) =>
-          v === undefined ? '-' : v.toFixed(2),
-      },
-      {
-        title: '近1周',
-        dataIndex: 'ret1w',
-        width: 84,
-        align: 'right',
-        render: (v: number | undefined, row) => percentNode(v ?? row.weekChangePercent),
-      },
-      {
-        title: '波动',
-        dataIndex: 'vol13w',
-        width: 80,
-        align: 'right',
-        render: (v: number | undefined) => (v === undefined ? '-' : `${v.toFixed(1)}%`),
-      },
-      {
-        title: '拥挤',
-        dataIndex: 'amountCrowd8w',
-        width: 72,
-        align: 'right',
-        render: (v: number | undefined) =>
-          v === undefined ? '-' : <span style={{ color: v >= 2 ? '#d46b08' : '#595959' }}>{v.toFixed(2)}</span>,
-      },
-      {
-        title: '成交额中位数',
-        dataIndex: 'amount8wMedian',
-        width: 108,
-        align: 'right',
-        render: (_: unknown, row: WeeklyAnalysis) => amountYi(row.amount8wMedian ?? row.avgAmount20w),
-      },
-      {
-        title: '建议',
-        width: 88,
+        key: 'resonance',
+        width: 68,
         render: (_: unknown, row: WeeklyAnalysis) => {
-          const pos = backtest?.currentPositions.find((p) => p.code === row.code);
-          const action = pos?.action ?? (defenseMode ? '持有' : '新开');
-          const label = defenseMode && action === '新开' ? '观望' : action;
-          return <Tag color={actionColor(pos?.action ?? '新开')}>{label}</Tag>;
+          const { passed, total } = resonanceLayers({
+            pxAboveMa5: row.pxAboveMa5,
+            dailyAboveMa20: row.dailyAboveMa20,
+          });
+          return (
+            <span style={{ color: passed === 2 ? '#cf1322' : '#595959' }}>
+              {passed}/{total}
+              {row.dailyAboveMa20 === undefined ? '*' : ''}
+            </span>
+          );
         },
       },
       {
-        title: '过热',
-        width: 72,
-        render: (_: unknown, row: WeeklyAnalysis) =>
-          (row.ret1w ?? 0) >= 10 ? <Tag color="gold">是</Tag> : <Text type="secondary">否</Text>,
-      },
-    ],
-    [backtest, defenseMode]
-  );
-
-  const holdColumns = useMemo<ColumnsType<HoldPositionView>>(
-    () => [
-      { title: '代码', dataIndex: 'code', width: 76, render: (code: string) => code.replace(/^(SH|SZ|BJ)/i, '') },
-      { title: '名称', dataIndex: 'name', width: 96 },
-      { title: '行业', dataIndex: 'industryName', width: 96 },
-      { title: '综合分', dataIndex: 'score', width: 80, align: 'right' },
-      { title: '已持周数', dataIndex: 'heldWeeks', width: 88, align: 'right' },
-      {
-        title: '最早可卖',
-        width: 88,
-        align: 'right',
-        render: (_: unknown, row) => Math.max(0, row.minHoldWeeks - row.heldWeeks),
+        title: (
+          <Tooltip title="已收盘周的周涨幅；数据不足时回退到本周涨幅">
+            近1周
+          </Tooltip>
+        ),
+        dataIndex: 'ret1w',
+        width: 84,
+        render: (v: number | undefined, row) => percentNode(v ?? row.weekChangePercent),
+        // 与单元格展示保持一致：缺失时回退到本周涨幅，避免排序与肉眼所见不一致
+        sorter: (a, b) =>
+          (a.ret1w ?? a.weekChangePercent) - (b.ret1w ?? b.weekChangePercent),
+        sortDirections: ['descend', 'ascend'],
       },
       {
-        title: '最迟必须卖',
-        width: 100,
-        align: 'right',
-        render: (_: unknown, row) => Math.max(0, row.maxHoldWeeks - row.heldWeeks),
-      },
-      {
-        title: '状态',
-        dataIndex: 'action',
-        width: 88,
-        render: (v: HoldPositionView['action']) => <Tag color={actionColor(v)}>{v}</Tag>,
+        title: (
+          <Tooltip title="文档第四章：有效跌破20周均线 / 10周线拐头向下 / 死叉 / 顶背离 / 高位放量滞涨">
+            卖出信号
+          </Tooltip>
+        ),
+        dataIndex: 'exitSignals',
+        width: 220,
+        // 按信号条数排序（默认先看信号最多的风险股）
+        sorter: (a, b) => (a.exitSignals?.length ?? 0) - (b.exitSignals?.length ?? 0),
+        sortDirections: ['descend', 'ascend'],
+        render: (v: string[] | undefined) =>
+          v && v.length > 0 ? (
+            <Text type="danger" style={{ fontSize: 12 }}>
+              {v.join('；')}
+            </Text>
+          ) : (
+            <Text type="secondary">-</Text>
+          ),
       },
     ],
     []
+  );
+
+  /**
+   * 虚拟滚动要求 scroll.x / scroll.y 都是数字，且横向宽度需与列宽之和一致，
+   * 否则虚拟表格会按 scrollWidth 布局，导致右侧列被裁切（与机会分析页保持一致）。
+   */
+  const tableScrollX = useMemo(
+    () => watchColumns.reduce((sum, col) => sum + (Number(col.width) || 120), 0),
+    [watchColumns]
   );
 
   return (
@@ -576,7 +694,42 @@ export function WeeklyKPage() {
           </Space.Compact>
 
           <Space.Compact className={styles.spaceCompact}>
-            <span className={styles.label}>周K根数：</span>
+            <span className={styles.label}>名称：</span>
+            <Select
+              value={nameType}
+              onChange={(value: string) => setNameType(value)}
+              options={NAME_TYPE_OPTIONS}
+              style={{ width: 100 }}
+              disabled={loading}
+            />
+          </Space.Compact>
+
+          <Space.Compact className={styles.spaceCompact} style={{ minWidth: 320 }}>
+            <span className={styles.label}>行业：</span>
+            <Select
+              mode="multiple"
+              allowClear
+              placeholder="请选择"
+              value={industrySectors}
+              onChange={(values: string[]) => setIndustrySectors(values)}
+              options={industrySectorOptions}
+              style={{ minWidth: 220 }}
+              disabled={loading}
+              maxTagCount={2}
+              maxTagPlaceholder={(omitted) => `+${omitted.length}`}
+            />
+            <Checkbox
+              checked={industrySectorInvert}
+              onChange={(e) => setIndustrySectorInvert(e.target.checked)}
+              style={{ marginLeft: 8, whiteSpace: 'nowrap' }}
+              disabled={loading || industrySectors.length === 0}
+            >
+              排除选中
+            </Checkbox>
+          </Space.Compact>
+
+          <Space.Compact className={styles.spaceCompact}>
+            <span className={styles.label}>K线：</span>
             <InputNumber
               value={klineCount}
               min={80}
@@ -593,98 +746,60 @@ export function WeeklyKPage() {
           </Space.Compact>
 
           <Space.Compact className={styles.spaceCompact}>
-            <span className={styles.label}>近8周成交额中位数≥</span>
-            <InputNumber
-              value={Number((filters.minAvgAmount / YI).toFixed(1))}
-              min={0}
-              max={50}
-              step={1}
-              style={{ width: 84 }}
-              disabled={loading}
-              onChange={(v) =>
-                patchFilters({ minAvgAmount: typeof v === 'number' && isFinite(v) ? v * YI : 3 * YI })
-              }
-            />
-            <span className={styles.label}>亿</span>
-          </Space.Compact>
-
-          <Space.Compact className={styles.spaceCompact}>
-            <Tooltip title="13 周动量跳过最近 1 周，要求已经在涨">
-              <span className={styles.label}>13周动量≥</span>
+            <Tooltip title="战法白名单：需同时勾选「命中战法」才作为硬门槛；不勾时战法只参与打分">
+              <span className={styles.label}>战法：</span>
             </Tooltip>
-            <InputNumber
-              value={filters.minRet13wSkip1}
-              min={0}
-              max={80}
-              step={1}
-              style={{ width: 72 }}
+            <Select
+              mode="multiple"
+              allowClear
+              value={filters.allowedSetups ?? []}
+              options={SETUP_OPTIONS}
+              style={{ width: 220 }}
               disabled={loading}
-              onChange={(v) =>
-                patchFilters({ minRet13wSkip1: typeof v === 'number' && isFinite(v) ? v : 5 })
+              maxTagCount={3}
+              placeholder="不限战法"
+              onChange={(value: SetupKey[]) =>
+                patchFilters({ allowedSetups: value.length > 0 ? value : undefined })
               }
             />
-            <span className={styles.label}>%</span>
           </Space.Compact>
 
           <Space.Compact className={styles.spaceCompact}>
-            <span className={styles.label}>26周涨幅≥</span>
-            <InputNumber
-              value={filters.minRet26w}
-              min={0}
-              max={120}
-              step={1}
-              style={{ width: 72 }}
-              disabled={loading}
-              onChange={(v) =>
-                patchFilters({ minRet26w: typeof v === 'number' && isFinite(v) ? v : 10 })
-              }
-            />
-            <span className={styles.label}>%</span>
-          </Space.Compact>
-
-          <Space.Compact className={styles.spaceCompact}>
-            <Tooltip title="52 周位置过低是长期弱势，过高容易是权重慢牛顶">
-              <span className={styles.label}>52周位置</span>
+            <Tooltip title="满分档 = 战法全部条件成立；部分档 = 形态基本成型但缺关键确认（如尚未止跌、尚未真正突破箱顶）。选中后即为硬门槛">
+              <span className={styles.label}>档位：</span>
             </Tooltip>
-            <InputNumber
-              value={filters.minPos52w}
-              min={0}
-              max={100}
-              style={{ width: 64 }}
+            <Select
+              allowClear
+              value={activeSetupGrade}
+              options={SETUP_GRADE_OPTIONS}
+              style={{ width: 110 }}
               disabled={loading}
-              onChange={(v) =>
-                patchFilters({ minPos52w: typeof v === 'number' && isFinite(v) ? v : 30 })
-              }
-            />
-            <span className={styles.label}>~</span>
-            <InputNumber
-              value={filters.maxPos52w}
-              min={0}
-              max={100}
-              style={{ width: 64 }}
-              disabled={loading}
-              onChange={(v) =>
-                patchFilters({ maxPos52w: typeof v === 'number' && isFinite(v) ? v : 85 })
+              placeholder="不限"
+              onChange={(value: WeeklySetupGrade | undefined) =>
+                patchFilters({ setupGrades: value ? [value] : undefined })
               }
             />
           </Space.Compact>
 
-          <Space.Compact className={styles.spaceCompact}>
-            <Tooltip title="近 4 周均量 / 近 26 周均量，过滤不活跃的权重股">
-              <span className={styles.label}>量能趋势≥</span>
-            </Tooltip>
-            <InputNumber
-              value={filters.minVolTrend4_26}
-              min={0}
-              max={5}
-              step={0.1}
-              style={{ width: 72 }}
+          <Tooltip title="勾选后要求至少命中一个战法；六大战法同时成立机会极少，默认关闭">
+            <Checkbox
+              checked={filters.requireSetup ?? false}
+              onChange={(e) => patchFilters({ requireSetup: e.target.checked })}
               disabled={loading}
-              onChange={(v) =>
-                patchFilters({ minVolTrend4_26: typeof v === 'number' && isFinite(v) ? v : 1.2 })
-              }
-            />
-          </Space.Compact>
+            >
+              命中战法
+            </Checkbox>
+          </Tooltip>
+
+          <Tooltip title="文档：直接排除股价长期在 60 周均线下方的个股">
+            <Checkbox
+              checked={filters.requireAboveMa60 ?? true}
+              onChange={(e) => patchFilters({ requireAboveMa60: e.target.checked })}
+              disabled={loading}
+            >
+              站上60周线
+            </Checkbox>
+          </Tooltip>
 
           <Checkbox checked={forceRefresh} onChange={(e) => setForceRefresh(e.target.checked)} disabled={loading}>
             强制刷新
@@ -697,7 +812,7 @@ export function WeeklyKPage() {
             disabled={loading || stockPool.length === 0}
             onClick={() => void handleAnalyze()}
           >
-            一键分析（{stockPool.length}）
+            一键分析
           </Button>
 
           {loading && (
@@ -706,18 +821,15 @@ export function WeeklyKPage() {
             </Button>
           )}
 
-          <Button
-            icon={<ExperimentOutlined />}
-            loading={backtesting}
-            disabled={loading || backtesting || klines.size === 0}
-            onClick={() => void handleBacktest()}
-          >
-            验证策略（回测）
-          </Button>
-
-          <Button icon={<ExportOutlined />} disabled={displayRows.length === 0} onClick={() => void handleExportPng()}>
-            导出图片(PNG)
-          </Button>
+          <Tooltip title="用已加载的周K缓存逐周回溯六大战法的历史信号，统计胜率与收益分布">
+            <Button
+              icon={<ExperimentOutlined />}
+              disabled={loading || klines.size === 0}
+              onClick={() => setShowBacktest(true)}
+            >
+              历史回测
+            </Button>
+          </Tooltip>
 
           <Dropdown
             menu={{
@@ -746,6 +858,10 @@ export function WeeklyKPage() {
             </Button>
           </Dropdown>
 
+          <Button icon={<ExportOutlined />} disabled={displayRows.length === 0} onClick={() => void handleExportPng()}>
+            导出图片(PNG)
+          </Button>
+
           <Button icon={<ClearOutlined />} disabled={loading} onClick={() => void handleClearCache()}>
             清空周K缓存
           </Button>
@@ -762,10 +878,31 @@ export function WeeklyKPage() {
       </div>
 
       <div className={styles.filterBar}>
-        <div className={styles.presetHint}>
-          硬过滤：非ST + 流动性 + 13周动量≥{filters.minRet13wSkip1}% + 26周涨幅≥{filters.minRet26w}% + 52周位置 {filters.minPos52w}~{filters.maxPos52w} + 量能趋势≥{filters.minVolTrend4_26}。
-          评分仍按原权重排序。同一行业最多 2 只，目标 10 只。周五收盘买，锁仓 2 周、最长 6 周。
-        </div>
+        <span>
+          本周名单 <strong>{watchlist.length}</strong> 只 / 硬门槛 {filteredRows.length} 只 / 评分池{' '}
+          {validCount} 只
+        </span>
+
+        <span
+          className={styles.filterSummary}
+          title="评分＝趋势健康度(30) + 战法(50) + 多周期共振(20) − 风险惩罚（三段式绝对分）"
+        >
+          🔍 硬过滤：
+          {nameType === 'st' ? '仅ST' : nameType === 'non_st' ? '非ST' : '不限名称'}
+          {industrySectors.length > 0
+            ? ` + 行业${industrySectorInvert ? '排除' : '仅保留'}选中${industrySectors.length}个`
+            : ''}
+          {' + 剔除空头排列'}
+          {filters.requireAboveMa60 ? ' + 站上60周线' : ''}
+          {filters.requireSetup ? ' + 至少命中1个战法' : ''}
+          {activeSetupGrade ? ` + 仅${WEEKLY_SETUP_GRADE_LABELS[activeSetupGrade]}战法` : ''}
+        </span>
+
+        {updatedAt && (
+          <span className={styles.timeText}>
+            🕐 数据时间：{new Date(updatedAt).toLocaleString('zh-CN')}
+          </span>
+        )}
       </div>
 
       <Content className={styles.content}>
@@ -787,7 +924,7 @@ export function WeeklyKPage() {
             type="warning"
             showIcon
             style={{ marginBottom: 12 }}
-            message={`已忽略 ${staleCache} 只不兼容的旧周K缓存，重新分析后即可更新`}
+            message={`已忽略 ${staleCache} 只不兼容的旧周K缓存（结构版本或复权方式已变更），重新分析后即可更新`}
           />
         )}
 
@@ -809,29 +946,8 @@ export function WeeklyKPage() {
           </Card>
         )}
 
-        <div style={{ padding: '0 16px' }}>
-          <WeeklyBacktestPanel result={backtest} loading={backtesting} />
-        </div>
-
-        <div className={styles.resultBar}>
-          <span>
-            本周名单 <strong>{watchlist.length}</strong> 只 / 硬门槛 {filteredRows.length} 只 / 评分池 {validCount} 只
-          </span>
-          {marketBreadth !== undefined && (
-            <span className={styles.timeText}>
-              市场宽度{' '}
-              <strong style={{ color: marketBreadth >= 50 ? '#cf1322' : '#389e0d' }}>
-                {marketBreadth.toFixed(0)}%
-              </strong>
-              （{defenseMode ? '防御' : '正常'}）
-            </span>
-          )}
-          {updatedAt && (
-            <span className={styles.timeText}>数据时间：{new Date(updatedAt).toLocaleString('zh-CN')}</span>
-          )}
-        </div>
-
         <Card
+          ref={tableCardRef}
           className={styles.tableCard}
           title="本周名单"
           extra={
@@ -848,7 +964,13 @@ export function WeeklyKPage() {
         >
           {hydrating && (
             <div className={styles.loadingMask}>
-              <Spin tip="正在从 IndexedDB 恢复周K数据..." size="large" />
+              {/* antd Spin 的 tip 仅在「嵌套 / 全屏」模式下生效，这里改为自行渲染文案 */}
+              <Space direction="vertical" align="center" size={8}>
+                <Spin size="large" />
+                <span style={{ color: 'var(--ant-color-text-secondary)', fontSize: 13 }}>
+                  正在从 IndexedDB 恢复周K数据...
+                </span>
+              </Space>
             </div>
           )}
           <Table<WeeklyAnalysis>
@@ -856,8 +978,17 @@ export function WeeklyKPage() {
             size="small"
             columns={watchColumns}
             dataSource={displayRows}
-            scroll={{ x: 1400 }}
-            pagination={false}
+            // 虚拟滚动：只渲染可视行，避免「本周名单」上百行 × 12 列的 DOM 开销
+            virtual
+            scroll={{ x: tableScrollX, y: tableHeight }}
+            pagination={tablePagination}
+            onChange={(paginationConfig) =>
+              setTablePagination((prev) => ({
+                ...prev,
+                current: paginationConfig.current,
+                pageSize: paginationConfig.pageSize,
+              }))
+            }
             onRow={(record) => ({
               onClick: () => setChartState({ code: record.code, name: record.name }),
               className: styles.clickableRow,
@@ -867,27 +998,19 @@ export function WeeklyKPage() {
             }}
           />
         </Card>
-
-        <Card className={styles.tableCard} title="持仓时钟（需先点回测）" style={{ marginTop: 12 }}>
-          <Table<HoldPositionView>
-            rowKey="code"
-            size="small"
-            columns={holdColumns}
-            dataSource={backtest?.currentPositions ?? []}
-            pagination={false}
-            locale={{ emptyText: '点击「验证策略（回测）」后，这里显示模拟持仓的已持周数与卖出窗口' }}
-            onRow={(record) => ({
-              onClick: () => setChartState({ code: record.code, name: record.name }),
-              className: styles.clickableRow,
-            })}
-          />
-        </Card>
       </Content>
 
       <AddStocksToWatchListModal
         visible={showAddToWatchList}
         stocks={displayRows.map((row) => ({ code: row.code, name: row.name }))}
         onClose={() => setShowAddToWatchList(false)}
+      />
+
+      <WeeklyBacktestDrawer
+        open={showBacktest}
+        klines={klines}
+        names={nameMap}
+        onClose={() => setShowBacktest(false)}
       />
 
       <WeeklyChartModal

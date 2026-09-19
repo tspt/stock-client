@@ -20,6 +20,7 @@ import {
   WEEKLY_SETUP_LABELS,
   type SetupKey,
   type WeeklyConfig,
+  type WeeklySetupGrade,
   type WeeklySetupHit,
 } from './types';
 
@@ -36,6 +37,15 @@ function makeHit(key: SetupKey, ratio: number, reasons: string[]): WeeklySetupHi
     max,
     reasons,
   };
+}
+
+/**
+ * 命中档位：实得分达到满分即「满分档」，否则为「部分档」。
+ *
+ * 抽成唯一入口，避免筛选（select）与回测（backtest）各写一遍判定而漂移。
+ */
+export function setupGradeOf(hit: WeeklySetupHit): WeeklySetupGrade {
+  return hit.score >= hit.max ? 'full' : 'partial';
 }
 
 /** 当周成交量相对「前 8 周均量」是否放大到 threshold 倍 */
