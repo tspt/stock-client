@@ -75,6 +75,25 @@ function passLightFilters(item: StockOpportunityData, filters: OpportunityFilter
     if (filters.kdjJRange.max !== undefined && item.kdjJ > filters.kdjJRange.max) return false;
   }
 
+  // 总营收 / 归母净利润（筛选单位：亿元；数据需先点「获取营收净利润」才有）
+  const revenueRange = filters.financeRevenueRange;
+  if (revenueRange && (revenueRange.min !== undefined || revenueRange.max !== undefined)) {
+    const revenue = item.finance?.revenue;
+    if (revenue === null || revenue === undefined) return false;
+    const revenueInYi = revenue / 1e8;
+    if (revenueRange.min !== undefined && revenueInYi < revenueRange.min) return false;
+    if (revenueRange.max !== undefined && revenueInYi > revenueRange.max) return false;
+  }
+
+  const netProfitRange = filters.financeNetProfitRange;
+  if (netProfitRange && (netProfitRange.min !== undefined || netProfitRange.max !== undefined)) {
+    const netProfit = item.finance?.netProfit;
+    if (netProfit === null || netProfit === undefined) return false;
+    const netProfitInYi = netProfit / 1e8;
+    if (netProfitRange.min !== undefined && netProfitInYi < netProfitRange.min) return false;
+    if (netProfitRange.max !== undefined && netProfitInYi > netProfitRange.max) return false;
+  }
+
   return true;
 }
 

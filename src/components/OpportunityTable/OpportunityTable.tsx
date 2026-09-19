@@ -16,6 +16,8 @@ import {
   formatRatio,
   formatTurnoverRate,
   formatTotalShares,
+  formatChineseAmountFromYuan,
+  formatGrowthPercent,
 } from '@/utils/format/format';
 import { StockConceptTags, StockFeatureTag, StockStatusTag } from '@/components/common/Tags';
 import styles from './OpportunityTable.module.css';
@@ -75,6 +77,10 @@ export const OpportunityTable = memo(function OpportunityTable({ data, columns, 
         // 用权重而非类型字符串排序：避免 HOLD 插在买入与卖出之间、且 STRONG_* 被字典序排到最后
         return signalType ? TRADING_SIGNAL_SORT_WEIGHT[signalType] ?? 5 : undefined;
       }
+      case 'financeRevenue':
+        return record.finance?.revenue;
+      case 'financeNetProfit':
+        return record.finance?.netProfit;
       default:
         return (record as any)[key];
     }
@@ -126,6 +132,33 @@ export const OpportunityTable = memo(function OpportunityTable({ data, columns, 
         <span>
           <strong style={{ color: '#1890ff' }}>M={lookback}, N={consecutive}</strong>
           <span style={{ marginLeft: 8 }}>{reasonText}</span>
+        </span>
+      );
+    }
+
+    if (key === 'financeRevenue' || key === 'financeNetProfit') {
+      const metrics = record?.finance;
+      const amount = key === 'financeRevenue' ? metrics?.revenue : metrics?.netProfit;
+      const growth = key === 'financeRevenue' ? metrics?.revenueYoy : metrics?.netProfitYoy;
+      if (amount === undefined && growth === undefined) {
+        return '';
+      }
+      const title = metrics
+        ? [metrics.reportLabel, metrics.publishDate ? `公告日 ${metrics.publishDate}` : '']
+            .filter(Boolean)
+            .join(' · ')
+        : '';
+      return (
+        <span title={title || undefined} style={{ whiteSpace: 'nowrap' }}>
+          <span>{formatChineseAmountFromYuan(amount)}</span>
+          {growth !== undefined && (
+            <span
+              className={growth >= 0 ? styles.positiveValue : styles.negativeValue}
+              style={{ marginLeft: 6 }}
+            >
+              {formatGrowthPercent(growth)}
+            </span>
+          )}
         </span>
       );
     }

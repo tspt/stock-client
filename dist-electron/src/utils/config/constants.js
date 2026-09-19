@@ -287,6 +287,8 @@ export const OPPORTUNITY_DEFAULT_COLUMNS = [
     { key: 'marketCap', title: '总市值', visible: true, width: 100 },
     { key: 'circulatingMarketCap', title: '流通市值', visible: false, width: 100 },
     { key: 'peRatio', title: '市盈率(PE)', visible: true, width: 100 },
+    { key: 'financeRevenue', title: '总营收', visible: true, width: 150 },
+    { key: 'financeNetProfit', title: '归母净利润', visible: true, width: 150 },
     { key: 'kdjK', title: 'KDJ-K', visible: false, width: 88 },
     { key: 'kdjD', title: 'KDJ-D', visible: false, width: 88 },
     { key: 'kdjJ', title: 'KDJ-J', visible: true, width: 88 },

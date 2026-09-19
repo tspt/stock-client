@@ -8,6 +8,7 @@ import type {
   StockQuote,
   StockDetail,
   IndustryInfo,
+  StockFinanceMetrics,
 } from '@/types/stock';
 import {
   OPPORTUNITY_DB_NAME,
@@ -16,6 +17,7 @@ import {
   OPPORTUNITY_KLINE_STORE_NAME,
   WEEKLY_KLINE_STORE_NAME,
   STOCK_HISTORY_STORE_NAME,
+  STOCK_FINANCE_STORE_NAME,
 } from '../config/constants';
 
 let dbInstance: IDBDatabase | null = null;
@@ -89,6 +91,11 @@ export async function initOpportunityDB(): Promise<IDBDatabase> {
       // v8: 周K 数据独立存储（周线选股页面专用，不与日线历史互相覆盖）
       if (!db.objectStoreNames.contains(WEEKLY_KLINE_STORE_NAME)) {
         db.createObjectStore(WEEKLY_KLINE_STORE_NAME, { keyPath: 'code' });
+      }
+
+      // v9: 营收/净利润指标独立存储（跨重启复用，且不受分析数据清理影响）
+      if (!db.objectStoreNames.contains(STOCK_FINANCE_STORE_NAME)) {
+        db.createObjectStore(STOCK_FINANCE_STORE_NAME, { keyPath: 'code' });
       }
     };
   });
@@ -365,5 +372,89 @@ export async function getStocksHistory(codes: string[]): Promise<StockHistoryRec
   }
 
   return getStockHistoriesByCodes(codes);
+}
+
+// ==================== 营收 / 净利润指标管理 ====================
+
+/** 营收/净利润指标记录（带写入时间，供上层做 TTL 判断） */
+export interface StockFinanceRecord {
+  code: string;
+  metrics: StockFinanceMetrics;
+  updatedAt: number;
+}
+
+/**
+ * 批量保存营收/净利润指标（按 code 覆盖）。
+ * 写入内容为纯数据对象，体积很小，数千条也只是一次小事务。
+ */
+export async function saveStockFinanceMetrics(records: StockFinanceRecord[]): Promise<void> {
+  if (records.length === 0) return;
+  const db = await initOpportunityDB();
+  const transaction = db.transaction([STOCK_FINANCE_STORE_NAME], 'readwrite');
+  const store = transaction.objectStore(STOCK_FINANCE_STORE_NAME);
+
+  return new Promise((resolve, reject) => {
+    transaction.oncomplete = () => resolve();
+    transaction.onerror = () => reject(new Error('保存营收净利润数据失败'));
+    records.forEach((record) => store.put(record));
+  });
+}
+
+/**
+ * 按股票代码批量读取营收/净利润指标
+ */
+export async function getStockFinanceMetrics(codes: string[]): Promise<StockFinanceRecord[]> {
+  if (codes.length === 0) return [];
+  const db = await initOpportunityDB();
+
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction([STOCK_FINANCE_STORE_NAME], 'readonly');
+    const store = transaction.objectStore(STOCK_FINANCE_STORE_NAME);
+    const results: StockFinanceRecord[] = [];
+    let completed = 0;
+
+    const settle = () => {
+      completed++;
+      if (completed === codes.length) resolve(results);
+    };
+
+    codes.forEach((code) => {
+      const request = store.get(code);
+      request.onsuccess = () => {
+        if (request.result) results.push(request.result as StockFinanceRecord);
+        settle();
+      };
+      request.onerror = settle;
+    });
+  });
+}
+
+/**
+ * 读取全部营收/净利润指标（页面初始化时恢复用）
+ */
+export async function getAllStockFinanceMetrics(): Promise<StockFinanceRecord[]> {
+  const db = await initOpportunityDB();
+
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction([STOCK_FINANCE_STORE_NAME], 'readonly');
+    const request = transaction.objectStore(STOCK_FINANCE_STORE_NAME).getAll();
+
+    request.onsuccess = () => resolve((request.result || []) as StockFinanceRecord[]);
+    request.onerror = () => reject(new Error('获取营收净利润数据失败'));
+  });
+}
+
+/**
+ * 清空全部营收/净利润指标
+ */
+export async function clearStockFinanceMetrics(): Promise<void> {
+  const db = await initOpportunityDB();
+  const transaction = db.transaction([STOCK_FINANCE_STORE_NAME], 'readwrite');
+
+  return new Promise((resolve, reject) => {
+    transaction.oncomplete = () => resolve();
+    transaction.onerror = () => reject(new Error('清空营收净利润数据失败'));
+    transaction.objectStore(STOCK_FINANCE_STORE_NAME).clear();
+  });
 }
 

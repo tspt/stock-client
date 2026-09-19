@@ -266,8 +266,8 @@ export const ALERT_TIME_PERIODS = [
 /** 机会分析相关常量 */
 /** IndexedDB 数据库名 */
 export const OPPORTUNITY_DB_NAME = 'StockOpportunityDB';
-/** IndexedDB 版本（v8：新增周K缓存存储） */
-export const OPPORTUNITY_DB_VERSION = 8;
+/** IndexedDB 版本（v9：新增营收/净利润指标存储） */
+export const OPPORTUNITY_DB_VERSION = 9;
 /** 对象存储名称 */
 export const OPPORTUNITY_STORE_NAME = 'opportunityData';
 /** 分析结果 K 线缓存存储名称（v7 起从主记录拆分出来，避免单条记录过大） */
@@ -276,6 +276,8 @@ export const OPPORTUNITY_KLINE_STORE_NAME = 'opportunityKlineCache';
 export const STOCK_HISTORY_STORE_NAME = 'stockHistory';
 /** 周K数据缓存存储名称（v8 起，独立于日线历史，避免周线覆盖日线数据） */
 export const WEEKLY_KLINE_STORE_NAME = 'weeklyKlineCache';
+/** 营收/净利润指标存储名称（v9 起，独立存储，避免被分析数据清理逻辑误删） */
+export const STOCK_FINANCE_STORE_NAME = 'stockFinanceMetrics';
 /** 默认并发数（每批股票数，与 OPPORTUNITY_BATCH_DELAY 配合控频） */
 export const OPPORTUNITY_CONCURRENT_LIMIT = 8;
 /** 批次间延迟（毫秒） */
@@ -316,12 +318,14 @@ export const OPPORTUNITY_DEFAULT_COLUMNS = [
   { key: 'marketCap', title: '总市值', visible: true, width: 100 },
   { key: 'circulatingMarketCap', title: '流通市值', visible: false, width: 100 },
   { key: 'peRatio', title: '市盈率(PE)', visible: true, width: 100 },
+  { key: 'financeRevenue', title: '总营收', visible: true, width: 150 },
+  { key: 'financeNetProfit', title: '归母净利润', visible: true, width: 150 },
   { key: 'kdjK', title: 'KDJ-K', visible: false, width: 88 },
   { key: 'kdjD', title: 'KDJ-D', visible: false, width: 88 },
   { key: 'kdjJ', title: 'KDJ-J', visible: true, width: 88 },
   { key: 'avgPrice', title: '区间平均价', visible: false, width: 110 },
-  { key: 'highPrice', title: '区间最高价', visible: true, width: 110 },
-  { key: 'lowPrice', title: '区间最低价', visible: true, width: 110 },
+  { key: 'highPrice', title: '区间最高价', visible: false, width: 110 },
+  { key: 'lowPrice', title: '区间最低价', visible: false, width: 110 },
   { key: 'opportunityChangePercent', title: '区间最大值回撤比', visible: true, width: 150 },
   { key: 'concepts', title: '所属概念', visible: true, width: 300 },
   { key: 'tradingSignal', title: '交易信号', visible: true, width: 240 },

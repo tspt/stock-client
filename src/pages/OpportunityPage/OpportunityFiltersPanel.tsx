@@ -83,6 +83,9 @@ export function buildOpportunityFilterSummary(p: {
   volumePullbackMa10TolerancePct: number;
   volumePullbackRequireUpperShadow: boolean;
   volumePullbackUpperShadowRatio: number;
+  // 总营收 / 归母净利润（亿元）
+  financeRevenueRange: NumRange;
+  financeNetProfitRange: NumRange;
   // 新增技术指标筛选
   rsiRange: NumRange;
   // AI分析筛选
@@ -117,6 +120,8 @@ export function buildOpportunityFilterSummary(p: {
   if (p.kdjJRange.min != null || p.kdjJRange.max != null) {
     pushRange(parts, 'KDJ-J', p.kdjJRange);
   }
+  pushRange(parts, '总营收', p.financeRevenueRange, '亿');
+  pushRange(parts, '归母净利润', p.financeNetProfitRange, '亿');
   if (p.recentLimitUpCount != null) {
     parts.push(`涨停≥${p.recentLimitUpCount}·${p.limitUpPeriod}天`);
   }
@@ -321,6 +326,11 @@ export interface OpportunityFiltersPanelProps {
   volumePullbackUpperShadowRatio: number;
   setVolumePullbackUpperShadowRatio: (v: number) => void;
   consolidationTypeOptions: { label: string; value: ConsolidationType }[];
+  // 总营收 / 归母净利润 props（单位：亿元）
+  financeRevenueRange: { min?: number; max?: number };
+  setFinanceRevenueRange: SetRange;
+  financeNetProfitRange: { min?: number; max?: number };
+  setFinanceNetProfitRange: SetRange;
   // 新增技术指标筛选 props
   rsiRange: { min?: number; max?: number };
   setRsiRange: SetRange;
@@ -480,6 +490,11 @@ function OpportunityFiltersPanelComponent({
   volumePullbackUpperShadowRatio,
   setVolumePullbackUpperShadowRatio,
   consolidationTypeOptions,
+  // 总营收 / 归母净利润
+  financeRevenueRange,
+  setFinanceRevenueRange,
+  financeNetProfitRange,
+  setFinanceNetProfitRange,
   // 新增技术指标筛选
   rsiRange,
   setRsiRange,
@@ -601,6 +616,8 @@ function OpportunityFiltersPanelComponent({
         volumePullbackMa10TolerancePct,
         volumePullbackRequireUpperShadow,
         volumePullbackUpperShadowRatio,
+        financeRevenueRange,
+        financeNetProfitRange,
         rsiRange,
         aiAnalysisEnabled,
         aiTrendUp,
@@ -660,6 +677,8 @@ function OpportunityFiltersPanelComponent({
       volumePullbackMa10TolerancePct,
       volumePullbackRequireUpperShadow,
       volumePullbackUpperShadowRatio,
+      financeRevenueRange,
+      financeNetProfitRange,
       rsiRange,
       aiAnalysisEnabled,
       aiTrendUp,
@@ -929,6 +948,64 @@ function OpportunityFiltersPanelComponent({
                           placeholder="最大值"
                           onChange={(v) => {
                             setKdjJRange((prev) => ({
+                              ...prev,
+                              max: typeof v === 'number' && isFinite(v) ? v : undefined,
+                            }));
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <div className={styles.filterRow}>
+                      <div className={styles.filterItem}>
+                        <span className={styles.filterLabel}>总营收(亿)：</span>
+                        <InputNumber
+                          value={financeRevenueRange.min}
+                          step={1}
+                          style={{ width: 100 }}
+                          placeholder="最小值"
+                          onChange={(v) => {
+                            setFinanceRevenueRange((prev) => ({
+                              ...prev,
+                              min: typeof v === 'number' && isFinite(v) ? v : undefined,
+                            }));
+                          }}
+                        />
+                        <span style={{ margin: '0 4px' }}>~</span>
+                        <InputNumber
+                          value={financeRevenueRange.max}
+                          step={1}
+                          style={{ width: 100 }}
+                          placeholder="最大值"
+                          onChange={(v) => {
+                            setFinanceRevenueRange((prev) => ({
+                              ...prev,
+                              max: typeof v === 'number' && isFinite(v) ? v : undefined,
+                            }));
+                          }}
+                        />
+                      </div>
+                      <div className={styles.filterItem}>
+                        <span className={styles.filterLabel}>归母净利润(亿)：</span>
+                        <InputNumber
+                          value={financeNetProfitRange.min}
+                          step={1}
+                          style={{ width: 100 }}
+                          placeholder="最小值"
+                          onChange={(v) => {
+                            setFinanceNetProfitRange((prev) => ({
+                              ...prev,
+                              min: typeof v === 'number' && isFinite(v) ? v : undefined,
+                            }));
+                          }}
+                        />
+                        <span style={{ margin: '0 4px' }}>~</span>
+                        <InputNumber
+                          value={financeNetProfitRange.max}
+                          step={1}
+                          style={{ width: 100 }}
+                          placeholder="最大值"
+                          onChange={(v) => {
+                            setFinanceNetProfitRange((prev) => ({
                               ...prev,
                               max: typeof v === 'number' && isFinite(v) ? v : undefined,
                             }));

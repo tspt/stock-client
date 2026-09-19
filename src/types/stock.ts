@@ -330,6 +330,27 @@ export interface TradingSignal {
 }
 
 /**
+ * 股票财务指标（成长能力）
+ * 数据来源：新浪财经 CompanyFinanceService.getFinanceReport2022
+ */
+export interface StockFinanceMetrics {
+  /** 报告期（YYYYMMDD） */
+  reportDate?: string;
+  /** 报告期描述，如「2026半年报」 */
+  reportLabel?: string;
+  /** 公告日期（YYYYMMDD） */
+  publishDate?: string;
+  /** 营业总收入（单位：元） */
+  revenue?: number;
+  /** 营业总收入增长率（单位：%，接口原值已是百分数，如 21.37 表示 21.37%） */
+  revenueYoy?: number;
+  /** 归母净利润（单位：元） */
+  netProfit?: number;
+  /** 归属母公司净利润增长率（单位：%，接口原值已是百分数，如 -7.38 表示 -7.38%） */
+  netProfitYoy?: number;
+}
+
+/**
  * 机会分析 - 单只股票的分析数据
  */
 export interface StockOpportunityData {
@@ -410,6 +431,8 @@ export interface StockOpportunityData {
   concepts?: ConceptInfo[];
   /** 分析时间戳 */
   analyzedAt: number;
+  /** 营收 / 净利润财务指标（按需拉取，仅内存态，不参与分析持久化） */
+  finance?: StockFinanceMetrics;
   /** 错误信息（如果获取失败） */
   error?: string;
 }

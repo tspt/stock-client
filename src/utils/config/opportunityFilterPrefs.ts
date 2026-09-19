@@ -147,6 +147,10 @@ export interface OpportunityFilterPrefs {
   volumePullbackMa10TolerancePct: number;
   volumePullbackRequireUpperShadow: boolean;
   volumePullbackUpperShadowRatio: number;
+  /** 总营收范围（单位：亿元） */
+  financeRevenueRange: { min?: number; max?: number };
+  /** 归母净利润范围（单位：亿元） */
+  financeNetProfitRange: { min?: number; max?: number };
   /** RSI指标范围 */
   rsiRange: { min?: number; max?: number };
   /** RSI周期 */
@@ -329,6 +333,9 @@ export function loadOpportunityFilterPrefs(): OpportunityFilterPrefs | null {
         : OPPORTUNITY_DEFAULT_VOLUME_PULLBACK.ma10TolerancePct,
       volumePullbackRequireUpperShadow: p.volumePullbackRequireUpperShadow === true,
       volumePullbackUpperShadowRatio: parseUpperShadowPercent(p.volumePullbackUpperShadowRatio),
+      // 总营收 / 归母净利润（亿元）
+      financeRevenueRange: parseRange(p.financeRevenueRange),
+      financeNetProfitRange: parseRange(p.financeNetProfitRange),
       // 新增技术指标筛选
       rsiRange: parseRange(p.rsiRange),
       rsiPeriod: isFiniteNumber(p.rsiPeriod) ? Math.floor(p.rsiPeriod) : 6,
@@ -430,6 +437,9 @@ export function getDefaultFilterPrefsFields(): Omit<
     volumePullbackMa10TolerancePct: OPPORTUNITY_DEFAULT_VOLUME_PULLBACK.ma10TolerancePct,
     volumePullbackRequireUpperShadow: OPPORTUNITY_DEFAULT_VOLUME_PULLBACK.requireUpperShadow,
     volumePullbackUpperShadowRatio: OPPORTUNITY_DEFAULT_VOLUME_PULLBACK.upperShadowRatio,
+    // 总营收 / 归母净利润（亿元）
+    financeRevenueRange: {},
+    financeNetProfitRange: {},
     // 新增技术指标筛选默认值
     rsiRange: {},
     rsiPeriod: 6,
@@ -530,6 +540,9 @@ export interface OpportunityFilterPrefsApplyActions {
   setVolumePullbackMa10TolerancePct: (v: number) => void;
   setVolumePullbackRequireUpperShadow: (v: boolean) => void;
   setVolumePullbackUpperShadowRatio: (v: number) => void;
+  // 总营收 / 归母净利润 actions
+  setFinanceRevenueRange: (v: { min?: number; max?: number }) => void;
+  setFinanceNetProfitRange: (v: { min?: number; max?: number }) => void;
   // 新增技术指标筛选 actions
   setRsiRange: (v: { min?: number; max?: number }) => void;
   setRsiPeriod: (v: number) => void;
@@ -602,6 +615,9 @@ export function applyOpportunityFilterPrefsToState(
   actions.setVolumePullbackMa10TolerancePct(prefs.volumePullbackMa10TolerancePct);
   actions.setVolumePullbackRequireUpperShadow(prefs.volumePullbackRequireUpperShadow);
   actions.setVolumePullbackUpperShadowRatio(prefs.volumePullbackUpperShadowRatio);
+  // 应用总营收 / 归母净利润
+  actions.setFinanceRevenueRange({ ...prefs.financeRevenueRange });
+  actions.setFinanceNetProfitRange({ ...prefs.financeNetProfitRange });
   // 应用新增技术指标筛选
   actions.setRsiRange({ ...prefs.rsiRange });
   actions.setRsiPeriod(prefs.rsiPeriod);

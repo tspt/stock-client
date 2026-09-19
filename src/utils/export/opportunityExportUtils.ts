@@ -11,6 +11,8 @@ import {
   formatMarketCap,
   formatRatio,
   formatTurnoverRate,
+  formatChineseAmountFromYuan,
+  formatGrowthPercent,
 } from '../format/format';
 import { logger } from '../business/logger';
 
@@ -38,6 +40,21 @@ function formatValue(value: any, key: string, record?: StockOpportunityData): st
   if (key === 'pullbackLabels') {
     if (!record?.pullbackPattern?.isHit) return '-';
     return record.pullbackPattern.labels.join('、') || '-';
+  }
+
+  // 营收 / 净利润挂在 record.finance 上，需在 value 空值兜底前处理
+  if (key === 'financeRevenue' || key === 'financeNetProfit') {
+    const metrics = record?.finance;
+    const amount = key === 'financeRevenue' ? metrics?.revenue : metrics?.netProfit;
+    const growth = key === 'financeRevenue' ? metrics?.revenueYoy : metrics?.netProfitYoy;
+    if (amount === undefined && growth === undefined) {
+      return '-';
+    }
+    const parts = [formatChineseAmountFromYuan(amount)];
+    if (growth !== undefined) {
+      parts.push(formatGrowthPercent(growth));
+    }
+    return parts.join(' ');
   }
 
   if (value === null || value === undefined || value === '') {

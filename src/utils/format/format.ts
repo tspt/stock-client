@@ -171,3 +171,35 @@ export function formatTotalShares(shares: number): string {
   const sharesInBillion = shares / 1e8;
   return `${sharesInBillion.toFixed(2)}亿`;
 }
+
+/**
+ * 格式化以「元」为单位的金额（转换为万亿 / 亿 / 万）
+ * 支持负数（如亏损），保留2位小数
+ */
+export function formatChineseAmountFromYuan(yuan?: number | null): string {
+  if (yuan === null || yuan === undefined || !isFinite(yuan)) {
+    return '-';
+  }
+  const abs = Math.abs(yuan);
+  if (abs >= 1e12) {
+    return `${(yuan / 1e12).toFixed(2)}万亿`;
+  }
+  if (abs >= 1e8) {
+    return `${(yuan / 1e8).toFixed(2)}亿`;
+  }
+  if (abs >= 1e4) {
+    return `${(yuan / 1e4).toFixed(2)}万`;
+  }
+  return yuan.toFixed(2);
+}
+
+/**
+ * 格式化增长率（输入为百分数，如 21.37 表示 21.37%），带正负号，保留2位小数
+ */
+export function formatGrowthPercent(percent?: number | null): string {
+  if (percent === null || percent === undefined || !isFinite(percent)) {
+    return '-';
+  }
+  const sign = percent >= 0 ? '+' : '';
+  return `${sign}${percent.toFixed(2)}%`;
+}

@@ -66,6 +66,10 @@ export interface OpportunityFilterSnapshot {
   volumePullbackRequireUpperShadow: boolean;
   /** 上影线占比阈值（%）：上影长度 / 全日振幅 */
   volumePullbackUpperShadowRatio: number;
+  /** 总营收范围（单位：亿元，数据来自「获取营收净利润」） */
+  financeRevenueRange?: NumberRange;
+  /** 归母净利润范围（单位：亿元，数据来自「获取营收净利润」） */
+  financeNetProfitRange?: NumberRange;
   /** RSI指标范围 */
   rsiRange: NumberRange;
   /** RSI周期 */
