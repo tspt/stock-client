@@ -18,6 +18,9 @@ import {
   atrWilder,
   clamp,
   ema,
+  estimateAmount,
+  median,
+  resolveMacdState,
   rollingExtremes,
   rollingLogRegression,
   rollingMaxDrawdown,
@@ -25,7 +28,6 @@ import {
   sma,
   stdev,
 } from './math';
-import { estimateAmount, resolveMacdState } from './factors';
 import type { WeeklyConfig, WeeklyFactors, WeeklyStructure } from './types';
 
 /** 逐周面板：每个数组的下标与 bars 对齐，NaN/undefined 表示该周数据不足 */
@@ -42,19 +44,41 @@ export interface WeeklyPanel {
   amount: number[];
 
   ma5: number[];
+  ma7: number[];
   ma8: number[];
   ma10: number[];
+  ma14: number[];
   ma20: number[];
+  ma34: number[];
+  /** 60 周均线：牛熊分界线 */
+  ma60: number[];
   /** Wilder ATR20，止损与乖离都用它归一化 */
   atr: number[];
   /** 近 4 周 MA20 变化率（%） */
   ma20Slope: Array<number | undefined>;
+  /** MA20 近 N 周向上拐头 */
+  ma20TurnUp: boolean[];
+  /** MA10 近 N 周拐头向下（止损信号） */
+  ma10TurnDown: boolean[];
+  /** MA60 近 N 周变化率（%） */
+  ma60Slope: Array<number | undefined>;
+  /** MA60 走平或上翘 */
+  ma60FlatOrUp: boolean[];
+  /** 均线粘合度（%）：(max(MA5,MA10,MA20)-min)/close×100 */
+  maConverge: Array<number | undefined>;
+  /** 多头排列开口度（%）：(MA5-MA60)/MA60×100 */
+  maStackSpread: Array<number | undefined>;
+  /** 完整多头排列：MA5>MA10>MA20>MA60 且 MA20 向上且开口不大 */
+  maBullStack: boolean[];
+  pxAboveMa5: boolean[];
+  pxAboveMa60: boolean[];
+  /** 前 8 周均量（不含当周），堆量与回踩缩量的基准 */
+  volBase8: number[];
+  /** 前 3 周均量（不含当周），三连阳回踩的基准 */
+  volBase3: number[];
 
-  ret13w: Array<number | undefined>;
-  ret13wSkip1: Array<number | undefined>;
   ret1w: Array<number | undefined>;
   ret26w: Array<number | undefined>;
-  ret52w: Array<number | undefined>;
   vol13w: Array<number | undefined>;
 
   pos52w: Array<number | undefined>;
@@ -63,7 +87,6 @@ export interface WeeklyPanel {
   maxDD52w: Array<number | undefined>;
 
   avgAmount20w: Array<number | undefined>;
-  amount8wMedian: Array<number | undefined>;
   amountCrowd8w: Array<number | undefined>;
   volRatio5: Array<number | undefined>;
 
@@ -84,8 +107,6 @@ export interface WeeklyPanel {
   annualSlope: Array<number | undefined>;
   /** 26 周回归 R²（趋势干净程度） */
   trendR2: Array<number | undefined>;
-  /** 近 4 周均量 / 近 26 周均量，衡量量能是趋势性放大还是单周脉冲 */
-  volTrend4_26: Array<number | undefined>;
 
   macdDif: Array<number | undefined>;
   macdDea: Array<number | undefined>;
@@ -93,6 +114,10 @@ export interface WeeklyPanel {
   macdGoldenAboveZero: boolean[];
   macdDeathCross: boolean[];
   macdBullish: boolean[];
+  /** 底背离：股价创新低但 DIF 未同步新低 */
+  macdBottomDivergence: boolean[];
+  /** 顶背离：股价创新高但 DIF 未同步新高 */
+  macdTopDivergence: boolean[];
 
   /** 近 104 周内疑似异常跳空次数 */
   suspectedGaps: number[];
@@ -135,67 +160,108 @@ export function buildWeeklyPanel(
   const amount = bars.map(estimateAmount);
 
   const ma5 = sma(close, 5);
+  const ma7 = sma(close, 7);
   const ma8 = sma(close, 8);
   const ma10 = sma(close, 10);
+  const ma14 = sma(close, 14);
   const ma20 = sma(close, 20);
+  const ma34 = sma(close, 34);
+  const ma60 = sma(close, 60);
   const atr = atrWilder(bars, 20);
 
   const ma20Slope: Array<number | undefined> = new Array(n).fill(undefined);
+  const ma60Slope: Array<number | undefined> = new Array(n).fill(undefined);
+  const maConverge: Array<number | undefined> = new Array(n).fill(undefined);
+  const maStackSpread: Array<number | undefined> = new Array(n).fill(undefined);
   const atrPct: Array<number | undefined> = new Array(n).fill(undefined);
   const extBias: Array<number | undefined> = new Array(n).fill(undefined);
   const maStack: boolean[] = new Array(n).fill(false);
+  const maBullStack: boolean[] = new Array(n).fill(false);
+  const ma20TurnUp: boolean[] = new Array(n).fill(false);
+  const ma10TurnDown: boolean[] = new Array(n).fill(false);
+  const ma60FlatOrUp: boolean[] = new Array(n).fill(false);
+  const pxAboveMa5: boolean[] = new Array(n).fill(false);
   const pxAboveMa8: boolean[] = new Array(n).fill(false);
   const pxAboveMa10: boolean[] = new Array(n).fill(false);
   const pxAboveMa20: boolean[] = new Array(n).fill(false);
+  const pxAboveMa60: boolean[] = new Array(n).fill(false);
 
   for (let i = 0; i < n; i += 1) {
     const c = close[i];
-    const m20 = safe(ma20, i);
+    const m5 = safe(ma5, i);
     const m8 = safe(ma8, i);
     const m10 = safe(ma10, i);
-    const m5 = safe(ma5, i);
-    const m20Prev = safe(ma20, i - 4);
+    const m20 = safe(ma20, i);
+    const m60 = safe(ma60, i);
     const a = safe(atr, i);
 
+    const m20Prev = safe(ma20, i - config.maTurnUpWeeks);
     if (m20 !== undefined && m20Prev !== undefined && m20Prev > 0) {
       ma20Slope[i] = ((m20 - m20Prev) / m20Prev) * 100;
+      ma20TurnUp[i] = m20 > m20Prev;
     }
+
+    const m10Prev = safe(ma10, i - config.ma10TurnDownWeeks);
+    if (m10 !== undefined && m10Prev !== undefined) {
+      ma10TurnDown[i] = m10 < m10Prev;
+    }
+
+    const m60Prev = safe(ma60, i - config.ma60SlopeWeeks);
+    if (m60 !== undefined && m60Prev !== undefined && m60Prev > 0) {
+      const slope = ((m60 - m60Prev) / m60Prev) * 100;
+      ma60Slope[i] = slope;
+      // 走平或上翘：斜率不能明显向下
+      ma60FlatOrUp[i] = slope >= config.ma60FlatMin;
+    }
+
     if (a !== undefined && Number.isFinite(c) && c > 0) {
       atrPct[i] = (a / c) * 100;
       if (m20 !== undefined && a > 0) extBias[i] = (c - m20) / a;
     }
-    if (Number.isFinite(c)) {
+
+    if (Number.isFinite(c) && c > 0) {
+      pxAboveMa5[i] = m5 !== undefined && c >= m5;
       pxAboveMa8[i] = m8 !== undefined && c >= m8;
       pxAboveMa10[i] = m10 !== undefined && c >= m10;
       pxAboveMa20[i] = m20 !== undefined && c >= m20;
+      pxAboveMa60[i] = m60 !== undefined && c >= m60;
+      /**
+       * 多头排列只判「依次向上」，不含「MA20 向上拐头」。
+       * 旧实现把 ma20Slope > 0 塞进这里，与评分里的 ma20TurnUp 加分行指向同一事实，
+       * 等于重复计分（文档第一章里两者是并列的两句话），因此解除耦合。
+       */
       maStack[i] =
+        m5 !== undefined && m10 !== undefined && m20 !== undefined && m5 > m10 && m10 > m20;
+
+      // 均线粘合度：三条中期均线的最大离散度占价格的比例
+      if (m5 !== undefined && m10 !== undefined && m20 !== undefined) {
+        maConverge[i] = ((Math.max(m5, m10, m20) - Math.min(m5, m10, m20)) / c) * 100;
+      }
+      // 多头排列开口度：短期与牛熊线的距离，过大说明已发散
+      if (m5 !== undefined && m60 !== undefined && m60 > 0) {
+        maStackSpread[i] = ((m5 - m60) / m60) * 100;
+      }
+      const spread = maStackSpread[i];
+      // 完整多头排列 = 排列正确 + 开口不大；「MA20 向上拐头」单独由 ma20TurnUp 表达
+      maBullStack[i] =
         m5 !== undefined &&
         m10 !== undefined &&
         m20 !== undefined &&
+        m60 !== undefined &&
         m5 > m10 &&
         m10 > m20 &&
-        (ma20Slope[i] ?? 0) > 0;
+        m20 > m60 &&
+        spread !== undefined &&
+        spread <= config.maStackSpreadMax;
     }
   }
 
-  const ret13w: Array<number | undefined> = new Array(n).fill(undefined);
-  const ret13wSkip1: Array<number | undefined> = new Array(n).fill(undefined);
   const ret1w: Array<number | undefined> = new Array(n).fill(undefined);
   const ret26w: Array<number | undefined> = new Array(n).fill(undefined);
-  const ret52w: Array<number | undefined> = new Array(n).fill(undefined);
   const vol13w: Array<number | undefined> = new Array(n).fill(undefined);
   for (let i = 0; i < n; i += 1) {
-    ret13w[i] = retAt(close, i, 13);
     ret1w[i] = retAt(close, i, 1);
     ret26w[i] = retAt(close, i, 26);
-    ret52w[i] = retAt(close, i, 52);
-    if (i >= 13) {
-      const start = close[i - 13];
-      const end = close[i - 1];
-      if (Number.isFinite(start) && start > 0 && Number.isFinite(end)) {
-        ret13wSkip1[i] = ((end - start) / start) * 100;
-      }
-    }
     if (i >= 13) {
       const rets: number[] = [];
       for (let j = i - 12; j <= i; j += 1) {
@@ -230,7 +296,6 @@ export function buildWeeklyPanel(
   // ===== 量能 =====
   const amountPrefix = prefixSums(amount);
   const avgAmount20w: Array<number | undefined> = new Array(n).fill(undefined);
-  const amount8wMedian: Array<number | undefined> = new Array(n).fill(undefined);
   const amountCrowd8w: Array<number | undefined> = new Array(n).fill(undefined);
   const volRatio5: Array<number | undefined> = new Array(n).fill(undefined);
   for (let i = 0; i < n; i += 1) {
@@ -240,12 +305,9 @@ export function buildWeeklyPanel(
     }
     if (i >= 7) {
       const window = amount.slice(i - 7, i + 1).filter((v) => Number.isFinite(v));
-      const med = window.slice().sort((a, b) => a - b);
-      const mid = Math.floor(med.length / 2);
-      const medianAmt =
-        med.length % 2 === 0 ? (med[mid - 1] + med[mid]) / 2 : med[mid];
-      amount8wMedian[i] = medianAmt;
-      if (medianAmt > 0 && Number.isFinite(amount[i])) {
+      // 必须判空：median([]) 返回 undefined，直接相除会把 NaN 写进数组，让拥挤度失真。
+      const medianAmt = median(window);
+      if (medianAmt !== undefined && medianAmt > 0 && Number.isFinite(amount[i])) {
         amountCrowd8w[i] = amount[i] / medianAmt;
       }
     }
@@ -260,13 +322,16 @@ export function buildWeeklyPanel(
     }
   }
 
-  // 量能趋势：近 4 周均量 / 近 26 周均量。单周脉冲与持续放量在周线级别含义完全不同
   const volPrefix = prefixSums(volume);
-  const volTrend4_26: Array<number | undefined> = new Array(n).fill(undefined);
-  for (let i = 25; i < n; i += 1) {
-    const recent = sumRange(volPrefix, i - 3, i) / 4;
-    const base = sumRange(volPrefix, i - 25, i) / 26;
-    if (base > 0) volTrend4_26[i] = recent / base;
+
+  // 前 8 周 / 前 3 周均量（均不含当周）：堆量与「回踩缩量」的判定基准
+  const volBase8: number[] = new Array(n).fill(NaN);
+  const volBase3: number[] = new Array(n).fill(NaN);
+  for (let i = 8; i < n; i += 1) {
+    volBase8[i] = sumRange(volPrefix, i - 8, i - 1) / 8;
+  }
+  for (let i = 3; i < n; i += 1) {
+    volBase3[i] = sumRange(volPrefix, i - 3, i - 1) / 3;
   }
 
   // ===== 形态：箱体突破 =====
@@ -343,6 +408,50 @@ export function buildWeeklyPanel(
     macdDeathCross[i] = state.death;
   }
 
+  // ===== MACD 背离 =====
+  // 采用「两个时间上分离的点」比较，而不是「当前值是否等于窗口极值」——
+  // 后者会把任何创周线新高的健康突破都判成顶背离。
+  // 顶背离：股价高于前期高点，但 DIF 反而低于前期高点时的 DIF
+  // 底背离：股价低于前期低点，但 DIF 反而高于前期低点时的 DIF
+  const macdBottomDivergence: boolean[] = new Array(n).fill(false);
+  const macdTopDivergence: boolean[] = new Array(n).fill(false);
+  const divLookback = config.divergenceLookback;
+  const DIV_MIN_GAP = 4;
+  for (let i = divLookback - 1; i < n; i += 1) {
+    const c = close[i];
+    const d = safe(dif, i);
+    if (!Number.isFinite(c) || d === undefined) continue;
+
+    const from = i - divLookback + 1;
+    const refEnd = i - DIV_MIN_GAP;
+    if (refEnd < from) continue;
+
+    let prevHighIdx = -1;
+    let prevLowIdx = -1;
+    let hi = -Infinity;
+    let lo = Infinity;
+    for (let j = from; j <= refEnd; j += 1) {
+      const v = close[j];
+      if (!Number.isFinite(v)) continue;
+      if (v > hi) {
+        hi = v;
+        prevHighIdx = j;
+      }
+      if (v < lo) {
+        lo = v;
+        prevLowIdx = j;
+      }
+    }
+    if (prevHighIdx < 0 || prevLowIdx < 0) continue;
+
+    const dAtPrevHigh = dif[prevHighIdx];
+    const dAtPrevLow = dif[prevLowIdx];
+    if (!Number.isFinite(dAtPrevHigh) || !Number.isFinite(dAtPrevLow)) continue;
+
+    if (c > hi && d < dAtPrevHigh) macdTopDivergence[i] = true;
+    if (c < lo && d > dAtPrevLow) macdBottomDivergence[i] = true;
+  }
+
   // ===== 异常跳空（近 104 周滚动计数） =====
   const gapFlags = new Array<number>(n).fill(0);
   for (let i = 1; i < n; i += 1) {
@@ -370,23 +479,34 @@ export function buildWeeklyPanel(
     volume,
     amount,
     ma5,
+    ma7,
     ma8,
     ma10,
+    ma14,
     ma20,
+    ma34,
+    ma60,
     atr,
     ma20Slope,
-    ret13w,
-    ret13wSkip1,
+    ma20TurnUp,
+    ma10TurnDown,
+    ma60Slope,
+    ma60FlatOrUp,
+    maConverge,
+    maStackSpread,
+    maBullStack,
+    pxAboveMa5,
+    pxAboveMa60,
+    volBase8,
+    volBase3,
     ret1w,
     ret26w,
-    ret52w,
     vol13w,
     pos52w,
     atrPct,
     extBias,
     maxDD52w,
     avgAmount20w,
-    amount8wMedian,
     amountCrowd8w,
     volRatio5,
     boxHigh,
@@ -402,13 +522,14 @@ export function buildWeeklyPanel(
     structure,
     annualSlope,
     trendR2,
-    volTrend4_26,
     macdDif,
     macdDea,
     macdGoldenCross,
     macdGoldenAboveZero,
     macdDeathCross,
     macdBullish,
+    macdBottomDivergence,
+    macdTopDivergence,
     suspectedGaps,
   };
 }
@@ -435,20 +556,30 @@ export function snapshotAt(p: WeeklyPanel, i: number): WeeklyFactors {
         ? ((p.close[i] - prevClose) / prevClose) * 100
         : 0,
     ma5: safe(p.ma5, i),
+    ma7: safe(p.ma7, i),
     ma8: safe(p.ma8, i),
     ma10: safe(p.ma10, i),
+    ma14: safe(p.ma14, i),
     ma20: safe(p.ma20, i),
     ma30: undefined,
+    ma34: safe(p.ma34, i),
+    ma60: safe(p.ma60, i),
     ma20Slope: p.ma20Slope[i],
+    ma20TurnUp: p.ma20TurnUp[i],
+    ma10TurnDown: p.ma10TurnDown[i],
+    ma60Slope: p.ma60Slope[i],
+    ma60FlatOrUp: p.ma60FlatOrUp[i],
+    maConverge: p.maConverge[i],
+    maStackSpread: p.maStackSpread[i],
+    maBullStack: p.maBullStack[i],
     maStack: p.maStack[i],
     pxAboveMa8: p.pxAboveMa8[i],
     pxAboveMa10: p.pxAboveMa10[i],
     pxAboveMa20: p.pxAboveMa20[i],
-    ret13w: p.ret13w[i],
-    ret13wSkip1: p.ret13wSkip1[i],
+    pxAboveMa5: p.pxAboveMa5[i],
+    pxAboveMa60: p.pxAboveMa60[i],
     ret1w: p.ret1w[i],
     ret26w: p.ret26w[i],
-    ret52w: p.ret52w[i],
     vol13w: p.vol13w[i],
     high52w: undefined,
     low52w: undefined,
@@ -456,10 +587,8 @@ export function snapshotAt(p: WeeklyPanel, i: number): WeeklyFactors {
     bias20: undefined,
     extBias: p.extBias[i],
     avgAmount20w: p.avgAmount20w[i],
-    amount8wMedian: p.amount8wMedian[i],
     amountCrowd8w: p.amountCrowd8w[i],
     volRatio5: p.volRatio5[i],
-    volTrend4_26: p.volTrend4_26[i],
     atrPct: p.atrPct[i],
     maxDD52w: p.maxDD52w[i],
     boxHigh: p.boxHigh[i],
@@ -481,6 +610,12 @@ export function snapshotAt(p: WeeklyPanel, i: number): WeeklyFactors {
     macdGoldenAboveZero: p.macdGoldenAboveZero[i],
     macdDeathCross: p.macdDeathCross[i],
     macdBullish: p.macdBullish[i],
+    macdBottomDivergence: p.macdBottomDivergence[i],
+    macdTopDivergence: p.macdTopDivergence[i],
+    // 战法与卖出信号在 snapshot 之外单独填充，保证实时与回测共用同一份实现
+    setups: [],
+    setupScore: 0,
+    exitSignals: [],
     quality: { ok: true, reasons: [], suspectedGaps: p.suspectedGaps[i], pausedWeeks: 0 },
   };
 }

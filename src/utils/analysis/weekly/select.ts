@@ -11,7 +11,19 @@ export function industryKeyOf(row: { industryCode?: string }): string {
   return code ? code : UNKNOWN_INDUSTRY;
 }
 
-/** 按流动性、动量、位置、量能活跃度过滤；缺字段视为不满足 */
+/**
+ * 按综合分与趋势结构过滤。
+ *
+ * 流动性（近 8 周成交额中位数）与动量 / 52 周位置 / 量能趋势门槛已移除，
+ * 不再做这些维度的硬过滤。
+ *
+ * 战法 / MA60 / 日线共振这几项是可配置的软门槛：
+ * 默认只把「站上 60 周均线」和「剔除空头排列」设为硬性，
+ * 战法默认只加分不当门槛——因为六大战法同时成立的机会极少，
+ * 直接当硬门槛会把名单筛空。
+ *
+ * 日线共振只在「明确判定为不达标」时排除；没读到日线数据的股票跳过该项，不阻断。
+ */
 export function applyWeeklyFilters(
   rows: WeeklyAnalysis[],
   filters: WeeklyFilterOptions
@@ -19,24 +31,18 @@ export function applyWeeklyFilters(
   return rows.filter((row) => {
     if (row.insufficientData || !row.quality.ok) return false;
     if (row.score < filters.minScore) return false;
-    if (filters.minAvgAmount > 0) {
-      const amt = row.amount8wMedian ?? row.avgAmount20w;
-      if (amt === undefined || amt < filters.minAvgAmount) return false;
-    }
-    if (filters.minRet13wSkip1 !== undefined) {
-      if (row.ret13wSkip1 === undefined || row.ret13wSkip1 < filters.minRet13wSkip1) return false;
-    }
-    if (filters.minRet26w !== undefined) {
-      if (row.ret26w === undefined || row.ret26w < filters.minRet26w) return false;
-    }
-    if (filters.minPos52w !== undefined) {
-      if (row.pos52w === undefined || row.pos52w < filters.minPos52w) return false;
-    }
-    if (filters.maxPos52w !== undefined) {
-      if (row.pos52w === undefined || row.pos52w > filters.maxPos52w) return false;
-    }
-    if (filters.minVolTrend4_26 !== undefined) {
-      if (row.volTrend4_26 === undefined || row.volTrend4_26 < filters.minVolTrend4_26) return false;
+    if (filters.excludeDowntrend !== false && !row.gates.notDowntrend) return false;
+    if (filters.requireAboveMa60 && !row.gates.aboveMa60) return false;
+    // 无日线数据时跳过该项（与 WeeklyFilterOptions 注释一致），只有明确不达标才排除
+    if (filters.requireDailyAboveMa20 && row.dailyAboveMa20 === false) return false;
+
+    if (filters.requireSetup) {
+      const allowed = filters.allowedSetups;
+      const hits =
+        allowed && allowed.length > 0
+          ? row.setups.filter((h) => allowed.includes(h.key))
+          : row.setups;
+      if (hits.length === 0) return false;
     }
     return true;
   });

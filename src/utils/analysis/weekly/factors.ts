@@ -3,36 +3,68 @@
  *
  * 设计原则：
  * 1. 所有信号一律基于「已收盘周」判定，未完成周只用于展示，杜绝未来函数。
- * 2. 因子分层且尽量正交：趋势、动量、位置、量能、波动、形态各自独立计分，
- *    不再出现「同一个事实既当门槛又当加分项」的重复计数。
+ * 2. 因子分层且尽量正交：趋势、动量、位置、量能、波动、形态各自独立计分。
  * 3. 涉及「偏离」的量一律用 ATR 归一化，让高波动股与低波动股可横向比较。
+ * 4. **本模块不再自己算因子**：统一走 buildWeeklyPanel + snapshotAt + detectSetups，
+ *    与逐周回测共用同一份实现，避免「页面一套逻辑、回测另一套」的失真。
  */
 
 import type { KLineData } from '@/types/stock';
-import {
-  atrWilder,
-  clamp,
-  ema,
-  lastValid,
-  maxDrawdown,
-  mean,
-  median,
-  regressLogPrice,
-  safe,
-  sma,
-  startOfWeek,
-  stdev,
-} from './math';
-import type { WeeklyConfig, WeeklyDataQuality, WeeklyFactors, WeeklyStructure } from './types';
+import { safe, sma, startOfWeek } from './math';
+import { buildWeeklyPanel, snapshotAt } from './panel';
+import { detectSetups, totalSetupScore } from './setups';
+import { computeStopLoss, detectExitSignals } from './exitRules';
+import type { WeeklyConfig, WeeklyDataQuality, WeeklyFactors } from './types';
 
 export const DEFAULT_WEEKLY_CONFIG: WeeklyConfig = {
-  /** 至少 26 根已收盘周K，才能算 13 周动量、MA20 与波动 */
-  minConfirmedBars: 26,
+  /**
+   * 至少 60 根已收盘周K。
+   * MA60（牛熊分界线）与「60 周均线走平或上翘」是本轮趋势判定的核心，
+   * 26 根只能算到 MA20。代价是剔除上市不足约 15 个月的新股。
+   */
+  minConfirmedBars: 60,
   boxLookback: 10,
-  /** 振幅下限：极窄箱体往往是「织布机」，突破质量差 */
-  boxAmplitudeMin: 8,
-  boxAmplitudeMax: 30,
+  /**
+   * 振幅下限：极窄箱体往往是「织布机」，突破质量差。
+   * 文档只给了「波动幅度 ≤20%」的上限，8% 对 10 周平台偏严，
+   * 会漏掉真实的窄幅平台；放宽到 6% 仍能剔除织布机。
+   */
+  boxAmplitudeMin: 6,
+  /** 振幅上限：对应文档「波动幅度≤20%」，超过即视为单边趋势而非平台 */
+  boxAmplitudeMax: 20,
+  /** 突破量能倍数下限：对应「达近 5 周均量 1.5 倍以上」 */
   breakoutVolumeRatio: 1.5,
+  /** 突破当周最小涨幅：对应「收中长阳」 */
+  breakoutMinWeekGain: 5,
+  /** 均线粘合度上限：平台突破要求均线粘合 */
+  maConvergeMax: 5,
+  /**
+   * 多头排列开口度上限 (MA5-MA60)/MA60：对应文档「开口不大」。
+   * 25% 对周线过于宽松——MA5 高于 MA60 两成以上通常已是中后段行情，
+   * 收紧到 18%，才符合「均线依次排列且开口不大、趋势刚成型」的原意。
+   */
+  maStackSpreadMax: 18,
+  maTurnUpWeeks: 4,
+  ma10TurnDownWeeks: 2,
+  ma60SlopeWeeks: 8,
+  /** MA60 斜率高于该值即视为走平或上翘 */
+  ma60FlatMin: -1,
+  pileWeeks: 3,
+  pileVolumeRatio: 1.2,
+  /** 回踩低吸的缩量上限（相对前 8 周均量） */
+  pullbackVolumeRatio: 0.8,
+  /** 「靠近均线」的 ATR 容差 */
+  pullbackAtrTolerance: 0.5,
+  /** 三连阳回踩：成交量相对前三周均量的上限 */
+  threeYangVolumeRatio: 0.5,
+  duckHeadLookback: 26,
+  goldenCrossLookback: 12,
+  goldenCrossLongLookback: 26,
+  divergenceLookback: 26,
+  /** 累计涨幅超过该值后启动见顶观察 */
+  exitGainPct: 40,
+  /** 上涨时间达到该周数后考虑卖出 */
+  exitHoldWeeks: 5,
   /**
    * 乖离阈值（相对周MA20 的 ATR 倍数）。
    * 注意不能设太紧：健康的上升趋势本身就会让价格持续高于 MA20，
@@ -40,7 +72,6 @@ export const DEFAULT_WEEKLY_CONFIG: WeeklyConfig = {
    */
   extBiasWarn: 2.5,
   extBiasSevere: 4,
-  pos52wOverheat: 95,
   atrPctMax: 15,
   macdCrossLookback: 4,
   trendLookback: 26,
@@ -48,16 +79,21 @@ export const DEFAULT_WEEKLY_CONFIG: WeeklyConfig = {
   trendSlopeMin: 15,
   gapThreshold: 40,
   maxSuspectedGaps: 2,
+  /** 单周涨幅达到该值（%）视为过热：风险惩罚与 notOverheated 门槛共用同一阈值 */
+  overheatRet1w: 20,
+  /** 风险惩罚上限：文档项权重高、工程项权重低，合计封顶 */
+  maxRiskPenalty: 30,
   /**
-   * 权重（v2 回踩低吸）。
-   * 依据：docs/回测优化/周线因子IC 的检验结果——剔除成交额后动量/趋势/MACD 的 IC 归零，
-   * 只有乖离、量能、距支点距离、位置具备独立信息，且均为负向。
+   * 三段式评分各段上限：趋势健康度 30 + 战法 50 + 多周期共振 20 = 100，再减去风险惩罚。
+   *
+   * 分段与《周线选股》文档章节一一对应：第一章趋势、第二章战法、第三章共振、第四章风控。
+   * 文档没有独立的「量价」章节（量能判定内嵌在各战法里），因此不单列量价段。
+   * 段内细分见 types.ts 的 SETUP_MAX_SCORES 与 score.ts 的 computeTrendScore / computeResonanceScore。
    */
   weights: {
-    momentum: 0.5,
-    lowVol: 0.25,
-    reversal: 0.15,
-    crowding: 0.1,
+    trend: 30,
+    setup: 50,
+    resonance: 20,
   },
 };
 
@@ -95,16 +131,6 @@ export function splitConfirmedWeeklyKlines(
     confirmed: running ? kline.slice(0, -1) : kline,
     runningWeekIncluded: running,
   };
-}
-
-/**
- * 估算成交额（元）。
- * 腾讯接口 volume 单位为「手」，1 手 = 100 股；
- * 直接用收盘价近似均价，误差通常在 5% 以内，对流动性分层足够。
- */
-export function estimateAmount(bar: KLineData): number {
-  if (typeof bar.amount === 'number' && bar.amount > 0) return bar.amount;
-  return bar.volume * bar.close * 100;
 }
 
 /** 数据质量检查：根数、停牌、异常跳空 */
@@ -151,50 +177,49 @@ function checkQuality(confirmed: KLineData[], config: WeeklyConfig): WeeklyDataQ
   };
 }
 
-/** 计算区间收益率（%） */
-function retOver(confirmed: KLineData[], weeks: number): number | undefined {
-  const last = confirmed.length - 1;
-  const ref = last - weeks;
-  const end = safe(confirmed.map((d) => d.close), last);
-  const start = safe(confirmed.map((d) => d.close), ref);
-  if (end === undefined || start === undefined || start <= 0) return undefined;
-  return ((end - start) / start) * 100;
-}
-
-/**
- * MACD 最近一次交叉状态。
- *
- * 旧实现在窗口内同时判定金叉与死叉，震荡市里会同时为真（又加分又扣分）。
- * 这里从最近一周倒序查找，只取「最近一次」交叉，语义唯一。
- */
-export function resolveMacdState(
-  dif: number[],
-  dea: number[],
-  last: number,
-  lookback: number
-): { golden: boolean; goldenAboveZero: boolean; death: boolean } {
-  const start = Math.max(1, last - lookback + 1);
-  for (let i = last; i >= start; i -= 1) {
-    const prevDif = safe(dif, i - 1);
-    const prevDea = safe(dea, i - 1);
-    const curDif = safe(dif, i);
-    const curDea = safe(dea, i);
-    if (
-      prevDif === undefined ||
-      prevDea === undefined ||
-      curDif === undefined ||
-      curDea === undefined
-    ) {
-      continue;
-    }
-    if (prevDif <= prevDea && curDif > curDea) {
-      return { golden: true, goldenAboveZero: curDif > 0 && curDea > 0, death: false };
-    }
-    if (prevDif >= prevDea && curDif < curDea) {
-      return { golden: false, goldenAboveZero: false, death: true };
-    }
-  }
-  return { golden: false, goldenAboveZero: false, death: false };
+/** 空因子：数据不足时的占位，字段与 WeeklyFactors 保持一致 */
+function emptyFactors(
+  code: string,
+  name: string,
+  kline: KLineData[],
+  confirmedBars: number,
+  runningWeekIncluded: boolean,
+  weekChangePercent: number,
+  quality: WeeklyDataQuality
+): WeeklyFactors {
+  return {
+    code,
+    name,
+    bars: kline.length,
+    confirmedBars,
+    runningWeekIncluded,
+    lastWeekTime: kline.length > 0 ? kline[kline.length - 1].time : 0,
+    close: kline.length > 0 ? kline[kline.length - 1].close : 0,
+    weekChangePercent,
+    maStack: false,
+    maBullStack: false,
+    pxAboveMa5: false,
+    pxAboveMa8: false,
+    pxAboveMa10: false,
+    pxAboveMa20: false,
+    pxAboveMa60: false,
+    ma20TurnUp: false,
+    ma10TurnDown: false,
+    ma60FlatOrUp: false,
+    boxBreakout: false,
+    boxBreakoutFirst: false,
+    structure: 'sideways',
+    macdGoldenCross: false,
+    macdGoldenAboveZero: false,
+    macdDeathCross: false,
+    macdBullish: false,
+    macdBottomDivergence: false,
+    macdTopDivergence: false,
+    setups: [],
+    setupScore: 0,
+    exitSignals: [],
+    quality,
+  };
 }
 
 /**
@@ -208,30 +233,14 @@ export function computeWeeklyFactors(
   config: WeeklyConfig = DEFAULT_WEEKLY_CONFIG,
   now: number = Date.now()
 ): WeeklyFactors {
-  const base: WeeklyFactors = {
-    code,
-    name,
-    bars: kline.length,
-    confirmedBars: 0,
-    runningWeekIncluded: false,
-    lastWeekTime: kline.length > 0 ? kline[kline.length - 1].time : 0,
-    close: kline.length > 0 ? kline[kline.length - 1].close : 0,
-    weekChangePercent: 0,
-    maStack: false,
-    pxAboveMa8: false,
-    pxAboveMa10: false,
-    pxAboveMa20: false,
-    boxBreakout: false,
-    boxBreakoutFirst: false,
-    structure: 'sideways',
-    macdGoldenCross: false,
-    macdGoldenAboveZero: false,
-    macdDeathCross: false,
-    macdBullish: false,
-    quality: { ok: false, reasons: ['无周K数据'], suspectedGaps: 0, pausedWeeks: 0 },
-  };
-
-  if (kline.length === 0) return base;
+  if (kline.length === 0) {
+    return emptyFactors(code, name, kline, 0, false, 0, {
+      ok: false,
+      reasons: ['无周K数据'],
+      suspectedGaps: 0,
+      pausedWeeks: 0,
+    });
+  }
 
   const { confirmed, runningWeekIncluded } = splitConfirmedWeeklyKlines(kline, now);
   const lastBar = kline[kline.length - 1];
@@ -242,227 +251,69 @@ export function computeWeeklyFactors(
       : 0;
 
   const quality = checkQuality(confirmed, config);
-  if (!quality.ok) {
-    return {
-      ...base,
-      confirmedBars: confirmed.length,
+  if (!quality.ok || confirmed.length === 0) {
+    return emptyFactors(
+      code,
+      name,
+      kline,
+      confirmed.length,
       runningWeekIncluded,
       weekChangePercent,
-      quality,
-    };
+      quality
+    );
   }
 
-  const last = confirmed.length - 1;
-  const closes = confirmed.map((d) => d.close);
+  /**
+   * 只构建「最近 N 周」的面板：MA60 需要 60 根、52 周位置需要 52 根，
+   * 再给箱体（10 周）与回归窗口（26 周）留余量。
+   * 全量 500 根逐只构建会让「一键分析」慢一个数量级，而多出来的历史并不影响末周判定。
+   */
+  const windowSize = Math.max(config.minConfirmedBars + 26, 156);
+  const source = confirmed.length > windowSize ? confirmed.slice(-windowSize) : confirmed;
 
-  const ma5Arr = sma(closes, 5);
-  const ma8Arr = sma(closes, 8);
-  const ma10Arr = sma(closes, 10);
-  const ma20Arr = sma(closes, 20);
-  const ma30Arr = sma(closes, 30);
+  const panel = buildWeeklyPanel(code, name, source, config);
+  const last = panel.n - 1;
+  const snap = snapshotAt(panel, last);
 
-  const ma5 = safe(ma5Arr, last);
-  const ma8 = safe(ma8Arr, last);
-  const ma10 = safe(ma10Arr, last);
-  const ma20 = safe(ma20Arr, last);
-  const ma30 = safe(ma30Arr, last);
-
-  // ===== 趋势 =====
-  const ma20Prev = safe(ma20Arr, last - 4);
-  const ma20Slope =
-    ma20 !== undefined && ma20Prev !== undefined && ma20Prev > 0
-      ? ((ma20 - ma20Prev) / ma20Prev) * 100
-      : undefined;
-  const maStack =
-    ma5 !== undefined &&
-    ma10 !== undefined &&
-    ma20 !== undefined &&
-    ma5 > ma10 &&
-    ma10 > ma20 &&
-    (ma20Slope ?? 0) > 0;
-  const lastClose = safe(closes, last);
-  const pxAboveMa8 = lastClose !== undefined && ma8 !== undefined && lastClose >= ma8;
-  const pxAboveMa10 = lastClose !== undefined && ma10 !== undefined && lastClose >= ma10;
-  const pxAboveMa20 = lastClose !== undefined && ma20 !== undefined && lastClose >= ma20;
-
-  // ===== 动量 =====
-  const ret13w = retOver(confirmed, 13);
-  const ret1w = retOver(confirmed, 1);
-  const ret13wSkip1 = (() => {
-    const end = last - 1;
-    const start = last - 13;
-    if (start < 0 || end < 0) return undefined;
-    const a = safe(closes, start);
-    const b = safe(closes, end);
-    if (a === undefined || b === undefined || a <= 0) return undefined;
-    return ((b - a) / a) * 100;
-  })();
-  const ret26w = retOver(confirmed, 26);
-  const ret52w = retOver(confirmed, 52);
-  const weeklyRets: number[] = [];
-  for (let i = Math.max(1, last - 12); i <= last; i += 1) {
-    const prev = closes[i - 1];
-    const cur = closes[i];
-    if (prev > 0 && Number.isFinite(cur)) weeklyRets.push((cur / prev - 1) * 100);
-  }
-  const vol13w = stdev(weeklyRets);
-
-  // ===== 位置 =====
-  const window52 = confirmed.slice(-52);
-  const high52w = window52.length > 0 ? Math.max(...window52.map((d) => d.high)) : undefined;
-  const low52w = window52.length > 0 ? Math.min(...window52.map((d) => d.low)) : undefined;
-  const pos52w =
-    lastClose !== undefined && high52w !== undefined && low52w !== undefined && high52w > low52w
-      ? clamp(((lastClose - low52w) / (high52w - low52w)) * 100, 0, 100)
-      : undefined;
-
-  // ===== 波动（ATR 归一化） =====
-  const atrArr = atrWilder(confirmed, 20);
-  const atr20 = safe(atrArr, last);
-  const atrPct =
-    atr20 !== undefined && lastClose !== undefined && lastClose > 0
-      ? (atr20 / lastClose) * 100
-      : undefined;
+  const closes = source.map((d) => d.close);
+  const ma30 = safe(sma(closes, 30), last);
+  const confirmedClose = closes[last];
   const bias20 =
-    lastClose !== undefined && ma20 !== undefined && ma20 > 0
-      ? ((lastClose - ma20) / ma20) * 100
-      : undefined;
-  const extBias =
-    lastClose !== undefined && ma20 !== undefined && atr20 !== undefined && atr20 > 0
-      ? (lastClose - ma20) / atr20
+    snap.ma20 !== undefined && snap.ma20 > 0 && Number.isFinite(confirmedClose)
+      ? ((confirmedClose - snap.ma20) / snap.ma20) * 100
       : undefined;
 
-  const maxDD52w = window52.length > 1 ? maxDrawdown(window52.map((d) => d.close)) : undefined;
+  const window52 = source.slice(-52);
+  const high52w = Math.max(...window52.map((d) => d.high));
+  const low52w = Math.min(...window52.map((d) => d.low));
 
-  // ===== 量能 =====
-  const amounts = confirmed.map(estimateAmount);
-  const recent20Amounts = amounts.slice(-20);
-  const avgAmount20w = mean(recent20Amounts);
-  const recent8Amounts = amounts.slice(-8);
-  const amount8wMedian = median(recent8Amounts);
-  const lastAmount = amounts[last];
-  const amountCrowd8w =
-    amount8wMedian !== undefined && amount8wMedian > 0 && Number.isFinite(lastAmount)
-      ? lastAmount / amount8wMedian
+  const macdBar =
+    snap.macdDif !== undefined && snap.macdDea !== undefined
+      ? (snap.macdDif - snap.macdDea) * 2
       : undefined;
 
-  const volBase = mean(confirmed.slice(Math.max(0, last - 5), last).map((d) => d.volume));
-  const volRatio5 =
-    volBase !== undefined && volBase > 0 ? confirmed[last].volume / volBase : undefined;
-  // 量能趋势：近 4 周均量 / 近 26 周均量。单周脉冲与持续放量在周线级别含义不同
-  const volRecent4 = mean(confirmed.slice(Math.max(0, last - 3), last + 1).map((d) => d.volume));
-  const volBase26 = mean(confirmed.slice(Math.max(0, last - 25), last + 1).map((d) => d.volume));
-  const volTrend4_26 =
-    volRecent4 !== undefined && volBase26 !== undefined && volBase26 > 0
-      ? volRecent4 / volBase26
-      : undefined;
-
-  // ===== 形态：箱体突破（要求首次） =====
-  const boxSource = confirmed.slice(Math.max(0, last - config.boxLookback), last);
-  const boxHigh = boxSource.length > 0 ? Math.max(...boxSource.map((d) => d.high)) : undefined;
-  const boxLow = boxSource.length > 0 ? Math.min(...boxSource.map((d) => d.low)) : undefined;
-  const boxAmplitude =
-    boxHigh !== undefined && boxLow !== undefined && boxLow > 0
-      ? ((boxHigh - boxLow) / boxLow) * 100
-      : undefined;
-
-  const amplitudeOk =
-    boxAmplitude !== undefined &&
-    boxAmplitude >= config.boxAmplitudeMin &&
-    boxAmplitude <= config.boxAmplitudeMax;
-  const volumeOk = volRatio5 !== undefined && volRatio5 >= config.breakoutVolumeRatio;
-  const prevClose = safe(closes, last - 1);
-
-  const boxBreakout =
-    lastClose !== undefined &&
-    boxHigh !== undefined &&
-    lastClose > boxHigh &&
-    amplitudeOk &&
-    volumeOk;
-  const boxBreakoutFirst =
-    boxBreakout && prevClose !== undefined && boxHigh !== undefined && prevClose <= boxHigh;
-  const distToBoxHigh =
-    boxHigh !== undefined && boxHigh > 0 && lastClose !== undefined
-      ? ((lastClose - boxHigh) / boxHigh) * 100
-      : undefined;
-
-  // ===== 形态：趋势结构（回归判定） =====
-  const trendWindow = closes.slice(-config.trendLookback);
-  const regression = regressLogPrice(trendWindow);
-  let structure: WeeklyStructure = 'sideways';
-  if (regression.r2 >= config.trendR2Min) {
-    if (regression.annualized >= config.trendSlopeMin) structure = 'up';
-    else if (regression.annualized <= -config.trendSlopeMin) structure = 'down';
-  }
-
-  // ===== MACD =====
-  const emaFast = ema(closes, 12);
-  const emaSlow = ema(closes, 26);
-  const dif = emaFast.map((v, i) => v - emaSlow[i]);
-  const dea = ema(dif, 9);
-  const macdBarArr = dif.map((v, i) => (v - dea[i]) * 2);
-  const macdState = resolveMacdState(dif, dea, last, config.macdCrossLookback);
-  const curDif = safe(dif, last);
-  const curDea = safe(dea, last);
-  const macdBullish =
-    curDif !== undefined && curDea !== undefined && curDif > curDea && curDif > 0 && curDea > 0;
+  const setups = detectSetups(panel, last, config);
+  const { stopLoss, riskPct } = computeStopLoss(panel, last);
 
   return {
-    code,
-    name,
+    ...snap,
+    // 面板可能被截断，这里回填真实根数；close 保留「含未完成本周」的最新价
     bars: kline.length,
     confirmedBars: confirmed.length,
     runningWeekIncluded,
     lastWeekTime: lastBar.time,
     close: lastBar.close,
     weekChangePercent,
-    ma5,
-    ma8,
-    ma10,
-    ma20,
     ma30,
-    maStack,
-    ma20Slope,
-    pxAboveMa8,
-    pxAboveMa10,
-    pxAboveMa20,
-    ret13w,
-    ret13wSkip1,
-    ret1w,
-    ret26w,
-    ret52w,
-    vol13w,
-    high52w,
-    low52w,
-    pos52w,
+    high52w: Number.isFinite(high52w) ? high52w : undefined,
+    low52w: Number.isFinite(low52w) ? low52w : undefined,
     bias20,
-    extBias,
-    avgAmount20w,
-    amount8wMedian,
-    amountCrowd8w,
-    volRatio5,
-    volTrend4_26,
-    atrPct,
-    maxDD52w,
-    boxHigh,
-    boxLow,
-    boxAmplitude,
-    boxBreakout,
-    boxBreakoutFirst,
-    distToBoxHigh,
-    structure,
-    annualSlope: regression.annualized,
-    trendR2: regression.r2,
-    macdDif: safe(dif, last),
-    macdDea: safe(dea, last),
-    macdBar: safe(macdBarArr, last),
-    macdGoldenCross: macdState.golden,
-    macdGoldenAboveZero: macdState.goldenAboveZero,
-    macdDeathCross: macdState.death,
-    macdBullish,
+    macdBar,
+    setups,
+    setupScore: totalSetupScore(setups),
+    stopLoss,
+    riskPct,
+    exitSignals: detectExitSignals(panel, last, config),
     quality,
   };
 }
-
-/** 供外部复用：取某序列最后一个有效值 */
-export { lastValid };

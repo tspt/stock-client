@@ -5,7 +5,7 @@
  * 与 stockNamesExportUtils 保持一致的白色底 + 微软雅黑风格。
  */
 
-import { YI, type WeeklyAnalysis } from '@/utils/analysis/weekly';
+import type { WeeklyAnalysis } from '@/utils/analysis/weekly';
 
 const FONT_FAMILY = '"Microsoft YaHei", "PingFang SC", "Noto Sans SC", sans-serif';
 const FONT_SIZE = 13;
@@ -46,10 +46,22 @@ const EXPORT_COLUMNS: WeeklyExportColumn[] = [
   },
   { title: '综合分', width: 64, align: 'right', get: (r) => String(r.score) },
   {
-    title: '13周动量',
-    width: 84,
+    title: '趋势/战法/共振',
+    width: 108,
     align: 'right',
-    get: (r) => formatPercent(r.ret13wSkip1),
+    get: (r) => `${r.parts.trend}/${r.parts.setup}/${r.parts.resonance}`,
+  },
+  {
+    title: '战法',
+    width: 150,
+    align: 'left',
+    get: (r) => r.setups.map((h) => h.label).join(' ') || '-',
+  },
+  {
+    title: '止损',
+    width: 70,
+    align: 'right',
+    get: (r) => (r.stopLoss === undefined ? '-' : fixed(r.stopLoss)),
   },
   {
     title: '近1周',
@@ -62,15 +74,6 @@ const EXPORT_COLUMNS: WeeklyExportColumn[] = [
     width: 74,
     align: 'right',
     get: (r) => formatPercent(r.vol13w ?? r.atrPct, 1),
-  },
-  {
-    title: '成交额中位数',
-    width: 96,
-    align: 'right',
-    get: (r) => {
-      const amt = r.amount8wMedian ?? r.avgAmount20w;
-      return amt === undefined ? '-' : `${(amt / YI).toFixed(1)}亿`;
-    },
   },
   {
     title: '周线信号',

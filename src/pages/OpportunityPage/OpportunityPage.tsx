@@ -2232,7 +2232,12 @@ export function OpportunityPage() {
                   borderRadius: 8,
                 }}
               >
-                <Spin tip="正在加载历史分析数据..." size="large" />
+                <Space direction="vertical" align="center" size={8}>
+                  <Spin size="large" />
+                  <span style={{ color: 'var(--ant-color-text-secondary)', fontSize: 13 }}>
+                    正在加载历史分析数据...
+                  </span>
+                </Space>
               </div>
             )}
             <OpportunityTable

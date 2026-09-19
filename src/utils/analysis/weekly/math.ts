@@ -3,22 +3,64 @@
  *
  * 与通用的 indicators.ts 分开，原因：周线需要的是「稳健统计量」
  * （分位、回归斜率、ATR 归一化），而不是金叉死叉这类离散信号。
+ *
+ * 这里也放了两个被 factors / panel 共用的小工具（estimateAmount、resolveMacdState），
+ * 目的是让 panel 不再依赖 factors——否则 factors 复用 panel 会形成循环引用。
  */
+
+import type { KLineData } from '@/types/stock';
+
+/**
+ * 估算成交额（元）。
+ * 腾讯接口 volume 单位为「手」，1 手 = 100 股；
+ * 直接用收盘价近似均价，误差通常在 5% 以内，对流动性分层足够。
+ */
+export function estimateAmount(bar: KLineData): number {
+  if (typeof bar.amount === 'number' && bar.amount > 0) return bar.amount;
+  return bar.volume * bar.close * 100;
+}
+
+/**
+ * MACD 最近一次交叉状态。
+ *
+ * 旧实现在窗口内同时判定金叉与死叉，震荡市里会同时为真（又加分又扣分）。
+ * 这里从最近一周倒序查找，只取「最近一次」交叉，语义唯一。
+ */
+export function resolveMacdState(
+  dif: number[],
+  dea: number[],
+  last: number,
+  lookback: number
+): { golden: boolean; goldenAboveZero: boolean; death: boolean } {
+  const start = Math.max(1, last - lookback + 1);
+  for (let i = last; i >= start; i -= 1) {
+    const prevDif = safe(dif, i - 1);
+    const prevDea = safe(dea, i - 1);
+    const curDif = safe(dif, i);
+    const curDea = safe(dea, i);
+    if (
+      prevDif === undefined ||
+      prevDea === undefined ||
+      curDif === undefined ||
+      curDea === undefined
+    ) {
+      continue;
+    }
+    if (prevDif <= prevDea && curDif > curDea) {
+      return { golden: true, goldenAboveZero: curDif > 0 && curDea > 0, death: false };
+    }
+    if (prevDif >= prevDea && curDif < curDea) {
+      return { golden: false, goldenAboveZero: false, death: true };
+    }
+  }
+  return { golden: false, goldenAboveZero: false, death: false };
+}
 
 /** 数值安全取值：NaN / Infinity / null 一律视为无效 */
 export function safe(arr: (number | undefined)[], index: number): number | undefined {
   if (index < 0 || index >= arr.length) return undefined;
   const v = arr[index];
   return typeof v === 'number' && Number.isFinite(v) ? v : undefined;
-}
-
-/** 取序列最后一个有效值 */
-export function lastValid(arr: (number | undefined)[]): number | undefined {
-  for (let i = arr.length - 1; i >= 0; i -= 1) {
-    const v = safe(arr, i);
-    if (v !== undefined) return v;
-  }
-  return undefined;
 }
 
 export function clamp(value: number, min: number, max: number): number {
@@ -121,82 +163,6 @@ export function atrWilder(bars: Bar[], period: number): number[] {
   return out;
 }
 
-export interface RegressionResult {
-  /** 每周斜率（对 ln(price) 回归） */
-  slope: number;
-  /** 拟合优度，衡量趋势的「干净程度」 */
-  r2: number;
-  /** 年化涨跌幅（%） */
-  annualized: number;
-}
-
-/**
- * 对 ln(price) 做最小二乘回归。
- *
- * 相比旧的「前后各 4 周高低点比较」，回归利用了全部样本点，
- * 且 R² 能区分「平滑上升」和「剧烈震荡后恰好收高」——后者 R² 很低，不算趋势。
- */
-export function regressLogPrice(closes: number[]): RegressionResult {
-  const n = closes.length;
-  if (n < 3) return { slope: 0, r2: 0, annualized: 0 };
-
-  const ys = closes.map((c) => (c > 0 ? Math.log(c) : NaN));
-  if (ys.some((y) => !Number.isFinite(y))) return { slope: 0, r2: 0, annualized: 0 };
-
-  let sx = 0;
-  let sy = 0;
-  let sxx = 0;
-  let sxy = 0;
-  for (let i = 0; i < n; i += 1) {
-    sx += i;
-    sy += ys[i];
-    sxx += i * i;
-    sxy += i * ys[i];
-  }
-
-  const denom = n * sxx - sx * sx;
-  if (denom === 0) return { slope: 0, r2: 0, annualized: 0 };
-
-  const slope = (n * sxy - sx * sy) / denom;
-  const intercept = (sy - slope * sx) / n;
-
-  let ssRes = 0;
-  let ssTot = 0;
-  for (let i = 0; i < n; i += 1) {
-    const predicted = intercept + slope * i;
-    ssRes += (ys[i] - predicted) ** 2;
-    ssTot += (ys[i] - sy / n) ** 2;
-  }
-  const r2 = ssTot === 0 ? 0 : 1 - ssRes / ssTot;
-
-  return {
-    slope,
-    r2: clamp(r2, 0, 1),
-    annualized: (Math.exp(slope * 52) - 1) * 100,
-  };
-}
-
-/**
- * 区间最大回撤（%，返回正数）。
- * 用收盘价序列计算，衡量「过去一段时间最难受的一段」。
- */
-export function maxDrawdown(closes: number[]): number {
-  if (closes.length < 2) return 0;
-  let peak = closes[0];
-  let worst = 0;
-  for (let i = 1; i < closes.length; i += 1) {
-    if (closes[i] > peak) {
-      peak = closes[i];
-      continue;
-    }
-    if (peak > 0) {
-      const dd = ((peak - closes[i]) / peak) * 100;
-      if (dd > worst) worst = dd;
-    }
-  }
-  return worst;
-}
-
 /**
  * 滚动区间极值：out.max[i] / out.min[i] 为 [i-window+1, i] 的极值，窗口不足处为 NaN。
  * 窗口内的高/低点只影响当周及之后的判定，不含未来数据。
@@ -264,20 +230,23 @@ export function rollingLogRegression(
   const annualOut = new Array<number>(n).fill(NaN);
   if (n < 3 || window < 3) return { slope: slopeOut, r2: r2Out, annualized: annualOut };
 
-  // 前缀和：Σy、Σy²、Σ(j*y)，j 为全局下标
+  /**
+   * 前缀和：Σy、Σy²、Σ(j*y)，j 为全局下标。
+   *
+   * 不能像早期实现那样用 NaN 污染前缀和——前缀和是累加的，
+   * 一个坏点会让「该点之后的所有窗口」全部作废，而本意只是作废包含它的窗口。
+   * 这里改为记录「截至 i 的最后一个坏点下标」，窗口只有不含坏点时才计算。
+   */
   const py = new Array<number>(n + 1).fill(0);
   const pyy = new Array<number>(n + 1).fill(0);
   const pjy = new Array<number>(n + 1).fill(0);
+  const lastBadUpTo = new Array<number>(n).fill(-1);
+  let lastBad = -1;
   for (let i = 0; i < n; i += 1) {
     const v = values[i];
-    if (!Number.isFinite(v) || v <= 0) {
-      // 非正值无法取对数，直接把该窗口作废（用 NaN 污染前缀和）
-      py[i + 1] = NaN;
-      pyy[i + 1] = NaN;
-      pjy[i + 1] = NaN;
-      continue;
-    }
-    const y = Math.log(v);
+    if (!Number.isFinite(v) || v <= 0) lastBad = i;
+    lastBadUpTo[i] = lastBad;
+    const y = lastBad === i ? 0 : Math.log(v);
     py[i + 1] = py[i] + y;
     pyy[i + 1] = pyy[i] + y * y;
     pjy[i + 1] = pjy[i] + i * y;
@@ -290,6 +259,8 @@ export function rollingLogRegression(
 
   for (let e = window - 1; e < n; e += 1) {
     const s = e - window + 1;
+    // 窗口内存在非正值/NaN 时跳过该窗口（而不是让它污染后续所有窗口）
+    if (lastBadUpTo[e] >= s) continue;
     const sy = py[e + 1] - py[s];
     const syy = pyy[e + 1] - pyy[s];
     const sjy = pjy[e + 1] - pjy[s];
@@ -338,6 +309,68 @@ export function buildRankTable(values: (number | undefined)[]): number[] {
   return values
     .filter((v): v is number => typeof v === 'number' && Number.isFinite(v))
     .sort((a, b) => a - b);
+}
+
+/** 上穿：序列 a 在 i 处由 <= b 变为 > b（金叉） */
+export function crossOver(a: number[], b: number[], i: number): boolean {
+  const a0 = safe(a, i - 1);
+  const b0 = safe(b, i - 1);
+  const a1 = safe(a, i);
+  const b1 = safe(b, i);
+  if (a0 === undefined || b0 === undefined || a1 === undefined || b1 === undefined) return false;
+  return a0 <= b0 && a1 > b1;
+}
+
+/** 下穿：序列 a 在 i 处由 >= b 变为 < b（死叉） */
+export function crossUnder(a: number[], b: number[], i: number): boolean {
+  const a0 = safe(a, i - 1);
+  const b0 = safe(b, i - 1);
+  const a1 = safe(a, i);
+  const b1 = safe(b, i);
+  if (a0 === undefined || b0 === undefined || a1 === undefined || b1 === undefined) return false;
+  return a0 >= b0 && a1 < b1;
+}
+
+/** 在 (i-lookback, i] 窗口内是否发生过上穿，返回最近一次的位置（无则 -1） */
+export function lastCrossOverWithin(
+  a: number[],
+  b: number[],
+  i: number,
+  lookback: number
+): number {
+  const start = Math.max(1, i - lookback + 1);
+  for (let j = i; j >= start; j -= 1) {
+    if (crossOver(a, b, j)) return j;
+  }
+  return -1;
+}
+
+/** 在 (i-lookback, i] 窗口内是否发生过下穿，返回最近一次的位置（无则 -1） */
+export function lastCrossUnderWithin(
+  a: number[],
+  b: number[],
+  i: number,
+  lookback: number
+): number {
+  const start = Math.max(1, i - lookback + 1);
+  for (let j = i; j >= start; j -= 1) {
+    if (crossUnder(a, b, j)) return j;
+  }
+  return -1;
+}
+
+/** a 与 b 在 i 处的相对差距（%，正数表示 a 在上方） */
+export function gapPct(a: number | undefined, b: number | undefined): number | undefined {
+  if (a === undefined || b === undefined || b === 0) return undefined;
+  return ((a - b) / b) * 100;
+}
+
+/** 序列在 i 处相对 n 周前的变化率（%），用于「向上拐头 / 走平」判定 */
+export function slopeAt(arr: (number | undefined)[], i: number, n: number): number | undefined {
+  const cur = safe(arr, i);
+  const prev = safe(arr, i - n);
+  if (cur === undefined || prev === undefined || prev === 0) return undefined;
+  return ((cur - prev) / prev) * 100;
 }
 
 /** 周一 00:00 的时间戳 */

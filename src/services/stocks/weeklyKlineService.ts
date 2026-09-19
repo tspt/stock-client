@@ -24,7 +24,9 @@ import { logger } from '@/utils/business/logger';
 
 /**
  * 周K缓存复用的最少根数。
- * 低于该值时即使有缓存也重新拉取，避免「旧参数拉到的短历史」被长期复用。
+ *
+ * 仅作为「没有记录 requestedCount 的历史缓存」的兜底判断：低于该值时重新拉取，
+ * 避免旧参数拉到的短历史被长期复用。
  */
 const MIN_WEEKLY_CACHE_BARS = 120;
 
@@ -87,27 +89,56 @@ function isCacheUsable(record: WeeklyKlineRecord): boolean {
   return true;
 }
 
-/** 读取 IndexedDB 中的全部周K缓存（自动忽略结构版本/复权方式不兼容的旧数据） */
-export async function loadCachedWeeklyKlines(): Promise<{
+/**
+ * 缓存根数是否足够，可以直接复用。
+ *
+ * - 新缓存记录了 requestedCount：只要当年请求的根数不少于当前请求，就说明现有长度
+ *   已是该股能给到的全部（次新股天然偏短），可以直接复用；
+ * - 旧缓存没有该字段：退回按长度判断，避免复用小 count 拉到的短历史。
+ */
+function hasEnoughBars(record: WeeklyKlineRecord, requestedCount: number): boolean {
+  if (record.requestedCount !== undefined && record.requestedCount > 0) {
+    return record.requestedCount >= requestedCount;
+  }
+  return record.kline.length >= Math.min(requestedCount, MIN_WEEKLY_CACHE_BARS);
+}
+
+export interface LoadCachedWeeklyKlinesOptions {
+  /** 当前请求的周K根数，用于判断缓存是否由足够大的 count 拉取而来 */
+  count?: number;
+}
+
+export interface CachedWeeklyKlines {
   klines: Map<string, KLineData[]>;
   names: Map<string, string>;
   updatedAt: number | null;
-  /** 因版本或复权方式不兼容而被丢弃的条数 */
+  /** 因结构版本/复权方式不兼容而被丢弃的条数（真正需要重新分析的旧缓存） */
   stale: number;
-}> {
+  /** 因历史根数不足而被跳过的条数（次新股等，属正常现象，不算过期） */
+  shortHistory: number;
+}
+
+/** 读取 IndexedDB 中的全部周K缓存（自动忽略结构版本/复权方式不兼容的旧数据） */
+export async function loadCachedWeeklyKlines(
+  options: LoadCachedWeeklyKlinesOptions = {}
+): Promise<CachedWeeklyKlines> {
+  const requestedCount = options.count ?? WEEKLY_KLINE_DEFAULT_COUNT;
   const records = await getAllWeeklyKlines();
   const klines = new Map<string, KLineData[]>();
   const names = new Map<string, string>();
   let updatedAt: number | null = null;
   let stale = 0;
+  let shortHistory = 0;
 
   records.forEach((record) => {
     if (!isCacheUsable(record)) {
+      // 结构版本或复权方式已变更：这才是「不兼容的旧缓存」
       stale += 1;
       return;
     }
-    if (record.kline.length < MIN_WEEKLY_CACHE_BARS) {
-      stale += 1;
+    if (!hasEnoughBars(record, requestedCount)) {
+      // 历史根数不足：多为次新股，或当年用小 count 拉的，属正常跳过
+      shortHistory += 1;
       return;
     }
     klines.set(record.code, record.kline);
@@ -117,7 +148,7 @@ export async function loadCachedWeeklyKlines(): Promise<{
     }
   });
 
-  return { klines, names, updatedAt, stale };
+  return { klines, names, updatedAt, stale, shortHistory };
 }
 
 /** 清空周K缓存 */
@@ -145,14 +176,11 @@ export async function fetchWeeklyKlines(
   const failures: WeeklyFetchFailure[] = [];
 
   if (!forceRefresh) {
-    const cached = await loadCachedWeeklyKlines();
-    const minBars = Math.min(count, MIN_WEEKLY_CACHE_BARS);
+    // 可用性（版本/复权/根数）已在 loadCachedWeeklyKlines 内按当前 count 判定，这里直接复用
+    const cached = await loadCachedWeeklyKlines({ count });
     cached.klines.forEach((kline, code) => {
-      // 缓存根数不足目标根数时重新拉取
-      if (kline.length >= minBars) {
-        klines.set(code, kline);
-        names.set(code, cached.names.get(code) || '');
-      }
+      klines.set(code, kline);
+      names.set(code, cached.names.get(code) || '');
     });
   }
 
@@ -190,6 +218,7 @@ export async function fetchWeeklyKlines(
               updatedAt: now,
               version: WEEKLY_KLINE_SCHEMA_VERSION,
               adjust: WEEKLY_KLINE_ADJUST,
+              requestedCount: count,
             });
           } else {
             failures.push({ code: stock.code, name: stock.name, error: '接口返回空数据' });

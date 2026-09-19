@@ -43,7 +43,8 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
   min-height: 0;
 }
 
@@ -104,7 +105,10 @@
 
 .tableCard {
   position: relative;
-  flex: none;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
   z-index: 0;
   margin: 0 16px 16px;
   border: 1px solid var(--ant-color-border-secondary);
@@ -113,13 +117,11 @@
 }
 
 .tableCard :global(.ant-card-body) {
-  overflow: auto;
-}
-
-.tableCard :global(.ant-table-sticky-holder),
-.tableCard :global(.ant-table-header) {
-  position: static !important;
-  top: auto !important;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .nameCell {

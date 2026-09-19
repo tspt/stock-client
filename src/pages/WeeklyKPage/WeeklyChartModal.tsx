@@ -3,7 +3,7 @@
  */
 
 import { useMemo, useRef } from 'react';
-import { Modal, Button, Space, Tag, Typography, App } from 'antd';
+import { Modal, Button, Space, Tag, Tooltip, Typography, App } from 'antd';
 import { DownloadOutlined } from '@ant-design/icons';
 import ReactECharts from 'echarts-for-react';
 import type { EChartsOption } from 'echarts';
@@ -38,6 +38,7 @@ function buildWeeklyChartOption(data: KLineData[], name: string): EChartsOption 
   const ma10 = calculateMA(data, 10);
   const ma20 = calculateMA(data, 20);
   const ma30 = calculateMA(data, 30);
+  const ma60 = calculateMA(data, 60);
   const macd = calculateMACD(data);
 
   // 默认展示最近 120 周
@@ -46,7 +47,7 @@ function buildWeeklyChartOption(data: KLineData[], name: string): EChartsOption 
 
   return {
     title: {
-      text: `${name} 周K（MA5≈月线 / MA10≈季线 / MA20≈半年线）`,
+      text: `${name} 周K（MA5≈月线 / MA10≈季线 / MA20≈半年线 / MA60≈牛熊线）`,
       left: 0,
       textStyle: { fontSize: 14 },
     },
@@ -66,12 +67,14 @@ function buildWeeklyChartOption(data: KLineData[], name: string): EChartsOption 
         html += `<div>低: ${item.low.toFixed(2)}</div>`;
         html += `<div>量: ${formatVolume(item.volume)}</div>`;
 
-        [['MA5', ma5], ['MA10', ma10], ['MA20', ma20], ['MA30', ma30]].forEach(([label, arr]) => {
-          const value = (arr as number[])[dataIndex];
-          if (Number.isFinite(value)) {
-            html += `<div>${label}: ${value.toFixed(2)}</div>`;
+        [['MA5', ma5], ['MA10', ma10], ['MA20', ma20], ['MA30', ma30], ['MA60', ma60]].forEach(
+          ([label, arr]) => {
+            const value = (arr as number[])[dataIndex];
+            if (Number.isFinite(value)) {
+              html += `<div>${label}: ${value.toFixed(2)}</div>`;
+            }
           }
-        });
+        );
 
         const dif = macd.dif[dataIndex];
         const dea = macd.dea[dataIndex];
@@ -156,6 +159,15 @@ function buildWeeklyChartOption(data: KLineData[], name: string): EChartsOption 
       { name: 'MA10', type: 'line', data: ma10, smooth: false, showSymbol: false, lineStyle: { width: 1 }, animation: false },
       { name: 'MA20', type: 'line', data: ma20, smooth: false, showSymbol: false, lineStyle: { width: 1 }, animation: false },
       { name: 'MA30', type: 'line', data: ma30, smooth: false, showSymbol: false, lineStyle: { width: 1 }, animation: false },
+      {
+        name: 'MA60',
+        type: 'line',
+        data: ma60,
+        smooth: false,
+        showSymbol: false,
+        lineStyle: { width: 2, color: '#722ed1' },
+        animation: false,
+      },
       {
         name: '成交量',
         type: 'bar',
@@ -251,12 +263,25 @@ export function WeeklyChartModal({ open, code, name, kline, analysis, onClose }:
           <Space wrap size={[6, 6]}>
             <Text strong>评分 {analysis.score}</Text>
             {analysis.industryName && <Tag>{analysis.industryName}</Tag>}
-            {analysis.ret13wSkip1 !== undefined && (
-              <Tag color="red">13周动量 {analysis.ret13wSkip1.toFixed(1)}%</Tag>
-            )}
             {analysis.pxAboveMa8 && <Tag color="orange">站上周MA8</Tag>}
+            {analysis.pxAboveMa60 && <Tag color="purple">站上60周线</Tag>}
+            {analysis.ma60FlatOrUp && <Tag color="purple">60周线走平/上翘</Tag>}
+            {analysis.macdBottomDivergence && <Tag color="green">MACD底背离</Tag>}
             {analysis.runningWeekIncluded && <Tag color="default">含未完成本周</Tag>}
           </Space>
+          {analysis.setups.length > 0 && (
+            <div style={{ marginTop: 8 }}>
+              <Space wrap size={[4, 4]}>
+                {analysis.setups.map((hit) => (
+                  <Tooltip key={hit.key} title={hit.reasons.join('；')}>
+                    <Tag color="red">
+                      {hit.label} {hit.score}/{hit.max}
+                    </Tag>
+                  </Tooltip>
+                ))}
+              </Space>
+            </div>
+          )}
           <div style={{ marginTop: 8 }}>
             <Text type="secondary" style={{ fontSize: 12 }}>
               信号：{analysis.signals.join('；') || '无'}
@@ -279,6 +304,13 @@ export function WeeklyChartModal({ open, code, name, kline, analysis, onClose }:
             <div style={{ marginTop: 4 }}>
               <Text type="danger" style={{ fontSize: 12 }}>
                 风险：{analysis.warnings.join('；')}
+              </Text>
+            </div>
+          )}
+          {analysis.exitSignals.length > 0 && (
+            <div style={{ marginTop: 4 }}>
+              <Text type="warning" style={{ fontSize: 12 }}>
+                卖出信号：{analysis.exitSignals.join('；')}
               </Text>
             </div>
           )}

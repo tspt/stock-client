@@ -22,6 +22,12 @@ export interface WeeklyKlineRecord {
   version?: number;
   /** 复权方式（qfq / hfq / ''），用于校验缓存数据可用性 */
   adjust?: string;
+  /**
+   * 拉取这份数据时请求的根数。
+   * 用于判断缓存是否「由足够大的 count 拉取而来」：只要当年请求的根数不少于当前请求，
+   * 就说明现有长度已是该股能给到的全部（次新股天然偏短），可直接复用而不必重新拉取。
+   */
+  requestedCount?: number;
 }
 
 function txDone(tx: IDBTransaction, rejectMessage: string): Promise<void> {
