@@ -232,7 +232,10 @@ export async function clearStockHistory(): Promise<void> {
 
   return new Promise((resolve, reject) => {
     transaction.onerror = () => reject(new Error('清空股票历史数据失败'));
-    transaction.oncomplete = () => resolve();
+    transaction.oncomplete = () => {
+      invalidateStocksHistoryCache();
+      resolve();
+    };
 
     const historyStore = transaction.objectStore(STOCK_HISTORY_STORE_NAME);
     const historyRequest = historyStore.clear();
@@ -262,7 +265,10 @@ export async function saveStockHistory(record: StockHistoryRecord): Promise<void
 
   return new Promise((resolve, reject) => {
     const request = store.put(record);
-    request.onsuccess = () => resolve();
+    request.onsuccess = () => {
+      invalidateStocksHistoryCache();
+      resolve();
+    };
     request.onerror = () => reject(new Error('保存股票历史数据失败'));
   });
 }
@@ -283,43 +289,81 @@ export async function getStockHistory(code: string): Promise<StockHistoryRecord 
 }
 
 /**
+ * 全量读取结果缓存。
+ * store.getAll() 要把几千只股票、每只几百根 K 线全部结构化克隆进内存，代价极高，
+ * 历史回测 / 机会分析 / 分析记录三个页面都会全量读，这里跨页面复用同一份结果。
+ * 写入（saveStockHistory）与清空（clearStockHistory）时自动失效。
+ */
+let cachedAllHistories: StockHistoryRecord[] | null = null;
+let cachedAllHistoriesPromise: Promise<StockHistoryRecord[]> | null = null;
+
+/** 主动失效全量缓存（如外部批量导入后） */
+export function invalidateStocksHistoryCache(): void {
+  cachedAllHistories = null;
+  cachedAllHistoriesPromise = null;
+}
+
+function getAllStockHistories(): Promise<StockHistoryRecord[]> {
+  return initOpportunityDB().then(
+    (db) =>
+      new Promise<StockHistoryRecord[]>((resolve, reject) => {
+        const transaction = db.transaction([STOCK_HISTORY_STORE_NAME], 'readonly');
+        const store = transaction.objectStore(STOCK_HISTORY_STORE_NAME);
+        const request = store.getAll();
+        request.onsuccess = () => resolve(request.result || []);
+        request.onerror = () => reject(new Error('获取所有股票历史数据失败'));
+      })
+  );
+}
+
+function getStockHistoriesByCodes(codes: string[]): Promise<StockHistoryRecord[]> {
+  return initOpportunityDB().then(
+    (db) =>
+      new Promise<StockHistoryRecord[]>((resolve, reject) => {
+        const transaction = db.transaction([STOCK_HISTORY_STORE_NAME], 'readonly');
+        const store = transaction.objectStore(STOCK_HISTORY_STORE_NAME);
+        const results: StockHistoryRecord[] = [];
+        let completed = 0;
+
+        const settle = () => {
+          completed++;
+          if (completed === codes.length) resolve(results);
+        };
+
+        codes.forEach((code) => {
+          const request = store.get(code);
+          request.onsuccess = () => {
+            if (request.result) results.push(request.result);
+            settle();
+          };
+          request.onerror = settle;
+        });
+      })
+  );
+}
+
+/**
  * 批量获取股票历史数据
  */
 export async function getStocksHistory(codes: string[]): Promise<StockHistoryRecord[]> {
-  const db = await initOpportunityDB();
-  const transaction = db.transaction([STOCK_HISTORY_STORE_NAME], 'readonly');
-  const store = transaction.objectStore(STOCK_HISTORY_STORE_NAME);
+  if (codes.length === 0) {
+    if (cachedAllHistories) return cachedAllHistories;
+    if (cachedAllHistoriesPromise) return cachedAllHistoriesPromise;
 
-  return new Promise((resolve, reject) => {
-    if (codes.length === 0) {
-      // 如果 codes 为空，则获取所有记录
-      const request = store.getAll();
-      request.onsuccess = () => resolve(request.result || []);
-      request.onerror = () => reject(new Error('获取所有股票历史数据失败'));
-      return;
-    }
+    cachedAllHistoriesPromise = getAllStockHistories()
+      .then((list) => {
+        cachedAllHistories = list;
+        cachedAllHistoriesPromise = null;
+        return list;
+      })
+      .catch((error) => {
+        cachedAllHistoriesPromise = null;
+        throw error;
+      });
 
-    const results: StockHistoryRecord[] = [];
-    let completed = 0;
+    return cachedAllHistoriesPromise;
+  }
 
-    codes.forEach((code) => {
-      const request = store.get(code);
-      request.onsuccess = () => {
-        if (request.result) {
-          results.push(request.result);
-        }
-        completed++;
-        if (completed === codes.length) {
-          resolve(results);
-        }
-      };
-      request.onerror = () => {
-        completed++;
-        if (completed === codes.length) {
-          resolve(results);
-        }
-      };
-    });
-  });
+  return getStockHistoriesByCodes(codes);
 }
 

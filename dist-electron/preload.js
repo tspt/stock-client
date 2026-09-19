@@ -49,8 +49,12 @@ try {
             return electron_1.ipcRenderer.invoke('export-backtest-signals-file', payload);
         },
         // 读取 docs/回测优化/最新买点 下的 JSON 快照
-        readLatestBuyPointFiles: () => {
-            return electron_1.ipcRenderer.invoke('read-latest-buy-point-files');
+        readLatestBuyPointFiles: (payload) => {
+            return electron_1.ipcRenderer.invoke('read-latest-buy-point-files', payload);
+        },
+        // 最新买点：只列出可用日期（不解析内容）
+        listLatestBuyPointDates: () => {
+            return electron_1.ipcRenderer.invoke('list-latest-buy-point-dates');
         },
         // 机会记录：写入 docs/回测优化/机会记录/{YYYY-MM-DD}.json
         writeOpportunityRecordFile: (payload) => {

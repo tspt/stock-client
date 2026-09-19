@@ -32,6 +32,7 @@ import type { ColumnsType } from 'antd/es/table';
 import { BarChartOutlined, DatabaseOutlined, ExportOutlined, InfoCircleOutlined, ReloadOutlined, SearchOutlined, SyncOutlined } from '@ant-design/icons';
 import {
   getStocksHistory,
+  invalidateStocksHistoryCache,
   type StockHistoryRecord,
 } from '@/utils/storage/opportunityIndexedDB';
 import { getAllStockRecords } from '@/services/opportunity/recordService';
@@ -47,9 +48,14 @@ import {
 } from '@/utils/analysis/buypointScenario';
 import {
   buildTrackedLatestSignals,
+  collectReturnValues,
+  compareTrackedSignals,
   getTrackingStatus,
   normalizeDateKey,
+  RETURN_HORIZON_KEYS,
+  type LatestBuyPointFile,
   type TrackedLatestSignal,
+  type TrackedLatestSignalBase,
   type TrackingStatus,
 } from '@/utils/analysis/latestSignalTracking';
 import { fetchThsHotRank } from '@/services/hot/ths-hot-rank-service';
@@ -82,6 +88,9 @@ const { Text } = Typography;
 /** 表格滚动区为表头与分页预留的高度 */
 const TABLE_SCROLL_Y_RESERVE = 72;
 
+/** 按需加载买点文件时，单批读取的日期数（避免一次性 parse 上百个 JSON 卡住主进程） */
+const LOAD_DATES_CHUNK_SIZE = 20;
+
 
 function isSTStock(name: string): boolean {
   return name.includes('ST');
@@ -100,6 +109,17 @@ function matchBcQualityFilter(
   const boards = item.features?.limitUpCount5 ?? 0;
   if (pullback == null) return false;
   return pullback > 18 || (pullback > 12 && boards >= 1);
+}
+
+/**
+ * 名称兜底比较。
+ * 不用 localeCompare('zh-CN')：中文 collation 单次调用是微秒级，
+ * 在几万行的排序比较器里会被调用上百万次，是明显的瓶颈；
+ * 这里只是最终兜底排序，按码位比较即可保证稳定、确定。
+ */
+function compareName(a: string, b: string): number {
+  if (a === b) return 0;
+  return a < b ? -1 : 1;
 }
 
 function matchIndustryGroupFilter(
@@ -202,8 +222,9 @@ const highLiftIds = new Set(HIGH_LIFT_SCENARIOS.map((s) => s.id));
 
 export function BacktestPage() {
   const { message } = App.useApp();
-  const [totalCount, setTotalCount] = useState(0);
-  const [exportCount, setExportCount] = useState(0);
+  /** 全量股票历史（含 dailyLines）：页面内只从 IndexedDB 读一次，所有消费者共用 */
+  const [allHistories, setAllHistories] = useState<StockHistoryRecord[]>([]);
+  const historiesPromiseRef = useRef<Promise<StockHistoryRecord[]> | null>(null);
   const [excludeST, setExcludeST] = useState(true);
   const [loadingCount, setLoadingCount] = useState(false);
   const [scanningHistory, setScanningHistory] = useState(false);
@@ -224,13 +245,19 @@ export function BacktestPage() {
   const [trackingIntersectionFilters, setTrackingIntersectionFilters] = useState<string[]>([]);
   const [trackingIndustryGroupLabels, setTrackingIndustryGroupLabels] = useState<string[]>([]);
   const [trackingIndustryInvert, setTrackingIndustryInvert] = useState(true);
+  /** 输入值（立即回显）与生效值（防抖，避免每次按键都重算全表） */
+  const [trackingThresholdInput, setTrackingThresholdInput] = useState(5);
   const [trackingThreshold, setTrackingThreshold] = useState(5);
   const [trackingMinHitCount, setTrackingMinHitCount] = useState(2);
-  const [trackingRows, setTrackingRows] = useState<TrackedLatestSignal[]>([]);
+  /** 目录下可用的买点日期（YYYY-MM-DD，降序）——只列目录，不解析内容 */
+  const [availableDates, setAvailableDates] = useState<string[]>([]);
+  /** 已加载信号行，按信号日分组；key 存在即视为已加载（空数组同样代表已加载） */
+  const [rowsByDate, setRowsByDate] = useState<Map<string, TrackedLatestSignalBase[]>>(new Map());
   const [loadingTracking, setLoadingTracking] = useState(false);
+  /** 「追踪统计」浮层是否展开：归因统计较重，只在展开时才算 */
+  const [statsPopoverOpen, setStatsPopoverOpen] = useState(false);
   const [showAddTrackingLatestModal, setShowAddTrackingLatestModal] = useState(false);
   const [searchText, setSearchText] = useState('');
-  const [latestDateSummary, setLatestDateSummary] = useState({ dominantDate: '', dominantCount: 0 });
   const [activeTab, setActiveTab] = useState<'tracking' | 'history'>('tracking');
   const [tablePageSize, setTablePageSize] = useState(100);
   const [tableScrollY, setTableScrollY] = useState(360);
@@ -248,30 +275,75 @@ export function BacktestPage() {
     loadSectorMapping();
   }, []);
 
-  const readFilteredHistories = useCallback(async () => {
-    const allHistories = await getStocksHistory([]);
-    const histories = filterHistories(allHistories, excludeST);
-    setTotalCount(allHistories.length);
-    setExportCount(histories.length);
-    setLatestDateSummary(getLatestDateSummary(histories));
-    return { allHistories, histories };
-  }, [excludeST]);
-
-  const refreshHistoryCount = useCallback(async () => {
-    try {
-      setLoadingCount(true);
-      await readFilteredHistories();
-    } catch (error) {
-      logger.error('[BacktestPage] 读取 stockHistory 数量失败:', error);
-      message.error('读取本地历史数据失败');
-    } finally {
-      setLoadingCount(false);
+  /**
+   * 全量行情只从 IndexedDB 读一次，页面内所有消费者共用同一个 Promise。
+   * 原先「刷新统计」与「加载买点追踪」各调一次 getAll()，首屏会有两份全量日线并存，
+   * 内存峰值翻倍且重复付出结构化克隆的代价。
+   */
+  const loadAllHistories = useCallback((force = false) => {
+    // force 时要真正重读：先失效 IndexedDB 层的跨页面缓存
+    if (force) {
+      invalidateStocksHistoryCache();
+      historiesPromiseRef.current = null;
     }
-  }, [message, readFilteredHistories]);
+    if (!force && historiesPromiseRef.current) {
+      return historiesPromiseRef.current;
+    }
+    const promise = getStocksHistory([]);
+    promise.catch(() => {
+      // 失败则丢弃缓存，下次可重试
+      if (historiesPromiseRef.current === promise) {
+        historiesPromiseRef.current = null;
+      }
+    });
+    historiesPromiseRef.current = promise;
+    return promise;
+  }, []);
+
+  const readFilteredHistories = useCallback(async () => {
+    const all = await loadAllHistories();
+    setAllHistories(all);
+    const histories = filterHistories(all, excludeST);
+    return { allHistories: all, histories };
+  }, [excludeST, loadAllHistories]);
+
+  const refreshHistoryCount = useCallback(
+    async (force = false) => {
+      try {
+        setLoadingCount(true);
+        const list = await loadAllHistories(force);
+        setAllHistories(list);
+      } catch (error) {
+        logger.error('[BacktestPage] 读取 stockHistory 数量失败:', error);
+        message.error('读取本地历史数据失败');
+      } finally {
+        setLoadingCount(false);
+      }
+    },
+    [loadAllHistories, message]
+  );
 
   useEffect(() => {
-    refreshHistoryCount();
+    void refreshHistoryCount();
   }, [refreshHistoryCount]);
+
+  /** 顶部统计：由已加载的全量数据派生，切换「排除ST」不再触发重新读库 */
+  const filteredHistories = useMemo(
+    () => filterHistories(allHistories, excludeST),
+    [allHistories, excludeST]
+  );
+  const latestDateSummary = useMemo(
+    () => getLatestDateSummary(filteredHistories),
+    [filteredHistories]
+  );
+  const totalCount = allHistories.length;
+  const exportCount = filteredHistories.length;
+
+  useEffect(() => {
+    if (trackingThresholdInput === trackingThreshold) return;
+    const timer = setTimeout(() => setTrackingThreshold(trackingThresholdInput), 300);
+    return () => clearTimeout(timer);
+  }, [trackingThreshold, trackingThresholdInput]);
 
   const handleScanHistoricalBuyPoints = async () => {
     try {
@@ -334,105 +406,198 @@ export function BacktestPage() {
     }
   };
 
-  const handleLoadTrackingRows = useCallback(async (silent = false) => {
-    if (!window.electronAPI?.readLatestBuyPointFiles) {
-      if (!silent) {
-        message.error('读取最新买点文件不可用（需在 Electron 环境中运行并重启应用）');
-      }
-      return;
-    }
-
-    try {
-      setLoadingTracking(true);
-      const result = await window.electronAPI.readLatestBuyPointFiles();
-      if (!result.success) {
-        if (!silent) {
-          message.error('读取最新买点文件失败: ' + (result.error || '未知错误'));
-        }
-        return;
-      }
-
-      const files = result.files || [];
-      if (files.length === 0) {
-        setTrackingRows([]);
-        if (!silent) {
-          message.warning('暂无最新买点文件，请先扫描并导出最新买点');
-        }
-        return;
-      }
+  /** 把若干买点文件转成追踪行：共用已缓存的行情，热门榜并发读取（原来是一次次串行 await） */
+  const buildRowsForFiles = useCallback(
+    async (files: LatestBuyPointFile[], silent: boolean) => {
+      const [histories, records] = await Promise.all([
+        loadAllHistories(),
+        getAllStockRecords(),
+      ]);
 
       const todayKey = getLocalDateString();
-      const signalDates = Array.from(
-        new Set(
-          files.flatMap((file) => {
-            const fileDateKey = normalizeDateKey(file.fileBaseName);
-            const items = Array.isArray(file.content?.items) ? file.content.items : [];
-            return items
-              .map((item: { date?: string }) => normalizeDateKey(item.date || ''))
-              .filter((dateKey: string) => dateKey && dateKey === fileDateKey);
-          })
-        )
-      );
-
       const hotRankCodeMap = new Map<string, Set<string>>();
-      for (const dateKey of signalDates) {
-        try {
-          let codes = await readHotRankDayCodes(dateKey);
-          if (codes == null && dateKey === todayKey) {
-            try {
-              await fetchThsHotRank('day');
-              codes = await readHotRankDayCodes(dateKey);
-            } catch (fetchError) {
-              logger.warn('[BacktestPage] 当天热门榜补数失败:', fetchError);
-              if (!silent) {
-                message.warning('当天热门榜拉取失败，热门榜标记可能为空');
+      await Promise.all(
+        files.map(async (file) => {
+          const dateKey = normalizeDateKey(file.fileBaseName);
+          try {
+            let codes = await readHotRankDayCodes(dateKey);
+            if (codes == null && dateKey === todayKey) {
+              try {
+                await fetchThsHotRank('day');
+                codes = await readHotRankDayCodes(dateKey);
+              } catch (fetchError) {
+                logger.warn('[BacktestPage] 当天热门榜补数失败:', fetchError);
+                if (!silent) {
+                  message.warning('当天热门榜拉取失败，热门榜标记可能为空');
+                }
+                codes = new Set();
               }
-              codes = new Set();
             }
+            hotRankCodeMap.set(dateKey, codes ?? new Set());
+          } catch (readError) {
+            logger.warn('[BacktestPage] 读取热门榜失败:', { dateKey, readError });
+            hotRankCodeMap.set(dateKey, new Set());
           }
-          hotRankCodeMap.set(dateKey, codes ?? new Set());
-        } catch (readError) {
-          logger.warn('[BacktestPage] 读取热门榜失败:', { dateKey, readError });
-          hotRankCodeMap.set(dateKey, new Set());
+        })
+      );
+
+      return buildTrackedLatestSignals(files, histories, records, hotRankCodeMap);
+    },
+    [loadAllHistories, message]
+  );
+
+  /** 只加载指定日期的买点文件（按需加载：默认只有今天/最近一个交易日） */
+  const loadTrackingDates = useCallback(
+    async (dates: string[], silent = true) => {
+      if (dates.length === 0) return;
+      if (!window.electronAPI?.readLatestBuyPointFiles) {
+        if (!silent) {
+          message.error('读取最新买点文件不可用（需在 Electron 环境中运行并重启应用）');
         }
+        return;
       }
 
-      const histories = filterHistories(await getStocksHistory([]), excludeST);
-      const records = await getAllStockRecords();
-      const rows = buildTrackedLatestSignals(
-        files,
-        histories,
-        records,
-        {
-          threshold: trackingThreshold,
-          minHitCount: trackingMinHitCount,
-        },
-        hotRankCodeMap
-      );
-      setTrackingRows(rows);
-      if (!silent) {
-        message.success(`买点追踪已更新，共读取 ${files.length} 个文件、${rows.length} 条信号`);
+      const showProgress = dates.length > LOAD_DATES_CHUNK_SIZE;
+
+      try {
+        setLoadingTracking(true);
+        let totalRows = 0;
+
+        // 分批读取：切到「全部日期」时一次性 parse 上百个 JSON 会长时间阻塞主进程
+        for (let i = 0; i < dates.length; i += LOAD_DATES_CHUNK_SIZE) {
+          const chunk = dates.slice(i, i + LOAD_DATES_CHUNK_SIZE);
+          if (showProgress) {
+            message.loading({
+              key: 'load_buy_point_dates',
+              content: `正在加载买点文件 [${Math.min(i + chunk.length, dates.length)}/${dates.length}]...`,
+            });
+          }
+          const result = await window.electronAPI.readLatestBuyPointFiles({ dates: chunk });
+          if (!result.success) {
+            if (!silent) {
+              message.error('读取最新买点文件失败: ' + (result.error || '未知错误'));
+            }
+            return;
+          }
+
+          const files = (result.files || []) as unknown as LatestBuyPointFile[];
+          if (files.length === 0 && !silent) {
+            message.warning('暂无最新买点文件，请先扫描并导出最新买点');
+          }
+
+          const rows = await buildRowsForFiles(files, silent);
+          totalRows += rows.length;
+
+          const grouped = new Map<string, TrackedLatestSignalBase[]>();
+          // 先占位：即使某天没有文件也记为已加载，避免重复请求
+          chunk.forEach((dateKey) => grouped.set(dateKey, []));
+          rows.forEach((row) => {
+            const list = grouped.get(row.signalDateKey);
+            if (list) {
+              list.push(row);
+            } else {
+              grouped.set(row.signalDateKey, [row]);
+            }
+          });
+
+          setRowsByDate((prev) => {
+            const next = new Map(prev);
+            grouped.forEach((list, dateKey) => next.set(dateKey, list));
+            return next;
+          });
+        }
+
+        if (showProgress) {
+          message.destroy('load_buy_point_dates');
+        }
+        if (!silent) {
+          message.success(`买点追踪已更新，共读取 ${dates.length} 个日期、${totalRows} 条信号`);
+        }
+      } catch (error) {
+        logger.error('[BacktestPage] 更新买点追踪失败:', error);
+        if (showProgress) {
+          message.destroy('load_buy_point_dates');
+        }
+        if (!silent) {
+          message.error('更新买点追踪失败: ' + (error as Error).message);
+        }
+      } finally {
+        setLoadingTracking(false);
       }
+    },
+    [buildRowsForFiles, message]
+  );
+
+  /** 刷新可选日期列表：只列目录，不解析 JSON，代价极低 */
+  const refreshAvailableDates = useCallback(async () => {
+    if (!window.electronAPI?.listLatestBuyPointDates) return [];
+    try {
+      const result = await window.electronAPI.listLatestBuyPointDates();
+      if (!result.success) return [];
+      const dates = result.dates || [];
+      setAvailableDates(dates);
+      return dates;
     } catch (error) {
-      logger.error('[BacktestPage] 更新买点追踪失败:', error);
-      if (!silent) {
-        message.error('更新买点追踪失败: ' + (error as Error).message);
-      }
-    } finally {
-      setLoadingTracking(false);
+      logger.warn('[BacktestPage] 列出买点日期失败:', error);
+      return [];
     }
-  }, [excludeST, message, trackingMinHitCount, trackingThreshold]);
+  }, []);
+
+  /** 重新计算已加载日期（扫描 / 同步 / 手动刷新后调用） */
+  const reloadLoadedDates = useCallback(
+    async (silent = false, forceHistories = false) => {
+      if (forceHistories) {
+        loadAllHistories(true);
+      }
+      await refreshAvailableDates();
+      const dates = Array.from(rowsByDate.keys());
+      if (dates.length === 0) return;
+      await loadTrackingDates(dates, silent);
+    },
+    [loadAllHistories, loadTrackingDates, refreshAvailableDates, rowsByDate]
+  );
 
   useEffect(() => {
-    void handleLoadTrackingRows(true);
-  }, [handleLoadTrackingRows]);
+    void refreshAvailableDates();
+  }, [refreshAvailableDates]);
+
+  /**
+   * 当前日期范围需要的日期。必须来自目录列表而不是已加载的行，
+   * 否则「按需加载」会让 sortedDates 只剩已加载的那几天，范围筛选直接失效。
+   */
+  const requiredDates = useMemo(() => {
+    if (availableDates.length === 0) return [];
+    const limit = TRACKING_DATE_RANGE_LIMIT[trackingDateRange] ?? 'all';
+    return limit === 'all' ? availableDates : availableDates.slice(0, limit);
+  }, [availableDates, trackingDateRange]);
+
+  /** 需要但尚未加载的日期 —— 切换日期范围时才触发加载 */
+  const missingDates = useMemo(
+    () => requiredDates.filter((dateKey) => !rowsByDate.has(dateKey)),
+    [requiredDates, rowsByDate]
+  );
+
+  useEffect(() => {
+    if (missingDates.length === 0) return;
+    void loadTrackingDates(missingDates, true);
+  }, [loadTrackingDates, missingDates]);
+
+  const trackingRows = useMemo(() => {
+    const rows: TrackedLatestSignalBase[] = [];
+    rowsByDate.forEach((list) => {
+      for (let i = 0; i < list.length; i++) {
+        rows.push(list[i]);
+      }
+    });
+    return rows.sort(compareTrackedSignals);
+  }, [rowsByDate]);
 
   const handleScanLatestSignals = async () => {
     const sortSignals = (signals: ReturnType<typeof scanLatestScenarioSignals>) =>
       signals.sort((a, b) => {
         if ((b.oddsScore || 0) !== (a.oddsScore || 0)) return (b.oddsScore || 0) - (a.oddsScore || 0);
         if ((b.lift || 0) !== (a.lift || 0)) return (b.lift || 0) - (a.lift || 0);
-        return a.name.localeCompare(b.name, 'zh-CN');
+        return compareName(a.name, b.name);
       });
 
     const mapSignals = (signals: ReturnType<typeof scanLatestScenarioSignals>) =>
@@ -498,7 +663,7 @@ export function BacktestPage() {
         }
 
         message.loading({ content: '按月导出完成，正在重新加载买点追踪...', key: 'scan_month' });
-        await handleLoadTrackingRows(true);
+        await reloadLoadedDates(true);
         message.success({
           content: `截止月 ${asOfMonth} 已导出 ${successCount} 个交易日 JSON（累计信号 ${totalSignals} 只）`,
           key: 'scan_month',
@@ -516,13 +681,13 @@ export function BacktestPage() {
 
       if (signals.length === 0) {
         message.info('最新交易日未扫描到高价值场景信号');
-        await handleLoadTrackingRows(true);
+        await reloadLoadedDates(true);
         return;
       }
 
       if (!window.electronAPI?.exportBacktestSignalsFile) {
         message.warning('扫描完成，但自动导出快照不可用（需在 Electron 环境中运行）');
-        await handleLoadTrackingRows(true);
+        await reloadLoadedDates(true);
         return;
       }
 
@@ -549,12 +714,12 @@ export function BacktestPage() {
           meta,
         });
         message.success(`已保存最新买点快照 ${data.length} 条到 ${filePath}`);
-        await handleLoadTrackingRows(true);
+        await reloadLoadedDates(true);
         message.success(`最新交易日扫描完成并已更新买点追踪（命中 ${signals.length} 只）`);
       } catch (exportError) {
         logger.error('[BacktestPage] 扫描最新后导出快照失败:', exportError);
         message.error('导出快照失败: ' + (exportError as Error).message);
-        await handleLoadTrackingRows(true);
+        await reloadLoadedDates(true);
       }
     } catch (error) {
       logger.error('[BacktestPage] 扫描最新交易日失败:', error);
@@ -621,7 +786,7 @@ export function BacktestPage() {
         }).sort((a, b) => {
           if ((b.oddsScore || 0) !== (a.oddsScore || 0)) return (b.oddsScore || 0) - (a.oddsScore || 0);
           if ((b.lift || 0) !== (a.lift || 0)) return (b.lift || 0) - (a.lift || 0);
-          return a.name.localeCompare(b.name, 'zh-CN');
+          return compareName(a.name, b.name);
         });
 
         // 即使 signals 为空也保留为空快照，确保文件与算法逻辑真实同步
@@ -655,7 +820,7 @@ export function BacktestPage() {
       }
 
       message.loading({ content: '文件同步完成，正在重新加载买点追踪...', key: 'sync_existing' });
-      await handleLoadTrackingRows(true);
+      await reloadLoadedDates(true);
       message.success({
         content: `成功更新 ${successCount} 个已有买点文件（累计信号 ${totalSignals} 只），追踪数据已同步！`,
         key: 'sync_existing',
@@ -664,7 +829,7 @@ export function BacktestPage() {
     } catch (error) {
       logger.error('[BacktestPage] 批量同步已有买点失败:', error);
       message.error({ content: '批量同步失败: ' + (error as Error).message, key: 'sync_existing' });
-      await handleLoadTrackingRows(true);
+      await reloadLoadedDates(true);
     } finally {
       setSyncingAllLatest(false);
     }
@@ -704,16 +869,15 @@ export function BacktestPage() {
 
   const trackingAnalysisRows = useMemo(() => {
     const keyword = searchText.trim().toLowerCase();
-    const sortedDates = Array.from(new Set(trackedRowsWithStatus.map((item) => item.signalDateKey)))
-      .sort()
-      .reverse();
+    // 用目录里已知的全部日期做范围裁剪，而不是已加载行里的日期
     const dateRangeLimit = TRACKING_DATE_RANGE_LIMIT[trackingDateRange] ?? 'all';
-    const dateLimit = dateRangeLimit === 'all' ? sortedDates.length : dateRangeLimit;
-    const allowedDates = new Set(sortedDates.slice(0, dateLimit));
+    const dateLimit = dateRangeLimit === 'all' ? availableDates.length : dateRangeLimit;
+    const allowedDates = new Set(availableDates.slice(0, dateLimit));
     const onlyOpportunity = trackingIntersectionFilters.includes('opportunity');
     const onlyHotRank = trackingIntersectionFilters.includes('hotRank');
 
     return trackedRowsWithStatus.filter((item) => {
+      const stMatch = !excludeST || !isSTStock(item.name || '');
       const dateMatch = trackingDateRange === 'all' || allowedDates.has(item.signalDateKey);
       const scenarioMatch =
         trackingScenarioFilter === 'all' || item.scenario === trackingScenarioFilter;
@@ -735,6 +899,7 @@ export function BacktestPage() {
         item.name.toLowerCase().includes(keyword) ||
         item.code.toLowerCase().includes(keyword);
       return (
+        stMatch &&
         dateMatch &&
         scenarioMatch &&
         oddsMatch &&
@@ -746,6 +911,8 @@ export function BacktestPage() {
       );
     });
   }, [
+    availableDates,
+    excludeST,
     industryMapping,
     searchText,
     trackingIndustryCodes,
@@ -841,23 +1008,75 @@ export function BacktestPage() {
     return { total, passed, failed, tracking, verified, passRate, avgMaxReturn, scenarios };
   }, [filteredTrackingRows]);
 
+  /**
+   * 归因统计：只在「追踪统计」Popover 打开时才计算。
+   * 之前它在每次 searchText / 筛选变化时都会跑 9 遍全量 getTrackingStatus，
+   * 而结果只有展开浮层时才被看到。
+   */
   const trackingAnalysisStats = useMemo(() => {
-    const ruleMap = new Map<
-      string,
-      {
+    const empty: {
+      ruleStats: Array<{
         scenarioName: string;
         matchedRule: string;
         total: number;
         passed: number;
         failed: number;
         tracking: number;
-      }
-    >();
+        verified: number;
+        passRate: number | null;
+      }>;
+      failedRules: Array<{
+        scenarioName: string;
+        matchedRule: string;
+        total: number;
+        passed: number;
+        failed: number;
+        tracking: number;
+        verified: number;
+        passRate: number | null;
+      }>;
+      parameterStats: Array<{
+        threshold: number;
+        minHitCount: number;
+        passed: number;
+        failed: number;
+        tracking: number;
+        verified: number;
+        passRate: number | null;
+      }>;
+    } = { ruleStats: [], failedRules: [], parameterStats: [] };
 
-    trackingAnalysisRows.forEach((item) => {
+    if (!statsPopoverOpen || trackingAnalysisRows.length === 0) return empty;
+
+    type RuleStat = {
+      scenarioName: string;
+      matchedRule: string;
+      total: number;
+      passed: number;
+      failed: number;
+      tracking: number;
+    };
+    const ruleMap = new Map<string, RuleStat>();
+
+    const thresholds = [3, 5, 8];
+    const minHits = [1, 2, 3];
+    const parameterAcc = thresholds.flatMap((threshold) =>
+      minHits.map((minHitCount) => ({
+        threshold,
+        minHitCount,
+        passed: 0,
+        failed: 0,
+        tracking: 0,
+      }))
+    );
+    const horizonCount = RETURN_HORIZON_KEYS.length;
+
+    // 单遍遍历：规则维度与 9 种参数组合一次算完（原来参数回测要 reduce 9 遍全量）
+    for (const item of trackingAnalysisRows) {
       const key = `${item.scenarioName}｜${item.matchedRule}`;
-      const current =
-        ruleMap.get(key) || {
+      let rule = ruleMap.get(key);
+      if (!rule) {
+        rule = {
           scenarioName: item.scenarioName,
           matchedRule: item.matchedRule,
           total: 0,
@@ -865,10 +1084,24 @@ export function BacktestPage() {
           failed: 0,
           tracking: 0,
         };
-      current.total += 1;
-      current[item.status] += 1;
-      ruleMap.set(key, current);
-    });
+        ruleMap.set(key, rule);
+      }
+      rule.total += 1;
+      rule[item.status] += 1;
+
+      const values = collectReturnValues(item.trackedReturns);
+      const remainingCount = horizonCount - values.length;
+      for (let i = 0; i < parameterAcc.length; i++) {
+        const entry = parameterAcc[i];
+        let hitCount = 0;
+        for (let v = 0; v < values.length; v++) {
+          if (values[v] >= entry.threshold) hitCount++;
+        }
+        if (hitCount >= entry.minHitCount) entry.passed++;
+        else if (hitCount + remainingCount < entry.minHitCount) entry.failed++;
+        else entry.tracking++;
+      }
+    }
 
     const ruleStats = Array.from(ruleMap.values())
       .map((item) => {
@@ -889,36 +1122,21 @@ export function BacktestPage() {
       .sort((a, b) => b.failed - a.failed)
       .slice(0, 6);
 
-    const thresholds = [3, 5, 8];
-    const minHits = [1, 2, 3];
-    const parameterStats = thresholds.flatMap((threshold) =>
-      minHits.map((minHitCount) => {
-        const counts = trackingAnalysisRows.reduce(
-          (acc, item) => {
-            const status = getTrackingStatus(item.trackedReturns, { threshold, minHitCount }).status;
-            acc[status] += 1;
-            return acc;
-          },
-          { passed: 0, failed: 0, tracking: 0 }
-        );
-        const verified = counts.passed + counts.failed;
-        return {
-          threshold,
-          minHitCount,
-          ...counts,
-          verified,
-          passRate:
-            verified > 0 ? Number(((counts.passed / verified) * 100).toFixed(1)) : null,
-        };
-      })
-    );
+    const parameterStats = parameterAcc.map((item) => {
+      const verified = item.passed + item.failed;
+      return {
+        ...item,
+        verified,
+        passRate: verified > 0 ? Number(((item.passed / verified) * 100).toFixed(1)) : null,
+      };
+    });
 
     return {
       ruleStats: ruleStats.slice(0, 8),
       failedRules,
       parameterStats,
     };
-  }, [trackingAnalysisRows]);
+  }, [statsPopoverOpen, trackingAnalysisRows]);
 
   const handleExportTrackingLatestNames = async () => {
     const { latestDateKey, stocks } = trackingLatestSignalStocks;
@@ -1044,7 +1262,7 @@ export function BacktestPage() {
   ) => {
     const nameA = getRecordIndustry(a)?.name || '';
     const nameB = getRecordIndustry(b)?.name || '';
-    return nameA.localeCompare(nameB, 'zh-CN');
+    return compareName(nameA, nameB);
   };
 
   const getRecordConcepts = (record: { code: string; concepts?: SectorInfo[] }) => {
@@ -1366,6 +1584,8 @@ export function BacktestPage() {
 
           <Space wrap className={styles.headerActions}>
             <Popover
+              open={statsPopoverOpen}
+              onOpenChange={setStatsPopoverOpen}
               content={renderTrackingStatsPopoverContent}
               title={
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -1396,7 +1616,7 @@ export function BacktestPage() {
             >
               排除ST
             </Checkbox>
-            <Button onClick={refreshHistoryCount} disabled={loadingCount} loading={loadingCount}>
+            <Button onClick={() => void refreshHistoryCount(true)} disabled={loadingCount} loading={loadingCount}>
               刷新统计
             </Button>
           </Space>
@@ -1412,7 +1632,7 @@ export function BacktestPage() {
               onChange={(key) => {
                 setActiveTab(key as 'tracking' | 'history');
                 if (key === 'tracking' && trackingRows.length === 0) {
-                  void handleLoadTrackingRows();
+                  void reloadLoadedDates();
                 }
               }}
               tabBarExtraContent={
@@ -1454,7 +1674,7 @@ export function BacktestPage() {
                       icon={<ReloadOutlined />}
                       loading={loadingTracking}
                       disabled={syncingAllLatest || scanningLatest}
-                      onClick={() => void handleLoadTrackingRows()}
+                      onClick={() => void reloadLoadedDates(false, true)}
                     >
                       更新收益
                     </Button>
@@ -1625,8 +1845,8 @@ export function BacktestPage() {
                       <InputNumber
                         min={0}
                         max={50}
-                        value={trackingThreshold}
-                        onChange={(value) => setTrackingThreshold(Number(value ?? 5))}
+                        value={trackingThresholdInput}
+                        onChange={(value) => setTrackingThresholdInput(Number(value ?? 5))}
                         style={{ width: 65 }}
                         size="small"
                       />
@@ -1666,6 +1886,8 @@ export function BacktestPage() {
                   x: activeScrollX,
                   y: activeDataLength > 0 ? tableScrollY : undefined,
                 }}
+                // 虚拟滚动：列多（22 列）时只渲染可视行，避免每页上百行 × 多列的 DOM 开销
+                virtual={activeDataLength > 0}
                 size="small"
               />
             </div>

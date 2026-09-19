@@ -66,8 +66,8 @@ export interface ElectronAPI {
     error?: string;
   }>;
 
-  /** 读取 docs/回测优化/最新买点 下的 JSON 快照 */
-  readLatestBuyPointFiles: () => Promise<{
+  /** 读取 docs/回测优化/最新买点 下的 JSON 快照；传 dates 时只读指定日期 */
+  readLatestBuyPointFiles: (payload?: { dates?: string[] }) => Promise<{
     success: boolean;
     files?: Array<{
       fileName: string;
@@ -75,6 +75,13 @@ export interface ElectronAPI {
       filePath: string;
       content: any;
     }>;
+    error?: string;
+  }>;
+
+  /** 只列出 docs/回测优化/最新买点 下的可用日期（YYYY-MM-DD，降序） */
+  listLatestBuyPointDates: () => Promise<{
+    success: boolean;
+    dates?: string[];
     error?: string;
   }>;
 

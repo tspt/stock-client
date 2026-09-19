@@ -73,8 +73,13 @@ try {
     },
 
     // 读取 docs/回测优化/最新买点 下的 JSON 快照
-    readLatestBuyPointFiles: () => {
-      return ipcRenderer.invoke('read-latest-buy-point-files');
+    readLatestBuyPointFiles: (payload?: { dates?: string[] }) => {
+      return ipcRenderer.invoke('read-latest-buy-point-files', payload);
+    },
+
+    // 最新买点：只列出可用日期（不解析内容）
+    listLatestBuyPointDates: () => {
+      return ipcRenderer.invoke('list-latest-buy-point-dates');
     },
 
     // 机会记录：写入 docs/回测优化/机会记录/{YYYY-MM-DD}.json

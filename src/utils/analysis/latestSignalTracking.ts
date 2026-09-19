@@ -3,7 +3,7 @@ import type {
   ReturnSnapshot,
 } from '@/utils/analysis/buypointScenario';
 import { getLatestSignalOdds } from '@/utils/analysis/buypointScenario';
-import type { StockRecord } from '@/types/stock';
+import type { KLineData, StockRecord } from '@/types/stock';
 import type { StockHistoryRecord } from '@/utils/storage/opportunityIndexedDB';
 
 export type TrackingStatus = 'tracking' | 'passed' | 'failed';
@@ -30,6 +30,15 @@ export interface TrackedLatestSignal extends LatestScenarioSignal {
   status: TrackingStatus;
 }
 
+/**
+ * 未套用阈值参数的行：命中/达标状态由 getTrackingStatus 在渲染期派生，
+ * 与加载阶段解耦，避免调阈值触发全量 IO。
+ */
+export type TrackedLatestSignalBase = Omit<
+  TrackedLatestSignal,
+  'occurredCount' | 'hitCount' | 'maxReturn' | 'status'
+>;
+
 export interface TrackingOptions {
   threshold: number;
   minHitCount: number;
@@ -44,6 +53,19 @@ const HORIZONS: Array<{ key: keyof ReturnSnapshot; days: number }> = [
   { key: 'd6', days: 6 },
 ];
 
+/** 收益快照的全部口径（d1~d6），供批量统计复用，避免重复展开 */
+export const RETURN_HORIZON_KEYS: Array<keyof ReturnSnapshot> = HORIZONS.map((h) => h.key);
+
+/** 提取已发生的收益值（未发生的口径不计入） */
+export function collectReturnValues(returns: ReturnSnapshot): number[] {
+  const values: number[] = [];
+  for (let i = 0; i < RETURN_HORIZON_KEYS.length; i++) {
+    const value = returns[RETURN_HORIZON_KEYS[i]];
+    if (value != null) values.push(value);
+  }
+  return values;
+}
+
 export function normalizeDateKey(date: string): string {
   return date.trim().replace(/\//g, '-');
 }
@@ -54,6 +76,28 @@ function formatKlineDate(ts: number): string {
   const m = String(d.getMonth() + 1).padStart(2, '0');
   const day = String(d.getDate()).padStart(2, '0');
   return `${y}-${m}-${day}`;
+}
+
+/**
+ * K 线数组 → "日期(YYYY-MM-DD) → 下标" 索引缓存。
+ *
+ * 原来每条信号都用 findIndex 线性扫描整段 K 线，且每次比较都要 new Date + 三次 getter
+ * + 两次 padStart + 模板字符串，复杂度是 O(信号数 × K线长度)，十万级信号时会产生
+ * 数千万次 Date 分配，是历史回测页最主要的主线程阻塞点。
+ * 这里按 dailyLines 数组引用缓存一份索引，每条信号只需一次 Map 查询。
+ */
+const klineDateIndexCache = new WeakMap<KLineData[], Map<string, number>>();
+
+function getKlineDateIndexMap(lines: KLineData[]): Map<string, number> {
+  const cached = klineDateIndexCache.get(lines);
+  if (cached) return cached;
+
+  const map = new Map<string, number>();
+  for (let i = 0; i < lines.length; i++) {
+    map.set(formatKlineDate(lines[i].time), i);
+  }
+  klineDateIndexCache.set(lines, map);
+  return map;
 }
 
 function pureCode(code: string): string {
@@ -94,8 +138,8 @@ export function calculateFutureReturnsFromClose(
   if (lines.length === 0) return returns;
 
   const signalDateKey = normalizeDateKey(signalDate);
-  const index = lines.findIndex((line) => formatKlineDate(line.time) === signalDateKey);
-  if (index < 0) return returns;
+  const index = getKlineDateIndexMap(lines).get(signalDateKey);
+  if (index == null) return returns;
 
   const entry = entryClose || lines[index]?.close;
   if (!entry || entry <= 0) return returns;
@@ -138,13 +182,29 @@ export function getTrackingStatus(
   return { occurredCount, hitCount, maxReturn, status };
 }
 
+/** 赔率分优先，其次信号日期，再次 lift（不使用 localeCompare，中文排序开销过高） */
+export function compareTrackedSignals(
+  a: TrackedLatestSignalBase,
+  b: TrackedLatestSignalBase
+): number {
+  if ((b.oddsScore || 0) !== (a.oddsScore || 0)) return (b.oddsScore || 0) - (a.oddsScore || 0);
+  if (a.timestamp !== b.timestamp) return b.timestamp - a.timestamp;
+  return (b.lift || 0) - (a.lift || 0);
+}
+
+/**
+ * 构建买点追踪行。
+ *
+ * 注意：这里**不计算** occurredCount/hitCount/maxReturn/status —— 它们依赖阈值参数，
+ * 若在此处计算，改一次阈值就要重新读文件、重新加载行情。调用方请用 getTrackingStatus
+ * 在 useMemo 中派生，这样调参数只是纯计算，不再触发 IO。
+ */
 export function buildTrackedLatestSignals(
   files: LatestBuyPointFile[],
   histories: StockHistoryRecord[],
   records: StockRecord[],
-  options: TrackingOptions,
   hotRankCodeMap: Map<string, Set<string>> = new Map()
-): TrackedLatestSignal[] {
+): TrackedLatestSignalBase[] {
   const historyMap = new Map<string, StockHistoryRecord>();
   histories.forEach((history) => addCodeKey(historyMap, history));
   const recordMap = buildOpportunityRecordMap(records);
@@ -163,7 +223,6 @@ export function buildTrackedLatestSignals(
       const hotRankHit =
         !!hotCodes && (hotCodes.has(signal.code) || hotCodes.has(pureCode(signal.code)));
       const trackedReturns = calculateFutureReturns(historyMap.get(signal.code) || historyMap.get(pureCode(signal.code)), signal);
-      const stat = getTrackingStatus(trackedReturns, options);
       // 采用最新经过双通道与排雷增强的赔率计算逻辑，确保评分实时对齐
       const odds = getLatestSignalOdds(signal);
 
@@ -176,14 +235,9 @@ export function buildTrackedLatestSignals(
         opportunityRecordHit,
         hotRankHit,
         trackedReturns,
-        ...stat,
       }];
     });
   });
 
-  return rows.sort((a, b) => {
-    if ((b.oddsScore || 0) !== (a.oddsScore || 0)) return (b.oddsScore || 0) - (a.oddsScore || 0);
-    if (a.timestamp !== b.timestamp) return b.timestamp - a.timestamp;
-    return (b.lift || 0) - (a.lift || 0);
-  });
+  return rows.sort(compareTrackedSignals);
 }

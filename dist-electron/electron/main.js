@@ -696,26 +696,60 @@ function setupIpcHandlers() {
             return { success: false, error: errorMessage };
         }
     });
+    const LATEST_BUY_POINT_DATE_PATTERN = /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/;
+    function getLatestBuyPointDir() {
+        if (isDev) {
+            return join(app.getAppPath(), 'docs', '回测优化', '最新买点');
+        }
+        const exeDir = join(app.getPath('exe'), '..');
+        return join(exeDir, 'docs', '回测优化', '最新买点');
+    }
+    /**
+     * 只列出 docs/回测优化/最新买点 下可用的日期（不解析文件内容）。
+     * 历史回测页靠它先拿到"有哪些天"，再按需加载，避免首屏一次性 parse 上百个 JSON。
+     */
+    ipcMain.handle('list-latest-buy-point-dates', async () => {
+        try {
+            const targetDir = getLatestBuyPointDir();
+            if (!existsSync(targetDir)) {
+                return { success: true, dates: [] };
+            }
+            const dates = readdirSync(targetDir)
+                .filter((file) => file.endsWith('.json'))
+                .map((fileName) => fileName.replace(/\.json$/i, ''))
+                .filter((date) => LATEST_BUY_POINT_DATE_PATTERN.test(date))
+                .sort()
+                .reverse();
+            return { success: true, dates };
+        }
+        catch (error) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            mainLog(`[主进程] 列出最新买点日期失败: ${errorMessage}`, true);
+            return { success: false, error: errorMessage, dates: [] };
+        }
+    });
     /**
      * 读取 docs/回测优化/最新买点 下的 JSON 快照文件
+     * 传入 dates 时只读取指定日期的文件（历史回测页按需加载用），不传则读取全部
      */
-    ipcMain.handle('read-latest-buy-point-files', async () => {
+    ipcMain.handle('read-latest-buy-point-files', async (_event, payload) => {
         try {
-            let targetDir;
-            if (isDev) {
-                targetDir = join(app.getAppPath(), 'docs', '回测优化', '最新买点');
-            }
-            else {
-                const exeDir = join(app.getPath('exe'), '..');
-                targetDir = join(exeDir, 'docs', '回测优化', '最新买点');
-            }
+            const targetDir = getLatestBuyPointDir();
             if (!existsSync(targetDir)) {
                 return { success: true, files: [] };
             }
-            const files = readdirSync(targetDir)
+            const requested = Array.isArray(payload?.dates)
+                ? new Set(payload.dates
+                    .map((date) => String(date).trim())
+                    .filter((date) => LATEST_BUY_POINT_DATE_PATTERN.test(date)))
+                : null;
+            const allFiles = readdirSync(targetDir)
                 .filter((file) => file.endsWith('.json'))
                 .sort();
-            const results = files.map((fileName) => {
+            const targets = requested
+                ? allFiles.filter((fileName) => requested.has(fileName.replace(/\.json$/i, '')))
+                : allFiles;
+            const results = targets.map((fileName) => {
                 const filePath = join(targetDir, fileName);
                 const content = JSON.parse(readFileSync(filePath, 'utf-8'));
                 return {
