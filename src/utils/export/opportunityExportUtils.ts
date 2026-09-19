@@ -35,6 +35,11 @@ function formatValue(value: any, key: string, record?: StockOpportunityData): st
     return record?.trendLine?.reasonText || '-';
   }
 
+  if (key === 'pullbackLabels') {
+    if (!record?.pullbackPattern?.isHit) return '-';
+    return record.pullbackPattern.labels.join('、') || '-';
+  }
+
   if (value === null || value === undefined || value === '') {
     return '-';
   }

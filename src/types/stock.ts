@@ -396,6 +396,8 @@ export interface StockOpportunityData {
   trendLine?: TrendLineAnalysis;
   /** 单日异动形态（最近 N 根、阈值 M，见 sharpMovePatterns 模块） */
   sharpMovePatterns?: SharpMovePatternAnalysis;
+  /** 量价回踩形态（放量上涨 → 缩量回踩不破，见 volumePullbackAnalysis 模块） */
+  pullbackPattern?: PullbackPatternAnalysis;
   /** AI辅助分析结果 */
   aiAnalysis?: AIAnalysisResult;
   /** AI分析生成时间戳（用于计算时间衰减） */
@@ -495,6 +497,65 @@ export interface SharpMovePatternAnalysis {
   lastRiseIndex?: number;
   /** 命中形态的简短标签，便于列表展示 */
   labels: string[];
+}
+
+/**
+ * 量价回踩形态：近期出现「放量上涨（大涨 / 涨停 / 带长上影）」的触发日，
+ * 其后缩量回踩、自峰值回撤落在设定区间内，且最新收盘不破 MA10（允许容差）。
+ */
+export interface PullbackPatternAnalysis {
+  /** 是否命中「放量上涨 → 缩量回踩不破」形态 */
+  isHit: boolean;
+  /** 触发日索引（klineData 下标）；未命中时可能是最接近的候选 */
+  triggerIndex?: number;
+  /** 触发日距最新 K 线的根数 */
+  triggerBarsAgo?: number;
+  /** 触发日涨幅（%） */
+  triggerChangePercent?: number;
+  /** 触发日「量比」：当日量 / 前 N 日均量 */
+  triggerVolumeRatio?: number;
+  /** 触发日上影线占全日振幅的百分比（%） */
+  triggerUpperShadowRatio?: number;
+  /** 回踩窗口内最高价（含触发日） */
+  peakPrice?: number;
+  /** 峰值距最新 K 线的根数 */
+  peakBarsAgo?: number;
+  /** 自峰值回撤（%） */
+  pullbackPercent?: number;
+  /** 回踩段最大量 / 触发日量 */
+  pullbackVolumeRatio?: number;
+  /** 最新收盘相对 MA10 的偏离（%） */
+  closeToMa10Percent?: number;
+  /** 命中标签，便于列表展示 */
+  labels: string[];
+  /** 列表展示用说明 */
+  reasonText: string;
+  /** 各子条件命中情况（未命中时用于诊断） */
+  partial: {
+    /** 触发日放量上涨 */
+    hasVolumeSurge: boolean;
+    /** 已出现回踩且幅度达标 */
+    hasPullback: boolean;
+    /** 回踩段缩量 */
+    shrinksVolume: boolean;
+    /** 收盘不破 MA10 */
+    holdsMa10: boolean;
+  };
+  /** 判定参数快照 */
+  params: {
+    lookback: number;
+    minRisePct: number;
+    triggerType: 'any' | 'limitUp';
+    volumeRatio: number;
+    volumeMaPeriod: number;
+    maxPullbackBars: number;
+    minPullbackPct: number;
+    maxPullbackPct: number;
+    volumeShrinkRatio: number;
+    ma10TolerancePct: number;
+    requireUpperShadow: boolean;
+    upperShadowRatio: number;
+  };
 }
 
 /**

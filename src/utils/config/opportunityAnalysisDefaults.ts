@@ -299,7 +299,40 @@ export const OPPORTUNITY_DEFAULT_SHARP_MOVE_FULL = {
   riseFlatDrop: false,
 } as const;
 
-// ==================== 6. 技术指标筛选 ====================
+// ==================== 6. 量价回踩筛选 ====================
+
+/**
+ * 量价回踩：放量上涨（大涨/涨停/带长上影）→ 缩量回踩、自峰值回撤达标、收盘不破 MA10
+ * 判定实现见 src/utils/analysis/volumePullbackAnalysis.ts
+ */
+export const OPPORTUNITY_DEFAULT_VOLUME_PULLBACK = {
+  /** 触发日回溯范围：从最新一根向前追溯的根数（含最新一根） */
+  lookback: 20,
+  /** 触发日最小涨幅（%） */
+  minRisePct: 5,
+  /** 触发日类型：any=大涨或盘中触及涨停；limitUp=必须收盘涨停 */
+  triggerType: 'any' as 'any' | 'limitUp',
+  /** 放量倍数：触发日成交量 / 前 N 日均量 */
+  volumeRatio: 1.8,
+  /** 均量周期 */
+  volumeMaPeriod: 5,
+  /** 触发日后最长回踩根数 */
+  maxBars: 8,
+  /** 自峰值回撤下限（%） */
+  minPullbackPct: 3,
+  /** 自峰值回撤上限（%） */
+  maxPullbackPct: 15,
+  /** 缩量比上限：回踩段最大量 / 触发日量 */
+  volumeShrink: 0.8,
+  /** MA10 容差（%） */
+  ma10TolerancePct: 2,
+  /** 是否要求触发日带长上影线 */
+  requireUpperShadow: false,
+  /** 上影线占比阈值（%）：上影长度 / 全日振幅 */
+  upperShadowRatio: 30,
+} as const;
+
+// ==================== 7. 技术指标筛选 ====================
 
 /** 技术指标筛选默认配置 */
 export const OPPORTUNITY_DEFAULT_INDICATORS = {
@@ -309,7 +342,7 @@ export const OPPORTUNITY_DEFAULT_INDICATORS = {
   bollingerThreshold: 0.02,
 } as const;
 
-// ==================== 7. 名称过滤 ====================
+// ==================== 8. 名称过滤 ====================
 
 /** 名称过滤默认配置 */
 export const OPPORTUNITY_DEFAULT_NAME_FILTERS = {
@@ -317,8 +350,8 @@ export const OPPORTUNITY_DEFAULT_NAME_FILTERS = {
   excludedNameKeywords: [
     // '药业', '中国', '矿业', '水务', '纸业', '环保', '期货'
   ],
-  /** 排除这些完整名称的股票 */
-  excludedExactNames: [
+  /** 短期排除股票名称 */
+  excludedShortTermNames: [
     // '晋亿实业',
     // '鲁银投资',
     // '骆驼股份',
@@ -327,9 +360,6 @@ export const OPPORTUNITY_DEFAULT_NAME_FILTERS = {
     // '杉杉股份',
     // '安徽合力',
     // '麦加芯彩',
-  ],
-  /** 短期排除股票名称 */
-  excludedShortTermNames: [
     // '中立股份',
     // '福斯特',
     // '展鹏科技',

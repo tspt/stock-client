@@ -9,10 +9,19 @@ import { FilterOutlined } from '@ant-design/icons';
 import type { ConsolidationType } from '@/types/stock';
 import { PatternTooltip } from '@/components/PatternTooltip/PatternTooltip';
 import { normalizeStockNameList } from '@/utils/format/format';
-import { OPPORTUNITY_INDUSTRY_GROUPS } from '@/utils/config/opportunityAnalysisDefaults';
+import {
+  OPPORTUNITY_INDUSTRY_GROUPS,
+  OPPORTUNITY_DEFAULT_VOLUME_PULLBACK,
+} from '@/utils/config/opportunityAnalysisDefaults';
 import styles from './OpportunityPage.module.css';
 
-const ALL_FILTER_PANEL_KEYS = ['data', 'aiAnalysis', 'consolidation', 'trendLine', 'sharpMove', 'nameFilter'] as const;
+const ALL_FILTER_PANEL_KEYS = ['data', 'aiAnalysis', 'consolidation', 'trendLine', 'sharpMove', 'volumePullback', 'nameFilter'] as const;
+
+/** 量价回踩：触发日类型选项 */
+const VOLUME_PULLBACK_TRIGGER_OPTIONS: { label: string; value: 'any' | 'limitUp' }[] = [
+  { label: '大涨 / 盘中触及涨停', value: 'any' },
+  { label: '必须收盘涨停', value: 'limitUp' },
+];
 
 /** 筛选抽屉宽度：加宽以减少表单项折行与纵向滚动 */
 const FILTER_DRAWER_WIDTH = 'min(1000px, calc(100vw - 48px))' as const;
@@ -60,6 +69,20 @@ export function buildOpportunityFilterSummary(p: {
   sharpMoveRiseThenDropLoose: boolean;
   sharpMoveDropFlatRise: boolean;
   sharpMoveRiseFlatDrop: boolean;
+  /** 量价回踩筛选 */
+  volumePullbackFilterEnabled: boolean;
+  volumePullbackLookback: number;
+  volumePullbackMinRisePct: number;
+  volumePullbackTriggerType: 'any' | 'limitUp';
+  volumePullbackVolumeRatio: number;
+  volumePullbackVolumeMaPeriod: number;
+  volumePullbackMaxBars: number;
+  volumePullbackMinPullbackPct: number;
+  volumePullbackMaxPullbackPct: number;
+  volumePullbackVolumeShrink: number;
+  volumePullbackMa10TolerancePct: number;
+  volumePullbackRequireUpperShadow: boolean;
+  volumePullbackUpperShadowRatio: number;
   // 新增技术指标筛选
   rsiRange: NumRange;
   // AI分析筛选
@@ -81,7 +104,6 @@ export function buildOpportunityFilterSummary(p: {
   conceptSectorOptions?: { label: string; value: string }[];
   // 名称过滤
   excludedNameKeywords?: string[];
-  excludedExactNames?: string[];
   excludedShortTermNames?: string[];
 }): string {
   const parts: string[] = [];
@@ -138,6 +160,16 @@ export function buildOpportunityFilterSummary(p: {
     parts.push(`异动${p.sharpMoveWindowBars}根/${p.sharpMoveMagnitude}%`);
   }
 
+  // 量价回踩汇总
+  if (p.volumePullbackFilterEnabled) {
+    parts.push(
+      `量价回踩·${p.volumePullbackLookback}根内·涨≥${fmtNum(p.volumePullbackMinRisePct)}%` +
+        (p.volumePullbackTriggerType === 'limitUp' ? '·涨停' : '') +
+        `·放量${fmtNum(p.volumePullbackVolumeRatio)}倍·回撤${fmtNum(p.volumePullbackMinPullbackPct)}~${fmtNum(p.volumePullbackMaxPullbackPct)}%` +
+        (p.volumePullbackRequireUpperShadow ? '·长上影' : '')
+    );
+  }
+
 
 
   // AI分析汇总
@@ -191,9 +223,6 @@ export function buildOpportunityFilterSummary(p: {
   // 仅显示排除的数量，不显示具体名称
   if (p.excludedNameKeywords && p.excludedNameKeywords.length > 0) {
     parts.push(`排除名称包含[${p.excludedNameKeywords.length}个]`);
-  }
-  if (p.excludedExactNames && p.excludedExactNames.length > 0) {
-    parts.push(`排除股票[${p.excludedExactNames.length}个]`);
   }
   if (p.excludedShortTermNames && p.excludedShortTermNames.length > 0) {
     parts.push(`短期排除[${p.excludedShortTermNames.length}个]`);
@@ -264,6 +293,33 @@ export interface OpportunityFiltersPanelProps {
   setSharpMoveDropFlatRise: (v: boolean) => void;
   sharpMoveRiseFlatDrop: boolean;
   setSharpMoveRiseFlatDrop: (v: boolean) => void;
+  // 量价回踩筛选（放量上涨 → 缩量回踩不破 MA10）
+  volumePullbackFilterEnabled: boolean;
+  setVolumePullbackFilterEnabled: (v: boolean) => void;
+  volumePullbackLookback: number;
+  setVolumePullbackLookback: (v: number) => void;
+  volumePullbackMinRisePct: number;
+  setVolumePullbackMinRisePct: (v: number) => void;
+  volumePullbackTriggerType: 'any' | 'limitUp';
+  setVolumePullbackTriggerType: (v: 'any' | 'limitUp') => void;
+  volumePullbackVolumeRatio: number;
+  setVolumePullbackVolumeRatio: (v: number) => void;
+  volumePullbackVolumeMaPeriod: number;
+  setVolumePullbackVolumeMaPeriod: (v: number) => void;
+  volumePullbackMaxBars: number;
+  setVolumePullbackMaxBars: (v: number) => void;
+  volumePullbackMinPullbackPct: number;
+  setVolumePullbackMinPullbackPct: (v: number) => void;
+  volumePullbackMaxPullbackPct: number;
+  setVolumePullbackMaxPullbackPct: (v: number) => void;
+  volumePullbackVolumeShrink: number;
+  setVolumePullbackVolumeShrink: (v: number) => void;
+  volumePullbackMa10TolerancePct: number;
+  setVolumePullbackMa10TolerancePct: (v: number) => void;
+  volumePullbackRequireUpperShadow: boolean;
+  setVolumePullbackRequireUpperShadow: (v: boolean) => void;
+  volumePullbackUpperShadowRatio: number;
+  setVolumePullbackUpperShadowRatio: (v: number) => void;
   consolidationTypeOptions: { label: string; value: ConsolidationType }[];
   // 新增技术指标筛选 props
   rsiRange: { min?: number; max?: number };
@@ -323,10 +379,6 @@ export interface OpportunityFiltersPanelProps {
   setEnableNameKeywordFilter?: (v: boolean) => void;
   excludedNameKeywords?: string[];
   setExcludedNameKeywords?: (v: string[]) => void;
-  enableExactNameFilter?: boolean;
-  setEnableExactNameFilter?: (v: boolean) => void;
-  excludedExactNames?: string[];
-  setExcludedExactNames?: (v: string[]) => void;
   // 短期排除股票名称
   enableShortTermNameFilter?: boolean;
   setEnableShortTermNameFilter?: (v: boolean) => void;
@@ -400,6 +452,33 @@ function OpportunityFiltersPanelComponent({
   setSharpMoveDropFlatRise,
   sharpMoveRiseFlatDrop,
   setSharpMoveRiseFlatDrop,
+  // 量价回踩筛选
+  volumePullbackFilterEnabled,
+  setVolumePullbackFilterEnabled,
+  volumePullbackLookback,
+  setVolumePullbackLookback,
+  volumePullbackMinRisePct,
+  setVolumePullbackMinRisePct,
+  volumePullbackTriggerType,
+  setVolumePullbackTriggerType,
+  volumePullbackVolumeRatio,
+  setVolumePullbackVolumeRatio,
+  volumePullbackVolumeMaPeriod,
+  setVolumePullbackVolumeMaPeriod,
+  volumePullbackMaxBars,
+  setVolumePullbackMaxBars,
+  volumePullbackMinPullbackPct,
+  setVolumePullbackMinPullbackPct,
+  volumePullbackMaxPullbackPct,
+  setVolumePullbackMaxPullbackPct,
+  volumePullbackVolumeShrink,
+  setVolumePullbackVolumeShrink,
+  volumePullbackMa10TolerancePct,
+  setVolumePullbackMa10TolerancePct,
+  volumePullbackRequireUpperShadow,
+  setVolumePullbackRequireUpperShadow,
+  volumePullbackUpperShadowRatio,
+  setVolumePullbackUpperShadowRatio,
   consolidationTypeOptions,
   // 新增技术指标筛选
   rsiRange,
@@ -459,10 +538,6 @@ function OpportunityFiltersPanelComponent({
   setEnableNameKeywordFilter = () => { },
   excludedNameKeywords = [],
   setExcludedNameKeywords = () => { },
-  enableExactNameFilter = true,
-  setEnableExactNameFilter = () => { },
-  excludedExactNames = [],
-  setExcludedExactNames = () => { },
   // 短期排除股票名称
   enableShortTermNameFilter = true,
   setEnableShortTermNameFilter = () => { },
@@ -513,6 +588,19 @@ function OpportunityFiltersPanelComponent({
         sharpMoveRiseThenDropLoose,
         sharpMoveDropFlatRise,
         sharpMoveRiseFlatDrop,
+        volumePullbackFilterEnabled,
+        volumePullbackLookback,
+        volumePullbackMinRisePct,
+        volumePullbackTriggerType,
+        volumePullbackVolumeRatio,
+        volumePullbackVolumeMaPeriod,
+        volumePullbackMaxBars,
+        volumePullbackMinPullbackPct,
+        volumePullbackMaxPullbackPct,
+        volumePullbackVolumeShrink,
+        volumePullbackMa10TolerancePct,
+        volumePullbackRequireUpperShadow,
+        volumePullbackUpperShadowRatio,
         rsiRange,
         aiAnalysisEnabled,
         aiTrendUp,
@@ -526,7 +614,6 @@ function OpportunityFiltersPanelComponent({
         aiRiskScoreRange,
         aiVersion,
         excludedNameKeywords,
-        excludedExactNames,
         excludedShortTermNames,
       }),
     [
@@ -560,6 +647,19 @@ function OpportunityFiltersPanelComponent({
       sharpMoveRiseThenDropLoose,
       sharpMoveDropFlatRise,
       sharpMoveRiseFlatDrop,
+      volumePullbackFilterEnabled,
+      volumePullbackLookback,
+      volumePullbackMinRisePct,
+      volumePullbackTriggerType,
+      volumePullbackVolumeRatio,
+      volumePullbackVolumeMaPeriod,
+      volumePullbackMaxBars,
+      volumePullbackMinPullbackPct,
+      volumePullbackMaxPullbackPct,
+      volumePullbackVolumeShrink,
+      volumePullbackMa10TolerancePct,
+      volumePullbackRequireUpperShadow,
+      volumePullbackUpperShadowRatio,
       rsiRange,
       aiAnalysisEnabled,
       aiTrendUp,
@@ -573,7 +673,6 @@ function OpportunityFiltersPanelComponent({
       aiRiskScoreRange,
       aiVersion,
       excludedNameKeywords,
-      excludedExactNames,
       excludedShortTermNames,
     ]
   );
@@ -1008,37 +1107,6 @@ function OpportunityFiltersPanelComponent({
                           maxTagCount="responsive"
                           disabled={!enableNameKeywordFilter}
                         />
-                        <div style={{ marginTop: 6, fontSize: 12, color: 'var(--ant-color-text-secondary)', lineHeight: 1.6 }}>
-                          <span style={{ color: 'var(--ant-color-text-tertiary)' }}>默认值：</span>
-                          <span style={{ color: 'var(--ant-color-text-secondary)' }}>药业、中国、矿业、水务、纸业、环保、期货</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className={styles.filterRow} style={{ alignItems: 'flex-start' }}>
-                      <div className={styles.filterItem} style={{ flex: '0 0 160px', justifyContent: 'flex-start' }}>
-                        <Checkbox
-                          checked={enableExactNameFilter}
-                          onChange={(e) => setEnableExactNameFilter(e.target.checked)}
-                        >
-                          <span className={styles.filterLabel} style={{ whiteSpace: 'nowrap' }}>排除股票名称：</span>
-                        </Checkbox>
-                      </div>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <Select
-                          mode="tags"
-                          value={excludedExactNames}
-                          onChange={(values) => setExcludedExactNames(normalizeStockNameList(values as string[]))}
-                          style={{ width: '100%' }}
-                          placeholder="输入完整股票名称，按回车添加"
-                          options={[]}
-                          allowClear
-                          maxTagCount="responsive"
-                          disabled={!enableExactNameFilter}
-                        />
-                        <div style={{ marginTop: 6, fontSize: 12, color: 'var(--ant-color-text-secondary)', lineHeight: 1.6 }}>
-                          <span style={{ color: 'var(--ant-color-text-tertiary)' }}>默认值：</span>
-                          <span style={{ color: 'var(--ant-color-text-secondary)' }}>晋亿实业、鲁银投资、骆驼股份、爱普股份、翠微股份、杉杉股份、安徽合力、麦加芯彩</span>
-                        </div>
                       </div>
                     </div>
                     <div className={styles.filterRow} style={{ marginTop: 16, alignItems: 'flex-start' }}>
@@ -1062,10 +1130,6 @@ function OpportunityFiltersPanelComponent({
                           maxTagCount="responsive"
                           disabled={!enableShortTermNameFilter}
                         />
-                        <div style={{ marginTop: 6, fontSize: 12, color: 'var(--ant-color-text-secondary)', lineHeight: 1.6 }}>
-                          <span style={{ color: 'var(--ant-color-text-tertiary)' }}>默认值：</span>
-                          <span style={{ color: 'var(--ant-color-text-secondary)' }}>中立股份、福斯特、展鹏科技、洛凯股份、立霸股份、多伦科技、威派格、海兴电力、广信股份、巍华新材、迪生力、联德股份、璞泰来、亿嘉禾、华康股份</span>
-                        </div>
                       </div>
                     </div>
                   </div>
@@ -1471,6 +1535,202 @@ function OpportunityFiltersPanelComponent({
                         )}
                       </div>
                     )}
+                  </div>
+                ),
+              },
+              {
+                key: 'volumePullback',
+                label: '量价回踩筛选',
+                children: (
+                  <div className={styles.filterContent}>
+                    <div className={styles.filterRow}>
+                      <div className={styles.filterItem}>
+                        <Checkbox
+                          checked={volumePullbackFilterEnabled}
+                          onChange={(e) => setVolumePullbackFilterEnabled(e.target.checked)}
+                        >
+                          启用量价回踩筛选（放量上涨 → 缩量回踩不破 MA10）
+                        </Checkbox>
+                      </div>
+                    </div>
+                    <div className={styles.filterRow}>
+                      <div className={styles.filterItem}>
+                        <span className={styles.filterLabel}>触发日类型：</span>
+                        <Select
+                          value={volumePullbackTriggerType}
+                          onChange={(v: 'any' | 'limitUp') => setVolumePullbackTriggerType(v)}
+                          options={VOLUME_PULLBACK_TRIGGER_OPTIONS}
+                          style={{ width: 200 }}
+                        />
+                        <span className={styles.filterLabel} style={{ marginLeft: 16 }}>触发日回溯范围：</span>
+                        <InputNumber
+                          value={volumePullbackLookback}
+                          min={3}
+                          max={500}
+                          step={1}
+                          style={{ width: 100 }}
+                          onChange={(v) => {
+                            const next = typeof v === 'number' && isFinite(v) ? Math.floor(v) : 20;
+                            setVolumePullbackLookback(Math.min(500, Math.max(3, next)));
+                          }}
+                        />
+                        <span style={{ marginLeft: 4 }}>根</span>
+                        <span className={styles.filterLabel} style={{ marginLeft: 16 }}>最小涨幅(%)：</span>
+                        <InputNumber
+                          value={volumePullbackMinRisePct}
+                          min={0.5}
+                          max={30}
+                          step={0.5}
+                          style={{ width: 100 }}
+                          onChange={(v) => {
+                            const next = typeof v === 'number' && isFinite(v) && v > 0 ? v : 5;
+                            setVolumePullbackMinRisePct(next);
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <div className={styles.filterRow}>
+                      <div className={styles.filterItem}>
+                        <span className={styles.filterLabel}>放量倍数：</span>
+                        <InputNumber
+                          value={volumePullbackVolumeRatio}
+                          min={1}
+                          max={20}
+                          step={0.1}
+                          precision={2}
+                          style={{ width: 90 }}
+                          onChange={(v) => {
+                            const next = typeof v === 'number' && isFinite(v) && v > 0 ? v : 1.8;
+                            setVolumePullbackVolumeRatio(next);
+                          }}
+                        />
+                        <span className={styles.filterLabel} style={{ marginLeft: 8 }}>倍于</span>
+                        <InputNumber
+                          value={volumePullbackVolumeMaPeriod}
+                          min={2}
+                          max={60}
+                          step={1}
+                          style={{ width: 80 }}
+                          onChange={(v) => {
+                            const next = typeof v === 'number' && isFinite(v) ? Math.floor(v) : 5;
+                            setVolumePullbackVolumeMaPeriod(Math.min(60, Math.max(2, next)));
+                          }}
+                        />
+                        <span style={{ marginLeft: 4 }}>日均量</span>
+                        <span className={styles.filterLabel} style={{ marginLeft: 16 }}>回踩窗口≤</span>
+                        <InputNumber
+                          value={volumePullbackMaxBars}
+                          min={1}
+                          max={60}
+                          step={1}
+                          style={{ width: 80 }}
+                          onChange={(v) => {
+                            const next = typeof v === 'number' && isFinite(v) ? Math.floor(v) : 8;
+                            setVolumePullbackMaxBars(Math.min(60, Math.max(1, next)));
+                          }}
+                        />
+                        <span style={{ marginLeft: 4 }}>根</span>
+                      </div>
+                    </div>
+                    <div className={styles.filterRow}>
+                      <div className={styles.filterItem}>
+                        <span className={styles.filterLabel}>峰值回撤(%)：</span>
+                        <InputNumber
+                          value={volumePullbackMinPullbackPct}
+                          min={0}
+                          max={100}
+                          step={0.5}
+                          style={{ width: 90 }}
+                          onChange={(v) => {
+                            const next = typeof v === 'number' && isFinite(v) ? Math.max(0, v) : 3;
+                            setVolumePullbackMinPullbackPct(next);
+                          }}
+                        />
+                        <span style={{ margin: '0 4px' }}>~</span>
+                        <InputNumber
+                          value={volumePullbackMaxPullbackPct}
+                          min={0.5}
+                          max={100}
+                          step={0.5}
+                          style={{ width: 90 }}
+                          onChange={(v) => {
+                            const next = typeof v === 'number' && isFinite(v) && v > 0 ? v : 15;
+                            setVolumePullbackMaxPullbackPct(next);
+                          }}
+                        />
+                        <span className={styles.filterLabel} style={{ marginLeft: 16 }}>回踩缩量比≤</span>
+                        <InputNumber
+                          value={volumePullbackVolumeShrink}
+                          min={0.1}
+                          max={3}
+                          step={0.05}
+                          precision={2}
+                          style={{ width: 90 }}
+                          onChange={(v) => {
+                            const next = typeof v === 'number' && isFinite(v) && v > 0 ? v : 0.8;
+                            setVolumePullbackVolumeShrink(next);
+                          }}
+                        />
+                        <span className={styles.filterLabel} style={{ marginLeft: 16 }}>MA10容差(%)：</span>
+                        <InputNumber
+                          value={volumePullbackMa10TolerancePct}
+                          min={0}
+                          max={20}
+                          step={0.5}
+                          style={{ width: 90 }}
+                          onChange={(v) => {
+                            const next = typeof v === 'number' && isFinite(v) ? Math.max(0, v) : 2;
+                            setVolumePullbackMa10TolerancePct(next);
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <div className={styles.filterRow}>
+                      <div className={styles.filterItem}>
+                        <Checkbox
+                          checked={volumePullbackRequireUpperShadow}
+                          onChange={(e) => setVolumePullbackRequireUpperShadow(e.target.checked)}
+                        >
+                          触发日带长上影线
+                        </Checkbox>
+                        <span className={styles.filterLabel} style={{ marginLeft: 16 }}>上影占比(%)≥</span>
+                        <InputNumber
+                          value={volumePullbackUpperShadowRatio}
+                          min={1}
+                          max={100}
+                          step={5}
+                          precision={0}
+                          style={{ width: 90 }}
+                          disabled={!volumePullbackRequireUpperShadow}
+                          onChange={(v) => {
+                            const next =
+                              typeof v === 'number' && isFinite(v) && v > 0
+                                ? Math.min(100, v)
+                                : OPPORTUNITY_DEFAULT_VOLUME_PULLBACK.upperShadowRatio;
+                            setVolumePullbackUpperShadowRatio(next);
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <div className={styles.filterRow}>
+                      <div className={styles.filterItem}>
+                        <span style={{ lineHeight: '1.8' }}>
+                          ℹ️ 触发日距今{' '}
+                          <strong>
+                            {`1~${Math.max(1, Math.min(volumePullbackLookback - 1, volumePullbackMaxBars))}`}
+                          </strong>{' '}
+                          根：由「回踩窗口」决定（回溯范围仅限制检索起点）
+                        </span>
+                      </div>
+                    </div>
+                    <div className={styles.filterRow}>
+                      <div className={styles.filterItem}>
+                        <span style={{ lineHeight: '1.8' }}>
+                          ✅ 判定：最近「触发日回溯范围」内出现放量上涨触发日（涨幅达标或盘中触及涨停，可选长上影）→
+                          其后「回踩窗口」内自峰值回撤落在区间、回踩段缩量、且收盘不破 MA10（允许容差）
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 ),
               },

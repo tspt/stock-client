@@ -1,5 +1,6 @@
 import { calculateConsolidationInLookback } from '@/utils/analysis/consolidationAnalysis';
 import { analyzeSharpMovePatterns } from '@/utils/analysis/sharpMovePatterns';
+import { analyzeVolumePullback } from '@/utils/analysis/volumePullbackAnalysis';
 import { calculateTrendLineInLookback } from '@/utils/analysis/trendLineAnalysis';
 import {
   calculateRSI,
@@ -703,9 +704,6 @@ async function runFilterTask(
   const excludedNameKeywords = (filters.excludedNameKeywords ?? [])
     .map(normalizeStockName)
     .filter(Boolean);
-  const excludedExactNameSet = new Set(
-    (filters.excludedExactNames ?? []).map(normalizeStockName).filter(Boolean)
-  );
   const excludedShortTermNameSet = new Set(
     (filters.excludedShortTermNames ?? []).map(normalizeStockName).filter(Boolean)
   );
@@ -742,6 +740,7 @@ async function runFilterTask(
       const needConsolidationRecalc = consolidationTypesSet !== null;
       const needTrendLineRecalc = filters.trendLineFilterEnabled;
       const needSharpMoveRecalc = sharpMoveFilterActive(filters);
+      const needVolumePullbackRecalc = filters.volumePullbackFilterEnabled;
 
       if (klineData && klineData.length > 0) {
         // 仅在需要时重算横盘分析
@@ -789,6 +788,30 @@ async function runFilterTask(
           }
         }
 
+        // 仅在需要时重算量价回踩形态
+        if (needVolumePullbackRecalc) {
+          try {
+            const pullbackPattern = analyzeVolumePullback(klineData, {
+              lookback: filters.volumePullbackLookback,
+              minRisePct: filters.volumePullbackMinRisePct,
+              triggerType: filters.volumePullbackTriggerType,
+              volumeRatio: filters.volumePullbackVolumeRatio,
+              volumeMaPeriod: filters.volumePullbackVolumeMaPeriod,
+              maxPullbackBars: filters.volumePullbackMaxBars,
+              minPullbackPct: filters.volumePullbackMinPullbackPct,
+              maxPullbackPct: filters.volumePullbackMaxPullbackPct,
+              volumeShrinkRatio: filters.volumePullbackVolumeShrink,
+              ma10TolerancePct: filters.volumePullbackMa10TolerancePct,
+              requireUpperShadow: filters.volumePullbackRequireUpperShadow,
+              upperShadowRatio: filters.volumePullbackUpperShadowRatio,
+            });
+            nextItem = { ...nextItem, pullbackPattern };
+          } catch {
+            mergeSkippedReason(skippedMap, item.code, item.name, '量价回踩重算失败，已跳过重算');
+            nextItem = { ...nextItem, pullbackPattern: undefined };
+          }
+        }
+
         // 仅在需要时重算趋势线
         if (needTrendLineRecalc) {
           try {
@@ -802,7 +825,7 @@ async function runFilterTask(
           }
         }
       } else {
-        nextItem = { ...nextItem, sharpMovePatterns: undefined };
+        nextItem = { ...nextItem, sharpMovePatterns: undefined, pullbackPattern: undefined };
       }
 
       if (consolidationTypesSet) {
@@ -853,6 +876,20 @@ async function runFilterTask(
 
       if (!passesSharpMoveFilter(nextItem.sharpMovePatterns, filters)) {
         continue;
+      }
+
+      // 量价回踩筛选：放量上涨（大涨/涨停/上影线）后缩量回踩不破 MA10
+      if (filters.volumePullbackFilterEnabled) {
+        const pullback = nextItem.pullbackPattern;
+        if (!pullback || !pullback.isHit) {
+          mergeSkippedReason(
+            skippedMap,
+            item.code,
+            item.name,
+            `量价回踩：${pullback?.reasonText || '缺少K线数据'}`
+          );
+          continue;
+        }
       }
 
       // 新增：技术指标与形态筛选
@@ -1010,16 +1047,6 @@ async function runFilterTask(
           normalizedName.includes(keyword)
         );
         if (hasExcludedKeyword) {
-          continue;
-        }
-      }
-
-      // 名称完全匹配过滤
-      if (
-        filters.enableExactNameFilter !== false &&
-        excludedExactNameSet.size > 0
-      ) {
-        if (excludedExactNameSet.has(normalizedName)) {
           continue;
         }
       }

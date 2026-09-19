@@ -40,6 +40,32 @@ export interface OpportunityFilterSnapshot {
   sharpMoveRiseThenDropLoose: boolean;
   sharpMoveDropFlatRise: boolean;
   sharpMoveRiseFlatDrop: boolean;
+  /** 量价回踩筛选开关（放量上涨 → 缩量回踩不破 MA10） */
+  volumePullbackFilterEnabled: boolean;
+  /** 触发日回溯范围：从最新一根向前追溯的根数（含最新一根） */
+  volumePullbackLookback: number;
+  /** 触发日最小涨幅（%） */
+  volumePullbackMinRisePct: number;
+  /** 触发日类型：any=大涨或盘中触及涨停；limitUp=必须收盘涨停 */
+  volumePullbackTriggerType: 'any' | 'limitUp';
+  /** 放量倍数：触发日成交量 / 前 N 日均量 */
+  volumePullbackVolumeRatio: number;
+  /** 均量周期 */
+  volumePullbackVolumeMaPeriod: number;
+  /** 触发日后最长回踩根数 */
+  volumePullbackMaxBars: number;
+  /** 自峰值回撤下限（%） */
+  volumePullbackMinPullbackPct: number;
+  /** 自峰值回撤上限（%） */
+  volumePullbackMaxPullbackPct: number;
+  /** 缩量比上限：回踩段最大量 / 触发日量 */
+  volumePullbackVolumeShrink: number;
+  /** MA10 容差（%）：收盘 ≥ MA10 × (1 - 容差/100) 视为未破位 */
+  volumePullbackMa10TolerancePct: number;
+  /** 是否要求触发日带长上影线 */
+  volumePullbackRequireUpperShadow: boolean;
+  /** 上影线占比阈值（%）：上影长度 / 全日振幅 */
+  volumePullbackUpperShadowRatio: number;
   /** RSI指标范围 */
   rsiRange: NumberRange;
   /** RSI周期 */
@@ -101,10 +127,6 @@ export interface OpportunityFilterSnapshot {
   enableNameKeywordFilter?: boolean;
   /** 名称包含过滤 - 排除包含这些关键词的股票名称 */
   excludedNameKeywords?: string[];
-  /** 名称筛选 - 是否启用完全匹配过滤 */
-  enableExactNameFilter?: boolean;
-  /** 名称完全匹配过滤 - 排除这些完整名称的股票 */
-  excludedExactNames?: string[];
   /** 短期排除股票名称 - 是否启用 */
   enableShortTermNameFilter?: boolean;
   /** 短期排除股票名称列表 */

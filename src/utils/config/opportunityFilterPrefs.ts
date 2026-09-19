@@ -13,6 +13,7 @@ import {
   OPPORTUNITY_DEFAULT_NAME_FILTERS,
   OPPORTUNITY_DEFAULT_AI_ANALYSIS,
   OPPORTUNITY_DEFAULT_LIMIT_MOVES,
+  OPPORTUNITY_DEFAULT_VOLUME_PULLBACK,
 } from '@/utils/config/opportunityAnalysisDefaults';
 import { logger } from '../business/logger';
 import { normalizeStockNameList } from '../format/format';
@@ -27,11 +28,12 @@ export const OPPORTUNITY_FILTER_PANEL_KEYS = {
   consolidation: 'consolidation',
   trendLine: 'trendLine',
   sharpMove: 'sharpMove',
+  volumePullback: 'volumePullback',
   aiAnalysis: 'aiAnalysis',
   nameFilter: 'nameFilter',
 } as const;
 
-/** 由 localStorage 中四个「展开」布尔字段推导当前应展开的面板（可多组同时展开） */
+/** 由 localStorage 中「展开」布尔字段推导当前应展开的面板（可多组同时展开） */
 export function activeFilterPanelKeyFromPrefs(
   prefs: Pick<
     OpportunityFilterPrefs,
@@ -39,6 +41,7 @@ export function activeFilterPanelKeyFromPrefs(
     | 'consolidationFilterVisible'
     | 'trendLineFilterVisible'
     | 'sharpMoveFilterVisible'
+    | 'volumePullbackFilterVisible'
     | 'nameFilterVisible'
   >
 ): string[] {
@@ -47,6 +50,7 @@ export function activeFilterPanelKeyFromPrefs(
   if (prefs.consolidationFilterVisible) keys.push(OPPORTUNITY_FILTER_PANEL_KEYS.consolidation);
   if (prefs.trendLineFilterVisible) keys.push(OPPORTUNITY_FILTER_PANEL_KEYS.trendLine);
   if (prefs.sharpMoveFilterVisible) keys.push(OPPORTUNITY_FILTER_PANEL_KEYS.sharpMove);
+  if (prefs.volumePullbackFilterVisible) keys.push(OPPORTUNITY_FILTER_PANEL_KEYS.volumePullback);
   if (prefs.nameFilterVisible) keys.push(OPPORTUNITY_FILTER_PANEL_KEYS.nameFilter);
   // 默认展开AI分析筛选
   keys.push(OPPORTUNITY_FILTER_PANEL_KEYS.aiAnalysis);
@@ -59,7 +63,7 @@ export function activeFilterPanelKeyFromPrefs(
       ];
 }
 
-/** 将当前展开的 key（单个或多个）写回偏好里的四个布尔字段（供「一键分析」保存） */
+/** 将当前展开的 key（单个或多个）写回偏好里的布尔字段（供「一键分析」保存） */
 export function visibilityFromActiveFilterPanelKey(
   activeKey: string | string[] | undefined
 ): Pick<
@@ -68,6 +72,7 @@ export function visibilityFromActiveFilterPanelKey(
   | 'consolidationFilterVisible'
   | 'trendLineFilterVisible'
   | 'sharpMoveFilterVisible'
+  | 'volumePullbackFilterVisible'
   | 'nameFilterVisible'
 > {
   const keys = new Set(Array.isArray(activeKey) ? activeKey : activeKey ? [activeKey] : []);
@@ -76,6 +81,7 @@ export function visibilityFromActiveFilterPanelKey(
     consolidationFilterVisible: keys.has(OPPORTUNITY_FILTER_PANEL_KEYS.consolidation),
     trendLineFilterVisible: keys.has(OPPORTUNITY_FILTER_PANEL_KEYS.trendLine),
     sharpMoveFilterVisible: keys.has(OPPORTUNITY_FILTER_PANEL_KEYS.sharpMove),
+    volumePullbackFilterVisible: keys.has(OPPORTUNITY_FILTER_PANEL_KEYS.volumePullback),
     nameFilterVisible: keys.has(OPPORTUNITY_FILTER_PANEL_KEYS.nameFilter),
   };
 }
@@ -125,6 +131,22 @@ export interface OpportunityFilterPrefs {
   sharpMoveRiseThenDropLoose: boolean;
   sharpMoveDropFlatRise: boolean;
   sharpMoveRiseFlatDrop: boolean;
+  /** 量价回踩筛选开关 */
+  volumePullbackFilterEnabled: boolean;
+  /** 量价回踩筛选卡片 */
+  volumePullbackFilterVisible: boolean;
+  volumePullbackLookback: number;
+  volumePullbackMinRisePct: number;
+  volumePullbackTriggerType: 'any' | 'limitUp';
+  volumePullbackVolumeRatio: number;
+  volumePullbackVolumeMaPeriod: number;
+  volumePullbackMaxBars: number;
+  volumePullbackMinPullbackPct: number;
+  volumePullbackMaxPullbackPct: number;
+  volumePullbackVolumeShrink: number;
+  volumePullbackMa10TolerancePct: number;
+  volumePullbackRequireUpperShadow: boolean;
+  volumePullbackUpperShadowRatio: number;
   /** RSI指标范围 */
   rsiRange: { min?: number; max?: number };
   /** RSI周期 */
@@ -143,8 +165,6 @@ export interface OpportunityFilterPrefs {
   /** 名称筛选 */
   enableNameKeywordFilter: boolean;
   excludedNameKeywords: string[];
-  enableExactNameFilter: boolean;
-  excludedExactNames: string[];
   /** 短期排除股票名称 */
   enableShortTermNameFilter: boolean;
   excludedShortTermNames: string[];
@@ -166,6 +186,18 @@ function parseRange(v: unknown): { min?: number; max?: number } {
   if (isFiniteNumber(v.min)) out.min = v.min;
   if (isFiniteNumber(v.max)) out.max = v.max;
   return out;
+}
+
+/**
+ * 上影占比历史上存的是 0-1 比值，统一换算为百分数（%）；
+ * 非法值回落到默认阈值。
+ */
+function parseUpperShadowPercent(v: unknown): number {
+  if (!isFiniteNumber(v) || v <= 0) {
+    return OPPORTUNITY_DEFAULT_VOLUME_PULLBACK.upperShadowRatio;
+  }
+  const percent = v <= 1 ? v * 100 : v;
+  return Math.min(100, percent);
 }
 
 /** 解析失败或缺省时返回空数组（不选中任何横盘类型） */
@@ -260,6 +292,43 @@ export function loadOpportunityFilterPrefs(): OpportunityFilterPrefs | null {
       sharpMoveRiseThenDropLoose: p.sharpMoveRiseThenDropLoose === true,
       sharpMoveDropFlatRise: p.sharpMoveDropFlatRise === true,
       sharpMoveRiseFlatDrop: p.sharpMoveRiseFlatDrop === true,
+      // 量价回踩筛选
+      volumePullbackFilterEnabled: p.volumePullbackFilterEnabled === true,
+      volumePullbackFilterVisible: p.volumePullbackFilterVisible !== false,
+      volumePullbackLookback: isFiniteNumber(p.volumePullbackLookback)
+        ? Math.max(3, Math.floor(p.volumePullbackLookback))
+        : OPPORTUNITY_DEFAULT_VOLUME_PULLBACK.lookback,
+      volumePullbackMinRisePct:
+        isFiniteNumber(p.volumePullbackMinRisePct) && p.volumePullbackMinRisePct > 0
+          ? p.volumePullbackMinRisePct
+          : OPPORTUNITY_DEFAULT_VOLUME_PULLBACK.minRisePct,
+      volumePullbackTriggerType: p.volumePullbackTriggerType === 'limitUp' ? 'limitUp' : 'any',
+      volumePullbackVolumeRatio:
+        isFiniteNumber(p.volumePullbackVolumeRatio) && p.volumePullbackVolumeRatio > 0
+          ? p.volumePullbackVolumeRatio
+          : OPPORTUNITY_DEFAULT_VOLUME_PULLBACK.volumeRatio,
+      volumePullbackVolumeMaPeriod: isFiniteNumber(p.volumePullbackVolumeMaPeriod)
+        ? Math.max(2, Math.floor(p.volumePullbackVolumeMaPeriod))
+        : OPPORTUNITY_DEFAULT_VOLUME_PULLBACK.volumeMaPeriod,
+      volumePullbackMaxBars: isFiniteNumber(p.volumePullbackMaxBars)
+        ? Math.max(1, Math.floor(p.volumePullbackMaxBars))
+        : OPPORTUNITY_DEFAULT_VOLUME_PULLBACK.maxBars,
+      volumePullbackMinPullbackPct: isFiniteNumber(p.volumePullbackMinPullbackPct)
+        ? Math.max(0, p.volumePullbackMinPullbackPct)
+        : OPPORTUNITY_DEFAULT_VOLUME_PULLBACK.minPullbackPct,
+      volumePullbackMaxPullbackPct:
+        isFiniteNumber(p.volumePullbackMaxPullbackPct) && p.volumePullbackMaxPullbackPct > 0
+          ? p.volumePullbackMaxPullbackPct
+          : OPPORTUNITY_DEFAULT_VOLUME_PULLBACK.maxPullbackPct,
+      volumePullbackVolumeShrink:
+        isFiniteNumber(p.volumePullbackVolumeShrink) && p.volumePullbackVolumeShrink > 0
+          ? p.volumePullbackVolumeShrink
+          : OPPORTUNITY_DEFAULT_VOLUME_PULLBACK.volumeShrink,
+      volumePullbackMa10TolerancePct: isFiniteNumber(p.volumePullbackMa10TolerancePct)
+        ? Math.max(0, p.volumePullbackMa10TolerancePct)
+        : OPPORTUNITY_DEFAULT_VOLUME_PULLBACK.ma10TolerancePct,
+      volumePullbackRequireUpperShadow: p.volumePullbackRequireUpperShadow === true,
+      volumePullbackUpperShadowRatio: parseUpperShadowPercent(p.volumePullbackUpperShadowRatio),
       // 新增技术指标筛选
       rsiRange: parseRange(p.rsiRange),
       rsiPeriod: isFiniteNumber(p.rsiPeriod) ? Math.floor(p.rsiPeriod) : 6,
@@ -278,10 +347,6 @@ export function loadOpportunityFilterPrefs(): OpportunityFilterPrefs | null {
       excludedNameKeywords: Array.isArray(p.excludedNameKeywords)
         ? normalizeStockNameList(p.excludedNameKeywords.filter((item: any) => typeof item === 'string'))
         : [...OPPORTUNITY_DEFAULT_NAME_FILTERS.excludedNameKeywords],
-      enableExactNameFilter: p.enableExactNameFilter === false ? false : true,
-      excludedExactNames: Array.isArray(p.excludedExactNames)
-        ? normalizeStockNameList(p.excludedExactNames.filter((item: any) => typeof item === 'string'))
-        : [...OPPORTUNITY_DEFAULT_NAME_FILTERS.excludedExactNames],
       enableShortTermNameFilter: p.enableShortTermNameFilter === false ? false : true,
       excludedShortTermNames: Array.isArray(p.excludedShortTermNames)
         ? normalizeStockNameList(p.excludedShortTermNames.filter((item: any) => typeof item === 'string'))
@@ -350,6 +415,21 @@ export function getDefaultFilterPrefsFields(): Omit<
     sharpMoveRiseThenDropLoose: false,
     sharpMoveDropFlatRise: false,
     sharpMoveRiseFlatDrop: false,
+    // 量价回踩筛选默认值
+    volumePullbackFilterEnabled: false,
+    volumePullbackFilterVisible: true,
+    volumePullbackLookback: OPPORTUNITY_DEFAULT_VOLUME_PULLBACK.lookback,
+    volumePullbackMinRisePct: OPPORTUNITY_DEFAULT_VOLUME_PULLBACK.minRisePct,
+    volumePullbackTriggerType: OPPORTUNITY_DEFAULT_VOLUME_PULLBACK.triggerType,
+    volumePullbackVolumeRatio: OPPORTUNITY_DEFAULT_VOLUME_PULLBACK.volumeRatio,
+    volumePullbackVolumeMaPeriod: OPPORTUNITY_DEFAULT_VOLUME_PULLBACK.volumeMaPeriod,
+    volumePullbackMaxBars: OPPORTUNITY_DEFAULT_VOLUME_PULLBACK.maxBars,
+    volumePullbackMinPullbackPct: OPPORTUNITY_DEFAULT_VOLUME_PULLBACK.minPullbackPct,
+    volumePullbackMaxPullbackPct: OPPORTUNITY_DEFAULT_VOLUME_PULLBACK.maxPullbackPct,
+    volumePullbackVolumeShrink: OPPORTUNITY_DEFAULT_VOLUME_PULLBACK.volumeShrink,
+    volumePullbackMa10TolerancePct: OPPORTUNITY_DEFAULT_VOLUME_PULLBACK.ma10TolerancePct,
+    volumePullbackRequireUpperShadow: OPPORTUNITY_DEFAULT_VOLUME_PULLBACK.requireUpperShadow,
+    volumePullbackUpperShadowRatio: OPPORTUNITY_DEFAULT_VOLUME_PULLBACK.upperShadowRatio,
     // 新增技术指标筛选默认值
     rsiRange: {},
     rsiPeriod: 6,
@@ -366,8 +446,6 @@ export function getDefaultFilterPrefsFields(): Omit<
     aiRiskScoreRange: { min: OPPORTUNITY_DEFAULT_AI_ANALYSIS.riskScoreMin },
     enableNameKeywordFilter: true,
     excludedNameKeywords: [...OPPORTUNITY_DEFAULT_NAME_FILTERS.excludedNameKeywords],
-    enableExactNameFilter: true,
-    excludedExactNames: [...OPPORTUNITY_DEFAULT_NAME_FILTERS.excludedExactNames],
     enableShortTermNameFilter: true,
     excludedShortTermNames: [...OPPORTUNITY_DEFAULT_NAME_FILTERS.excludedShortTermNames],
     nameFilterVisible: true,
@@ -438,6 +516,20 @@ export interface OpportunityFilterPrefsApplyActions {
   setSharpMoveRiseThenDropLoose: (v: boolean) => void;
   setSharpMoveDropFlatRise: (v: boolean) => void;
   setSharpMoveRiseFlatDrop: (v: boolean) => void;
+  // 量价回踩筛选 actions
+  setVolumePullbackFilterEnabled: (v: boolean) => void;
+  setVolumePullbackLookback: (v: number) => void;
+  setVolumePullbackMinRisePct: (v: number) => void;
+  setVolumePullbackTriggerType: (v: 'any' | 'limitUp') => void;
+  setVolumePullbackVolumeRatio: (v: number) => void;
+  setVolumePullbackVolumeMaPeriod: (v: number) => void;
+  setVolumePullbackMaxBars: (v: number) => void;
+  setVolumePullbackMinPullbackPct: (v: number) => void;
+  setVolumePullbackMaxPullbackPct: (v: number) => void;
+  setVolumePullbackVolumeShrink: (v: number) => void;
+  setVolumePullbackMa10TolerancePct: (v: number) => void;
+  setVolumePullbackRequireUpperShadow: (v: boolean) => void;
+  setVolumePullbackUpperShadowRatio: (v: number) => void;
   // 新增技术指标筛选 actions
   setRsiRange: (v: { min?: number; max?: number }) => void;
   setRsiPeriod: (v: number) => void;
@@ -455,8 +547,6 @@ export interface OpportunityFilterPrefsApplyActions {
   /** 名称筛选 actions */
   setEnableNameKeywordFilter: (v: boolean) => void;
   setExcludedNameKeywords: (v: string[]) => void;
-  setEnableExactNameFilter: (v: boolean) => void;
-  setExcludedExactNames: (v: string[]) => void;
   /** 短期排除股票名称 actions */
   setEnableShortTermNameFilter: (v: boolean) => void;
   setExcludedShortTermNames: (v: string[]) => void;
@@ -498,6 +588,20 @@ export function applyOpportunityFilterPrefsToState(
   actions.setSharpMoveRiseThenDropLoose(prefs.sharpMoveRiseThenDropLoose);
   actions.setSharpMoveDropFlatRise(prefs.sharpMoveDropFlatRise);
   actions.setSharpMoveRiseFlatDrop(prefs.sharpMoveRiseFlatDrop);
+  // 应用量价回踩筛选
+  actions.setVolumePullbackFilterEnabled(prefs.volumePullbackFilterEnabled);
+  actions.setVolumePullbackLookback(prefs.volumePullbackLookback);
+  actions.setVolumePullbackMinRisePct(prefs.volumePullbackMinRisePct);
+  actions.setVolumePullbackTriggerType(prefs.volumePullbackTriggerType);
+  actions.setVolumePullbackVolumeRatio(prefs.volumePullbackVolumeRatio);
+  actions.setVolumePullbackVolumeMaPeriod(prefs.volumePullbackVolumeMaPeriod);
+  actions.setVolumePullbackMaxBars(prefs.volumePullbackMaxBars);
+  actions.setVolumePullbackMinPullbackPct(prefs.volumePullbackMinPullbackPct);
+  actions.setVolumePullbackMaxPullbackPct(prefs.volumePullbackMaxPullbackPct);
+  actions.setVolumePullbackVolumeShrink(prefs.volumePullbackVolumeShrink);
+  actions.setVolumePullbackMa10TolerancePct(prefs.volumePullbackMa10TolerancePct);
+  actions.setVolumePullbackRequireUpperShadow(prefs.volumePullbackRequireUpperShadow);
+  actions.setVolumePullbackUpperShadowRatio(prefs.volumePullbackUpperShadowRatio);
   // 应用新增技术指标筛选
   actions.setRsiRange({ ...prefs.rsiRange });
   actions.setRsiPeriod(prefs.rsiPeriod);
@@ -515,8 +619,6 @@ export function applyOpportunityFilterPrefsToState(
   // 应用名称筛选
   actions.setEnableNameKeywordFilter(prefs.enableNameKeywordFilter);
   actions.setExcludedNameKeywords([...prefs.excludedNameKeywords]);
-  actions.setEnableExactNameFilter(prefs.enableExactNameFilter);
-  actions.setExcludedExactNames([...prefs.excludedExactNames]);
   // 应用短期排除股票名称
   actions.setEnableShortTermNameFilter(prefs.enableShortTermNameFilter);
   actions.setExcludedShortTermNames([...prefs.excludedShortTermNames]);

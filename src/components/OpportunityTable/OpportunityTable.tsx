@@ -64,6 +64,8 @@ export const OpportunityTable = memo(function OpportunityTable({ data, columns, 
         return record.trendLine?.reasonText ?? '';
       case 'sharpMoveLabels':
         return record.sharpMovePatterns?.labels?.join('、') ?? '';
+      case 'pullbackLabels':
+        return record.pullbackPattern?.labels?.join('、') ?? '';
       case 'industry':
         return record.industry?.name ?? '';
       case 'concepts':
@@ -176,6 +178,22 @@ export const OpportunityTable = memo(function OpportunityTable({ data, columns, 
         return (
           <div className={styles.consolidationTypes}>
             {labels.map((label) => (
+              <StockFeatureTag key={label} text={label} />
+            ))}
+          </div>
+        );
+      }
+      case 'pullbackLabels': {
+        const pullback = record?.pullbackPattern;
+        if (!pullback?.labels?.length) {
+          return '';
+        }
+        return (
+          <div
+            className={styles.consolidationTypes}
+            title={pullback.reasonText || undefined}
+          >
+            {pullback.labels.map((label) => (
               <StockFeatureTag key={label} text={label} />
             ))}
           </div>

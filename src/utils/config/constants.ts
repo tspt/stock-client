@@ -331,6 +331,7 @@ export const OPPORTUNITY_DEFAULT_COLUMNS = [
   { key: 'trendLineStatus', title: '趋势线', visible: true, width: 88 },
   { key: 'trendLineReason', title: '趋势线说明', visible: true, width: 220 },
   { key: 'sharpMoveLabels', title: '单日异动', visible: true, width: 220 },
+  { key: 'pullbackLabels', title: '量价回踩', visible: true, width: 260 },
   { key: 'ma5', title: 'MA-5涨跌幅', visible: false },
   { key: 'ma10', title: 'MA-10涨跌幅', visible: false },
   { key: 'ma20', title: 'MA-20涨跌幅', visible: false },

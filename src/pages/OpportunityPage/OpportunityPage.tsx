@@ -58,6 +58,7 @@ import {
   OPPORTUNITY_DEFAULT_LIMIT_MOVES,
   OPPORTUNITY_DEFAULT_BASIC_FILTERS,
   OPPORTUNITY_DEFAULT_SHARP_MOVE_FULL,
+  OPPORTUNITY_DEFAULT_VOLUME_PULLBACK,
   OPPORTUNITY_DEFAULT_INDUSTRY_SECTORS,
   OPPORTUNITY_DEFAULT_NAME_FILTERS,
 } from '@/utils/config/opportunityAnalysisDefaults';
@@ -149,6 +150,21 @@ const INITIAL_FILTER_STATE = {
   sharpMoveDropFlatRise: OPPORTUNITY_DEFAULT_SHARP_MOVE_FULL.dropFlatRise,
   sharpMoveRiseFlatDrop: OPPORTUNITY_DEFAULT_SHARP_MOVE_FULL.riseFlatDrop,
 
+  // 量价回踩筛选（默认关闭）
+  volumePullbackFilterEnabled: false,
+  volumePullbackLookback: OPPORTUNITY_DEFAULT_VOLUME_PULLBACK.lookback,
+  volumePullbackMinRisePct: OPPORTUNITY_DEFAULT_VOLUME_PULLBACK.minRisePct,
+  volumePullbackTriggerType: OPPORTUNITY_DEFAULT_VOLUME_PULLBACK.triggerType,
+  volumePullbackVolumeRatio: OPPORTUNITY_DEFAULT_VOLUME_PULLBACK.volumeRatio,
+  volumePullbackVolumeMaPeriod: OPPORTUNITY_DEFAULT_VOLUME_PULLBACK.volumeMaPeriod,
+  volumePullbackMaxBars: OPPORTUNITY_DEFAULT_VOLUME_PULLBACK.maxBars,
+  volumePullbackMinPullbackPct: OPPORTUNITY_DEFAULT_VOLUME_PULLBACK.minPullbackPct,
+  volumePullbackMaxPullbackPct: OPPORTUNITY_DEFAULT_VOLUME_PULLBACK.maxPullbackPct,
+  volumePullbackVolumeShrink: OPPORTUNITY_DEFAULT_VOLUME_PULLBACK.volumeShrink,
+  volumePullbackMa10TolerancePct: OPPORTUNITY_DEFAULT_VOLUME_PULLBACK.ma10TolerancePct,
+  volumePullbackRequireUpperShadow: OPPORTUNITY_DEFAULT_VOLUME_PULLBACK.requireUpperShadow,
+  volumePullbackUpperShadowRatio: OPPORTUNITY_DEFAULT_VOLUME_PULLBACK.upperShadowRatio,
+
   // 技术指标筛选
   rsiRange: {} as { min?: number; max?: number },
   rsiPeriod: OPPORTUNITY_DEFAULT_INDICATORS.rsiPeriod,
@@ -182,7 +198,6 @@ const INITIAL_FILTER_STATE = {
 
   // 名称过滤
   excludedNameKeywords: [...OPPORTUNITY_DEFAULT_NAME_FILTERS.excludedNameKeywords],
-  excludedExactNames: [...OPPORTUNITY_DEFAULT_NAME_FILTERS.excludedExactNames],
 };
 
 /** 与 opportunityStore 初始值一致，用于「重置」恢复周期与 K 线数量 */
@@ -307,7 +322,7 @@ export function OpportunityPage() {
   const [peRatioRange, setPeRatioRange] = useState<{ min?: number; max?: number }>(INITIAL_FILTER_STATE.peRatioRange);
   const [kdjJRange, setKdjJRange] = useState<{ min?: number; max?: number }>(INITIAL_FILTER_STATE.kdjJRange);
   /** 筛选 Collapse 当前展开的面板 key 列表；[] 表示各组均收起。默认展开所有筛选项 */
-  const [filterPanelActiveKey, setFilterPanelActiveKey] = useState<string[]>(['data', 'nameFilter', 'aiAnalysis', 'sharpMove', 'consolidation', 'trendLine']);
+  const [filterPanelActiveKey, setFilterPanelActiveKey] = useState<string[]>(['data', 'nameFilter', 'aiAnalysis', 'sharpMove', 'volumePullback', 'consolidation', 'trendLine']);
 
   // 涨停/跌停筛选状态
   const [recentLimitUpCount, setRecentLimitUpCount] = useState<number | undefined>(
@@ -452,6 +467,47 @@ export function OpportunityPage() {
     INITIAL_FILTER_STATE.sharpMoveRiseFlatDrop
   );
 
+  // 量价回踩筛选状态（放量上涨 → 缩量回踩不破 MA10）
+  const [volumePullbackFilterEnabled, setVolumePullbackFilterEnabled] = useState<boolean>(
+    INITIAL_FILTER_STATE.volumePullbackFilterEnabled
+  );
+  const [volumePullbackLookback, setVolumePullbackLookback] = useState<number>(
+    INITIAL_FILTER_STATE.volumePullbackLookback
+  );
+  const [volumePullbackMinRisePct, setVolumePullbackMinRisePct] = useState<number>(
+    INITIAL_FILTER_STATE.volumePullbackMinRisePct
+  );
+  const [volumePullbackTriggerType, setVolumePullbackTriggerType] = useState<'any' | 'limitUp'>(
+    INITIAL_FILTER_STATE.volumePullbackTriggerType
+  );
+  const [volumePullbackVolumeRatio, setVolumePullbackVolumeRatio] = useState<number>(
+    INITIAL_FILTER_STATE.volumePullbackVolumeRatio
+  );
+  const [volumePullbackVolumeMaPeriod, setVolumePullbackVolumeMaPeriod] = useState<number>(
+    INITIAL_FILTER_STATE.volumePullbackVolumeMaPeriod
+  );
+  const [volumePullbackMaxBars, setVolumePullbackMaxBars] = useState<number>(
+    INITIAL_FILTER_STATE.volumePullbackMaxBars
+  );
+  const [volumePullbackMinPullbackPct, setVolumePullbackMinPullbackPct] = useState<number>(
+    INITIAL_FILTER_STATE.volumePullbackMinPullbackPct
+  );
+  const [volumePullbackMaxPullbackPct, setVolumePullbackMaxPullbackPct] = useState<number>(
+    INITIAL_FILTER_STATE.volumePullbackMaxPullbackPct
+  );
+  const [volumePullbackVolumeShrink, setVolumePullbackVolumeShrink] = useState<number>(
+    INITIAL_FILTER_STATE.volumePullbackVolumeShrink
+  );
+  const [volumePullbackMa10TolerancePct, setVolumePullbackMa10TolerancePct] = useState<number>(
+    INITIAL_FILTER_STATE.volumePullbackMa10TolerancePct
+  );
+  const [volumePullbackRequireUpperShadow, setVolumePullbackRequireUpperShadow] = useState<boolean>(
+    INITIAL_FILTER_STATE.volumePullbackRequireUpperShadow
+  );
+  const [volumePullbackUpperShadowRatio, setVolumePullbackUpperShadowRatio] = useState<number>(
+    INITIAL_FILTER_STATE.volumePullbackUpperShadowRatio
+  );
+
   // 新增技术指标筛选状态
   const [rsiRange, setRsiRange] = useState<{ min?: number; max?: number }>(INITIAL_FILTER_STATE.rsiRange);
   const [rsiPeriod, setRsiPeriod] = useState<number>(INITIAL_FILTER_STATE.rsiPeriod);
@@ -503,10 +559,6 @@ export function OpportunityPage() {
   const [enableNameKeywordFilter, setEnableNameKeywordFilter] = useState<boolean>(true);
   const [excludedNameKeywords, setExcludedNameKeywords] = useState<string[]>(
     [...INITIAL_FILTER_STATE.excludedNameKeywords]
-  );
-  const [enableExactNameFilter, setEnableExactNameFilter] = useState<boolean>(true);
-  const [excludedExactNames, setExcludedExactNames] = useState<string[]>(
-    [...INITIAL_FILTER_STATE.excludedExactNames]
   );
   const [enableShortTermNameFilter, setEnableShortTermNameFilter] = useState<boolean>(true);
 
@@ -585,6 +637,20 @@ export function OpportunityPage() {
           setSharpMoveRiseThenDropLoose,
           setSharpMoveDropFlatRise,
           setSharpMoveRiseFlatDrop,
+          // 量价回踩筛选 actions
+          setVolumePullbackFilterEnabled,
+          setVolumePullbackLookback,
+          setVolumePullbackMinRisePct,
+          setVolumePullbackTriggerType,
+          setVolumePullbackVolumeRatio,
+          setVolumePullbackVolumeMaPeriod,
+          setVolumePullbackMaxBars,
+          setVolumePullbackMinPullbackPct,
+          setVolumePullbackMaxPullbackPct,
+          setVolumePullbackVolumeShrink,
+          setVolumePullbackMa10TolerancePct,
+          setVolumePullbackRequireUpperShadow,
+          setVolumePullbackUpperShadowRatio,
           // 新增技术指标筛选 actions
           setRsiRange,
           setRsiPeriod,
@@ -602,8 +668,6 @@ export function OpportunityPage() {
           // 名称筛选 actions
           setEnableNameKeywordFilter,
           setExcludedNameKeywords,
-          setEnableExactNameFilter,
-          setExcludedExactNames,
           setEnableShortTermNameFilter,
           setExcludedShortTermNames,
         });
@@ -691,6 +755,19 @@ export function OpportunityPage() {
         sharpMoveRiseThenDropLoose,
         sharpMoveDropFlatRise,
         sharpMoveRiseFlatDrop,
+        volumePullbackFilterEnabled,
+        volumePullbackLookback,
+        volumePullbackMinRisePct,
+        volumePullbackTriggerType,
+        volumePullbackVolumeRatio,
+        volumePullbackVolumeMaPeriod,
+        volumePullbackMaxBars,
+        volumePullbackMinPullbackPct,
+        volumePullbackMaxPullbackPct,
+        volumePullbackVolumeShrink,
+        volumePullbackMa10TolerancePct,
+        volumePullbackRequireUpperShadow,
+        volumePullbackUpperShadowRatio,
         rsiRange: { ...rsiRange },
         rsiPeriod,
         aiAnalysisEnabled,
@@ -705,8 +782,6 @@ export function OpportunityPage() {
         aiRiskScoreRange: { ...aiRiskScoreRange },
         enableNameKeywordFilter,
         excludedNameKeywords: [...excludedNameKeywords],
-        enableExactNameFilter,
-        excludedExactNames: [...excludedExactNames],
         enableShortTermNameFilter,
         excludedShortTermNames: [...excludedShortTermNames],
       };
@@ -746,6 +821,19 @@ export function OpportunityPage() {
     sharpMoveRiseThenDropLoose,
     sharpMoveDropFlatRise,
     sharpMoveRiseFlatDrop,
+    volumePullbackFilterEnabled,
+    volumePullbackLookback,
+    volumePullbackMinRisePct,
+    volumePullbackTriggerType,
+    volumePullbackVolumeRatio,
+    volumePullbackVolumeMaPeriod,
+    volumePullbackMaxBars,
+    volumePullbackMinPullbackPct,
+    volumePullbackMaxPullbackPct,
+    volumePullbackVolumeShrink,
+    volumePullbackMa10TolerancePct,
+    volumePullbackRequireUpperShadow,
+    volumePullbackUpperShadowRatio,
     rsiRange,
     rsiPeriod,
     aiAnalysisEnabled,
@@ -760,8 +848,6 @@ export function OpportunityPage() {
     aiRiskScoreRange,
     enableNameKeywordFilter,
     excludedNameKeywords,
-    enableExactNameFilter,
-    excludedExactNames,
     enableShortTermNameFilter,
     excludedShortTermNames,
   ]);
@@ -810,6 +896,19 @@ export function OpportunityPage() {
         sharpMoveRiseThenDropLoose,
         sharpMoveDropFlatRise,
         sharpMoveRiseFlatDrop,
+        volumePullbackFilterEnabled,
+        volumePullbackLookback,
+        volumePullbackMinRisePct,
+        volumePullbackTriggerType,
+        volumePullbackVolumeRatio,
+        volumePullbackVolumeMaPeriod,
+        volumePullbackMaxBars,
+        volumePullbackMinPullbackPct,
+        volumePullbackMaxPullbackPct,
+        volumePullbackVolumeShrink,
+        volumePullbackMa10TolerancePct,
+        volumePullbackRequireUpperShadow,
+        volumePullbackUpperShadowRatio,
         rsiRange: { ...rsiRange },
         rsiPeriod,
         aiAnalysisEnabled,
@@ -824,8 +923,6 @@ export function OpportunityPage() {
         aiRiskScoreRange: { ...aiRiskScoreRange },
         enableNameKeywordFilter,
         excludedNameKeywords: [...excludedNameKeywords],
-        enableExactNameFilter,
-        excludedExactNames: [...excludedExactNames],
         enableShortTermNameFilter,
         excludedShortTermNames: [...excludedShortTermNames],
       };
@@ -867,6 +964,19 @@ export function OpportunityPage() {
     sharpMoveRiseThenDropLoose,
     sharpMoveDropFlatRise,
     sharpMoveRiseFlatDrop,
+    volumePullbackFilterEnabled,
+    volumePullbackLookback,
+    volumePullbackMinRisePct,
+    volumePullbackTriggerType,
+    volumePullbackVolumeRatio,
+    volumePullbackVolumeMaPeriod,
+    volumePullbackMaxBars,
+    volumePullbackMinPullbackPct,
+    volumePullbackMaxPullbackPct,
+    volumePullbackVolumeShrink,
+    volumePullbackMa10TolerancePct,
+    volumePullbackRequireUpperShadow,
+    volumePullbackUpperShadowRatio,
     rsiRange,
     rsiPeriod,
     aiAnalysisEnabled,
@@ -881,8 +991,6 @@ export function OpportunityPage() {
     aiRiskScoreRange,
     enableNameKeywordFilter,
     excludedNameKeywords,
-    enableExactNameFilter,
-    excludedExactNames,
     enableShortTermNameFilter,
     excludedShortTermNames,
   ]);
@@ -1079,6 +1187,19 @@ export function OpportunityPage() {
       sharpMoveRiseThenDropLoose,
       sharpMoveDropFlatRise,
       sharpMoveRiseFlatDrop,
+      volumePullbackFilterEnabled,
+      volumePullbackLookback,
+      volumePullbackMinRisePct,
+      volumePullbackTriggerType,
+      volumePullbackVolumeRatio,
+      volumePullbackVolumeMaPeriod,
+      volumePullbackMaxBars,
+      volumePullbackMinPullbackPct,
+      volumePullbackMaxPullbackPct,
+      volumePullbackVolumeShrink,
+      volumePullbackMa10TolerancePct,
+      volumePullbackRequireUpperShadow,
+      volumePullbackUpperShadowRatio,
       rsiRange,
       rsiPeriod,
       bollingerThreshold,
@@ -1106,8 +1227,6 @@ export function OpportunityPage() {
       nameType: nameType as 'all' | 'st' | 'non_st',
       enableNameKeywordFilter,
       excludedNameKeywords,
-      enableExactNameFilter,
-      excludedExactNames,
       enableShortTermNameFilter,
       excludedShortTermNames,
     }),
@@ -1140,6 +1259,19 @@ export function OpportunityPage() {
       sharpMoveRiseThenDropLoose,
       sharpMoveDropFlatRise,
       sharpMoveRiseFlatDrop,
+      volumePullbackFilterEnabled,
+      volumePullbackLookback,
+      volumePullbackMinRisePct,
+      volumePullbackTriggerType,
+      volumePullbackVolumeRatio,
+      volumePullbackVolumeMaPeriod,
+      volumePullbackMaxBars,
+      volumePullbackMinPullbackPct,
+      volumePullbackMaxPullbackPct,
+      volumePullbackVolumeShrink,
+      volumePullbackMa10TolerancePct,
+      volumePullbackRequireUpperShadow,
+      volumePullbackUpperShadowRatio,
       rsiRange,
       rsiPeriod,
       bollingerThreshold,
@@ -1167,8 +1299,6 @@ export function OpportunityPage() {
       nameType,
       enableNameKeywordFilter,
       excludedNameKeywords,
-      enableExactNameFilter,
-      excludedExactNames,
       enableShortTermNameFilter,
       excludedShortTermNames,
     ]
@@ -1208,6 +1338,19 @@ export function OpportunityPage() {
         sharpMoveRiseThenDropLoose,
         sharpMoveDropFlatRise,
         sharpMoveRiseFlatDrop,
+        volumePullbackFilterEnabled,
+        volumePullbackLookback,
+        volumePullbackMinRisePct,
+        volumePullbackTriggerType,
+        volumePullbackVolumeRatio,
+        volumePullbackVolumeMaPeriod,
+        volumePullbackMaxBars,
+        volumePullbackMinPullbackPct,
+        volumePullbackMaxPullbackPct,
+        volumePullbackVolumeShrink,
+        volumePullbackMa10TolerancePct,
+        volumePullbackRequireUpperShadow,
+        volumePullbackUpperShadowRatio,
         rsiRange,
         aiAnalysisEnabled,
         aiTrendUp,
@@ -1224,7 +1367,6 @@ export function OpportunityPage() {
         industrySectorOptions,
         conceptSectorOptions,
         excludedNameKeywords,
-        excludedExactNames,
         excludedShortTermNames,
       }),
     [
@@ -1257,6 +1399,19 @@ export function OpportunityPage() {
       sharpMoveRiseThenDropLoose,
       sharpMoveDropFlatRise,
       sharpMoveRiseFlatDrop,
+      volumePullbackFilterEnabled,
+      volumePullbackLookback,
+      volumePullbackMinRisePct,
+      volumePullbackTriggerType,
+      volumePullbackVolumeRatio,
+      volumePullbackVolumeMaPeriod,
+      volumePullbackMaxBars,
+      volumePullbackMinPullbackPct,
+      volumePullbackMaxPullbackPct,
+      volumePullbackVolumeShrink,
+      volumePullbackMa10TolerancePct,
+      volumePullbackRequireUpperShadow,
+      volumePullbackUpperShadowRatio,
       rsiRange,
       aiAnalysisEnabled,
       aiTrendUp,
@@ -1273,7 +1428,6 @@ export function OpportunityPage() {
       industrySectorOptions,
       conceptSectorOptions,
       excludedNameKeywords,
-      excludedExactNames,
       excludedShortTermNames,
     ]
   );
@@ -1402,7 +1556,7 @@ export function OpportunityPage() {
     setTurnoverRateRange({ ...s.turnoverRateRange });
     setPeRatioRange({ ...s.peRatioRange });
     setKdjJRange({ ...s.kdjJRange });
-    setFilterPanelActiveKey(['data', 'consolidation', 'trendLine', 'sharpMove', 'technicalIndicators', 'aiAnalysis']);
+    setFilterPanelActiveKey(['data', 'consolidation', 'trendLine', 'sharpMove', 'volumePullback', 'technicalIndicators', 'aiAnalysis']);
     setRecentLimitUpCount(s.recentLimitUpCount);
     setRecentLimitDownCount(s.recentLimitDownCount);
     setLimitUpPeriod(s.limitUpPeriod);
@@ -1426,6 +1580,20 @@ export function OpportunityPage() {
     setSharpMoveRiseThenDropLoose(s.sharpMoveRiseThenDropLoose);
     setSharpMoveDropFlatRise(s.sharpMoveDropFlatRise);
     setSharpMoveRiseFlatDrop(s.sharpMoveRiseFlatDrop);
+    // 重置量价回踩筛选
+    setVolumePullbackFilterEnabled(s.volumePullbackFilterEnabled);
+    setVolumePullbackLookback(s.volumePullbackLookback);
+    setVolumePullbackMinRisePct(s.volumePullbackMinRisePct);
+    setVolumePullbackTriggerType(s.volumePullbackTriggerType);
+    setVolumePullbackVolumeRatio(s.volumePullbackVolumeRatio);
+    setVolumePullbackVolumeMaPeriod(s.volumePullbackVolumeMaPeriod);
+    setVolumePullbackMaxBars(s.volumePullbackMaxBars);
+    setVolumePullbackMinPullbackPct(s.volumePullbackMinPullbackPct);
+    setVolumePullbackMaxPullbackPct(s.volumePullbackMaxPullbackPct);
+    setVolumePullbackVolumeShrink(s.volumePullbackVolumeShrink);
+    setVolumePullbackMa10TolerancePct(s.volumePullbackMa10TolerancePct);
+    setVolumePullbackRequireUpperShadow(s.volumePullbackRequireUpperShadow);
+    setVolumePullbackUpperShadowRatio(s.volumePullbackUpperShadowRatio);
     // 重置新增的技术指标筛选
     setRsiRange({ ...s.rsiRange });
     setRsiPeriod(s.rsiPeriod);
@@ -1449,8 +1617,6 @@ export function OpportunityPage() {
     // 名称筛选重置
     setEnableNameKeywordFilter(true);
     setExcludedNameKeywords([...OPPORTUNITY_DEFAULT_NAME_FILTERS.excludedNameKeywords]);
-    setEnableExactNameFilter(true);
-    setExcludedExactNames([...OPPORTUNITY_DEFAULT_NAME_FILTERS.excludedExactNames]);
     setEnableShortTermNameFilter(true);
     setExcludedShortTermNames([...OPPORTUNITY_DEFAULT_NAME_FILTERS.excludedShortTermNames]);
     setTableSearchKeyword('');
@@ -2058,6 +2224,33 @@ export function OpportunityPage() {
             setSharpMoveDropFlatRise={setSharpMoveDropFlatRise}
             sharpMoveRiseFlatDrop={sharpMoveRiseFlatDrop}
             setSharpMoveRiseFlatDrop={setSharpMoveRiseFlatDrop}
+            // 量价回踩筛选 props
+            volumePullbackFilterEnabled={volumePullbackFilterEnabled}
+            setVolumePullbackFilterEnabled={setVolumePullbackFilterEnabled}
+            volumePullbackLookback={volumePullbackLookback}
+            setVolumePullbackLookback={setVolumePullbackLookback}
+            volumePullbackMinRisePct={volumePullbackMinRisePct}
+            setVolumePullbackMinRisePct={setVolumePullbackMinRisePct}
+            volumePullbackTriggerType={volumePullbackTriggerType}
+            setVolumePullbackTriggerType={setVolumePullbackTriggerType}
+            volumePullbackVolumeRatio={volumePullbackVolumeRatio}
+            setVolumePullbackVolumeRatio={setVolumePullbackVolumeRatio}
+            volumePullbackVolumeMaPeriod={volumePullbackVolumeMaPeriod}
+            setVolumePullbackVolumeMaPeriod={setVolumePullbackVolumeMaPeriod}
+            volumePullbackMaxBars={volumePullbackMaxBars}
+            setVolumePullbackMaxBars={setVolumePullbackMaxBars}
+            volumePullbackMinPullbackPct={volumePullbackMinPullbackPct}
+            setVolumePullbackMinPullbackPct={setVolumePullbackMinPullbackPct}
+            volumePullbackMaxPullbackPct={volumePullbackMaxPullbackPct}
+            setVolumePullbackMaxPullbackPct={setVolumePullbackMaxPullbackPct}
+            volumePullbackVolumeShrink={volumePullbackVolumeShrink}
+            setVolumePullbackVolumeShrink={setVolumePullbackVolumeShrink}
+            volumePullbackMa10TolerancePct={volumePullbackMa10TolerancePct}
+            setVolumePullbackMa10TolerancePct={setVolumePullbackMa10TolerancePct}
+            volumePullbackRequireUpperShadow={volumePullbackRequireUpperShadow}
+            setVolumePullbackRequireUpperShadow={setVolumePullbackRequireUpperShadow}
+            volumePullbackUpperShadowRatio={volumePullbackUpperShadowRatio}
+            setVolumePullbackUpperShadowRatio={setVolumePullbackUpperShadowRatio}
             consolidationTypeOptions={CONSOLIDATION_TYPE_OPTIONS}
             // 新增技术指标筛选 props
             rsiRange={rsiRange}
@@ -2117,10 +2310,6 @@ export function OpportunityPage() {
             setEnableNameKeywordFilter={setEnableNameKeywordFilter}
             excludedNameKeywords={excludedNameKeywords}
             setExcludedNameKeywords={setExcludedNameKeywords}
-            enableExactNameFilter={enableExactNameFilter}
-            setEnableExactNameFilter={setEnableExactNameFilter}
-            excludedExactNames={excludedExactNames}
-            setExcludedExactNames={setExcludedExactNames}
             // 短期排除股票名称
             enableShortTermNameFilter={enableShortTermNameFilter}
             setEnableShortTermNameFilter={setEnableShortTermNameFilter}
