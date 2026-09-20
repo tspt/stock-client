@@ -133,6 +133,8 @@ const INITIAL_FILTER_STATE = {
   kdjJRange: {} as { min?: number; max?: number },
   financeRevenueRange: {} as { min?: number; max?: number },
   financeNetProfitRange: {} as { min?: number; max?: number },
+  financeRevenueGrowthRange: {} as { min?: number; max?: number },
+  financeNetProfitGrowthRange: {} as { min?: number; max?: number },
 
   // 涨跌停筛选（默认近10天有1次涨停）
   recentLimitUpCount: OPPORTUNITY_DEFAULT_LIMIT_MOVES.minLimitUpCount,
@@ -343,6 +345,14 @@ export function OpportunityPage() {
   /** 归母净利润范围（亿元） */
   const [financeNetProfitRange, setFinanceNetProfitRange] = useState<{ min?: number; max?: number }>(
     INITIAL_FILTER_STATE.financeNetProfitRange
+  );
+  /** 总营收增长率范围（%） */
+  const [financeRevenueGrowthRange, setFinanceRevenueGrowthRange] = useState<{ min?: number; max?: number }>(
+    INITIAL_FILTER_STATE.financeRevenueGrowthRange
+  );
+  /** 归母净利润增长率范围（%） */
+  const [financeNetProfitGrowthRange, setFinanceNetProfitGrowthRange] = useState<{ min?: number; max?: number }>(
+    INITIAL_FILTER_STATE.financeNetProfitGrowthRange
   );
   /** 筛选 Collapse 当前展开的面板 key 列表；[] 表示各组均收起。默认展开所有筛选项 */
   const [filterPanelActiveKey, setFilterPanelActiveKey] = useState<string[]>(['data', 'nameFilter', 'aiAnalysis', 'sharpMove', 'volumePullback', 'consolidation', 'trendLine']);
@@ -657,6 +667,8 @@ export function OpportunityPage() {
           setKdjJRange,
           setFinanceRevenueRange,
           setFinanceNetProfitRange,
+          setFinanceRevenueGrowthRange,
+          setFinanceNetProfitGrowthRange,
           setFilterPanelActiveKey,
           setRecentLimitUpCount,
           setRecentLimitDownCount,
@@ -777,6 +789,8 @@ export function OpportunityPage() {
         kdjJRange: { ...kdjJRange },
         financeRevenueRange: { ...financeRevenueRange },
         financeNetProfitRange: { ...financeNetProfitRange },
+        financeRevenueGrowthRange: { ...financeRevenueGrowthRange },
+        financeNetProfitGrowthRange: { ...financeNetProfitGrowthRange },
         ...visibilityFromActiveFilterPanelKey(filterPanelActiveKey),
         recentLimitUpCount,
         recentLimitDownCount,
@@ -843,6 +857,10 @@ export function OpportunityPage() {
     turnoverRateRange,
     peRatioRange,
     kdjJRange,
+    financeRevenueRange,
+    financeNetProfitRange,
+    financeRevenueGrowthRange,
+    financeNetProfitGrowthRange,
     filterPanelActiveKey,
     recentLimitUpCount,
     recentLimitDownCount,
@@ -920,6 +938,8 @@ export function OpportunityPage() {
         kdjJRange: { ...kdjJRange },
         financeRevenueRange: { ...financeRevenueRange },
         financeNetProfitRange: { ...financeNetProfitRange },
+        financeRevenueGrowthRange: { ...financeRevenueGrowthRange },
+        financeNetProfitGrowthRange: { ...financeNetProfitGrowthRange },
         ...visibilityFromActiveFilterPanelKey(filterPanelActiveKey),
         recentLimitUpCount,
         recentLimitDownCount,
@@ -988,6 +1008,10 @@ export function OpportunityPage() {
     turnoverRateRange,
     peRatioRange,
     kdjJRange,
+    financeRevenueRange,
+    financeNetProfitRange,
+    financeRevenueGrowthRange,
+    financeNetProfitGrowthRange,
     filterPanelActiveKey,
     recentLimitUpCount,
     recentLimitDownCount,
@@ -1214,6 +1238,8 @@ export function OpportunityPage() {
       kdjJRange,
       financeRevenueRange,
       financeNetProfitRange,
+      financeRevenueGrowthRange,
+      financeNetProfitGrowthRange,
       recentLimitUpCount,
       recentLimitDownCount,
       limitUpPeriod,
@@ -1288,6 +1314,8 @@ export function OpportunityPage() {
       kdjJRange,
       financeRevenueRange,
       financeNetProfitRange,
+      financeRevenueGrowthRange,
+      financeNetProfitGrowthRange,
       recentLimitUpCount,
       recentLimitDownCount,
       limitUpPeriod,
@@ -1368,6 +1396,8 @@ export function OpportunityPage() {
         kdjJRange,
         financeRevenueRange,
         financeNetProfitRange,
+        financeRevenueGrowthRange,
+        financeNetProfitGrowthRange,
         recentLimitUpCount,
         recentLimitDownCount,
         limitUpPeriod,
@@ -1432,6 +1462,8 @@ export function OpportunityPage() {
       kdjJRange,
       financeRevenueRange,
       financeNetProfitRange,
+      financeRevenueGrowthRange,
+      financeNetProfitGrowthRange,
       recentLimitUpCount,
       recentLimitDownCount,
       limitUpPeriod,
@@ -1641,6 +1673,8 @@ export function OpportunityPage() {
     setKdjJRange({ ...s.kdjJRange });
     setFinanceRevenueRange({ ...s.financeRevenueRange });
     setFinanceNetProfitRange({ ...s.financeNetProfitRange });
+    setFinanceRevenueGrowthRange({ ...s.financeRevenueGrowthRange });
+    setFinanceNetProfitGrowthRange({ ...s.financeNetProfitGrowthRange });
     setFilterPanelActiveKey(['data', 'consolidation', 'trendLine', 'sharpMove', 'volumePullback', 'technicalIndicators', 'aiAnalysis']);
     setRecentLimitUpCount(s.recentLimitUpCount);
     setRecentLimitDownCount(s.recentLimitDownCount);
@@ -1719,23 +1753,26 @@ export function OpportunityPage() {
     [handleResetFilterForms, loading]
   );
 
-  /** 获取当前股票池（与一键分析一致）的营业总收入 / 归母净利润 */
-  const handleFetchFinance = async () => {
+  /**
+   * 批量获取指定股票池的营业总收入 / 归母净利润（含增长率），结果合并进 financeMap。
+   * 注意：请求量越大越容易触发新浪限流，因此「筛选后」按钮只请求当前筛选结果。
+   */
+  const fetchFinanceForStocks = async (stocks: Array<{ code: string }>, emptyHint: string) => {
     if (financeLoading) {
       return;
     }
-    if (filteredStocks.length === 0) {
-      message.warning('当前市场暂无股票数据');
+    if (stocks.length === 0) {
+      message.warning(emptyHint);
       return;
     }
 
     const controller = new AbortController();
     financeAbortRef.current = controller;
     setFinanceLoading(true);
-    setFinanceProgress({ total: filteredStocks.length, completed: 0, failed: 0 });
+    setFinanceProgress({ total: stocks.length, completed: 0, failed: 0 });
 
     try {
-      const map = await getSinaFinanceMetricsBatch(filteredStocks, {
+      const map = await getSinaFinanceMetricsBatch(stocks, {
         signal: controller.signal,
         onProgress: (p) => {
           setFinanceProgress({ total: p.total, completed: p.completed, failed: p.failed });
@@ -1768,6 +1805,17 @@ export function OpportunityPage() {
       setFinanceProgress({ total: 0, completed: 0, failed: 0 });
     }
   };
+
+  /** 获取当前股票池（与一键分析一致）的营业总收入 / 归母净利润 */
+  const handleFetchFinance = () =>
+    fetchFinanceForStocks(filteredStocks, '当前市场暂无股票数据');
+
+  /** 仅获取「当前筛选结果」中股票的营收 / 净利润，避免全池请求触发新浪限流 */
+  const handleFetchFinanceForFiltered = () =>
+    fetchFinanceForStocks(
+      filteredAnalysisData,
+      '当前筛选结果为空，无法获取营收净利润（若由「总营收」等财务条件导致，请先清空该类条件）'
+    );
 
   const handleCancelFetchFinance = () => {
     financeAbortRef.current?.abort();
@@ -2146,6 +2194,15 @@ export function OpportunityPage() {
           >
             获取营收净利润
           </Button>
+          <Button
+            icon={<FilterOutlined />}
+            onClick={handleFetchFinanceForFiltered}
+            loading={financeLoading}
+            disabled={loading || financeLoading}
+            title={`仅获取当前筛选结果（${filteredAnalysisData.length} 只）的营业总收入、归母净利润及其增长率，避免全池请求触发新浪限流`}
+          >
+            获取筛选后营收净利润
+          </Button>
           {financeLoading && (
             <Button icon={<StopOutlined />} onClick={handleCancelFetchFinance}>
               取消获取
@@ -2351,6 +2408,10 @@ export function OpportunityPage() {
             setFinanceRevenueRange={setFinanceRevenueRange}
             financeNetProfitRange={financeNetProfitRange}
             setFinanceNetProfitRange={setFinanceNetProfitRange}
+            financeRevenueGrowthRange={financeRevenueGrowthRange}
+            setFinanceRevenueGrowthRange={setFinanceRevenueGrowthRange}
+            financeNetProfitGrowthRange={financeNetProfitGrowthRange}
+            setFinanceNetProfitGrowthRange={setFinanceNetProfitGrowthRange}
             recentLimitUpCount={recentLimitUpCount}
             setRecentLimitUpCount={setRecentLimitUpCount}
             recentLimitDownCount={recentLimitDownCount}

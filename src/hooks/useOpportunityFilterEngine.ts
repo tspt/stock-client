@@ -94,6 +94,29 @@ function passLightFilters(item: StockOpportunityData, filters: OpportunityFilter
     if (netProfitRange.max !== undefined && netProfitInYi > netProfitRange.max) return false;
   }
 
+  // 总营收增长率 / 归母净利润增长率（筛选单位：%；数据需先点「获取营收净利润」才有）
+  const revenueGrowthRange = filters.financeRevenueGrowthRange;
+  if (
+    revenueGrowthRange &&
+    (revenueGrowthRange.min !== undefined || revenueGrowthRange.max !== undefined)
+  ) {
+    const growth = item.finance?.revenueYoy;
+    if (growth === null || growth === undefined) return false;
+    if (revenueGrowthRange.min !== undefined && growth < revenueGrowthRange.min) return false;
+    if (revenueGrowthRange.max !== undefined && growth > revenueGrowthRange.max) return false;
+  }
+
+  const netProfitGrowthRange = filters.financeNetProfitGrowthRange;
+  if (
+    netProfitGrowthRange &&
+    (netProfitGrowthRange.min !== undefined || netProfitGrowthRange.max !== undefined)
+  ) {
+    const growth = item.finance?.netProfitYoy;
+    if (growth === null || growth === undefined) return false;
+    if (netProfitGrowthRange.min !== undefined && growth < netProfitGrowthRange.min) return false;
+    if (netProfitGrowthRange.max !== undefined && growth > netProfitGrowthRange.max) return false;
+  }
+
   return true;
 }
 

@@ -86,6 +86,9 @@ export function buildOpportunityFilterSummary(p: {
   // 总营收 / 归母净利润（亿元）
   financeRevenueRange: NumRange;
   financeNetProfitRange: NumRange;
+  // 总营收增长率 / 归母净利润增长率（%）
+  financeRevenueGrowthRange: NumRange;
+  financeNetProfitGrowthRange: NumRange;
   // 新增技术指标筛选
   rsiRange: NumRange;
   // AI分析筛选
@@ -122,6 +125,8 @@ export function buildOpportunityFilterSummary(p: {
   }
   pushRange(parts, '总营收', p.financeRevenueRange, '亿');
   pushRange(parts, '归母净利润', p.financeNetProfitRange, '亿');
+  pushRange(parts, '总营收增长率', p.financeRevenueGrowthRange, '%');
+  pushRange(parts, '归母净利润增长率', p.financeNetProfitGrowthRange, '%');
   if (p.recentLimitUpCount != null) {
     parts.push(`涨停≥${p.recentLimitUpCount}·${p.limitUpPeriod}天`);
   }
@@ -331,6 +336,11 @@ export interface OpportunityFiltersPanelProps {
   setFinanceRevenueRange: SetRange;
   financeNetProfitRange: { min?: number; max?: number };
   setFinanceNetProfitRange: SetRange;
+  // 总营收增长率 / 归母净利润增长率 props（单位：%）
+  financeRevenueGrowthRange: { min?: number; max?: number };
+  setFinanceRevenueGrowthRange: SetRange;
+  financeNetProfitGrowthRange: { min?: number; max?: number };
+  setFinanceNetProfitGrowthRange: SetRange;
   // 新增技术指标筛选 props
   rsiRange: { min?: number; max?: number };
   setRsiRange: SetRange;
@@ -495,6 +505,11 @@ function OpportunityFiltersPanelComponent({
   setFinanceRevenueRange,
   financeNetProfitRange,
   setFinanceNetProfitRange,
+  // 总营收增长率 / 归母净利润增长率
+  financeRevenueGrowthRange,
+  setFinanceRevenueGrowthRange,
+  financeNetProfitGrowthRange,
+  setFinanceNetProfitGrowthRange,
   // 新增技术指标筛选
   rsiRange,
   setRsiRange,
@@ -618,6 +633,8 @@ function OpportunityFiltersPanelComponent({
         volumePullbackUpperShadowRatio,
         financeRevenueRange,
         financeNetProfitRange,
+        financeRevenueGrowthRange,
+        financeNetProfitGrowthRange,
         rsiRange,
         aiAnalysisEnabled,
         aiTrendUp,
@@ -679,6 +696,8 @@ function OpportunityFiltersPanelComponent({
       volumePullbackUpperShadowRatio,
       financeRevenueRange,
       financeNetProfitRange,
+      financeRevenueGrowthRange,
+      financeNetProfitGrowthRange,
       rsiRange,
       aiAnalysisEnabled,
       aiTrendUp,
@@ -1006,6 +1025,68 @@ function OpportunityFiltersPanelComponent({
                           placeholder="最大值"
                           onChange={(v) => {
                             setFinanceNetProfitRange((prev) => ({
+                              ...prev,
+                              max: typeof v === 'number' && isFinite(v) ? v : undefined,
+                            }));
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <div className={styles.filterRow}>
+                      <div className={styles.filterItem}>
+                        <span className={styles.filterLabel}>总营收增长率(%)：</span>
+                        <InputNumber
+                          value={financeRevenueGrowthRange.min}
+                          step={1}
+                          precision={2}
+                          style={{ width: 100 }}
+                          placeholder="最小值"
+                          onChange={(v) => {
+                            setFinanceRevenueGrowthRange((prev) => ({
+                              ...prev,
+                              min: typeof v === 'number' && isFinite(v) ? v : undefined,
+                            }));
+                          }}
+                        />
+                        <span style={{ margin: '0 4px' }}>~</span>
+                        <InputNumber
+                          value={financeRevenueGrowthRange.max}
+                          step={1}
+                          precision={2}
+                          style={{ width: 100 }}
+                          placeholder="最大值"
+                          onChange={(v) => {
+                            setFinanceRevenueGrowthRange((prev) => ({
+                              ...prev,
+                              max: typeof v === 'number' && isFinite(v) ? v : undefined,
+                            }));
+                          }}
+                        />
+                      </div>
+                      <div className={styles.filterItem}>
+                        <span className={styles.filterLabel}>归母净利润增长率(%)：</span>
+                        <InputNumber
+                          value={financeNetProfitGrowthRange.min}
+                          step={1}
+                          precision={2}
+                          style={{ width: 100 }}
+                          placeholder="最小值"
+                          onChange={(v) => {
+                            setFinanceNetProfitGrowthRange((prev) => ({
+                              ...prev,
+                              min: typeof v === 'number' && isFinite(v) ? v : undefined,
+                            }));
+                          }}
+                        />
+                        <span style={{ margin: '0 4px' }}>~</span>
+                        <InputNumber
+                          value={financeNetProfitGrowthRange.max}
+                          step={1}
+                          precision={2}
+                          style={{ width: 100 }}
+                          placeholder="最大值"
+                          onChange={(v) => {
+                            setFinanceNetProfitGrowthRange((prev) => ({
                               ...prev,
                               max: typeof v === 'number' && isFinite(v) ? v : undefined,
                             }));
