@@ -18,7 +18,6 @@ import {
   DEFAULT_CACHE_TTL,
   CACHE_KEYS,
   CACHE_TTL,
-  KLINE_ADJUST,
 } from '@/utils/config/constants';
 import { logger } from '@/utils/business/logger';
 
@@ -402,15 +401,8 @@ export async function getStockDetail(code: string): Promise<StockDetail | null> 
 /**
  * 日线数据同步到 IndexedDB（stockHistory）。
  * 只有日线才允许写入，避免周/月/年线覆盖 dailyLines。
- * 必须同时写入复权口径标记：读取端会按调用方请求的口径校验，
- * 否则不复权旧缓存会被误当作前复权数据使用。
  */
-function syncDailyHistoryToIndexedDB(
-  code: string,
-  klineData: KLineData[],
-  stockName: string,
-  adjust: 'qfq' | 'hfq' | ''
-): void {
+function syncDailyHistoryToIndexedDB(code: string, klineData: KLineData[], stockName: string): void {
   const latestItem = klineData[klineData.length - 1];
   const latestQuote: StockQuote | null = latestItem
     ? {
@@ -433,7 +425,6 @@ function syncDailyHistoryToIndexedDB(
     code,
     name: stockName,
     dailyLines: klineData,
-    dailyLinesAdjust: adjust,
     latestQuote,
     updatedAt: Date.now(),
   }).catch((err) => logger.warn(`[IndexDB] 同步股票 ${code} 历史数据失败:`, err));
@@ -444,11 +435,10 @@ function syncDailyHistoryToIndexedDB(
  * @param code 股票代码（统一格式：SH600000, SZ000001）
  * @param period K线周期
  * @param count 数据条数
- * @param options.adjust 复权方式：'qfq' 前复权 / 'hfq' 后复权 / '' 不复权。
- *   日K不传时默认前复权（KLINE_ADJUST），以保证形态/指标判定与共享日K缓存口径一致。
+ * @param options.adjust 复权方式：'qfq' 前复权 / 'hfq' 后复权 / '' 或不传为不复权
  *
  * 注意：除权除息会在不复权数据上留下跳空缺口，导致 MA/MACD/区间涨幅等指标失真，
- * 跨周期越长失真越严重。凡是做中期以上形态判定的场景都应使用前复权。
+ * 跨周期越长失真越严重。凡是做中长期形态判定的场景（尤其周线）都应使用前复权。
  */
 export async function getKLineData(
   code: string,
@@ -456,9 +446,7 @@ export async function getKLineData(
   count: number = 500,
   options: { adjust?: 'qfq' | 'hfq' | '' } = {}
 ): Promise<KLineData[]> {
-  // 日K默认前复权：stockHistory.dailyLines 是全应用共用的日K数据源，
-  // 必须与机会分析/回测/导出保持同一复权口径。
-  const adjust = options.adjust ?? (period === 'day' ? KLINE_ADJUST : '');
+  const adjust = options.adjust ?? '';
   // 生成缓存 key（复权方式必须参与，否则复权/不复权数据会互相污染）
   const cacheKey = `kline:${code}:${period}:${count}:${adjust || 'none'}`;
 
@@ -469,17 +457,10 @@ export async function getKLineData(
   }
 
   // 2. 如果是日K线，尝试从IndexedDB获取（持久化缓存，无过期时间）
-  //    仅当缓存记录的复权口径与本次请求一致时才复用，避免不复权旧缓存被当作前复权数据。
   if (period === 'day') {
     try {
       const historyRecord = await getStockHistory(code);
-      const cachedAdjust = historyRecord?.dailyLinesAdjust ?? '';
-      if (
-        historyRecord &&
-        cachedAdjust === adjust &&
-        historyRecord.dailyLines &&
-        historyRecord.dailyLines.length >= count
-      ) {
+      if (historyRecord && historyRecord.dailyLines && historyRecord.dailyLines.length >= count) {
         // 使用IndexedDB中的数据，并写入内存缓存
         const klineData = historyRecord.dailyLines.slice(-count);
         apiCache.set(cacheKey, klineData, 5 * 60 * 1000); // 5分钟TTL
@@ -558,8 +539,6 @@ export async function getKLineData(
     // 解析JSON数据
     // 数据格式：{ code: 0, msg: "", data: { "sz000001": { "day": [[...], ...] } } }
     let stockName = '';
-    /** 实际命中的复权口径（可能因接口未返回带前缀 key 而回退为不复权） */
-    let storageAdjust: 'qfq' | 'hfq' | '' = '';
 
     if (data && typeof data === 'object') {
       // 检查返回码
@@ -592,19 +571,11 @@ export async function getKLineData(
 
       // 获取对应周期的K线数据。
       // 注意：带复权参数时腾讯会把数据放在带前缀的 key 下（如 qfqweek / hfqday），
-      // 而不是原始的 week/day，因此按优先级依次尝试；同时记录实际命中的 key，
-      // 以便回退到不复权数据时如实标注口径，避免污染共享日K缓存。
+      // 而不是原始的 week/day，因此按优先级依次尝试。
       const periodKeys = adjust ? [`qfq${apiType}`, `hfq${apiType}`, apiType] : [apiType];
-      const usedKey = periodKeys.find((key) => Array.isArray(stockData[key]));
-      const klines = usedKey ? stockData[usedKey] : undefined;
-      storageAdjust = usedKey === `qfq${apiType}` ? 'qfq' : usedKey === `hfq${apiType}` ? 'hfq' : '';
-      if (adjust && storageAdjust !== adjust) {
-        logger.warn(
-          `[getKLineData:${code}] 请求复权口径 ${adjust}，但接口仅返回 ${
-            storageAdjust || '不复权'
-          } 数据（period=${apiType}），已按实际口径标注`
-        );
-      }
+      const klines = periodKeys
+        .map((key) => stockData[key])
+        .find((value) => Array.isArray(value));
       if (!Array.isArray(klines)) {
         logger.warn(
           `[getKLineData:${code}] 响应中未找到K线数据（period=${apiType}, adjust=${adjust || 'none'}），可用 key: ${Object.keys(
@@ -675,11 +646,10 @@ export async function getKLineData(
 
     // 如果解析到数据，存入缓存并返回
     if (klineData.length > 0) {
-      // 仅日线写入 stockHistory：stockHistory.dailyLines 被机会分析/导出/回测当日线数据源使用，
+      // 仅日线写入 stockHistory：stockHistory.dailyLines 被机会分析/导出当日线数据源使用，
       // 周/月/年线若写入会覆盖日线数据，导致分析结果与导出文件失真。
-      // 写入时附带实际复权口径，读取端据此校验，避免旧的不复权缓存被当作前复权数据复用。
       if (period === 'day') {
-        syncDailyHistoryToIndexedDB(code, klineData, stockName, storageAdjust);
+        syncDailyHistoryToIndexedDB(code, klineData, stockName);
       }
       // 根据周期设置不同的 TTL：分时数据 1 分钟，日K及以上 5 分钟
       const ttlMap: Record<string, number> = {
@@ -694,11 +664,7 @@ export async function getKLineData(
         year: 10 * 60 * 1000,
       };
       const ttl = ttlMap[period] || DEFAULT_CACHE_TTL;
-      // 接口回退到与请求不一致的复权口径时，不写入该 key 的内存缓存，
-      // 避免「不复权数据」被后续同 key 请求当作前复权数据复用。
-      if (!adjust || storageAdjust === adjust) {
-        apiCache.set(cacheKey, klineData, ttl);
-      }
+      apiCache.set(cacheKey, klineData, ttl);
       return klineData;
     } else {
       return [];

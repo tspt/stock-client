@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from 'react';
 import { getKLineData } from '@/services/stocks';
-import { KLINE_ADJUST, KLINE_POLLING_INTERVAL_MS } from '@/utils/config/constants';
+import { KLINE_POLLING_INTERVAL_MS } from '@/utils/config/constants';
 import { usePolling } from './usePolling';
 import { klineCache } from '@/utils/storage/klineCache';
 import type { KLineData, KLinePeriod } from '@/types/stock';
@@ -60,7 +60,7 @@ export function useKLineData(options: UseKLineDataOptions) {
           ? 520 // 10年按周
           : 1000; // 日K及其他
 
-      const klineData = await getKLineData(code, period, count, { adjust: KLINE_ADJUST });
+      const klineData = await getKLineData(code, period, count);
 
       // 存入缓存
       if (klineData && klineData.length > 0) {
@@ -89,7 +89,7 @@ export function useKLineData(options: UseKLineDataOptions) {
       }
       try {
         // 只获取最新几条数据，然后合并到现有数据
-        const latestData = await getKLineData(code, period, 1, { adjust: KLINE_ADJUST });
+        const latestData = await getKLineData(code, period, 1);
         if (latestData.length > 0) {
           setData((prev) => {
             if (prev.length === 0) {

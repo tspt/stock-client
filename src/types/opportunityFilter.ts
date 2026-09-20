@@ -25,10 +25,6 @@ export interface OpportunityFilterSnapshot {
   trendLineLookback: number;
   trendLineConsecutive: number;
   trendLineFilterEnabled: boolean;
-  /** 命中段是否必须延伸到最新一根 K 线（含尾），用于排除趋势已走完的无效命中 */
-  trendLineRequireLatest: boolean;
-  /** 命中段累计涨幅下限（%）；0 表示不限制 */
-  trendLineMinRisePct: number;
   /** 单日异动筛选开关 */
   sharpMoveFilterEnabled: boolean;
   /** 单日异动筛选：最近 N 根 K 线 */

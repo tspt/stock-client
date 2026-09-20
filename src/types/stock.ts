@@ -310,14 +310,6 @@ export interface TrendLineAnalysis {
   isHit: boolean;
   /** 列表简要说明 */
   reasonText: string;
-  /** 本次生效：是否要求命中段延伸到最新一根（含尾） */
-  requireEndsAtLatest?: boolean;
-  /** 本次生效：命中段累计涨幅下限（%），0 表示不限制 */
-  minRisePct?: number;
-  /** 命中段是否延伸到最新一根 K 线（含尾） */
-  endsAtLatest?: boolean;
-  /** 命中段累计涨幅（%）：段前一日收盘 → 段最后一根收盘 */
-  risePct?: number;
 }
 
 /**
@@ -502,26 +494,24 @@ export interface ConsolidationAnalysis {
 }
 
 /**
- * 单日异动形态分析（S1/S2 单事件；P1/P2 宽松双段；P3/P4 中间为横盘日）
- * 单日涨跌幅按「前一日收盘 → 当日收盘」计算，窗口右对齐最新一根，
- * 故「检索根数 = N」时实际可判定的交易日为 N-1 天。
+ * 单日异动形态分析（S1/S2 单事件；P1/P2 宽松双段；P3/P4 中间为普通日）
  */
 export interface SharpMovePatternAnalysis {
   windowBars: number;
   magnitudePercent: number;
-  /** 横盘幅度阈值（%）；实际生效值不会超过 magnitudePercent */
+  /** 横盘幅度阈值（%） */
   flatThresholdPercent: number;
-  /** S1：窗口内存在急跌日（与 S2 不互斥，可同时为真） */
+  /** S1：窗口内存在急跌日 */
   onlyDrop: boolean;
-  /** S2：窗口内存在急涨日（与 S1 不互斥，可同时为真） */
+  /** S2：窗口内存在急涨日 */
   onlyRise: boolean;
   /** P1：存在急跌后第一次急涨（中间无额外约束） */
   dropThenRiseLoose: boolean;
   /** P2：存在急涨后第一次急跌 */
   riseThenDropLoose: boolean;
-  /** P3：急跌 → 中间至少 1 根且均为横盘日 → 急涨 */
+  /** P3：急跌 → 中间均为普通日 → 急涨 */
   dropThenFlatThenRise: boolean;
-  /** P4：急涨 → 中间至少 1 根且均为横盘日 → 急跌 */
+  /** P4：急涨 → 中间均为普通日 → 急跌 */
   riseThenFlatThenDrop: boolean;
   /** 最近一次急跌日距最新一根 K 线的根数 */
   lastDropBarsAgo?: number;

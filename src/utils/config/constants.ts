@@ -298,14 +298,6 @@ export const WEEKLY_KLINE_SCHEMA_VERSION = 2;
  * 直接污染箱体箱顶、区间涨幅、MA/MACD 等判定，因此周线必须使用前复权。
  */
 export const WEEKLY_KLINE_ADJUST = 'qfq';
-/**
- * 全应用统一的日K复权方式：前复权。
- * 除权除息会在不复权日K上留下跳空缺口，污染 MA/MACD、单日异动、区间涨幅等判定，
- * 并使 stockHistory.dailyLines 及其派生的机会分析/回测/导出结果失真。
- * getKLineData 对 period='day' 默认使用该口径；请勿单独改为不复权，
- * 否则会污染共享的日K缓存（读取端会按复权口径校验并丢弃不匹配的缓存）。
- */
-export const KLINE_ADJUST = 'qfq';
 /** 行情批次间延迟（毫秒） */
 export const QUOTES_BATCH_DELAY = 100;
 /** 行情并发数 */

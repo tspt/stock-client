@@ -26,7 +26,6 @@ import {
   QUOTES_BATCH_SIZE,
   VOLUME_AMOUNT_UNIT_CONVERSION,
   PROGRESS_BASE,
-  KLINE_ADJUST,
 } from '@/utils/config/constants';
 import {
   OPPORTUNITY_DEFAULT_CONSOLIDATION,
@@ -96,11 +95,7 @@ async function loadKlineForAnalysis(
   if (asOfDate && period === 'day') {
     try {
       const historyRecord = await getStockHistory(code);
-      // 仅当本地缓存与当前复权口径一致时才使用，否则回源拉取前复权数据
-      if (
-        historyRecord?.dailyLines?.length &&
-        (historyRecord.dailyLinesAdjust ?? '') === KLINE_ADJUST
-      ) {
+      if (historyRecord?.dailyLines?.length) {
         const raw = historyRecord.dailyLines;
         const lastRaw = raw[raw.length - 1];
         const referencePrice =
@@ -124,7 +119,7 @@ async function loadKlineForAnalysis(
 
   const fetchCount =
     asOfDate && period === 'day' ? Math.min(1000, count + 40) : count;
-  const raw = await getKLineData(code, period, fetchCount, { adjust: KLINE_ADJUST });
+  const raw = await getKLineData(code, period, fetchCount);
   if (!raw || raw.length === 0) {
     return { klineData: [] };
   }
@@ -211,8 +206,6 @@ async function analyzeOneStock(
     trendLine = calculateTrendLineInLookback(klineData, {
       lookback: OPPORTUNITY_DEFAULT_TREND_LINE.lookback,
       consecutive: OPPORTUNITY_DEFAULT_TREND_LINE.consecutive,
-      requireEndsAtLatest: OPPORTUNITY_DEFAULT_TREND_LINE.requireEndsAtLatest,
-      minRisePct: OPPORTUNITY_DEFAULT_TREND_LINE.minRisePct,
     });
   } catch (error) {
     logger.warn(`[${code}] 趋势线分析失败:`, error);
@@ -223,8 +216,7 @@ async function analyzeOneStock(
     sharpMovePatterns = analyzeSharpMovePatterns(
       klineData,
       OPPORTUNITY_DEFAULT_SHARP_MOVE.windowBars,
-      OPPORTUNITY_DEFAULT_SHARP_MOVE.magnitude,
-      OPPORTUNITY_DEFAULT_SHARP_MOVE.flatThreshold
+      OPPORTUNITY_DEFAULT_SHARP_MOVE.magnitude
     );
   } catch (error) {
     logger.warn(`[${code}] 单日异动分析失败:`, error);

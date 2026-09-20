@@ -115,10 +115,6 @@ export interface OpportunityFilterPrefs {
   consolidationFilterVisible: boolean;
   trendLineLookback: number;
   trendLineConsecutive: number;
-  /** 是否要求命中段延伸到最新一根 K 线（含尾） */
-  trendLineRequireLatest: boolean;
-  /** 命中段累计涨幅下限（%）；0 表示不限制 */
-  trendLineMinRisePct: number;
   trendLineFilterEnabled: boolean;
   trendLineFilterVisible: boolean;
   /** 单日异动筛选开关 */
@@ -271,7 +267,7 @@ export function loadOpportunityFilterPrefs(): OpportunityFilterPrefs | null {
         ? p.consolidationThreshold
         : OPPORTUNITY_DEFAULT_CONSOLIDATION.threshold,
       consolidationRequireAboveMa10: p.consolidationRequireAboveMa10 === true,
-      consolidationFilterEnabled: p.consolidationFilterEnabled === true,
+      consolidationFilterEnabled: p.consolidationFilterEnabled === false ? false : true,
       consolidationFilterVisible: p.consolidationFilterVisible === false ? false : true,
       trendLineLookback: isFiniteNumber(p.trendLineLookback)
         ? Math.floor(p.trendLineLookback)
@@ -279,11 +275,6 @@ export function loadOpportunityFilterPrefs(): OpportunityFilterPrefs | null {
       trendLineConsecutive: isFiniteNumber(p.trendLineConsecutive)
         ? Math.floor(p.trendLineConsecutive)
         : OPPORTUNITY_DEFAULT_TREND_LINE.consecutive,
-      trendLineRequireLatest: p.trendLineRequireLatest === false ? false : true,
-      trendLineMinRisePct:
-        isFiniteNumber(p.trendLineMinRisePct) && p.trendLineMinRisePct >= 0
-          ? p.trendLineMinRisePct
-          : OPPORTUNITY_DEFAULT_TREND_LINE.minRisePct,
       trendLineFilterEnabled: p.trendLineFilterEnabled === true,
       trendLineFilterVisible: p.trendLineFilterVisible === false ? false : true,
       sharpMoveFilterEnabled: p.sharpMoveFilterEnabled === true,
@@ -298,7 +289,7 @@ export function loadOpportunityFilterPrefs(): OpportunityFilterPrefs | null {
       sharpMoveFlatThreshold:
         isFiniteNumber(p.sharpMoveFlatThreshold) && p.sharpMoveFlatThreshold > 0
           ? p.sharpMoveFlatThreshold
-          : OPPORTUNITY_DEFAULT_SHARP_MOVE.flatThreshold,
+          : 3,
       sharpMoveOnlyDrop: p.sharpMoveOnlyDrop === true,
       sharpMoveOnlyRise: p.sharpMoveOnlyRise === true,
       sharpMoveDropThenRiseLoose: p.sharpMoveDropThenRiseLoose === true,
@@ -414,19 +405,17 @@ export function getDefaultFilterPrefsFields(): Omit<
     consolidationConsecutive: OPPORTUNITY_DEFAULT_CONSOLIDATION.consecutive,
     consolidationThreshold: OPPORTUNITY_DEFAULT_CONSOLIDATION.threshold,
     consolidationRequireAboveMa10: OPPORTUNITY_DEFAULT_CONSOLIDATION.requireClosesAboveMa10,
-    consolidationFilterEnabled: false,
+    consolidationFilterEnabled: true,
     consolidationFilterVisible: true,
     trendLineLookback: OPPORTUNITY_DEFAULT_TREND_LINE.lookback,
     trendLineConsecutive: OPPORTUNITY_DEFAULT_TREND_LINE.consecutive,
-    trendLineRequireLatest: OPPORTUNITY_DEFAULT_TREND_LINE.requireEndsAtLatest,
-    trendLineMinRisePct: OPPORTUNITY_DEFAULT_TREND_LINE.minRisePct,
     trendLineFilterEnabled: false,
     trendLineFilterVisible: true,
     sharpMoveFilterEnabled: false,
     sharpMoveFilterVisible: true,
     sharpMoveWindowBars: OPPORTUNITY_DEFAULT_SHARP_MOVE.windowBars,
     sharpMoveMagnitude: OPPORTUNITY_DEFAULT_SHARP_MOVE.magnitude,
-    sharpMoveFlatThreshold: OPPORTUNITY_DEFAULT_SHARP_MOVE.flatThreshold,
+    sharpMoveFlatThreshold: 3,
     sharpMoveOnlyDrop: false,
     sharpMoveOnlyRise: false,
     sharpMoveDropThenRiseLoose: false,
@@ -526,8 +515,6 @@ export interface OpportunityFilterPrefsApplyActions {
   setConsolidationFilterEnabled: (v: boolean) => void;
   setTrendLineLookback: (v: number) => void;
   setTrendLineConsecutive: (v: number) => void;
-  setTrendLineRequireLatest: (v: boolean) => void;
-  setTrendLineMinRisePct: (v: number) => void;
   setTrendLineFilterEnabled: (v: boolean) => void;
   setSharpMoveFilterEnabled: (v: boolean) => void;
   setSharpMoveWindowBars: (v: number) => void;
@@ -603,8 +590,6 @@ export function applyOpportunityFilterPrefsToState(
   actions.setConsolidationFilterEnabled(prefs.consolidationFilterEnabled);
   actions.setTrendLineLookback(prefs.trendLineLookback);
   actions.setTrendLineConsecutive(prefs.trendLineConsecutive);
-  actions.setTrendLineRequireLatest(prefs.trendLineRequireLatest);
-  actions.setTrendLineMinRisePct(prefs.trendLineMinRisePct);
   actions.setTrendLineFilterEnabled(prefs.trendLineFilterEnabled);
   actions.setSharpMoveFilterEnabled(prefs.sharpMoveFilterEnabled);
   actions.setSharpMoveWindowBars(prefs.sharpMoveWindowBars);
