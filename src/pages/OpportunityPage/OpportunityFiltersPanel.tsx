@@ -162,7 +162,7 @@ export function buildOpportunityFilterSummary(p: {
   if (p.sharpMoveFilterEnabled && sharpOn) {
     parts.push(`异动${p.sharpMoveWindowBars}根/${p.sharpMoveMagnitude}%·形态`);
   } else if (p.sharpMoveFilterEnabled) {
-    parts.push(`异动${p.sharpMoveWindowBars}根/${p.sharpMoveMagnitude}%`);
+    parts.push(`异动${p.sharpMoveWindowBars}根/${p.sharpMoveMagnitude}%（未选类型，不生效）`);
   }
 
   // 量价回踩汇总
@@ -569,6 +569,16 @@ function OpportunityFiltersPanelComponent({
   // 如果外部提供了控制，则使用外部的；否则使用内部的
   const drawerOpen = externalDrawerOpen !== undefined ? externalDrawerOpen : internalDrawerOpen;
   const setDrawerOpen = externalSetDrawerOpen || setInternalDrawerOpen;
+
+  /** 已启用单日异动筛选但一个类型都没勾选：此时筛选不产生任何效果，需要显式提示 */
+  const sharpMoveNoTypeSelected =
+    sharpMoveFilterEnabled &&
+    !sharpMoveOnlyDrop &&
+    !sharpMoveOnlyRise &&
+    !sharpMoveDropThenRiseLoose &&
+    !sharpMoveRiseThenDropLoose &&
+    !sharpMoveDropFlatRise &&
+    !sharpMoveRiseFlatDrop;
 
   const summaryText = useMemo(
     () =>
@@ -1789,25 +1799,6 @@ function OpportunityFiltersPanelComponent({
                         />
                       </div>
                     </div>
-                    <div className={styles.filterRow}>
-                      <div className={styles.filterItem}>
-                        <span style={{ lineHeight: '1.8' }}>
-                          ℹ️ 触发日距今{' '}
-                          <strong>
-                            {`1~${Math.max(1, Math.min(volumePullbackLookback - 1, volumePullbackMaxBars))}`}
-                          </strong>{' '}
-                          根：由「回踩窗口」决定（回溯范围仅限制检索起点）
-                        </span>
-                      </div>
-                    </div>
-                    <div className={styles.filterRow}>
-                      <div className={styles.filterItem}>
-                        <span style={{ lineHeight: '1.8' }}>
-                          ✅ 判定：最近「触发日回溯范围」内出现放量上涨触发日（涨幅达标或盘中触及涨停，可选长上影）→
-                          其后「回踩窗口」内自峰值回撤落在区间、回踩段缩量、且收盘不破 MA10（允许容差）
-                        </span>
-                      </div>
-                    </div>
                   </div>
                 ),
               },
@@ -1826,6 +1817,15 @@ function OpportunityFiltersPanelComponent({
                         </Checkbox>
                       </div>
                     </div>
+                    {sharpMoveNoTypeSelected && (
+                      <div className={styles.filterRow}>
+                        <div className={styles.filterItem}>
+                          <span style={{ color: 'var(--ant-color-warning-text)', lineHeight: '1.8' }}>
+                            ⚠️ 尚未勾选任何「异动类型」，当前不会产生筛选效果。
+                          </span>
+                        </div>
+                      </div>
+                    )}
                     <div className={styles.filterRow}>
                       <div className={styles.filterItem}>
                         <span className={styles.filterLabel}>检索根数：</span>
@@ -1841,8 +1841,12 @@ function OpportunityFiltersPanelComponent({
                           }}
                         />
                         <span style={{ marginLeft: 4 }}>根</span>
-                        <span className={styles.filterLabel} style={{ marginLeft: 16 }}>
-                          阈值M(%)：
+                        <span
+                          className={styles.filterLabel}
+                          style={{ marginLeft: 16 }}
+                          title="单日涨跌幅达到 ±该值即视为急涨 / 急跌（异动日），影响全部异动类型"
+                        >
+                          急涨急跌阈值(%)：
                         </span>
                         <InputNumber
                           value={sharpMoveMagnitude}
@@ -1850,12 +1854,19 @@ function OpportunityFiltersPanelComponent({
                           max={30}
                           step={0.5}
                           style={{ width: 100 }}
+                          title="单日涨跌幅达到 ±该值即视为急涨 / 急跌（异动日）"
                           onChange={(v) => {
                             const next = typeof v === 'number' && isFinite(v) && v > 0 ? v : 6;
                             setSharpMoveMagnitude(next);
                           }}
                         />
-                        <span className={styles.filterLabel} style={{ marginLeft: 16 }}>横盘幅度(%)：</span>
+                        <span
+                          className={styles.filterLabel}
+                          style={{ marginLeft: 16 }}
+                          title="两次异动之间的每一根K线，其 |单日涨跌幅| 需小于该值才算“横盘”；仅用于「急跌横盘急涨 / 急涨横盘急跌」"
+                        >
+                          中间日横盘上限(%)：
+                        </span>
                         <InputNumber
                           value={sharpMoveFlatThreshold}
                           min={0.1}
@@ -1863,6 +1874,7 @@ function OpportunityFiltersPanelComponent({
                           step={0.1}
                           precision={1}
                           style={{ width: 100 }}
+                          title="两次异动之间的每一根K线，其 |单日涨跌幅| 需小于该值才算“横盘”"
                           onChange={(v) => {
                             const next = typeof v === 'number' && isFinite(v) && v > 0 ? v : 3;
                             setSharpMoveFlatThreshold(next);
@@ -1874,10 +1886,10 @@ function OpportunityFiltersPanelComponent({
                       <div className={styles.filterItem} style={{ flexWrap: 'wrap', gap: 8 }}>
                         <span className={styles.filterLabel}>异动类型：</span>
                         <Checkbox checked={sharpMoveOnlyDrop} onChange={(e) => setSharpMoveOnlyDrop(e.target.checked)}>
-                          仅急跌
+                          存在急跌
                         </Checkbox>
                         <Checkbox checked={sharpMoveOnlyRise} onChange={(e) => setSharpMoveOnlyRise(e.target.checked)}>
-                          仅急涨
+                          存在急涨
                         </Checkbox>
                         <Checkbox
                           checked={sharpMoveDropThenRiseLoose}

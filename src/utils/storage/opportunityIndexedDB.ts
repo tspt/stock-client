@@ -256,6 +256,12 @@ export interface StockHistoryRecord {
   code: string;
   name: string;
   dailyLines: KLineData[];
+  /**
+   * dailyLines 的复权口径（'qfq' 前复权 / 'hfq' 后复权 / '' 不复权）。
+   * 读取时按调用方请求的口径校验，避免「不复权旧缓存」被当作前复权数据使用；
+   * 缺省视为 ''（历史遗留数据），此时前复权请求会自动回源并重写缓存。
+   */
+  dailyLinesAdjust?: 'qfq' | 'hfq' | '';
   latestQuote: StockQuote | null;
   latestDetail?: StockDetail | null; // 新增：最新详情数据
   industry?: IndustryInfo; // 新增：所属行业信息

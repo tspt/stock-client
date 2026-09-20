@@ -278,16 +278,16 @@ export const OPPORTUNITY_DEFAULT_TREND_LINE = {
 export const OPPORTUNITY_DEFAULT_SHARP_MOVE = {
   windowBars: 20,
   magnitude: 4,
+  /** 横盘幅度阈值（%），用于判断急跌横盘急涨等形态中的“横盘” */
+  flatThreshold: 3,
 } as const;
 
 /** 异动筛选完整配置 */
 export const OPPORTUNITY_DEFAULT_SHARP_MOVE_FULL = {
   ...OPPORTUNITY_DEFAULT_SHARP_MOVE,
-  /** 横盘幅度阈值（%） */
-  flatThreshold: 3,
-  /** 仅急跌 */
+  /** 存在急跌 */
   onlyDrop: false,
-  /** 仅急涨 */
+  /** 存在急涨 */
   onlyRise: false,
   /** 急跌→急涨 */
   dropThenRiseLoose: false,
