@@ -211,6 +211,8 @@ async function analyzeOneStock(
     trendLine = calculateTrendLineInLookback(klineData, {
       lookback: OPPORTUNITY_DEFAULT_TREND_LINE.lookback,
       consecutive: OPPORTUNITY_DEFAULT_TREND_LINE.consecutive,
+      requireEndsAtLatest: OPPORTUNITY_DEFAULT_TREND_LINE.requireEndsAtLatest,
+      minRisePct: OPPORTUNITY_DEFAULT_TREND_LINE.minRisePct,
     });
   } catch (error) {
     logger.warn(`[${code}] 趋势线分析失败:`, error);

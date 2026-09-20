@@ -699,7 +699,7 @@ async function runFilterTask(
     typeof rawMag === 'number' && Number.isFinite(rawMag) && rawMag > 0 ? rawMag : 6;
   const rawFlat = filters.sharpMoveFlatThreshold;
   const sharpMoveFlatThreshold =
-    typeof rawFlat === 'number' && Number.isFinite(rawFlat) && rawFlat > 0 ? rawFlat : 3;
+    typeof rawFlat === 'number' && Number.isFinite(rawFlat) && rawFlat > 0 ? rawFlat : 2;
 
   const excludedNameKeywords = (filters.excludedNameKeywords ?? [])
     .map(normalizeStockName)
@@ -708,7 +708,11 @@ async function runFilterTask(
     (filters.excludedShortTermNames ?? []).map(normalizeStockName).filter(Boolean)
   );
 
-  /** 启用横盘且勾选至少一种类型时按类型过滤；启用但未选任何类型则视为不按类型过滤（与其它条件照常组合） */
+  /**
+   * 启用横盘后按 isConsolidation 过滤；若额外勾选了类型，再叠加类型匹配。
+   * 未勾选任何类型时 = 只按“是否为横盘”过滤（与其它条件照常组合）。
+   */
+  const consolidationFilterActive = filters.consolidationFilterEnabled;
   const consolidationTypesSet =
     filters.consolidationFilterEnabled && filters.consolidationTypes.length > 0
       ? new Set(filters.consolidationTypes)
@@ -737,7 +741,7 @@ async function runFilterTask(
       const klineData = klineDataMap.get(item.code);
 
       // 智能判断是否需要重算各指标（仅在有K线数据且筛选条件启用时重算）
-      const needConsolidationRecalc = consolidationTypesSet !== null;
+      const needConsolidationRecalc = consolidationFilterActive;
       const needTrendLineRecalc = filters.trendLineFilterEnabled;
       const needSharpMoveRecalc = sharpMoveFilterActive(filters);
       const needVolumePullbackRecalc = filters.volumePullbackFilterEnabled;
@@ -818,6 +822,8 @@ async function runFilterTask(
             const trendLine = calculateTrendLineInLookback(klineData, {
               lookback: filters.trendLineLookback,
               consecutive: filters.trendLineConsecutive,
+              requireEndsAtLatest: filters.trendLineRequireLatest,
+              minRisePct: filters.trendLineMinRisePct,
             });
             nextItem = { ...nextItem, trendLine };
           } catch {
@@ -828,19 +834,28 @@ async function runFilterTask(
         nextItem = { ...nextItem, sharpMovePatterns: undefined, pullbackPattern: undefined };
       }
 
-      if (consolidationTypesSet) {
+      if (consolidationFilterActive) {
         if (!nextItem.consolidation || !nextItem.consolidation.isConsolidation) {
           continue;
         }
-        const matchedTypes = nextItem.consolidation.matchedTypes ?? [];
-        const hasMatchedType = matchedTypes.some((type) => consolidationTypesSet.has(type));
-        if (!hasMatchedType) {
-          continue;
+        if (consolidationTypesSet) {
+          const matchedTypes = nextItem.consolidation.matchedTypes ?? [];
+          const hasMatchedType = matchedTypes.some((type) => consolidationTypesSet.has(type));
+          if (!hasMatchedType) {
+            continue;
+          }
         }
       }
 
-      if (filters.trendLineFilterEnabled && !nextItem.trendLine?.isHit) {
-        continue;
+      if (filters.trendLineFilterEnabled) {
+        // 缺少 K 线时无法按当前 M/N 参数判定，显式跳过并给出原因（避免沿用旧的预计算结果）
+        if (!klineData || klineData.length === 0) {
+          mergeSkippedReason(skippedMap, item.code, item.name, '趋势线：缺少K线数据，已跳过');
+          continue;
+        }
+        if (!nextItem.trendLine?.isHit) {
+          continue;
+        }
       }
 
       if (filters.recentLimitUpCount !== undefined || filters.recentLimitDownCount !== undefined) {

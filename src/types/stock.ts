@@ -310,6 +310,14 @@ export interface TrendLineAnalysis {
   isHit: boolean;
   /** 列表简要说明 */
   reasonText: string;
+  /** 本次生效：是否要求命中段延伸到最新一根（含尾） */
+  requireEndsAtLatest?: boolean;
+  /** 本次生效：命中段累计涨幅下限（%），0 表示不限制 */
+  minRisePct?: number;
+  /** 命中段是否延伸到最新一根 K 线（含尾） */
+  endsAtLatest?: boolean;
+  /** 命中段累计涨幅（%）：段前一日收盘 → 段最后一根收盘 */
+  risePct?: number;
 }
 
 /**

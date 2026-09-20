@@ -59,6 +59,8 @@ export function buildOpportunityFilterSummary(p: {
   trendLineFilterEnabled: boolean;
   trendLineLookback: number;
   trendLineConsecutive: number;
+  trendLineRequireLatest: boolean;
+  trendLineMinRisePct: number;
   sharpMoveFilterEnabled: boolean;
   sharpMoveWindowBars: number;
   sharpMoveMagnitude: number;
@@ -150,7 +152,11 @@ export function buildOpportunityFilterSummary(p: {
     );
   }
   if (p.trendLineFilterEnabled) {
-    parts.push(`趋势线·M=${p.trendLineLookback}根·N=${p.trendLineConsecutive}根`);
+    parts.push(
+      `趋势线·M=${p.trendLineLookback}根·N=${p.trendLineConsecutive}根` +
+        (p.trendLineRequireLatest ? '·仅含尾' : '') +
+        (p.trendLineMinRisePct > 0 ? `·累涨≥${fmtNum(p.trendLineMinRisePct)}%` : '')
+    );
   }
   const sharpOn =
     p.sharpMoveOnlyDrop ||
@@ -278,6 +284,12 @@ export interface OpportunityFiltersPanelProps {
   setTrendLineConsecutive: (v: number) => void;
   trendLineFilterEnabled: boolean;
   setTrendLineFilterEnabled: (v: boolean) => void;
+  /** 是否要求命中段延伸到最新一根 K 线（含尾） */
+  trendLineRequireLatest: boolean;
+  setTrendLineRequireLatest: (v: boolean) => void;
+  /** 命中段累计涨幅下限（%）；0 表示不限制 */
+  trendLineMinRisePct: number;
+  setTrendLineMinRisePct: (v: number) => void;
   sharpMoveFilterEnabled: boolean;
   setSharpMoveFilterEnabled: (v: boolean) => void;
   sharpMoveWindowBars: number;
@@ -442,6 +454,10 @@ function OpportunityFiltersPanelComponent({
   setTrendLineConsecutive,
   trendLineFilterEnabled,
   setTrendLineFilterEnabled,
+  trendLineRequireLatest,
+  setTrendLineRequireLatest,
+  trendLineMinRisePct,
+  setTrendLineMinRisePct,
   sharpMoveFilterEnabled,
   setSharpMoveFilterEnabled,
   sharpMoveWindowBars,
@@ -603,6 +619,8 @@ function OpportunityFiltersPanelComponent({
         trendLineFilterEnabled,
         trendLineLookback,
         trendLineConsecutive,
+        trendLineRequireLatest,
+        trendLineMinRisePct,
         sharpMoveFilterEnabled,
         sharpMoveWindowBars,
         sharpMoveMagnitude,
@@ -664,6 +682,8 @@ function OpportunityFiltersPanelComponent({
       trendLineFilterEnabled,
       trendLineLookback,
       trendLineConsecutive,
+      trendLineRequireLatest,
+      trendLineMinRisePct,
       sharpMoveFilterEnabled,
       sharpMoveWindowBars,
       sharpMoveMagnitude,
@@ -1656,8 +1676,9 @@ function OpportunityFiltersPanelComponent({
                           max={500}
                           step={1}
                           style={{ width: 100 }}
+                          title="实际触发窗口 = min(回溯范围, 回踩窗口根数 + 1)，因为回踩根数不能超过「回踩窗口」"
                           onChange={(v) => {
-                            const next = typeof v === 'number' && isFinite(v) ? Math.floor(v) : 20;
+                            const next = typeof v === 'number' && isFinite(v) ? Math.floor(v) : 9;
                             setVolumePullbackLookback(Math.min(500, Math.max(3, next)));
                           }}
                         />
@@ -1876,7 +1897,7 @@ function OpportunityFiltersPanelComponent({
                           style={{ width: 100 }}
                           title="两次异动之间的每一根K线，其 |单日涨跌幅| 需小于该值才算“横盘”"
                           onChange={(v) => {
-                            const next = typeof v === 'number' && isFinite(v) && v > 0 ? v : 3;
+                            const next = typeof v === 'number' && isFinite(v) && v > 0 ? v : 2;
                             setSharpMoveFlatThreshold(next);
                           }}
                         />
@@ -1915,6 +1936,102 @@ function OpportunityFiltersPanelComponent({
                         >
                           急涨横盘急跌
                         </Checkbox>
+                      </div>
+                    </div>
+                  </div>
+                ),
+              },
+              {
+                key: 'trendLine',
+                label: '趋势线筛选',
+                children: (
+                  <div className={styles.filterContent}>
+                    <div className={styles.filterRow}>
+                      <div className={styles.filterItem}>
+                        <Checkbox
+                          checked={trendLineFilterEnabled}
+                          onChange={(e) => setTrendLineFilterEnabled(e.target.checked)}
+                        >
+                          启用趋势线筛选
+                        </Checkbox>
+                      </div>
+                    </div>
+                    <div className={styles.filterRow}>
+                      <div className={styles.filterItem}>
+                        <span className={styles.filterLabel}>检索根数：</span>
+                        <InputNumber
+                          value={trendLineLookback}
+                          min={3}
+                          max={500}
+                          step={1}
+                          style={{ width: 100 }}
+                          disabled={trendLineRequireLatest}
+                          title={
+                            trendLineRequireLatest
+                              ? '勾选「仅含尾」时只评估以最新一根结尾的片段，检索根数不生效'
+                              : undefined
+                          }
+                          onChange={(v) => {
+                            const next = typeof v === 'number' && isFinite(v) ? Math.floor(v) : 10;
+                            const clamped = Math.min(500, Math.max(3, next));
+                            setTrendLineLookback(clamped);
+                            if (trendLineConsecutive > clamped) {
+                              setTrendLineConsecutive(Math.max(3, clamped));
+                            }
+                          }}
+                        />
+                        <span style={{ marginLeft: 4 }}>根</span>
+                        {trendLineRequireLatest && (
+                          <span style={{ marginLeft: 8, fontSize: 12, color: 'var(--ant-color-text-secondary)' }}>
+                            （含尾模式下仅评估最后 N 根，检索根数不生效）
+                          </span>
+                        )}
+                      </div>
+                      <div className={styles.filterItem}>
+                        <span className={styles.filterLabel}>连续根数：</span>
+                        <InputNumber
+                          value={trendLineConsecutive}
+                          min={3}
+                          max={trendLineLookback}
+                          step={1}
+                          style={{ width: 100 }}
+                          onChange={(v) => {
+                            const next = typeof v === 'number' && isFinite(v) ? Math.floor(v) : 3;
+                            const maxN = Math.max(3, trendLineLookback);
+                            setTrendLineConsecutive(Math.min(maxN, Math.max(3, next)));
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <div className={styles.filterRow}>
+                      <div className={styles.filterItem}>
+                        <Checkbox
+                          checked={trendLineRequireLatest}
+                          onChange={(e) => setTrendLineRequireLatest(e.target.checked)}
+                        >
+                          仅接受延续到最新一根的趋势（含尾）
+                        </Checkbox>
+                        <span className={styles.filterLabel} style={{ marginLeft: 16 }}>段内累计涨幅≥：</span>
+                        <InputNumber
+                          value={trendLineMinRisePct}
+                          min={0}
+                          max={100}
+                          step={0.5}
+                          style={{ width: 100 }}
+                          onChange={(v) => {
+                            const next = typeof v === 'number' && isFinite(v) ? Math.max(0, v) : 0;
+                            setTrendLineMinRisePct(next);
+                          }}
+                        />
+                        <span style={{ marginLeft: 4 }}>%（0 = 不限制）</span>
+                      </div>
+                    </div>
+                    <div className={styles.filterRow}>
+                      <div className={styles.filterItem}>
+                        <span className={styles.filterLabel}>命中说明：</span>
+                        <span style={{ lineHeight: '1.8' }}>
+                          1️⃣ 每日收盘价 ≥ 前一日收盘价（不跌）；2️⃣ 每日收盘价 ≥ 当日MA5均线；3️⃣ 段内累计涨幅 ≥ 设定下限（0 表示不限制）；✅ 勾选「仅含尾」时只接受延续到最新一根的片段，否则取最靠近最新K线的一段
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -2011,68 +2128,6 @@ function OpportunityFiltersPanelComponent({
                         >
                           连续根数段内每日收盘价均在MA10之上
                         </Checkbox>
-                      </div>
-                    </div>
-                  </div>
-                ),
-              },
-              {
-                key: 'trendLine',
-                label: '趋势线筛选',
-                children: (
-                  <div className={styles.filterContent}>
-                    <div className={styles.filterRow}>
-                      <div className={styles.filterItem}>
-                        <Checkbox
-                          checked={trendLineFilterEnabled}
-                          onChange={(e) => setTrendLineFilterEnabled(e.target.checked)}
-                        >
-                          启用趋势线筛选
-                        </Checkbox>
-                      </div>
-                    </div>
-                    <div className={styles.filterRow}>
-                      <div className={styles.filterItem}>
-                        <span className={styles.filterLabel}>检索根数：</span>
-                        <InputNumber
-                          value={trendLineLookback}
-                          min={3}
-                          max={500}
-                          step={1}
-                          style={{ width: 100 }}
-                          onChange={(v) => {
-                            const next = typeof v === 'number' && isFinite(v) ? Math.floor(v) : 10;
-                            const clamped = Math.min(500, Math.max(3, next));
-                            setTrendLineLookback(clamped);
-                            if (trendLineConsecutive > clamped) {
-                              setTrendLineConsecutive(Math.max(3, clamped));
-                            }
-                          }}
-                        />
-                        <span style={{ marginLeft: 4 }}>根</span>
-                      </div>
-                      <div className={styles.filterItem}>
-                        <span className={styles.filterLabel}>连续根数：</span>
-                        <InputNumber
-                          value={trendLineConsecutive}
-                          min={3}
-                          max={trendLineLookback}
-                          step={1}
-                          style={{ width: 100 }}
-                          onChange={(v) => {
-                            const next = typeof v === 'number' && isFinite(v) ? Math.floor(v) : 3;
-                            const maxN = Math.max(3, trendLineLookback);
-                            setTrendLineConsecutive(Math.min(maxN, Math.max(3, next)));
-                          }}
-                        />
-                      </div>
-                    </div>
-                    <div className={styles.filterRow}>
-                      <div className={styles.filterItem}>
-                        <span className={styles.filterLabel}>命中说明：</span>
-                        <span style={{ lineHeight: '1.8' }}>
-                          1️⃣ 每日收盘价 ≥ 前一日收盘价（不跌）；2️⃣ 每日收盘价 ≥ 当日MA5均线；✅ 若找到，取最靠近最新K线的一段
-                        </span>
                       </div>
                     </div>
                   </div>

@@ -57,7 +57,7 @@ interface ResolvedOptions {
 
 /** 与 opportunityAnalysisDefaults 中的默认值保持一致；未传参时使用 */
 const DEFAULT_OPTIONS: ResolvedOptions = {
-  lookback: 20,
+  lookback: 9,
   minRisePct: 5,
   triggerType: 'any',
   limitUpPct: 9.8,

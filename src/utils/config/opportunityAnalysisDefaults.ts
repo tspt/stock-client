@@ -260,9 +260,9 @@ export const OPPORTUNITY_DEFAULT_AI_ANALYSIS = {
 // ==================== 3. 横盘筛选 ====================
 
 export const OPPORTUNITY_DEFAULT_CONSOLIDATION = {
-  lookback: 10,
-  consecutive: 3,
-  threshold: 1.5,
+  lookback: 15,
+  consecutive: 5,
+  threshold: 3,
   requireClosesAboveMa10: false,
 } as const;
 
@@ -271,6 +271,13 @@ export const OPPORTUNITY_DEFAULT_CONSOLIDATION = {
 export const OPPORTUNITY_DEFAULT_TREND_LINE = {
   lookback: 10,
   consecutive: 3,
+  /**
+   * 命中段是否必须延伸到最新一根 K 线（含尾）；开启可排除“趋势已走完”的无效命中。
+   * 注意：开启后只会评估「以最新一根结尾」的片段，lookback 不再生效（面板中已置灰并提示）。
+   */
+  requireEndsAtLatest: true,
+  /** 命中段累计涨幅下限（%）；0 表示不限制，用于排除零涨幅“贴线”形态 */
+  minRisePct: 3,
 } as const;
 
 // ==================== 5. 单日异动筛选 ====================
@@ -278,8 +285,8 @@ export const OPPORTUNITY_DEFAULT_TREND_LINE = {
 export const OPPORTUNITY_DEFAULT_SHARP_MOVE = {
   windowBars: 20,
   magnitude: 4,
-  /** 横盘幅度阈值（%），用于判断急跌横盘急涨等形态中的“横盘” */
-  flatThreshold: 3,
+  /** 横盘幅度阈值（%），用于判断急跌横盘急涨等形态中的“横盘”（单日 ±3% 已属明显波动，收紧到 2%） */
+  flatThreshold: 2,
 } as const;
 
 /** 异动筛选完整配置 */
@@ -306,8 +313,13 @@ export const OPPORTUNITY_DEFAULT_SHARP_MOVE_FULL = {
  * 判定实现见 src/utils/analysis/volumePullbackAnalysis.ts
  */
 export const OPPORTUNITY_DEFAULT_VOLUME_PULLBACK = {
-  /** 触发日回溯范围：从最新一根向前追溯的根数（含最新一根） */
-  lookback: 20,
+  /**
+   * 触发日回溯范围：从最新一根向前追溯的根数（含最新一根）。
+   * 注意：回踩根数 = 距最新根数 - 触发日索引，且必须 ≤ maxBars，
+   * 因此实际触发窗口 = min(lookback, maxBars + 1)；默认取 maxBars + 1，等价于不做额外收紧，
+   * 避免旧默认值 20（远大于 maxBars，纯属无效）造成的误导。
+   */
+  lookback: 9,
   /** 触发日最小涨幅（%） */
   minRisePct: 5,
   /** 触发日类型：any=大涨或盘中触及涨停；limitUp=必须收盘涨停 */

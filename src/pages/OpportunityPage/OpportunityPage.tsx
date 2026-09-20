@@ -151,6 +151,8 @@ const INITIAL_FILTER_STATE = {
   // 趋势线筛选
   trendLineLookback: OPPORTUNITY_DEFAULT_TREND_LINE.lookback,
   trendLineConsecutive: OPPORTUNITY_DEFAULT_TREND_LINE.consecutive,
+  trendLineRequireLatest: OPPORTUNITY_DEFAULT_TREND_LINE.requireEndsAtLatest,
+  trendLineMinRisePct: OPPORTUNITY_DEFAULT_TREND_LINE.minRisePct,
   trendLineFilterEnabled: false,
 
   // 异动筛选
@@ -378,6 +380,12 @@ export function OpportunityPage() {
   const [trendLineLookback, setTrendLineLookback] = useState<number>(INITIAL_FILTER_STATE.trendLineLookback);
   const [trendLineConsecutive, setTrendLineConsecutive] = useState<number>(
     INITIAL_FILTER_STATE.trendLineConsecutive
+  );
+  const [trendLineRequireLatest, setTrendLineRequireLatest] = useState<boolean>(
+    INITIAL_FILTER_STATE.trendLineRequireLatest
+  );
+  const [trendLineMinRisePct, setTrendLineMinRisePct] = useState<number>(
+    INITIAL_FILTER_STATE.trendLineMinRisePct
   );
   const [trendLineFilterEnabled, setTrendLineFilterEnabled] = useState<boolean>(
     INITIAL_FILTER_STATE.trendLineFilterEnabled
@@ -670,6 +678,8 @@ export function OpportunityPage() {
           setConsolidationFilterEnabled,
           setTrendLineLookback,
           setTrendLineConsecutive,
+          setTrendLineRequireLatest,
+          setTrendLineMinRisePct,
           setTrendLineFilterEnabled,
           setSharpMoveFilterEnabled,
           setSharpMoveWindowBars,
@@ -790,6 +800,8 @@ export function OpportunityPage() {
         consolidationFilterEnabled,
         trendLineLookback,
         trendLineConsecutive,
+        trendLineRequireLatest,
+        trendLineMinRisePct,
         trendLineFilterEnabled,
         sharpMoveFilterEnabled,
         sharpMoveWindowBars,
@@ -856,6 +868,8 @@ export function OpportunityPage() {
     consolidationFilterEnabled,
     trendLineLookback,
     trendLineConsecutive,
+    trendLineRequireLatest,
+    trendLineMinRisePct,
     trendLineFilterEnabled,
     sharpMoveFilterEnabled,
     sharpMoveWindowBars,
@@ -933,6 +947,8 @@ export function OpportunityPage() {
         consolidationFilterEnabled,
         trendLineLookback,
         trendLineConsecutive,
+        trendLineRequireLatest,
+        trendLineMinRisePct,
         trendLineFilterEnabled,
         sharpMoveFilterEnabled,
         sharpMoveWindowBars,
@@ -1001,6 +1017,8 @@ export function OpportunityPage() {
     consolidationFilterEnabled,
     trendLineLookback,
     trendLineConsecutive,
+    trendLineRequireLatest,
+    trendLineMinRisePct,
     trendLineFilterEnabled,
     sharpMoveFilterEnabled,
     sharpMoveWindowBars,
@@ -1226,6 +1244,8 @@ export function OpportunityPage() {
       consolidationFilterEnabled,
       trendLineLookback,
       trendLineConsecutive,
+      trendLineRequireLatest,
+      trendLineMinRisePct,
       trendLineFilterEnabled,
       sharpMoveFilterEnabled,
       sharpMoveWindowBars,
@@ -1300,6 +1320,8 @@ export function OpportunityPage() {
       consolidationFilterEnabled,
       trendLineLookback,
       trendLineConsecutive,
+      trendLineRequireLatest,
+      trendLineMinRisePct,
       trendLineFilterEnabled,
       sharpMoveFilterEnabled,
       sharpMoveWindowBars,
@@ -1382,6 +1404,8 @@ export function OpportunityPage() {
         trendLineFilterEnabled,
         trendLineLookback,
         trendLineConsecutive,
+        trendLineRequireLatest,
+        trendLineMinRisePct,
         sharpMoveFilterEnabled,
         sharpMoveWindowBars,
         sharpMoveMagnitude,
@@ -1445,6 +1469,8 @@ export function OpportunityPage() {
       trendLineFilterEnabled,
       trendLineLookback,
       trendLineConsecutive,
+      trendLineRequireLatest,
+      trendLineMinRisePct,
       sharpMoveFilterEnabled,
       sharpMoveWindowBars,
       sharpMoveMagnitude,
@@ -2375,6 +2401,10 @@ export function OpportunityPage() {
             setTrendLineLookback={setTrendLineLookback}
             trendLineConsecutive={trendLineConsecutive}
             setTrendLineConsecutive={setTrendLineConsecutive}
+            trendLineRequireLatest={trendLineRequireLatest}
+            setTrendLineRequireLatest={setTrendLineRequireLatest}
+            trendLineMinRisePct={trendLineMinRisePct}
+            setTrendLineMinRisePct={setTrendLineMinRisePct}
             trendLineFilterEnabled={trendLineFilterEnabled}
             setTrendLineFilterEnabled={setTrendLineFilterEnabled}
             sharpMoveFilterEnabled={sharpMoveFilterEnabled}
