@@ -108,6 +108,9 @@ export function buildOpportunityFilterSummary(p: {
   conceptSectors?: string[];
   industrySectorOptions?: { label: string; value: string }[];
   conceptSectorOptions?: { label: string; value: string }[];
+  // 名称筛选：行业分组（独立于顶部「行业」筛选）
+  nameFilterIndustryGroups?: string[];
+  nameFilterIndustryInvert?: boolean;
   // 名称过滤
   excludedNameKeywords?: string[];
   excludedShortTermNames?: string[];
@@ -227,6 +230,13 @@ export function buildOpportunityFilterSummary(p: {
       return opt ? opt.label : code;
     });
     parts.push(`概念${labels.join('、')}`);
+  }
+
+  // 名称筛选面板的行业分组汇总（独立于顶部「行业」筛选）
+  if (p.nameFilterIndustryGroups && p.nameFilterIndustryGroups.length > 0) {
+    parts.push(
+      `${p.nameFilterIndustryInvert ? '排除分组' : '行业分组'}${p.nameFilterIndustryGroups.join('、')}`
+    );
   }
 
   // 名称过滤汇总（导出PNG时不显示排除列表，避免文本过长）
@@ -382,12 +392,11 @@ export interface OpportunityFiltersPanelProps {
   aiMinRiskRewardRatio?: number;
   setAiMinRiskRewardRatio?: (v: number | undefined) => void;
 
-  // 行业板块筛选
-  industrySectors?: string[];
-  setIndustrySectors: (v: string[]) => void;
-  industrySectorOptions?: { label: string; value: string }[];
-  industrySectorInvert?: boolean;
-  setIndustrySectorInvert?: (v: boolean) => void;
+  // 名称筛选面板：行业分组（独立于顶部「行业」筛选，单独控制）
+  nameFilterIndustryGroups?: string[];
+  setNameFilterIndustryGroups?: (v: string[]) => void;
+  nameFilterIndustryInvert?: boolean;
+  setNameFilterIndustryInvert?: (v: boolean) => void;
   // 概念板块筛选
   conceptSectors?: string[];
   setConceptSectors: (v: string[]) => void;
@@ -551,12 +560,11 @@ function OpportunityFiltersPanelComponent({
   aiMinRiskRewardRatio,
   setAiMinRiskRewardRatio = () => { },
 
-  // 行业板块筛选
-  industrySectors,
-  setIndustrySectors,
-  industrySectorOptions = [],
-  industrySectorInvert = false,
-  setIndustrySectorInvert,
+  // 名称筛选面板：行业分组（独立于顶部「行业」筛选，单独控制）
+  nameFilterIndustryGroups = [],
+  setNameFilterIndustryGroups = () => { },
+  nameFilterIndustryInvert = false,
+  setNameFilterIndustryInvert = () => { },
   // 概念板块筛选
   conceptSectors,
   setConceptSectors,
@@ -647,6 +655,8 @@ function OpportunityFiltersPanelComponent({
         aiTrendScoreRange,
         aiRiskScoreRange,
         aiVersion,
+        nameFilterIndustryGroups,
+        nameFilterIndustryInvert,
         excludedNameKeywords,
         excludedShortTermNames,
       }),
@@ -710,6 +720,8 @@ function OpportunityFiltersPanelComponent({
       aiTrendScoreRange,
       aiRiskScoreRange,
       aiVersion,
+      nameFilterIndustryGroups,
+      nameFilterIndustryInvert,
       excludedNameKeywords,
       excludedShortTermNames,
     ]
@@ -1213,20 +1225,9 @@ function OpportunityFiltersPanelComponent({
                         <Select
                           mode="multiple"
                           allowClear
-                          placeholder="请选择行业分组"
-                          value={OPPORTUNITY_INDUSTRY_GROUPS.filter((group) => {
-                            const selected = industrySectors ?? [];
-                            return group.codes.every((code) => selected.includes(code));
-                          }).map((group) => group.label)}
-                          onChange={(labels: string[]) => {
-                            const selected = industrySectors ?? [];
-                            const groupedCodeSet = new Set(OPPORTUNITY_INDUSTRY_GROUPS.flatMap((group) => [...group.codes]));
-                            const kept = selected.filter((code) => !groupedCodeSet.has(code));
-                            const added = OPPORTUNITY_INDUSTRY_GROUPS
-                              .filter((group) => labels.includes(group.label))
-                              .flatMap((group) => [...group.codes]);
-                            setIndustrySectors([...new Set([...kept, ...added])]);
-                          }}
+                          placeholder="请选择行业分组（仅作用于筛选结果，与顶部「行业」互不影响）"
+                          value={nameFilterIndustryGroups}
+                          onChange={(labels: string[]) => setNameFilterIndustryGroups(labels)}
                           options={OPPORTUNITY_INDUSTRY_GROUPS.map((group) => ({
                             label: group.label,
                             value: group.label,
@@ -1235,13 +1236,16 @@ function OpportunityFiltersPanelComponent({
                           maxTagCount="responsive"
                         />
                         <Checkbox
-                          checked={industrySectorInvert}
-                          onChange={(e) => setIndustrySectorInvert?.(e.target.checked)}
+                          checked={nameFilterIndustryInvert}
+                          onChange={(e) => setNameFilterIndustryInvert(e.target.checked)}
                           style={{ whiteSpace: 'nowrap' }}
-                          disabled={!setIndustrySectorInvert || (industrySectors ?? []).length === 0}
+                          disabled={nameFilterIndustryGroups.length === 0}
                         >
                           排除选中
                         </Checkbox>
+                        <span style={{ color: 'var(--ant-color-text-secondary)', fontSize: 12, whiteSpace: 'nowrap' }}>
+                          独立于顶部行业筛选
+                        </span>
                       </div>
                     </div>
                     <div className={styles.filterRow} style={{ marginBottom: 16, alignItems: 'flex-start' }}>

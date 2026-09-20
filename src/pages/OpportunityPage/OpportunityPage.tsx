@@ -74,6 +74,7 @@ import {
   OPPORTUNITY_DEFAULT_VOLUME_PULLBACK,
   OPPORTUNITY_DEFAULT_INDUSTRY_SECTORS,
   OPPORTUNITY_DEFAULT_NAME_FILTERS,
+  OPPORTUNITY_INDUSTRY_GROUPS,
 } from '@/utils/config/opportunityAnalysisDefaults';
 import { getUnifiedSectorBasics } from '@/services/hot/unified-sectors';
 import type { IndustrySectorBasicInfo, ConceptSectorBasicInfo } from '@/types/stock';
@@ -616,10 +617,31 @@ export function OpportunityPage() {
   // 概念板块筛选状态
   const [conceptSectors, setConceptSectors] = useState<string[]>([]);
   const [conceptSectorInvert, setConceptSectorInvert] = useState<boolean>(false); // 概念板块反选状态
+  /**
+   * 名称筛选面板的「行业分组」：与顶部工具栏「行业」完全独立，
+   * 只作用于筛选结果，不参与「一键分析」股票池的构造。
+   */
+  const [nameFilterIndustryGroups, setNameFilterIndustryGroups] = useState<string[]>([]);
+  const [nameFilterIndustryInvert, setNameFilterIndustryInvert] = useState<boolean>(false);
   // 行业板块选项
   const [industrySectorOptions, setIndustrySectorOptions] = useState<{ label: string; value: string }[]>([]);
   // 概念板块选项
   const [conceptSectorOptions, setConceptSectorOptions] = useState<{ label: string; value: string }[]>([]);
+
+  /** 名称筛选面板选中的行业分组 → 行业板块代码集合（独立于顶部「行业」筛选） */
+  const nameFilterIndustryCodes = useMemo(() => {
+    if (nameFilterIndustryGroups.length === 0) {
+      return [];
+    }
+    const labels = new Set(nameFilterIndustryGroups);
+    return [
+      ...new Set(
+        OPPORTUNITY_INDUSTRY_GROUPS.filter((group) => labels.has(group.label)).flatMap((group) => [
+          ...group.codes,
+        ])
+      ),
+    ];
+  }, [nameFilterIndustryGroups]);
 
   // 标记是否已完成初始恢复
   const isRestoredRef = useRef(false);
@@ -726,6 +748,9 @@ export function OpportunityPage() {
           setExcludedNameKeywords,
           setEnableShortTermNameFilter,
           setExcludedShortTermNames,
+          // 名称筛选面板：行业分组 actions（独立于顶部「行业」筛选）
+          setNameFilterIndustryGroups,
+          setNameFilterIndustryInvert,
         });
       }
       // AI 版本使用系统默认值 v5
@@ -844,6 +869,8 @@ export function OpportunityPage() {
         excludedNameKeywords: [...excludedNameKeywords],
         enableShortTermNameFilter,
         excludedShortTermNames: [...excludedShortTermNames],
+        nameFilterIndustryGroups: [...nameFilterIndustryGroups],
+        nameFilterIndustryInvert,
       };
       saveOpportunityFilterPrefs(prefs);
     };
@@ -914,6 +941,8 @@ export function OpportunityPage() {
     excludedNameKeywords,
     enableShortTermNameFilter,
     excludedShortTermNames,
+    nameFilterIndustryGroups,
+    nameFilterIndustryInvert,
   ]);
 
   // 筛选条件变化时自动保存（防抖300ms）
@@ -993,6 +1022,8 @@ export function OpportunityPage() {
         excludedNameKeywords: [...excludedNameKeywords],
         enableShortTermNameFilter,
         excludedShortTermNames: [...excludedShortTermNames],
+        nameFilterIndustryGroups: [...nameFilterIndustryGroups],
+        nameFilterIndustryInvert,
       };
       saveOpportunityFilterPrefs(prefs);
     }, FILTER_SAVE_DEBOUNCE_DELAY); // 防抖300ms
@@ -1065,6 +1096,8 @@ export function OpportunityPage() {
     excludedNameKeywords,
     enableShortTermNameFilter,
     excludedShortTermNames,
+    nameFilterIndustryGroups,
+    nameFilterIndustryInvert,
   ]);
 
   // 计算表格高度
@@ -1300,6 +1333,8 @@ export function OpportunityPage() {
       conceptSectors,
       industrySectorInvert,
       conceptSectorInvert,
+      nameFilterIndustryCodes,
+      nameFilterIndustryInvert,
       nameType: nameType as 'all' | 'st' | 'non_st',
       enableNameKeywordFilter,
       excludedNameKeywords,
@@ -1376,6 +1411,8 @@ export function OpportunityPage() {
       conceptSectors,
       industrySectorInvert,
       conceptSectorInvert,
+      nameFilterIndustryCodes,
+      nameFilterIndustryInvert,
       nameType,
       enableNameKeywordFilter,
       excludedNameKeywords,
@@ -1450,6 +1487,8 @@ export function OpportunityPage() {
         conceptSectors,
         industrySectorOptions,
         conceptSectorOptions,
+        nameFilterIndustryGroups,
+        nameFilterIndustryInvert,
         excludedNameKeywords,
         excludedShortTermNames,
       }),
@@ -1515,6 +1554,8 @@ export function OpportunityPage() {
       conceptSectors,
       industrySectorOptions,
       conceptSectorOptions,
+      nameFilterIndustryGroups,
+      nameFilterIndustryInvert,
       excludedNameKeywords,
       excludedShortTermNames,
     ]
@@ -1732,6 +1773,9 @@ export function OpportunityPage() {
     setConceptSectors([]);
     setIndustrySectorInvert(OPPORTUNITY_DEFAULT_INDUSTRY_SECTORS.invertEnabled);
     setConceptSectorInvert(false);
+    // 重置名称筛选面板的行业分组（与顶部「行业」筛选彼此独立）
+    setNameFilterIndustryGroups([]);
+    setNameFilterIndustryInvert(false);
     // 重置名称过滤
     // 名称筛选重置
     setEnableNameKeywordFilter(true);
@@ -2526,12 +2570,11 @@ export function OpportunityPage() {
             setAiMinSimilarPatterns={setAiMinSimilarPatterns}
             aiMinRiskRewardRatio={aiMinRiskRewardRatio}
             setAiMinRiskRewardRatio={setAiMinRiskRewardRatio}
-            // 行业板块筛选
-            industrySectors={industrySectors}
-            setIndustrySectors={setIndustrySectors}
-            industrySectorOptions={industrySectorOptions}
-            industrySectorInvert={industrySectorInvert}
-            setIndustrySectorInvert={setIndustrySectorInvert}
+            // 名称筛选面板：行业分组（独立于顶部「行业」筛选，单独控制）
+            nameFilterIndustryGroups={nameFilterIndustryGroups}
+            setNameFilterIndustryGroups={setNameFilterIndustryGroups}
+            nameFilterIndustryInvert={nameFilterIndustryInvert}
+            setNameFilterIndustryInvert={setNameFilterIndustryInvert}
             // 概念板块筛选
             conceptSectors={conceptSectors}
             setConceptSectors={setConceptSectors}

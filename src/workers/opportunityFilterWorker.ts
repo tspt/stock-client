@@ -994,6 +994,24 @@ async function runFilterTask(
         }
       }
 
+      // 名称筛选面板的行业分组筛选（独立于顶部「行业」筛选，两者互不影响）
+      if (filters.nameFilterIndustryCodes && filters.nameFilterIndustryCodes.length > 0) {
+        const hasGroupedIndustry =
+          nextItem.industry && filters.nameFilterIndustryCodes.includes(nextItem.industry.code);
+
+        if (filters.nameFilterIndustryInvert) {
+          // 反选模式：排除选中分组内的股票
+          if (hasGroupedIndustry) {
+            continue;
+          }
+        } else {
+          // 正常模式：只保留选中分组内的股票
+          if (!hasGroupedIndustry) {
+            continue;
+          }
+        }
+      }
+
       // 概念板块筛选
       if (filters.conceptSectors && filters.conceptSectors.length > 0) {
         if (!nextItem.concepts || nextItem.concepts.length === 0) {

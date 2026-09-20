@@ -14,6 +14,7 @@ import {
   OPPORTUNITY_DEFAULT_AI_ANALYSIS,
   OPPORTUNITY_DEFAULT_LIMIT_MOVES,
   OPPORTUNITY_DEFAULT_VOLUME_PULLBACK,
+  OPPORTUNITY_INDUSTRY_GROUPS,
 } from '@/utils/config/opportunityAnalysisDefaults';
 import { logger } from '../business/logger';
 import { normalizeStockNameList } from '../format/format';
@@ -88,6 +89,20 @@ export function visibilityFromActiveFilterPanelKey(
 
 const VALID_PERIODS: KLinePeriod[] = ['day', 'week', 'month', 'year'];
 const VALID_CONSOLIDATION_TYPES: ConsolidationType[] = ['low_stable', 'high_stable', 'box'];
+/** 名称筛选面板可用的行业分组标签（用于校验持久化数据） */
+const VALID_INDUSTRY_GROUP_LABELS = new Set(OPPORTUNITY_INDUSTRY_GROUPS.map((group) => group.label));
+
+/** 解析行业分组标签数组（非法值丢弃） */
+function parseIndustryGroupLabels(v: unknown): string[] {
+  if (!Array.isArray(v)) return [];
+  const out: string[] = [];
+  for (const item of v) {
+    if (typeof item === 'string' && VALID_INDUSTRY_GROUP_LABELS.has(item) && !out.includes(item)) {
+      out.push(item);
+    }
+  }
+  return out;
+}
 
 export interface OpportunityFilterPrefs {
   version: typeof PREFS_VERSION;
@@ -176,6 +191,10 @@ export interface OpportunityFilterPrefs {
   /** 短期排除股票名称 */
   enableShortTermNameFilter: boolean;
   excludedShortTermNames: string[];
+  /** 名称筛选：行业分组标签（独立于顶部「行业」筛选，单独控制） */
+  nameFilterIndustryGroups: string[];
+  /** 名称筛选：行业分组反选 */
+  nameFilterIndustryInvert: boolean;
   /** 名称筛选面板可见性 */
   nameFilterVisible: boolean;
 }
@@ -365,6 +384,8 @@ export function loadOpportunityFilterPrefs(): OpportunityFilterPrefs | null {
       excludedShortTermNames: Array.isArray(p.excludedShortTermNames)
         ? normalizeStockNameList(p.excludedShortTermNames.filter((item: any) => typeof item === 'string'))
         : [...OPPORTUNITY_DEFAULT_NAME_FILTERS.excludedShortTermNames],
+      nameFilterIndustryGroups: parseIndustryGroupLabels(p.nameFilterIndustryGroups),
+      nameFilterIndustryInvert: p.nameFilterIndustryInvert === true,
       nameFilterVisible: p.nameFilterVisible === false ? false : true,
     };
 
@@ -468,6 +489,9 @@ export function getDefaultFilterPrefsFields(): Omit<
     excludedNameKeywords: [...OPPORTUNITY_DEFAULT_NAME_FILTERS.excludedNameKeywords],
     enableShortTermNameFilter: true,
     excludedShortTermNames: [...OPPORTUNITY_DEFAULT_NAME_FILTERS.excludedShortTermNames],
+    // 名称筛选：行业分组（独立于顶部「行业」筛选）
+    nameFilterIndustryGroups: [],
+    nameFilterIndustryInvert: false,
     nameFilterVisible: true,
   };
 }
@@ -576,6 +600,9 @@ export interface OpportunityFilterPrefsApplyActions {
   /** 短期排除股票名称 actions */
   setEnableShortTermNameFilter: (v: boolean) => void;
   setExcludedShortTermNames: (v: string[]) => void;
+  /** 名称筛选面板：行业分组 actions（独立于顶部「行业」筛选） */
+  setNameFilterIndustryGroups: (v: string[]) => void;
+  setNameFilterIndustryInvert: (v: boolean) => void;
 }
 
 export function applyOpportunityFilterPrefsToState(
@@ -654,4 +681,7 @@ export function applyOpportunityFilterPrefsToState(
   // 应用短期排除股票名称
   actions.setEnableShortTermNameFilter(prefs.enableShortTermNameFilter);
   actions.setExcludedShortTermNames([...prefs.excludedShortTermNames]);
+  // 应用名称筛选面板的行业分组（独立于顶部「行业」筛选）
+  actions.setNameFilterIndustryGroups([...prefs.nameFilterIndustryGroups]);
+  actions.setNameFilterIndustryInvert(prefs.nameFilterIndustryInvert);
 }

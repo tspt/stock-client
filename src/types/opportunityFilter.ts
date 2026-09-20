@@ -127,6 +127,10 @@ export interface OpportunityFilterSnapshot {
   conceptSectors?: string[];
   /** 行业板块反选 */
   industrySectorInvert?: boolean;
+  /** 名称筛选面板：行业分组对应的行业板块代码（独立于顶部「行业」筛选） */
+  nameFilterIndustryCodes?: string[];
+  /** 名称筛选面板：行业分组反选（独立于顶部「行业」筛选） */
+  nameFilterIndustryInvert?: boolean;
   /** 概念板块反选 */
   conceptSectorInvert?: boolean;
   /** 股票名称类型：全部 / ST / 非ST（基于分析结果最新名称二次过滤） */
