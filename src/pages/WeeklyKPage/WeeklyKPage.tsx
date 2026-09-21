@@ -41,7 +41,7 @@ import { AddStocksToWatchListModal } from '@/components/AddStocksToWatchListModa
 import { addStocksToTodayRecord } from '@/services/opportunity/recordService';
 import type { StockOpportunityData } from '@/types/stock';
 import { useAllStocks } from '@/hooks/useAllStocks';
-import { getPureCode } from '@/utils/format/format';
+import { getPureCode, normalizeStockNameList } from '@/utils/format/format';
 import { getUnifiedSectorBasics } from '@/services/hot/unified-sectors';
 import { getSinaFinanceMetricsBatch } from '@/services/fundamental/sinaFinance';
 import { apiCache } from '@/utils/storage/apiCache';
@@ -78,7 +78,12 @@ import {
   OPPORTUNITY_TABLE_HEIGHT_PADDING,
   WEEKLY_KLINE_DEFAULT_COUNT,
 } from '@/utils/config/constants';
-import { OPPORTUNITY_DEFAULT_BASIC_FILTERS } from '@/utils/config/opportunityAnalysisDefaults';
+import {
+  OPPORTUNITY_DEFAULT_BASIC_FILTERS,
+  OPPORTUNITY_DEFAULT_INDUSTRY_GROUP_FILTER,
+  OPPORTUNITY_DEFAULT_NAME_FILTERS,
+  OPPORTUNITY_INDUSTRY_GROUPS,
+} from '@/utils/config/opportunityAnalysisDefaults';
 import type { KLineData, StockFinanceMetrics } from '@/types/stock';
 import type { NumberRange } from '@/types/opportunityFilter';
 import { WeeklyChartModal } from './WeeklyChartModal';
@@ -161,7 +166,22 @@ function rangeLabel(range?: NumberRange): string | null {
 }
 
 /** 周线筛选分组 key：新增分组时在此登记（供「展开全部」使用） */
-const WEEKLY_FILTER_PANEL_KEYS = ['data'] as const;
+const WEEKLY_FILTER_PANEL_KEYS = ['data', 'nameFilter'] as const;
+
+/** 名称筛选面板：行业分组选项（与机会分析页共用同一份分组定义） */
+const NAME_FILTER_INDUSTRY_GROUP_OPTIONS = OPPORTUNITY_INDUSTRY_GROUPS.map((group) => ({
+  label: group.label,
+  value: group.label,
+}));
+
+/** 名称筛选：行业分组标签 → 行业板块代码（与机会分析页 nameFilterIndustryCodes 口径一致） */
+function resolveIndustryGroupCodes(labels: string[]): string[] {
+  if (labels.length === 0) return [];
+  const selected = new Set(labels);
+  return OPPORTUNITY_INDUSTRY_GROUPS.filter((group) => selected.has(group.label)).flatMap(
+    (group) => [...group.codes]
+  );
+}
 
 /** 抽屉宽度：与机会分析一致，避免表单项折行 */
 const FILTER_DRAWER_WIDTH = 'min(1000px, calc(100vw - 48px))' as const;
@@ -233,6 +253,18 @@ function WeeklyFiltersPanel({
   setFinanceRevenueGrowthRange,
   financeNetProfitGrowthRange,
   setFinanceNetProfitGrowthRange,
+  nameFilterIndustryGroups,
+  setNameFilterIndustryGroups,
+  nameFilterIndustryInvert,
+  setNameFilterIndustryInvert,
+  enableNameKeywordFilter,
+  setEnableNameKeywordFilter,
+  excludedNameKeywords,
+  setExcludedNameKeywords,
+  enableShortTermNameFilter,
+  setEnableShortTermNameFilter,
+  excludedShortTermNames,
+  setExcludedShortTermNames,
   disabled,
   open,
   onOpenChange,
@@ -253,6 +285,19 @@ function WeeklyFiltersPanel({
   setFinanceRevenueGrowthRange: (r: NumberRange) => void;
   financeNetProfitGrowthRange?: NumberRange;
   setFinanceNetProfitGrowthRange: (r: NumberRange) => void;
+  /** 名称筛选：行业分组（与顶部「行业」筛选彼此独立） */
+  nameFilterIndustryGroups: string[];
+  setNameFilterIndustryGroups: (v: string[]) => void;
+  nameFilterIndustryInvert: boolean;
+  setNameFilterIndustryInvert: (v: boolean) => void;
+  enableNameKeywordFilter: boolean;
+  setEnableNameKeywordFilter: (v: boolean) => void;
+  excludedNameKeywords: string[];
+  setExcludedNameKeywords: (v: string[]) => void;
+  enableShortTermNameFilter: boolean;
+  setEnableShortTermNameFilter: (v: boolean) => void;
+  excludedShortTermNames: string[];
+  setExcludedShortTermNames: (v: string[]) => void;
   disabled?: boolean;
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -360,6 +405,124 @@ function WeeklyFiltersPanel({
                   </div>
                 ),
               },
+              {
+                key: 'nameFilter',
+                label: '名称筛选',
+                children: (
+                  <div className={styles.filterContent}>
+                    <div
+                      className={styles.filterRow}
+                      style={{ marginBottom: 16, alignItems: 'flex-start' }}
+                    >
+                      <div
+                        className={styles.filterItem}
+                        style={{ flex: '0 0 160px', justifyContent: 'flex-start' }}
+                      >
+                        <span className={styles.filterLabel} style={{ whiteSpace: 'nowrap' }}>
+                          行业分组：
+                        </span>
+                      </div>
+                      <div
+                        style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 8 }}
+                      >
+                        <Select
+                          mode="multiple"
+                          allowClear
+                          placeholder="请选择行业分组（仅作用于筛选结果，与顶部「行业」互不影响）"
+                          value={nameFilterIndustryGroups}
+                          onChange={(labels: string[]) => setNameFilterIndustryGroups(labels)}
+                          options={NAME_FILTER_INDUSTRY_GROUP_OPTIONS}
+                          style={{ flex: 1, minWidth: 0 }}
+                          maxTagCount="responsive"
+                          disabled={disabled}
+                        />
+                        <Checkbox
+                          checked={nameFilterIndustryInvert}
+                          onChange={(e) => setNameFilterIndustryInvert(e.target.checked)}
+                          style={{ whiteSpace: 'nowrap' }}
+                          disabled={disabled || nameFilterIndustryGroups.length === 0}
+                        >
+                          排除选中
+                        </Checkbox>
+                        <span
+                          style={{
+                            color: 'var(--ant-color-text-secondary)',
+                            fontSize: 12,
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          独立于顶部行业筛选
+                        </span>
+                      </div>
+                    </div>
+                    <div
+                      className={styles.filterRow}
+                      style={{ marginBottom: 16, alignItems: 'flex-start' }}
+                    >
+                      <div
+                        className={styles.filterItem}
+                        style={{ flex: '0 0 160px', justifyContent: 'flex-start' }}
+                      >
+                        <Checkbox
+                          checked={enableNameKeywordFilter}
+                          onChange={(e) => setEnableNameKeywordFilter(e.target.checked)}
+                          disabled={disabled}
+                        >
+                          <span className={styles.filterLabel} style={{ whiteSpace: 'nowrap' }}>
+                            排除名称包含：
+                          </span>
+                        </Checkbox>
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <Select
+                          mode="tags"
+                          value={excludedNameKeywords}
+                          onChange={(values) =>
+                            setExcludedNameKeywords(normalizeStockNameList(values as string[]))
+                          }
+                          style={{ width: '100%' }}
+                          placeholder="输入关键词，按回车添加"
+                          options={[]}
+                          allowClear
+                          maxTagCount="responsive"
+                          disabled={disabled || !enableNameKeywordFilter}
+                        />
+                      </div>
+                    </div>
+                    <div className={styles.filterRow} style={{ marginTop: 16, alignItems: 'flex-start' }}>
+                      <div
+                        className={styles.filterItem}
+                        style={{ flex: '0 0 160px', justifyContent: 'flex-start' }}
+                      >
+                        <Checkbox
+                          checked={enableShortTermNameFilter}
+                          onChange={(e) => setEnableShortTermNameFilter(e.target.checked)}
+                          disabled={disabled}
+                        >
+                          <span className={styles.filterLabel} style={{ whiteSpace: 'nowrap' }}>
+                            短期排除股票名称：
+                          </span>
+                        </Checkbox>
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <Select
+                          mode="tags"
+                          value={excludedShortTermNames}
+                          onChange={(values) =>
+                            setExcludedShortTermNames(normalizeStockNameList(values as string[]))
+                          }
+                          style={{ width: '100%' }}
+                          placeholder="输入完整股票名称，按回车添加"
+                          options={[]}
+                          allowClear
+                          maxTagCount="responsive"
+                          disabled={disabled || !enableShortTermNameFilter}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ),
+              },
             ]}
           />
         </div>
@@ -386,8 +549,23 @@ export function WeeklyKPage() {
   /** 只用完整周：忽略「进行中的本周」，评分/涨幅/价格筛选一律按最近已收盘周 */
   const [completeWeeksOnly, setCompleteWeeksOnly] = useState(true);
   const [filters, setFilters] = useState<WeeklyFilterOptions>({ ...DEFAULT_WEEKLY_FILTERS });
-  /** 筛选 Collapse 当前展开的分组；默认展开「数据筛选」 */
-  const [filterPanelActiveKey, setFilterPanelActiveKey] = useState<string[]>(['data']);
+  /** 名称筛选：与机会分析页「名称筛选」面板同一套字段与默认值 */
+  const [nameFilterIndustryGroups, setNameFilterIndustryGroups] = useState<string[]>([
+    ...OPPORTUNITY_DEFAULT_INDUSTRY_GROUP_FILTER.selectedGroups,
+  ]);
+  const [nameFilterIndustryInvert, setNameFilterIndustryInvert] = useState<boolean>(
+    OPPORTUNITY_DEFAULT_INDUSTRY_GROUP_FILTER.invertEnabled
+  );
+  const [enableNameKeywordFilter, setEnableNameKeywordFilter] = useState<boolean>(true);
+  const [excludedNameKeywords, setExcludedNameKeywords] = useState<string[]>([
+    ...OPPORTUNITY_DEFAULT_NAME_FILTERS.excludedNameKeywords,
+  ]);
+  const [enableShortTermNameFilter, setEnableShortTermNameFilter] = useState<boolean>(true);
+  const [excludedShortTermNames, setExcludedShortTermNames] = useState<string[]>([
+    ...OPPORTUNITY_DEFAULT_NAME_FILTERS.excludedShortTermNames,
+  ]);
+  /** 筛选 Collapse 当前展开的分组；默认展开「数据筛选」「名称筛选」 */
+  const [filterPanelActiveKey, setFilterPanelActiveKey] = useState<string[]>(['data', 'nameFilter']);
   /** 右侧筛选抽屉开关 */
   const [showFilterPanel, setShowFilterPanel] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState('');
@@ -690,9 +868,39 @@ export function WeeklyKPage() {
     return false;
   }, [klines]);
 
+  /** 名称筛选面板选中的行业分组 → 行业板块代码（独立于顶部「行业」筛选） */
+  const nameFilterIndustryCodes = useMemo(
+    () => resolveIndustryGroupCodes(nameFilterIndustryGroups),
+    [nameFilterIndustryGroups]
+  );
+
+  /** 硬过滤用的完整条件：数据筛选 + 名称筛选（与机会分析页口径一致） */
+  const effectiveFilters = useMemo<WeeklyFilterOptions>(
+    () => ({
+      ...filters,
+      completeWeeksOnly,
+      enableNameKeywordFilter,
+      excludedNameKeywords,
+      enableShortTermNameFilter,
+      excludedShortTermNames,
+      nameFilterIndustryCodes,
+      nameFilterIndustryInvert,
+    }),
+    [
+      filters,
+      completeWeeksOnly,
+      enableNameKeywordFilter,
+      excludedNameKeywords,
+      enableShortTermNameFilter,
+      excludedShortTermNames,
+      nameFilterIndustryCodes,
+      nameFilterIndustryInvert,
+    ]
+  );
+
   const filteredRows = useMemo(
-    () => applyWeeklyFilters(rows, { ...filters, completeWeeksOnly }),
-    [rows, filters, completeWeeksOnly]
+    () => applyWeeklyFilters(rows, effectiveFilters),
+    [rows, effectiveFilters]
   );
 
   /** 不做行业配额 / 总数量截断：硬门槛通过的个股全部进入名单，按综合分排序 */
@@ -761,6 +969,18 @@ export function WeeklyKPage() {
       industrySectors.length > 0
         ? `，行业${industrySectorInvert ? '排除' : '仅保留'}${industrySectors.length}个`
         : '';
+    /** 名称筛选条件摘要（与机会分析页一致：仅显示数量，避免导出文本过长） */
+    const nameFilterParts = [
+      nameFilterIndustryGroups.length > 0
+        ? `${nameFilterIndustryInvert ? '排除行业分组' : '仅保留行业分组'}${nameFilterIndustryGroups.join('、')}`
+        : '',
+      enableNameKeywordFilter && excludedNameKeywords.length > 0
+        ? `排除名称包含[${excludedNameKeywords.length}个]`
+        : '',
+      enableShortTermNameFilter && excludedShortTermNames.length > 0
+        ? `短期排除[${excludedShortTermNames.length}个]`
+        : '',
+    ].filter(Boolean);
     const dataFilterParts = [
       rangeLabel(filters.priceRange) ? `价格 ${rangeLabel(filters.priceRange)} 元` : '',
       rangeLabel(filters.marketCapRange) ? `总市值 ${rangeLabel(filters.marketCapRange)} 亿` : '',
@@ -785,6 +1005,7 @@ export function WeeklyKPage() {
       `导出时间：${new Date().toLocaleString('zh-CN')}`,
       `市场：${selectedMarket.join('+')}，${nameLabel}${industryLabel}`,
       ...(dataFilterParts.length > 0 ? [`数据筛选：${dataFilterParts.join('，')}`] : []),
+      ...(nameFilterParts.length > 0 ? [`名称筛选：${nameFilterParts.join('，')}`] : []),
       `趋势门槛：${filters.requireAboveMa60 ? '站上60周线' : '不要求60周线'}；${
         filters.requireSetup ? '要求至少命中1个战法' : '战法仅加分'
       }${activeSetupGrade ? `（仅${WEEKLY_SETUP_GRADE_LABELS[activeSetupGrade]}）` : ''}`,
@@ -1300,6 +1521,18 @@ export function WeeklyKPage() {
             setFinanceNetProfitGrowthRange={(range) =>
               patchFilters({ financeNetProfitGrowthRange: range })
             }
+            nameFilterIndustryGroups={nameFilterIndustryGroups}
+            setNameFilterIndustryGroups={setNameFilterIndustryGroups}
+            nameFilterIndustryInvert={nameFilterIndustryInvert}
+            setNameFilterIndustryInvert={setNameFilterIndustryInvert}
+            enableNameKeywordFilter={enableNameKeywordFilter}
+            setEnableNameKeywordFilter={setEnableNameKeywordFilter}
+            excludedNameKeywords={excludedNameKeywords}
+            setExcludedNameKeywords={setExcludedNameKeywords}
+            enableShortTermNameFilter={enableShortTermNameFilter}
+            setEnableShortTermNameFilter={setEnableShortTermNameFilter}
+            excludedShortTermNames={excludedShortTermNames}
+            setExcludedShortTermNames={setExcludedShortTermNames}
             disabled={loading}
             open={showFilterPanel}
             onOpenChange={setShowFilterPanel}
@@ -1321,6 +1554,15 @@ export function WeeklyKPage() {
           {nameType === 'st' ? '仅ST' : nameType === 'non_st' ? '非ST' : '不限名称'}
           {industrySectors.length > 0
             ? ` + 行业${industrySectorInvert ? '排除' : '仅保留'}选中${industrySectors.length}个`
+            : ''}
+          {nameFilterIndustryGroups.length > 0
+            ? ` + ${nameFilterIndustryInvert ? '排除' : '仅保留'}行业分组${nameFilterIndustryGroups.length}个`
+            : ''}
+          {enableNameKeywordFilter && excludedNameKeywords.length > 0
+            ? ` + 排除名称包含${excludedNameKeywords.length}个`
+            : ''}
+          {enableShortTermNameFilter && excludedShortTermNames.length > 0
+            ? ` + 短期排除${excludedShortTermNames.length}个`
             : ''}
           {rangeLabel(filters.priceRange) ? ` + 价格${rangeLabel(filters.priceRange)}元` : ''}
           {rangeLabel(filters.marketCapRange) ? ` + 市值${rangeLabel(filters.marketCapRange)}亿` : ''}

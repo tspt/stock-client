@@ -480,4 +480,18 @@ export interface WeeklyFilterOptions {
    * 不再使用可能含「进行中的本周」的最新价，保证结果可复现。
    */
   completeWeeksOnly?: boolean;
+
+  // ===== 名称筛选（与机会分析页「名称筛选」面板同口径） =====
+  /** 是否启用「排除名称包含关键词」（false 时忽略 excludedNameKeywords） */
+  enableNameKeywordFilter?: boolean;
+  /** 排除名称包含这些关键词的股票 */
+  excludedNameKeywords?: string[];
+  /** 是否启用「短期排除股票名称」（false 时忽略 excludedShortTermNames） */
+  enableShortTermNameFilter?: boolean;
+  /** 短期排除的股票名称（全名精确匹配，忽略空白字符） */
+  excludedShortTermNames?: string[];
+  /** 名称筛选：行业分组对应的行业板块代码（独立于顶部「行业」筛选） */
+  nameFilterIndustryCodes?: string[];
+  /** 名称筛选：行业分组反选（排除选中分组内的个股） */
+  nameFilterIndustryInvert?: boolean;
 }

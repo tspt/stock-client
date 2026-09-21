@@ -30,6 +30,14 @@ export const OPPORTUNITY_DEFAULT_LIMIT_MOVES = {
   minLimitUpCount: undefined,
 } as const;
 
+/** 财务指标筛选默认配置（总营收 / 归母净利润，单位：亿元） */
+export const OPPORTUNITY_DEFAULT_FINANCE_FILTERS = {
+  /** 总营收最小值（亿元） */
+  revenueMin: 0,
+  /** 归母净利润最小值（亿元） */
+  netProfitMin: 0,
+} as const;
+
 /** 行业板块筛选默认配置 */
 export const OPPORTUNITY_DEFAULT_INDUSTRY_SECTORS = {
   /** 默认选中的行业代码列表（排除这些传统行业） */
@@ -104,19 +112,20 @@ export const OPPORTUNITY_DEFAULT_INDUSTRY_SECTORS = {
     // 'BK1281', // 休闲食品
     // 'BK1282', // 饮料乳品
     // 'BK1278', // 调味发酵品Ⅱ
-    // // 建筑基建：
+    // // 房地产相关
     // 'BK0451', // 房地产开发
     // 'BK1045', // 房地产服务
     // 'BK1226', // 普钢
     // 'BK1227', // 特钢Ⅱ
-    // 'BK0476', // 装修建材
     // 'BK0424', // 水泥
+    // // 建筑基建：
+    // 'BK1246', // 房屋建设Ⅱ
     // 'BK1247', // 基础建设
+    // 'BK0476', // 装修建材
     // 'BK0546', // 玻璃玻纤
     // 'BK0725', // 装修装饰Ⅱ
     // 'BK0726', // 工程咨询服务Ⅱ
     // 'BK1248', // 专业工程
-    // 'BK1246', // 房屋建设Ⅱ
     // // 港口交通：
     // 'BK0450', // 航运港口
     // 'BK1224', // 港口航运
@@ -209,9 +218,10 @@ export const OPPORTUNITY_INDUSTRY_GROUPS: { label: string; codes: readonly strin
     codes: ['BK1254', 'BK1255', 'BK1256', 'BK1257', 'BK1258', 'BK1260', 'BK1259', 'BK1261'],
   },
   { label: '食品相关', codes: ['BK1277', 'BK1279', 'BK1280', 'BK1281', 'BK1282', 'BK1278'] },
+  { label: '房地产相关', codes: ['BK0451', 'BK1045', 'BK1226', 'BK1227', 'BK0424'] },
   {
     label: '建筑基建',
-    codes: ['BK0451', 'BK1045', 'BK1226', 'BK1227', 'BK0476', 'BK0424', 'BK1247', 'BK0546', 'BK0725', 'BK0726', 'BK1248', 'BK1246'],
+    codes: ['BK1246', 'BK1247', 'BK0476', 'BK0546', 'BK0725', 'BK0726', 'BK1248'],
   },
   { label: '港口交通', codes: ['BK0450', 'BK1224', 'BK0420', 'BK0421', 'BK0422'] },
   { label: '金融行业', codes: ['BK0473', 'BK0474', 'BK0475', 'BK0738'] },
@@ -232,6 +242,30 @@ export const OPPORTUNITY_INDUSTRY_GROUPS: { label: string; codes: readonly strin
   { label: '环保相关', codes: ['BK1235', 'BK1234'] },
   { label: '综合贸易', codes: ['BK0539', 'BK0484'] },
 ];
+
+/**
+ * 名称筛选顶部：行业分组默认选中与「排除选中」模式
+ * （标签需与 OPPORTUNITY_INDUSTRY_GROUPS 中的 label 一致）
+ */
+export const OPPORTUNITY_DEFAULT_INDUSTRY_GROUP_FILTER = {
+  /** 默认选中的行业分组标签 */
+  selectedGroups: [
+    '金属相关',
+    '农业相关',
+    '食品相关',
+    '港口交通',
+    '金融行业',
+    '房地产相关',
+    '旅游餐饮',
+    '石油石化',
+    '零售消费',
+    '造纸相关',
+    '环保相关',
+    '综合贸易',
+  ],
+  /** 默认启用「排除选中」模式 */
+  invertEnabled: true,
+} as const;
 
 // ==================== 2. AI分析筛选 ====================
 

@@ -10,7 +10,10 @@
  */
 
 import type { KLineData } from '@/types/stock';
-import { OPPORTUNITY_DEFAULT_BASIC_FILTERS } from '@/utils/config/opportunityAnalysisDefaults';
+import {
+  OPPORTUNITY_DEFAULT_BASIC_FILTERS,
+  OPPORTUNITY_DEFAULT_FINANCE_FILTERS,
+} from '@/utils/config/opportunityAnalysisDefaults';
 import { DEFAULT_WEEKLY_CONFIG, computeWeeklyFactors } from './factors';
 import { isDailyAboveMa } from './resonance';
 import { scoreWeeklyFactors } from './score';
@@ -84,9 +87,9 @@ export const DEFAULT_WEEKLY_FILTERS: WeeklyFilterOptions = {
   marketCapRange: { ...OPPORTUNITY_DEFAULT_BASIC_FILTERS.marketCapRange },
   /** 总股数默认值（1~50 亿股） */
   totalSharesRange: { ...OPPORTUNITY_DEFAULT_BASIC_FILTERS.totalSharesRange },
-  /** 营收 / 净利润及其增长率默认不限（与机会分析一致，均为空区间） */
-  financeRevenueRange: {},
-  financeNetProfitRange: {},
+  /** 营收 / 净利润默认最小值 0 亿（与机会分析一致），增长率默认不限 */
+  financeRevenueRange: { min: OPPORTUNITY_DEFAULT_FINANCE_FILTERS.revenueMin },
+  financeNetProfitRange: { min: OPPORTUNITY_DEFAULT_FINANCE_FILTERS.netProfitMin },
   financeRevenueGrowthRange: {},
   financeNetProfitGrowthRange: {},
 };

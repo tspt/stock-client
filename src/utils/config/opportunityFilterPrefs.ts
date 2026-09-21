@@ -15,6 +15,8 @@ import {
   OPPORTUNITY_DEFAULT_LIMIT_MOVES,
   OPPORTUNITY_DEFAULT_VOLUME_PULLBACK,
   OPPORTUNITY_INDUSTRY_GROUPS,
+  OPPORTUNITY_DEFAULT_INDUSTRY_GROUP_FILTER,
+  OPPORTUNITY_DEFAULT_FINANCE_FILTERS,
 } from '@/utils/config/opportunityAnalysisDefaults';
 import { logger } from '../business/logger';
 import { normalizeStockNameList } from '../format/format';
@@ -466,8 +468,8 @@ export function getDefaultFilterPrefsFields(): Omit<
     volumePullbackRequireUpperShadow: OPPORTUNITY_DEFAULT_VOLUME_PULLBACK.requireUpperShadow,
     volumePullbackUpperShadowRatio: OPPORTUNITY_DEFAULT_VOLUME_PULLBACK.upperShadowRatio,
     // 总营收 / 归母净利润（亿元）
-    financeRevenueRange: {},
-    financeNetProfitRange: {},
+    financeRevenueRange: { min: OPPORTUNITY_DEFAULT_FINANCE_FILTERS.revenueMin },
+    financeNetProfitRange: { min: OPPORTUNITY_DEFAULT_FINANCE_FILTERS.netProfitMin },
     // 总营收增长率 / 归母净利润增长率（%）
     financeRevenueGrowthRange: {},
     financeNetProfitGrowthRange: {},
@@ -490,8 +492,8 @@ export function getDefaultFilterPrefsFields(): Omit<
     enableShortTermNameFilter: true,
     excludedShortTermNames: [...OPPORTUNITY_DEFAULT_NAME_FILTERS.excludedShortTermNames],
     // 名称筛选：行业分组（独立于顶部「行业」筛选）
-    nameFilterIndustryGroups: [],
-    nameFilterIndustryInvert: false,
+    nameFilterIndustryGroups: [...OPPORTUNITY_DEFAULT_INDUSTRY_GROUP_FILTER.selectedGroups],
+    nameFilterIndustryInvert: OPPORTUNITY_DEFAULT_INDUSTRY_GROUP_FILTER.invertEnabled,
     nameFilterVisible: true,
   };
 }

@@ -69,12 +69,14 @@ import {
   OPPORTUNITY_DEFAULT_AI_ANALYSIS,
   OPPORTUNITY_DEFAULT_INDICATORS,
   OPPORTUNITY_DEFAULT_LIMIT_MOVES,
+  OPPORTUNITY_DEFAULT_FINANCE_FILTERS,
   OPPORTUNITY_DEFAULT_BASIC_FILTERS,
   OPPORTUNITY_DEFAULT_SHARP_MOVE_FULL,
   OPPORTUNITY_DEFAULT_VOLUME_PULLBACK,
   OPPORTUNITY_DEFAULT_INDUSTRY_SECTORS,
   OPPORTUNITY_DEFAULT_NAME_FILTERS,
   OPPORTUNITY_INDUSTRY_GROUPS,
+  OPPORTUNITY_DEFAULT_INDUSTRY_GROUP_FILTER,
 } from '@/utils/config/opportunityAnalysisDefaults';
 import { getUnifiedSectorBasics } from '@/services/hot/unified-sectors';
 import type { IndustrySectorBasicInfo, ConceptSectorBasicInfo } from '@/types/stock';
@@ -132,8 +134,14 @@ const INITIAL_FILTER_STATE = {
   turnoverRateRange: { ...OPPORTUNITY_DEFAULT_BASIC_FILTERS.turnoverRateRange },
   peRatioRange: {} as { min?: number; max?: number },
   kdjJRange: {} as { min?: number; max?: number },
-  financeRevenueRange: {} as { min?: number; max?: number },
-  financeNetProfitRange: {} as { min?: number; max?: number },
+  financeRevenueRange: { min: OPPORTUNITY_DEFAULT_FINANCE_FILTERS.revenueMin } as {
+    min?: number;
+    max?: number;
+  },
+  financeNetProfitRange: { min: OPPORTUNITY_DEFAULT_FINANCE_FILTERS.netProfitMin } as {
+    min?: number;
+    max?: number;
+  },
   financeRevenueGrowthRange: {} as { min?: number; max?: number },
   financeNetProfitGrowthRange: {} as { min?: number; max?: number },
 
@@ -621,8 +629,12 @@ export function OpportunityPage() {
    * 名称筛选面板的「行业分组」：与顶部工具栏「行业」完全独立，
    * 只作用于筛选结果，不参与「一键分析」股票池的构造。
    */
-  const [nameFilterIndustryGroups, setNameFilterIndustryGroups] = useState<string[]>([]);
-  const [nameFilterIndustryInvert, setNameFilterIndustryInvert] = useState<boolean>(false);
+  const [nameFilterIndustryGroups, setNameFilterIndustryGroups] = useState<string[]>([
+    ...OPPORTUNITY_DEFAULT_INDUSTRY_GROUP_FILTER.selectedGroups,
+  ]);
+  const [nameFilterIndustryInvert, setNameFilterIndustryInvert] = useState<boolean>(
+    OPPORTUNITY_DEFAULT_INDUSTRY_GROUP_FILTER.invertEnabled
+  );
   // 行业板块选项
   const [industrySectorOptions, setIndustrySectorOptions] = useState<{ label: string; value: string }[]>([]);
   // 概念板块选项
@@ -1774,8 +1786,8 @@ export function OpportunityPage() {
     setIndustrySectorInvert(OPPORTUNITY_DEFAULT_INDUSTRY_SECTORS.invertEnabled);
     setConceptSectorInvert(false);
     // 重置名称筛选面板的行业分组（与顶部「行业」筛选彼此独立）
-    setNameFilterIndustryGroups([]);
-    setNameFilterIndustryInvert(false);
+    setNameFilterIndustryGroups([...OPPORTUNITY_DEFAULT_INDUSTRY_GROUP_FILTER.selectedGroups]);
+    setNameFilterIndustryInvert(OPPORTUNITY_DEFAULT_INDUSTRY_GROUP_FILTER.invertEnabled);
     // 重置名称过滤
     // 名称筛选重置
     setEnableNameKeywordFilter(true);

@@ -3,6 +3,7 @@
  */
 
 import type { NumberRange } from '@/types/opportunityFilter';
+import { normalizeStockName } from '@/utils/format/format';
 import { setupGradeOf } from './setups';
 import { WEEKLY_HOLD_DEFAULTS, type WeeklyAnalysis, type WeeklyFilterOptions } from './types';
 
@@ -48,6 +49,25 @@ export function applyWeeklyFilters(
   const setupFilterActive =
     filters.requireSetup === true || (allowedGrades !== undefined && allowedGrades.length > 0);
 
+  /**
+   * 名称筛选（与机会分析页一致）：
+   * - 「排除名称包含」按去空白后的名称做子串匹配；
+   * - 「短期排除股票名称」按去空白后的全名精确匹配；
+   * - 「行业分组」按行业代码判定，反选模式下没有行业归属的个股保留（与机会分析口径一致）。
+   */
+  const excludedNameKeywords =
+    filters.enableNameKeywordFilter === false
+      ? []
+      : (filters.excludedNameKeywords ?? []).map(normalizeStockName).filter(Boolean);
+  const excludedShortTermNameSet =
+    filters.enableShortTermNameFilter === false
+      ? null
+      : new Set((filters.excludedShortTermNames ?? []).map(normalizeStockName).filter(Boolean));
+  const nameFilterIndustrySet =
+    filters.nameFilterIndustryCodes && filters.nameFilterIndustryCodes.length > 0
+      ? new Set(filters.nameFilterIndustryCodes)
+      : null;
+
   return rows.filter((row) => {
     if (row.insufficientData || !row.quality.ok) return false;
     // 数据筛选：价格 / 总市值(亿) / 总股数(亿)
@@ -80,6 +100,25 @@ export function applyWeeklyFilters(
           (allowedGrades === undefined || allowedGrades.includes(setupGradeOf(h)))
       );
       if (hits.length === 0) return false;
+    }
+
+    // 名称筛选：排除名称包含关键词 / 短期排除名单 / 行业分组
+    if (excludedNameKeywords.length > 0 || excludedShortTermNameSet?.size || nameFilterIndustrySet) {
+      const name = normalizeStockName(row.name ?? '');
+      if (excludedNameKeywords.some((keyword) => name.includes(keyword))) return false;
+      if (excludedShortTermNameSet?.has(name)) return false;
+      if (nameFilterIndustrySet) {
+        const hasGroupedIndustry = row.industryCode
+          ? nameFilterIndustrySet.has(row.industryCode)
+          : false;
+        if (filters.nameFilterIndustryInvert) {
+          // 反选模式：排除选中分组内的个股
+          if (hasGroupedIndustry) return false;
+        } else if (!hasGroupedIndustry) {
+          // 正常模式：只保留选中分组内的个股
+          return false;
+        }
+      }
     }
     return true;
   });
