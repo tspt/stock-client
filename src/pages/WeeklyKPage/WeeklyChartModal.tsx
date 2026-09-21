@@ -2,19 +2,27 @@
  * 周K图表弹窗：蜡烛图 + 周线均线 + 成交量 + MACD
  */
 
-import { useMemo, useRef } from 'react';
-import { Modal, Button, Space, Tag, Tooltip, Typography, App } from 'antd';
+import { useMemo, useRef, useState } from 'react';
+import { Modal, Button, Space, Tag, Tooltip, Typography, App, Segmented, Spin } from 'antd';
 import { DownloadOutlined } from '@ant-design/icons';
 import ReactECharts from 'echarts-for-react';
 import type { EChartsOption } from 'echarts';
 import type { KLineData } from '@/types/stock';
+import type { ChipDistribution, ChipPeriod } from '@/types/chipDistribution';
 import { calculateMA, calculateMACD } from '@/utils/analysis/indicators';
+import { buildChipChartOption } from '@/utils/chart/chipChartOption';
 import { YI, type WeeklyAnalysis } from '@/utils/analysis/weekly';
 import { formatVolume } from '@/utils/format/format';
 import { downloadDataUrl } from '@/utils/export/weeklyKlineExportUtils';
+import { useChipDistribution } from '@/hooks/useChipDistribution';
 import { logger } from '@/utils/business/logger';
 
 const { Text } = Typography;
+
+/** 筹码分布面板宽度（px），与周K图并排展示 */
+const CHIP_PANEL_WIDTH = 260;
+/** 图表区域高度（px） */
+const CHART_HEIGHT = 520;
 
 interface WeeklyChartModalProps {
   open: boolean;
@@ -33,7 +41,11 @@ function formatDate(time: number): string {
   return `${y}-${m}-${day}`;
 }
 
-function buildWeeklyChartOption(data: KLineData[], name: string): EChartsOption {
+function buildWeeklyChartOption(
+  data: KLineData[],
+  name: string,
+  chip: ChipDistribution | null
+): EChartsOption {
   const ma5 = calculateMA(data, 5);
   const ma10 = calculateMA(data, 10);
   const ma20 = calculateMA(data, 20);
@@ -154,6 +166,34 @@ function buildWeeklyChartOption(data: KLineData[], name: string): EChartsOption 
           borderColor: '#ef5350',
           borderColor0: '#26a69a',
         },
+        // 筹码成本参考线：平均成本 + 90% 成本区间上下沿
+        markLine: chip
+          ? {
+              silent: true,
+              symbol: 'none',
+              label: { position: 'insideEndTop', fontSize: 10 },
+              data: [
+                {
+                  name: 'avgCost',
+                  yAxis: chip.avgCost,
+                  lineStyle: { color: '#faad14', width: 1, type: 'solid' },
+                  label: { formatter: `平均成本 ${chip.avgCost.toFixed(2)}` },
+                },
+                {
+                  name: 'cost90High',
+                  yAxis: chip.range90.high,
+                  lineStyle: { color: '#bfbfbf', width: 1, type: 'dashed' },
+                  label: { formatter: `90%上沿 ${chip.range90.high.toFixed(2)}` },
+                },
+                {
+                  name: 'cost90Low',
+                  yAxis: chip.range90.low,
+                  lineStyle: { color: '#bfbfbf', width: 1, type: 'dashed' },
+                  label: { formatter: `90%下沿 ${chip.range90.low.toFixed(2)}` },
+                },
+              ],
+            }
+          : undefined,
       },
       { name: 'MA5', type: 'line', data: ma5, smooth: false, showSymbol: false, lineStyle: { width: 1 }, animation: false },
       { name: 'MA10', type: 'line', data: ma10, smooth: false, showSymbol: false, lineStyle: { width: 1 }, animation: false },
@@ -219,11 +259,20 @@ function buildWeeklyChartOption(data: KLineData[], name: string): EChartsOption 
 export function WeeklyChartModal({ open, code, name, kline, analysis, onClose }: WeeklyChartModalProps) {
   const { message } = App.useApp();
   const chartRef = useRef<ReactECharts>(null);
+  const [chipPeriod, setChipPeriod] = useState<ChipPeriod>('week');
+
+  const { distribution: chip, loading: chipLoading, error: chipError } = useChipDistribution(
+    code,
+    chipPeriod,
+    open
+  );
 
   const option = useMemo(() => {
     if (kline.length === 0) return null;
-    return buildWeeklyChartOption(kline, name);
-  }, [kline, name]);
+    return buildWeeklyChartOption(kline, name, chip);
+  }, [kline, name, chip]);
+
+  const chipOption = useMemo(() => (chip ? buildChipChartOption(chip) : null), [chip]);
 
   const handleExportChart = () => {
     const instance = chartRef.current?.getEchartsInstance();
@@ -245,7 +294,7 @@ export function WeeklyChartModal({ open, code, name, kline, analysis, onClose }:
     <Modal
       open={open}
       onCancel={onClose}
-      width={1080}
+      width={1360}
       title={`${name || ''} ${code} 周线分析`}
       footer={[
         <Button key="export" icon={<DownloadOutlined />} onClick={handleExportChart}>
@@ -316,18 +365,96 @@ export function WeeklyChartModal({ open, code, name, kline, analysis, onClose }:
           )}
         </div>
       )}
-      <div style={{ height: 520 }}>
-        {option ? (
-          <ReactECharts
-            ref={chartRef}
-            option={option}
-            lazyUpdate
-            style={{ height: '100%', width: '100%' }}
-            opts={{ renderer: 'canvas' }}
-          />
-        ) : (
-          <div style={{ paddingTop: 40, textAlign: 'center' }}>暂无周K数据</div>
+      <div
+        style={{ marginBottom: 8, display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}
+      >
+        <Segmented
+          size="small"
+          value={chipPeriod}
+          onChange={(value) => setChipPeriod(value as ChipPeriod)}
+          options={[
+            { label: '周线筹码', value: 'week' },
+            { label: '日线筹码', value: 'day' },
+          ]}
+        />
+        {chipLoading && (
+          <Text type="secondary" style={{ fontSize: 12 }}>
+            筹码计算中…
+          </Text>
         )}
+        {!chipLoading && chipError && (
+          <Text type="danger" style={{ fontSize: 12 }}>
+            筹码分布：{chipError}
+          </Text>
+        )}
+        {!chipLoading && chip && (
+          <>
+            <Text type="secondary" style={{ fontSize: 12 }}>
+              获利比例{' '}
+              <Text strong style={{ color: chip.benefitRatio >= 0.5 ? '#ef5350' : '#26a69a' }}>
+                {(chip.benefitRatio * 100).toFixed(1)}%
+              </Text>
+            </Text>
+            <Text type="secondary" style={{ fontSize: 12 }}>
+              平均成本 <Text strong>{chip.avgCost.toFixed(2)}</Text>
+            </Text>
+            <Text type="secondary" style={{ fontSize: 12 }}>
+              90%成本{' '}
+              <Text strong>
+                {chip.range90.low.toFixed(2)} ~ {chip.range90.high.toFixed(2)}
+              </Text>
+              （集中度 {chip.range90.concentration.toFixed(3)}）
+            </Text>
+            <Text type="secondary" style={{ fontSize: 12 }}>
+              70%成本{' '}
+              <Text strong>
+                {chip.range70.low.toFixed(2)} ~ {chip.range70.high.toFixed(2)}
+              </Text>
+            </Text>
+          </>
+        )}
+      </div>
+      <div style={{ display: 'flex', gap: 8, height: CHART_HEIGHT }}>
+        <div style={{ flex: 1, minWidth: 0, height: '100%' }}>
+          {option ? (
+            <ReactECharts
+              ref={chartRef}
+              option={option}
+              lazyUpdate
+              style={{ height: '100%', width: '100%' }}
+              opts={{ renderer: 'canvas' }}
+            />
+          ) : (
+            <div style={{ paddingTop: 40, textAlign: 'center' }}>暂无周K数据</div>
+          )}
+        </div>
+        <div style={{ width: CHIP_PANEL_WIDTH, flex: '0 0 auto', height: '100%' }}>
+          {chipOption ? (
+            <ReactECharts
+              option={chipOption}
+              lazyUpdate
+              style={{ height: '100%', width: '100%' }}
+              opts={{ renderer: 'canvas' }}
+            />
+          ) : (
+            <div
+              style={{
+                height: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              {chipLoading ? (
+                <Spin size="small" />
+              ) : (
+                <Text type="secondary" style={{ fontSize: 12 }}>
+                  暂无筹码数据
+                </Text>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </Modal>
   );

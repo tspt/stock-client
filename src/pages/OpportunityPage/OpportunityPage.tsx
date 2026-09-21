@@ -61,6 +61,7 @@ import {
 import type { OpportunityFilterPrefs } from '@/utils/config/opportunityFilterPrefs';
 import type { OpportunityFilterSnapshot } from '@/types/opportunityFilter';
 import { OpportunityFiltersPanel, buildOpportunityFilterSummary } from './OpportunityFiltersPanel';
+import { DailyChartModal } from './DailyChartModal';
 import { FilterDiagnosticsDrawer } from '@/components/FilterDiagnosticsDrawer';
 import {
   OPPORTUNITY_DEFAULT_CONSOLIDATION,
@@ -408,6 +409,7 @@ export function OpportunityPage() {
   const tableCardRef = useRef<HTMLDivElement>(null); // 表格Card的引用
   const [aiAnalysisVisible, setAiAnalysisVisible] = useState(false);
   const [selectedStockForAI, setSelectedStockForAI] = useState<{ code: string; name: string } | null>(null);
+  const [chartState, setChartState] = useState<{ code: string; name: string } | null>(null); // K线弹窗状态
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false); // 筛选抽屉状态
   const [filterDiagnosticsDrawerOpen, setFilterDiagnosticsDrawerOpen] = useState(false); // 筛选诊断抽屉状态
   const [errorExpanded, setErrorExpanded] = useState(false); // 失败详情展开状态
@@ -2725,6 +2727,7 @@ export function OpportunityPage() {
               onSortChange={updateSortConfig}
               tableHeight={tableHeight}
               onShowAIAnalysis={handleShowAIAnalysis}
+              onRowClick={(record) => setChartState({ code: record.code, name: record.name })}
             />
           </Card>
         ) : (
@@ -2760,6 +2763,15 @@ export function OpportunityPage() {
         open={filterDiagnosticsDrawerOpen}
         onClose={() => setFilterDiagnosticsDrawerOpen(false)}
         skipped={filterSkippedItems}
+      />
+
+      <DailyChartModal
+        open={chartState !== null}
+        code={chartState?.code ?? ''}
+        name={chartState?.name ?? ''}
+        kline={chartState ? klineDataCache.get(chartState.code) ?? [] : []}
+        period={currentPeriod}
+        onClose={() => setChartState(null)}
       />
 
       <AddStocksToWatchListModal

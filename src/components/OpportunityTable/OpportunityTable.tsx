@@ -41,9 +41,11 @@ interface OpportunityTableProps {
   onSortChange: (config: OverviewSortConfig) => void;
   tableHeight?: number;
   onShowAIAnalysis?: (record: StockOpportunityData) => void;
+  /** 行点击回调（传入后整行可点击） */
+  onRowClick?: (record: StockOpportunityData) => void;
 }
 
-export const OpportunityTable = memo(function OpportunityTable({ data, columns, sortConfig, onSortChange, tableHeight = 600, onShowAIAnalysis }: OpportunityTableProps) {
+export const OpportunityTable = memo(function OpportunityTable({ data, columns, sortConfig, onSortChange, tableHeight = 600, onShowAIAnalysis, onRowClick }: OpportunityTableProps) {
   const [pagination, setPagination] = useState<TablePaginationConfig>({
     current: 1,
     pageSize: 100,
@@ -398,6 +400,14 @@ export const OpportunityTable = memo(function OpportunityTable({ data, columns, 
         virtual
         scroll={{ x: scrollX, y: tableHeight }}
         onChange={handleTableChange}
+        onRow={
+          onRowClick
+            ? (record) => ({
+                onClick: () => onRowClick(record),
+                className: styles.clickableRow,
+              })
+            : undefined
+        }
         size="small"
         className={styles.opportunityTable}
       />
