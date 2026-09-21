@@ -9,6 +9,8 @@ import {
   Button,
   Card,
   Checkbox,
+  Collapse,
+  Drawer,
   Dropdown,
   Input,
   InputNumber,
@@ -24,13 +26,13 @@ import {
 } from 'antd';
 import type { ColumnsType, TablePaginationConfig } from 'antd/es/table';
 import {
-  ClearOutlined,
   DatabaseOutlined,
   DownOutlined,
   ExperimentOutlined,
   ExportOutlined,
+  FilterOutlined,
+  FundOutlined,
   OrderedListOutlined,
-  ReloadOutlined,
   RocketOutlined,
   SearchOutlined,
   StopOutlined,
@@ -41,11 +43,13 @@ import type { StockOpportunityData } from '@/types/stock';
 import { useAllStocks } from '@/hooks/useAllStocks';
 import { getPureCode } from '@/utils/format/format';
 import { getUnifiedSectorBasics } from '@/services/hot/unified-sectors';
+import { getSinaFinanceMetricsBatch } from '@/services/fundamental/sinaFinance';
 import { apiCache } from '@/utils/storage/apiCache';
 import {
   DEFAULT_WEEKLY_FILTERS,
   WEEKLY_SETUP_GRADE_LABELS,
   WEEKLY_SETUP_LABELS,
+  YI,
   analyzeWeeklyKlines,
   applyWeeklyFilters,
   isRunningWeek,
@@ -55,9 +59,13 @@ import {
   type WeeklyFilterOptions,
   type WeeklySetupGrade,
 } from '@/utils/analysis/weekly';
-import { getOpportunityKlines, getStocksHistory } from '@/utils/storage/opportunityIndexedDB';
 import {
-  clearWeeklyKlineCache,
+  getAllStockFinanceMetrics,
+  getOpportunityData,
+  getOpportunityKlines,
+  getStocksHistory,
+} from '@/utils/storage/opportunityIndexedDB';
+import {
   fetchWeeklyKlines,
   loadCachedWeeklyKlines,
   type WeeklyFetchProgress,
@@ -71,7 +79,8 @@ import {
   WEEKLY_KLINE_DEFAULT_COUNT,
 } from '@/utils/config/constants';
 import { OPPORTUNITY_DEFAULT_BASIC_FILTERS } from '@/utils/config/opportunityAnalysisDefaults';
-import type { KLineData } from '@/types/stock';
+import type { KLineData, StockFinanceMetrics } from '@/types/stock';
+import type { NumberRange } from '@/types/opportunityFilter';
 import { WeeklyChartModal } from './WeeklyChartModal';
 import { WeeklyBacktestDrawer } from './WeeklyBacktestDrawer';
 import styles from './WeeklyKPage.module.css';
@@ -111,6 +120,254 @@ function percentNode(value: number | undefined, digits = 2) {
   return <span style={{ color }}>{value.toFixed(digits)}%</span>;
 }
 
+/**
+ * 基本面：总市值(亿) / 总股数(亿股) / 总营收·归母净利润(亿) / 增长率(%)，
+ * 复用机会分析缓存与「获取营收净利润」结果。
+ */
+type FundamentalsMap = Map<
+  string,
+  {
+    marketCap?: number;
+    totalShares?: number;
+    financeRevenue?: number;
+    financeNetProfit?: number;
+    financeRevenueGrowth?: number;
+    financeNetProfitGrowth?: number;
+  }
+>;
+
+/** 把单只股票的最新财务指标折算成「亿元 / %」写入基本面 Map */
+function applyFinanceMetrics(
+  map: FundamentalsMap,
+  code: string,
+  metrics: StockFinanceMetrics
+): void {
+  const prev = map.get(code) ?? {};
+  map.set(code, {
+    ...prev,
+    financeRevenue: metrics.revenue !== undefined ? metrics.revenue / YI : undefined,
+    financeNetProfit: metrics.netProfit !== undefined ? metrics.netProfit / YI : undefined,
+    financeRevenueGrowth: metrics.revenueYoy,
+    financeNetProfitGrowth: metrics.netProfitYoy,
+  });
+}
+
+/** 区间文案：未设置（起止都为空）返回 null */
+function rangeLabel(range?: NumberRange): string | null {
+  if (!range) return null;
+  const { min, max } = range;
+  if (min === undefined && max === undefined) return null;
+  return `${min ?? '—'}~${max ?? '—'}`;
+}
+
+/** 周线筛选分组 key：新增分组时在此登记（供「展开全部」使用） */
+const WEEKLY_FILTER_PANEL_KEYS = ['data'] as const;
+
+/** 抽屉宽度：与机会分析一致，避免表单项折行 */
+const FILTER_DRAWER_WIDTH = 'min(1000px, calc(100vw - 48px))' as const;
+
+/** 区间输入：起止两个 InputNumber，留空表示不限 */
+function RangeField({
+  label,
+  value,
+  disabled,
+  onChange,
+}: {
+  label: string;
+  value?: NumberRange;
+  disabled?: boolean;
+  onChange: (range: NumberRange) => void;
+}) {
+  const patch = (key: 'min' | 'max', v: number | null) =>
+    onChange({
+      ...(value ?? {}),
+      [key]: typeof v === 'number' && isFinite(v) ? v : undefined,
+    });
+  return (
+    <div className={styles.filterItem}>
+      <span className={styles.filterLabel}>{label}</span>
+      <InputNumber
+        value={value?.min}
+        min={0}
+        step={0.01}
+        precision={2}
+        style={{ width: 100 }}
+        placeholder="最小值"
+        disabled={disabled}
+        onChange={(v) => patch('min', v)}
+      />
+      <span style={{ margin: '0 4px' }}>~</span>
+      <InputNumber
+        value={value?.max}
+        min={0}
+        step={0.01}
+        precision={2}
+        style={{ width: 100 }}
+        placeholder="最大值"
+        disabled={disabled}
+        onChange={(v) => patch('max', v)}
+      />
+    </div>
+  );
+}
+
+/**
+ * 周线选股筛选面板：右侧 Drawer + Collapse 分组。
+ * 结构与机会分析页 OpportunityFiltersPanel 一致，便于后续按分组扩展更多筛选项：
+ * 新增分组时只需在 WEEKLY_FILTER_PANEL_KEYS 登记 key，并在 items 里追加一个条目。
+ */
+function WeeklyFiltersPanel({
+  filterPanelActiveKey,
+  setFilterPanelActiveKey,
+  priceRange,
+  setPriceRange,
+  marketCapRange,
+  setMarketCapRange,
+  totalSharesRange,
+  setTotalSharesRange,
+  financeRevenueRange,
+  setFinanceRevenueRange,
+  financeNetProfitRange,
+  setFinanceNetProfitRange,
+  financeRevenueGrowthRange,
+  setFinanceRevenueGrowthRange,
+  financeNetProfitGrowthRange,
+  setFinanceNetProfitGrowthRange,
+  disabled,
+  open,
+  onOpenChange,
+}: {
+  filterPanelActiveKey: string[];
+  setFilterPanelActiveKey: (v: string[]) => void;
+  priceRange?: NumberRange;
+  setPriceRange: (r: NumberRange) => void;
+  marketCapRange?: NumberRange;
+  setMarketCapRange: (r: NumberRange) => void;
+  totalSharesRange?: NumberRange;
+  setTotalSharesRange: (r: NumberRange) => void;
+  financeRevenueRange?: NumberRange;
+  setFinanceRevenueRange: (r: NumberRange) => void;
+  financeNetProfitRange?: NumberRange;
+  setFinanceNetProfitRange: (r: NumberRange) => void;
+  financeRevenueGrowthRange?: NumberRange;
+  setFinanceRevenueGrowthRange: (r: NumberRange) => void;
+  financeNetProfitGrowthRange?: NumberRange;
+  setFinanceNetProfitGrowthRange: (r: NumberRange) => void;
+  disabled?: boolean;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
+  return (
+    <>
+      <Button
+        icon={<FilterOutlined />}
+        disabled={disabled}
+        onClick={() => onOpenChange(true)}
+      >
+        筛选条件
+      </Button>
+
+      <Drawer
+        title="筛选条件"
+        placement="right"
+        width={FILTER_DRAWER_WIDTH}
+        open={open}
+        onClose={() => onOpenChange(false)}
+        destroyOnClose={false}
+        extra={
+          <Space size={0} wrap className={styles.filterCardExtra}>
+            <Button
+              type="link"
+              size="small"
+              onClick={() => setFilterPanelActiveKey([...WEEKLY_FILTER_PANEL_KEYS])}
+            >
+              展开全部
+            </Button>
+            <Button type="link" size="small" onClick={() => setFilterPanelActiveKey([])}>
+              收起分组
+            </Button>
+          </Space>
+        }
+        styles={{ body: { paddingTop: 8 } }}
+        className={styles.filterDrawerWrap}
+      >
+        <div className={styles.filterDrawerBody}>
+          <Collapse
+            bordered={false}
+            ghost
+            size="small"
+            expandIconPosition="end"
+            className={styles.filterCollapse}
+            activeKey={filterPanelActiveKey}
+            onChange={(key) => {
+              const keys = Array.isArray(key) ? key : key === undefined ? [] : [key];
+              setFilterPanelActiveKey(keys);
+            }}
+            items={[
+              {
+                key: 'data',
+                label: '数据筛选',
+                children: (
+                  <div className={styles.filterContent}>
+                    <div className={styles.filterRow}>
+                      <RangeField
+                        label="价格："
+                        value={priceRange}
+                        disabled={disabled}
+                        onChange={setPriceRange}
+                      />
+                      <RangeField
+                        label="总市值(亿)："
+                        value={marketCapRange}
+                        disabled={disabled}
+                        onChange={setMarketCapRange}
+                      />
+                      <RangeField
+                        label="总股数(亿)："
+                        value={totalSharesRange}
+                        disabled={disabled}
+                        onChange={setTotalSharesRange}
+                      />
+                    </div>
+                    <div className={styles.filterRow}>
+                      <RangeField
+                        label="总营收(亿)："
+                        value={financeRevenueRange}
+                        disabled={disabled}
+                        onChange={setFinanceRevenueRange}
+                      />
+                      <RangeField
+                        label="归母净利润(亿)："
+                        value={financeNetProfitRange}
+                        disabled={disabled}
+                        onChange={setFinanceNetProfitRange}
+                      />
+                    </div>
+                    <div className={styles.filterRow}>
+                      <RangeField
+                        label="总营收增长率(%)："
+                        value={financeRevenueGrowthRange}
+                        disabled={disabled}
+                        onChange={setFinanceRevenueGrowthRange}
+                      />
+                      <RangeField
+                        label="归母净利润增长率(%)："
+                        value={financeNetProfitGrowthRange}
+                        disabled={disabled}
+                        onChange={setFinanceNetProfitGrowthRange}
+                      />
+                    </div>
+                  </div>
+                ),
+              },
+            ]}
+          />
+        </div>
+      </Drawer>
+    </>
+  );
+}
+
 export function WeeklyKPage() {
   const { message } = App.useApp();
   const { allStocks } = useAllStocks();
@@ -126,7 +383,13 @@ export function WeeklyKPage() {
   >([]);
   const [klineCount, setKlineCount] = useState<number>(WEEKLY_KLINE_DEFAULT_COUNT);
   const [forceRefresh, setForceRefresh] = useState(false);
+  /** 只用完整周：忽略「进行中的本周」，评分/涨幅/价格筛选一律按最近已收盘周 */
+  const [completeWeeksOnly, setCompleteWeeksOnly] = useState(true);
   const [filters, setFilters] = useState<WeeklyFilterOptions>({ ...DEFAULT_WEEKLY_FILTERS });
+  /** 筛选 Collapse 当前展开的分组；默认展开「数据筛选」 */
+  const [filterPanelActiveKey, setFilterPanelActiveKey] = useState<string[]>(['data']);
+  /** 右侧筛选抽屉开关 */
+  const [showFilterPanel, setShowFilterPanel] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState('');
   const [showAddToWatchList, setShowAddToWatchList] = useState(false);
   const [showBacktest, setShowBacktest] = useState(false);
@@ -136,6 +399,8 @@ export function WeeklyKPage() {
   const [nameMap, setNameMap] = useState<Map<string, string>>(new Map());
   /** 日线数据：复用机会分析已落到 IndexedDB 的 stockHistory，不单独拉取 */
   const [dailyKlines, setDailyKlines] = useState<Map<string, KLineData[]>>(new Map());
+  /** 基本面（总市值/总股数）：复用机会分析结果，不单独拉取详情 */
+  const [fundamentals, setFundamentals] = useState<FundamentalsMap>(new Map());
   const [updatedAt, setUpdatedAt] = useState<number | null>(null);
 
   const [loading, setLoading] = useState(false);
@@ -143,6 +408,11 @@ export function WeeklyKPage() {
   const [progress, setProgress] = useState<WeeklyFetchProgress>({ completed: 0, total: 0, failed: 0 });
   const [failures, setFailures] = useState<Array<{ code: string; name: string; error: string }>>([]);
   const [staleCache, setStaleCache] = useState(0);
+
+  /** 营收 / 净利润拉取状态 */
+  const [financeLoading, setFinanceLoading] = useState(false);
+  const [financeProgress, setFinanceProgress] = useState({ total: 0, completed: 0, failed: 0 });
+  const financeAbortRef = useRef<AbortController | null>(null);
 
   const [chartState, setChartState] = useState<{ code: string; name: string } | null>(null);
 
@@ -197,10 +467,12 @@ export function WeeklyKPage() {
         poolCodes,
         industries: industryMap,
         dailyKlines,
+        fundamentals,
+        completeWeeksOnly,
       });
       setRows(analyzed);
     },
-    [industryMap, dailyKlines]
+    [industryMap, dailyKlines, fundamentals, completeWeeksOnly]
   );
 
   /**
@@ -238,17 +510,50 @@ export function WeeklyKPage() {
     void loadDailyKlines();
   }, [loadDailyKlines]);
 
+  /**
+   * 载入基本面（总市值/总股数/营收/净利润及其增长率）用于「数据筛选」：
+   * - 市值/股本：复用机会分析结果（IndexedDB），保证与机会分析页口径一致；
+   * - 营收/净利润：读取机会分析「获取营收净利润」写入的独立缓存。
+   * 均不额外发起网络请求；totalShares 折算成「亿股」，营收/净利润折算成「亿元」。
+   */
+  const loadFundamentals = useCallback(async (): Promise<FundamentalsMap> => {
+    const map: FundamentalsMap = new Map();
+    try {
+      const result = await getOpportunityData();
+      result?.data?.forEach((item) => {
+        const marketCap = item.marketCap;
+        const totalShares =
+          item.totalShares !== undefined
+            ? item.totalShares / YI
+            : marketCap !== undefined && item.price > 0
+              ? marketCap / item.price
+              : undefined;
+        map.set(item.code, { marketCap, totalShares });
+      });
+    } catch (error) {
+      logger.error('[WeeklyKPage] 读取总市值/总股数失败:', error);
+    }
+    try {
+      const financeRecords = await getAllStockFinanceMetrics();
+      financeRecords.forEach(({ code, metrics }) => applyFinanceMetrics(map, code, metrics));
+    } catch (error) {
+      logger.error('[WeeklyKPage] 读取营收/净利润失败:', error);
+    }
+    setFundamentals(map);
+    return map;
+  }, []);
+
+  useEffect(() => {
+    void loadFundamentals();
+  }, [loadFundamentals]);
+
   const hydrateFromCache = useCallback(
-    async (manual = false): Promise<boolean> => {
+    async (): Promise<boolean> => {
       setHydrating(true);
       try {
         const cached = await loadCachedWeeklyKlines({ count: klineCount });
         setStaleCache(cached.stale);
-        // 历史根数不足（多为次新股）属正常现象，不算过期缓存，只在手动加载时提一句
-        const shortHint =
-          cached.shortHistory > 0 ? `；另有 ${cached.shortHistory} 只历史周K不足，已跳过` : '';
         if (cached.klines.size === 0) {
-          if (manual) message.info(`IndexedDB 中暂无可用周K缓存${shortHint}，请点击「一键分析」`);
           setUpdatedAt(null);
           return false;
         }
@@ -257,7 +562,6 @@ export function WeeklyKPage() {
         setKlines(cached.klines);
         setNameMap(restoredNames);
         setUpdatedAt(cached.updatedAt);
-        if (manual) message.success(`已恢复 ${cached.klines.size} 只周K数据${shortHint}`);
         return true;
       } catch (error) {
         logger.error('[WeeklyKPage] 读取周K缓存失败:', error);
@@ -336,8 +640,8 @@ export function WeeklyKPage() {
     cancelRef.current = false;
     setLoading(true);
     setFailures([]);
-    // 先刷新机会分析写入的日线，保证「多周期共振」用到的不是过期数据
-    await loadDailyKlines();
+    // 先刷新机会分析写入的日线与基本面，保证「多周期共振」与「数据筛选」用的不是过期数据
+    await Promise.all([loadDailyKlines(), loadFundamentals()]);
     setProgress({ completed: 0, total: stockPool.length, failed: 0 });
     if (forceRefresh) apiCache.clear();
     try {
@@ -387,8 +691,8 @@ export function WeeklyKPage() {
   }, [klines]);
 
   const filteredRows = useMemo(
-    () => applyWeeklyFilters(rows, filters),
-    [rows, filters]
+    () => applyWeeklyFilters(rows, { ...filters, completeWeeksOnly }),
+    [rows, filters, completeWeeksOnly]
   );
 
   /** 不做行业配额 / 总数量截断：硬门槛通过的个股全部进入名单，按综合分排序 */
@@ -457,14 +761,38 @@ export function WeeklyKPage() {
       industrySectors.length > 0
         ? `，行业${industrySectorInvert ? '排除' : '仅保留'}${industrySectors.length}个`
         : '';
+    const dataFilterParts = [
+      rangeLabel(filters.priceRange) ? `价格 ${rangeLabel(filters.priceRange)} 元` : '',
+      rangeLabel(filters.marketCapRange) ? `总市值 ${rangeLabel(filters.marketCapRange)} 亿` : '',
+      rangeLabel(filters.totalSharesRange)
+        ? `总股数 ${rangeLabel(filters.totalSharesRange)} 亿`
+        : '',
+      rangeLabel(filters.financeRevenueRange)
+        ? `总营收 ${rangeLabel(filters.financeRevenueRange)} 亿`
+        : '',
+      rangeLabel(filters.financeNetProfitRange)
+        ? `归母净利润 ${rangeLabel(filters.financeNetProfitRange)} 亿`
+        : '',
+      rangeLabel(filters.financeRevenueGrowthRange)
+        ? `总营收增长率 ${rangeLabel(filters.financeRevenueGrowthRange)}%`
+        : '',
+      rangeLabel(filters.financeNetProfitGrowthRange)
+        ? `归母净利润增长率 ${rangeLabel(filters.financeNetProfitGrowthRange)}%`
+        : '',
+    ].filter(Boolean);
     const summaryLines = [
       `分析时间：${updatedAt ? new Date(updatedAt).toLocaleString('zh-CN') : '-'}`,
       `导出时间：${new Date().toLocaleString('zh-CN')}`,
       `市场：${selectedMarket.join('+')}，${nameLabel}${industryLabel}`,
+      ...(dataFilterParts.length > 0 ? [`数据筛选：${dataFilterParts.join('，')}`] : []),
       `趋势门槛：${filters.requireAboveMa60 ? '站上60周线' : '不要求60周线'}；${
         filters.requireSetup ? '要求至少命中1个战法' : '战法仅加分'
       }${activeSetupGrade ? `（仅${WEEKLY_SETUP_GRADE_LABELS[activeSetupGrade]}）` : ''}`,
-      runningWeek ? '本周未收盘，名单为预览' : '已按最近收盘周出正式名单',
+      runningWeek
+        ? completeWeeksOnly
+          ? '本周未收盘，已忽略未完成的本周，按最近收盘周计算'
+          : '本周未收盘，名单为预览'
+        : '已按最近收盘周出正式名单',
     ];
     try {
       await exportWeeklyResultToPng(displayRows, { fileNamePrefix: '周线选股', summaryLines });
@@ -493,19 +821,64 @@ export function WeeklyKPage() {
     }
   };
 
-  const handleClearCache = async () => {
-    try {
-      await clearWeeklyKlineCache();
-      setRows([]);
-      setKlines(new Map());
-      setNameMap(new Map());
-      setUpdatedAt(null);
-      setStaleCache(0);
-      message.success('周K缓存已清空');
-    } catch (error) {
-      logger.error('[WeeklyKPage] 清空周K缓存失败:', error);
-      message.error('清空周K缓存失败');
+  /**
+   * 批量获取指定股票池的营业总收入 / 归母净利润及其增长率（参考机会分析页实现）。
+   * 结果合并进 fundamentals，供「数据筛选」使用；已命中本地缓存的个股不会重复请求。
+   */
+  const fetchFinanceForStocks = async (stocks: Array<{ code: string }>, emptyHint: string) => {
+    if (financeLoading) return;
+    if (stocks.length === 0) {
+      message.warning(emptyHint);
+      return;
     }
+    const controller = new AbortController();
+    financeAbortRef.current = controller;
+    setFinanceLoading(true);
+    setFinanceProgress({ total: stocks.length, completed: 0, failed: 0 });
+    try {
+      const map = await getSinaFinanceMetricsBatch(stocks, {
+        signal: controller.signal,
+        onProgress: (p) => {
+          setFinanceProgress({ total: p.total, completed: p.completed, failed: p.failed });
+        },
+      });
+      if (map.size === 0) {
+        message.warning('未获取到营收/净利润数据');
+        return;
+      }
+      setFundamentals((prev) => {
+        const next = new Map(prev);
+        map.forEach((metrics, code) => applyFinanceMetrics(next, code, metrics));
+        return next;
+      });
+      message.success(`营收/净利润数据已就绪，共 ${map.size} 只（命中本地缓存的不重复请求）`);
+    } catch (error) {
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        message.info('已取消获取营收净利润');
+      } else {
+        logger.error('[WeeklyKPage] 获取营收净利润失败:', error);
+        message.error('获取营收净利润失败');
+      }
+    } finally {
+      financeAbortRef.current = null;
+      setFinanceLoading(false);
+      setFinanceProgress({ total: 0, completed: 0, failed: 0 });
+    }
+  };
+
+  /** 获取当前股票池（与「一键分析」同口径）的营收 / 净利润 */
+  const handleFetchFinance = () =>
+    fetchFinanceForStocks(stockPool, '当前市场暂无股票数据');
+
+  /** 仅获取「当前筛选后名单」的营收 / 净利润，避免全池请求触发新浪限流 */
+  const handleFetchFinanceForFiltered = () =>
+    fetchFinanceForStocks(
+      displayRows,
+      '当前名单为空，无法获取营收净利润（若由「总营收」等财务条件导致，请先清空该类条件）'
+    );
+
+  const handleCancelFetchFinance = () => {
+    financeAbortRef.current?.abort();
   };
 
   const watchColumns = useMemo<ColumnsType<WeeklyAnalysis>>(
@@ -540,7 +913,11 @@ export function WeeklyKPage() {
         sortDirections: ['descend', 'ascend'],
       },
       {
-        title: '本周涨幅',
+        title: (
+          <Tooltip title="勾选「只用完整周」时为最近已收盘周涨幅；未勾选则为进行中的本周实时涨幅">
+            本周涨幅
+          </Tooltip>
+        ),
         dataIndex: 'weekChangePercent',
         width: 96,
         render: (v: number) => percentNode(v),
@@ -805,6 +1182,16 @@ export function WeeklyKPage() {
             强制刷新
           </Checkbox>
 
+          <Tooltip title="只按最近一个已收盘周计算名单、涨幅与价格筛选；关闭后「本周涨幅」会采用进行中的本周实时数据">
+            <Checkbox
+              checked={completeWeeksOnly}
+              onChange={(e) => setCompleteWeeksOnly(e.target.checked)}
+              disabled={loading}
+            >
+              只用完整周
+            </Checkbox>
+          </Tooltip>
+
           <Button
             type="primary"
             icon={<RocketOutlined />}
@@ -818,6 +1205,36 @@ export function WeeklyKPage() {
           {loading && (
             <Button icon={<StopOutlined />} onClick={handleCancel}>
               取消
+            </Button>
+          )}
+
+          <Tooltip title={`获取当前股票池（${stockPool.length} 只）的营业总收入与归母净利润`}>
+            <Button
+              icon={<FundOutlined />}
+              onClick={() => void handleFetchFinance()}
+              loading={financeLoading}
+              disabled={loading || financeLoading || stockPool.length === 0}
+            >
+              获取营收净利润
+            </Button>
+          </Tooltip>
+
+          <Tooltip
+            title={`仅获取当前筛选后名单（${displayRows.length} 只）的营业总收入、归母净利润及其增长率，避免全池请求触发新浪限流`}
+          >
+            <Button
+              icon={<FilterOutlined />}
+              onClick={() => void handleFetchFinanceForFiltered()}
+              loading={financeLoading}
+              disabled={loading || financeLoading || displayRows.length === 0}
+            >
+              获取筛选后营收净利润
+            </Button>
+          </Tooltip>
+
+          {financeLoading && (
+            <Button icon={<StopOutlined />} onClick={handleCancelFetchFinance}>
+              取消获取
             </Button>
           )}
 
@@ -862,18 +1279,31 @@ export function WeeklyKPage() {
             导出图片(PNG)
           </Button>
 
-          <Button icon={<ClearOutlined />} disabled={loading} onClick={() => void handleClearCache()}>
-            清空周K缓存
-          </Button>
-
-          <Button
-            icon={<ReloadOutlined />}
-            loading={hydrating}
-            disabled={loading || hydrating}
-            onClick={() => void hydrateFromCache(true)}
-          >
-            加载缓存
-          </Button>
+          <WeeklyFiltersPanel
+            filterPanelActiveKey={filterPanelActiveKey}
+            setFilterPanelActiveKey={setFilterPanelActiveKey}
+            priceRange={filters.priceRange}
+            setPriceRange={(range) => patchFilters({ priceRange: range })}
+            marketCapRange={filters.marketCapRange}
+            setMarketCapRange={(range) => patchFilters({ marketCapRange: range })}
+            totalSharesRange={filters.totalSharesRange}
+            setTotalSharesRange={(range) => patchFilters({ totalSharesRange: range })}
+            financeRevenueRange={filters.financeRevenueRange}
+            setFinanceRevenueRange={(range) => patchFilters({ financeRevenueRange: range })}
+            financeNetProfitRange={filters.financeNetProfitRange}
+            setFinanceNetProfitRange={(range) => patchFilters({ financeNetProfitRange: range })}
+            financeRevenueGrowthRange={filters.financeRevenueGrowthRange}
+            setFinanceRevenueGrowthRange={(range) =>
+              patchFilters({ financeRevenueGrowthRange: range })
+            }
+            financeNetProfitGrowthRange={filters.financeNetProfitGrowthRange}
+            setFinanceNetProfitGrowthRange={(range) =>
+              patchFilters({ financeNetProfitGrowthRange: range })
+            }
+            disabled={loading}
+            open={showFilterPanel}
+            onOpenChange={setShowFilterPanel}
+          />
         </Space>
       </div>
 
@@ -891,6 +1321,23 @@ export function WeeklyKPage() {
           {nameType === 'st' ? '仅ST' : nameType === 'non_st' ? '非ST' : '不限名称'}
           {industrySectors.length > 0
             ? ` + 行业${industrySectorInvert ? '排除' : '仅保留'}选中${industrySectors.length}个`
+            : ''}
+          {rangeLabel(filters.priceRange) ? ` + 价格${rangeLabel(filters.priceRange)}元` : ''}
+          {rangeLabel(filters.marketCapRange) ? ` + 市值${rangeLabel(filters.marketCapRange)}亿` : ''}
+          {rangeLabel(filters.totalSharesRange)
+            ? ` + 总股数${rangeLabel(filters.totalSharesRange)}亿`
+            : ''}
+          {rangeLabel(filters.financeRevenueRange)
+            ? ` + 总营收${rangeLabel(filters.financeRevenueRange)}亿`
+            : ''}
+          {rangeLabel(filters.financeNetProfitRange)
+            ? ` + 归母净利润${rangeLabel(filters.financeNetProfitRange)}亿`
+            : ''}
+          {rangeLabel(filters.financeRevenueGrowthRange)
+            ? ` + 总营收增长${rangeLabel(filters.financeRevenueGrowthRange)}%`
+            : ''}
+          {rangeLabel(filters.financeNetProfitGrowthRange)
+            ? ` + 归母净利润增长${rangeLabel(filters.financeNetProfitGrowthRange)}%`
             : ''}
           {' + 剔除空头排列'}
           {filters.requireAboveMa60 ? ' + 站上60周线' : ''}
@@ -919,6 +1366,20 @@ export function WeeklyKPage() {
           </Card>
         )}
 
+        {financeLoading && financeProgress.total > 0 && (
+          <Card className={styles.progressCard}>
+            <Progress
+              percent={Math.round((financeProgress.completed / financeProgress.total) * 100)}
+              status="active"
+              format={(percent) => `${percent}%`}
+            />
+            <div className={styles.progressText}>
+              获取营收净利润进度：{financeProgress.completed} / {financeProgress.total}（失败：
+              {financeProgress.failed}）
+            </div>
+          </Card>
+        )}
+
         {staleCache > 0 && (
           <Alert
             type="warning"
@@ -933,7 +1394,11 @@ export function WeeklyKPage() {
             type="info"
             showIcon
             style={{ margin: '12px 16px 0' }}
-            message="本周周K尚未收盘：下面名单是预览分，正式成交以本周五收盘后为准。"
+            message={
+              completeWeeksOnly
+                ? '本周周K尚未收盘：已忽略未完成的本周，名单、「本周涨幅」与价格筛选均按最近收盘周计算。'
+                : '本周周K尚未收盘：下面名单是预览分，正式成交以本周五收盘后为准。'
+            }
           />
         )}
 

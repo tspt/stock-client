@@ -2,6 +2,7 @@
  * 周线名单：硬门槛过滤 + 全池排序后按行业上限截取 Top N
  */
 
+import type { NumberRange } from '@/types/opportunityFilter';
 import { setupGradeOf } from './setups';
 import { WEEKLY_HOLD_DEFAULTS, type WeeklyAnalysis, type WeeklyFilterOptions } from './types';
 
@@ -25,6 +26,18 @@ export function industryKeyOf(row: { industryCode?: string }): string {
  *
  * 日线共振只在「明确判定为不达标」时排除；没读到日线数据的股票跳过该项，不阻断。
  */
+/**
+ * 区间判定：未设置范围视为通过；范围已设置但取值缺失视为不通过
+ * （与机会分析 passLightFilters 的口径一致）。
+ */
+function withinRange(value: number | undefined, range?: NumberRange): boolean {
+  if (!range || (range.min === undefined && range.max === undefined)) return true;
+  if (value === undefined || value === null || !Number.isFinite(value)) return false;
+  if (range.min !== undefined && value < range.min) return false;
+  if (range.max !== undefined && value > range.max) return false;
+  return true;
+}
+
 export function applyWeeklyFilters(
   rows: WeeklyAnalysis[],
   filters: WeeklyFilterOptions
@@ -37,6 +50,17 @@ export function applyWeeklyFilters(
 
   return rows.filter((row) => {
     if (row.insufficientData || !row.quality.ok) return false;
+    // 数据筛选：价格 / 总市值(亿) / 总股数(亿)
+    // 「只用完整周」时价格按最近已收盘周收盘价判定，否则用含本周的最新价
+    const price = filters.completeWeeksOnly ? row.confirmedClose ?? row.close : row.close;
+    if (!withinRange(price, filters.priceRange)) return false;
+    if (!withinRange(row.marketCap, filters.marketCapRange)) return false;
+    if (!withinRange(row.totalShares, filters.totalSharesRange)) return false;
+    // 数据筛选：总营收/归母净利润(亿) 与 增长率(%)
+    if (!withinRange(row.financeRevenue, filters.financeRevenueRange)) return false;
+    if (!withinRange(row.financeNetProfit, filters.financeNetProfitRange)) return false;
+    if (!withinRange(row.financeRevenueGrowth, filters.financeRevenueGrowthRange)) return false;
+    if (!withinRange(row.financeNetProfitGrowth, filters.financeNetProfitGrowthRange)) return false;
     if (row.score < filters.minScore) return false;
     if (filters.excludeDowntrend !== false && !row.gates.notDowntrend) return false;
     if (filters.requireAboveMa60 && !row.gates.aboveMa60) return false;

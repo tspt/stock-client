@@ -978,7 +978,13 @@ function setupIpcHandlers() {
     ipcMain.handle('write-backtest-optimize-file', async (_event, payload) => {
         try {
             const { fileName, content } = payload;
-            const ALLOWED_FILES = ['成分股数据.json', '行业板块.json', '概念板块.json', '股票列表.json'];
+            const ALLOWED_FILES = [
+                '成分股数据.json',
+                '行业板块.json',
+                '概念板块.json',
+                '股票列表.json',
+                '营收净利润数据.json',
+            ];
             if (!fileName || !ALLOWED_FILES.includes(fileName)) {
                 return { success: false, error: `非法文件名: ${fileName}` };
             }

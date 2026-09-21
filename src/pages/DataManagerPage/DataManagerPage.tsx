@@ -13,6 +13,7 @@ import {
   DatabaseOutlined,
   StockOutlined,
   PartitionOutlined,
+  FundOutlined,
 } from '@ant-design/icons';
 import { refreshStockList } from '@/services/stocks/api';
 import {
@@ -24,7 +25,15 @@ import {
   getConceptSectors,
   clearSectorStocksDB,
 } from '@/utils/storage/sectorStocksIndexedDB';
+import {
+  getAllStockFinanceMetrics,
+  clearStockFinanceMetrics,
+} from '@/utils/storage/opportunityIndexedDB';
 import { exportSectorStocksToJSON, importSectorStocksFromJSON } from '@/utils/export/sectorStocksExport';
+import {
+  exportStockFinanceToJSON,
+  importStockFinanceFromJSON,
+} from '@/utils/export/stockFinanceExport';
 import { CACHE_TTL, CACHE_KEYS } from '@/utils/config/constants';
 import { getStorage } from '@/utils/storage/storage';
 import type { StockInfo } from '@/types/stock';
@@ -58,6 +67,11 @@ export function DataManagerPage() {
   const [clearingSectorStocks, setClearingSectorStocks] = useState(false);
   const [importingSectorStocks, setImportingSectorStocks] = useState(false);
 
+  // 营收/净利润财务指标状态
+  const [financeStatus, setFinanceStatus] = useState<CacheStatus | null>(null);
+  const [importingFinance, setImportingFinance] = useState(false);
+  const [clearingFinance, setClearingFinance] = useState(false);
+
   // 加载所有数据状态
   useEffect(() => {
     loadAllStatus();
@@ -68,6 +82,7 @@ export function DataManagerPage() {
       loadStockListStatus(),
       loadSectorBasicStatus(),
       loadSectorStocksStatus(),
+      loadStockFinanceStatus(),
     ]);
   };
 
@@ -172,6 +187,27 @@ export function DataManagerPage() {
       }
     } catch (error) {
       logger.error('加载成分股数据状态失败:', error);
+    }
+  };
+
+  // 加载营收/净利润财务指标状态
+  const loadStockFinanceStatus = async () => {
+    try {
+      const records = await getAllStockFinanceMetrics();
+
+      if (records.length > 0) {
+        const lastUpdate = Math.max(...records.map((r) => r.updatedAt || 0));
+        // 财务指标默认不过期
+        setFinanceStatus({
+          count: records.length,
+          lastUpdate,
+          isExpired: false,
+        });
+      } else {
+        setFinanceStatus({ count: 0, isExpired: true });
+      }
+    } catch (error) {
+      logger.error('加载营收净利润数据状态失败:', error);
     }
   };
 
@@ -335,6 +371,60 @@ export function DataManagerPage() {
           logger.error('清空成分股数据失败:', error);
         } finally {
           setClearingSectorStocks(false);
+        }
+      },
+    });
+  };
+
+  // 导出营收/净利润财务指标
+  const handleExportFinance = async () => {
+    try {
+      await exportStockFinanceToJSON();
+      antMessage.success('导出成功');
+    } catch (error) {
+      antMessage.error('导出失败');
+      logger.error('导出营收净利润数据失败:', error);
+    }
+  };
+
+  // 导入营收/净利润财务指标
+  const handleImportFinance = async (file: File) => {
+    setImportingFinance(true);
+    try {
+      const result = await importStockFinanceFromJSON(file, 'overwrite');
+      if (result.success) {
+        antMessage.success(result.message);
+        await loadStockFinanceStatus();
+      } else {
+        antMessage.error(result.message);
+      }
+    } catch (error) {
+      antMessage.error('导入失败');
+      logger.error('导入营收净利润数据失败:', error);
+    } finally {
+      setImportingFinance(false);
+    }
+    return false; // 阻止默认上传行为
+  };
+
+  // 清空营收/净利润财务指标
+  const handleClearFinance = () => {
+    Modal.confirm({
+      title: '确认清空',
+      content: '清空后将删除所有营收/净利润财务指标数据，此操作不可恢复，是否继续？',
+      okText: '确认清空',
+      okType: 'danger',
+      onOk: async () => {
+        setClearingFinance(true);
+        try {
+          await clearStockFinanceMetrics();
+          antMessage.success('数据已清空');
+          await loadStockFinanceStatus();
+        } catch (error) {
+          antMessage.error('清空失败');
+          logger.error('清空营收净利润数据失败:', error);
+        } finally {
+          setClearingFinance(false);
         }
       },
     });
@@ -523,6 +613,64 @@ export function DataManagerPage() {
               onClick={handleClearSectorStocks}
               danger
               loading={clearingSectorStocks}
+            >
+              清空全部
+            </Button>
+          </Space>
+        </Card>
+
+        {/* 营收/净利润财务指标管理 */}
+        <Card className={styles.card} title={
+          <Space>
+            <FundOutlined />
+            <span>营收/净利润财务指标 (IndexedDB)</span>
+          </Space>
+        }>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Card size="small" className={styles.subCard}>
+                <Statistic
+                  title="已缓存股票数"
+                  value={financeStatus?.count || 0}
+                  suffix="只"
+                />
+              </Card>
+            </Col>
+            <Col span={12}>
+              <Card size="small" className={styles.subCard}>
+                <Statistic
+                  title="最后更新"
+                  value={formatTime(financeStatus?.lastUpdate)}
+                />
+              </Card>
+            </Col>
+          </Row>
+          <Space className={styles.actionButtons}>
+            <Button
+              icon={<ExportOutlined />}
+              onClick={handleExportFinance}
+              type="primary"
+            >
+              导出数据
+            </Button>
+            <Upload
+              accept=".json"
+              showUploadList={false}
+              beforeUpload={handleImportFinance}
+              disabled={importingFinance}
+            >
+              <Button
+                icon={<ImportOutlined />}
+                loading={importingFinance}
+              >
+                导入数据
+              </Button>
+            </Upload>
+            <Button
+              icon={<DeleteOutlined />}
+              onClick={handleClearFinance}
+              danger
+              loading={clearingFinance}
             >
               清空全部
             </Button>

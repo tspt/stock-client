@@ -10,6 +10,7 @@
  */
 
 import type { KLineData } from '@/types/stock';
+import { OPPORTUNITY_DEFAULT_BASIC_FILTERS } from '@/utils/config/opportunityAnalysisDefaults';
 import { DEFAULT_WEEKLY_CONFIG, computeWeeklyFactors } from './factors';
 import { isDailyAboveMa } from './resonance';
 import { scoreWeeklyFactors } from './score';
@@ -77,6 +78,17 @@ export const DEFAULT_WEEKLY_FILTERS: WeeklyFilterOptions = {
   allowedSetups: undefined,
   /** 日线数据可能没拉，默认不阻断 */
   requireDailyAboveMa20: false,
+  /** 数据筛选默认值与机会分析对齐（价格 3~100 元） */
+  priceRange: { ...OPPORTUNITY_DEFAULT_BASIC_FILTERS.priceRange },
+  /** 总市值默认值（30~1000 亿） */
+  marketCapRange: { ...OPPORTUNITY_DEFAULT_BASIC_FILTERS.marketCapRange },
+  /** 总股数默认值（1~50 亿股） */
+  totalSharesRange: { ...OPPORTUNITY_DEFAULT_BASIC_FILTERS.totalSharesRange },
+  /** 营收 / 净利润及其增长率默认不限（与机会分析一致，均为空区间） */
+  financeRevenueRange: {},
+  financeNetProfitRange: {},
+  financeRevenueGrowthRange: {},
+  financeNetProfitGrowthRange: {},
 };
 
 export interface WeeklyAnalyzeOptions {
@@ -86,6 +98,23 @@ export interface WeeklyAnalyzeOptions {
   industries?: Map<string, { code: string; name: string }>;
   /** 日线数据（复用机会分析的 stockHistory），用于多周期共振 */
   dailyKlines?: Map<string, KLineData[]>;
+  /** 基本面（总市值/总股数/营收/净利润及其增长率）：复用机会分析缓存，用于数据筛选 */
+  fundamentals?: Map<
+    string,
+    {
+      marketCap?: number;
+      totalShares?: number;
+      financeRevenue?: number;
+      financeNetProfit?: number;
+      financeRevenueGrowth?: number;
+      financeNetProfitGrowth?: number;
+    }
+  >;
+  /**
+   * 只用完整周：评分/涨幅/价格筛选一律基于最近已收盘周，
+   * 忽略「进行中的本周」，保证不同日期运行结果一致。
+   */
+  completeWeeksOnly?: boolean;
 }
 
 /**
@@ -107,15 +136,25 @@ export function analyzeWeeklyKlines(
     ? Array.from(klines.entries()).filter(([code]) => pool.has(code))
     : Array.from(klines.entries());
 
+  const now = Date.now();
   const factors = entries.map(([code, kline]) => {
-    const f = computeWeeklyFactors(code, names.get(code) ?? '', kline, config);
+    const f = computeWeeklyFactors(code, names.get(code) ?? '', kline, config, now, {
+      completeWeeksOnly: options.completeWeeksOnly,
+    });
     const ind = options.industries?.get(code);
     const daily = options.dailyKlines?.get(code);
+    const fund = options.fundamentals?.get(code);
     return {
       ...f,
       industryCode: ind?.code ?? f.industryCode,
       industryName: ind?.name ?? f.industryName,
       dailyAboveMa20: daily ? isDailyAboveMa(daily) : undefined,
+      marketCap: fund?.marketCap,
+      totalShares: fund?.totalShares,
+      financeRevenue: fund?.financeRevenue,
+      financeNetProfit: fund?.financeNetProfit,
+      financeRevenueGrowth: fund?.financeRevenueGrowth,
+      financeNetProfitGrowth: fund?.financeNetProfitGrowth,
     };
   });
   return scoreWeeklyFactors(factors, config);

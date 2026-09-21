@@ -185,6 +185,7 @@ function emptyFactors(
   confirmedBars: number,
   runningWeekIncluded: boolean,
   weekChangePercent: number,
+  confirmedClose: number,
   quality: WeeklyDataQuality
 ): WeeklyFactors {
   return {
@@ -195,6 +196,7 @@ function emptyFactors(
     runningWeekIncluded,
     lastWeekTime: kline.length > 0 ? kline[kline.length - 1].time : 0,
     close: kline.length > 0 ? kline[kline.length - 1].close : 0,
+    confirmedClose,
     weekChangePercent,
     maStack: false,
     maBullStack: false,
@@ -222,19 +224,31 @@ function emptyFactors(
   };
 }
 
+/** computeWeeklyFactors 的行为选项 */
+export interface WeeklyFactorOptions {
+  /**
+   * 只用已收盘周：
+   * - 本周涨幅回退到最近已收盘周（避免周一/盘中跑出来的「半天涨幅」被当成整周涨幅）；
+   * - 始终额外输出 confirmedClose，供价格筛选用已收盘周口径。
+   */
+  completeWeeksOnly?: boolean;
+}
+
 /**
  * 计算单只股票的周线因子
  * @param kline 周K数据（时间从旧到新）
+ * @param options 行为选项（见 WeeklyFactorOptions）
  */
 export function computeWeeklyFactors(
   code: string,
   name: string,
   kline: KLineData[],
   config: WeeklyConfig = DEFAULT_WEEKLY_CONFIG,
-  now: number = Date.now()
+  now: number = Date.now(),
+  options: WeeklyFactorOptions = {}
 ): WeeklyFactors {
   if (kline.length === 0) {
-    return emptyFactors(code, name, kline, 0, false, 0, {
+    return emptyFactors(code, name, kline, 0, false, 0, 0, {
       ok: false,
       reasons: ['无周K数据'],
       suspectedGaps: 0,
@@ -250,6 +264,15 @@ export function computeWeeklyFactors(
       ? ((lastBar.close - prevBar.close) / prevBar.close) * 100
       : 0;
 
+  // 已收盘周口径：用于「只用完整周」模式下的涨幅与价格筛选
+  const confirmedLast = confirmed.length > 0 ? confirmed[confirmed.length - 1] : undefined;
+  const prevConfirmed = confirmed.length >= 2 ? confirmed[confirmed.length - 2] : undefined;
+  const confirmedClose = confirmedLast ? confirmedLast.close : lastBar.close;
+  const confirmedWeekChange =
+    confirmedLast && prevConfirmed && prevConfirmed.close > 0
+      ? ((confirmedLast.close - prevConfirmed.close) / prevConfirmed.close) * 100
+      : 0;
+
   const quality = checkQuality(confirmed, config);
   if (!quality.ok || confirmed.length === 0) {
     return emptyFactors(
@@ -259,6 +282,7 @@ export function computeWeeklyFactors(
       confirmed.length,
       runningWeekIncluded,
       weekChangePercent,
+      confirmedClose,
       quality
     );
   }
@@ -277,7 +301,7 @@ export function computeWeeklyFactors(
 
   const closes = source.map((d) => d.close);
   const ma30 = safe(sma(closes, 30), last);
-  const confirmedClose = closes[last];
+  // confirmedClose 已在上方按已收盘周口径算出（source 为 confirmed 的后缀，末值一致），此处不再重复声明
   const bias20 =
     snap.ma20 !== undefined && snap.ma20 > 0 && Number.isFinite(confirmedClose)
       ? ((confirmedClose - snap.ma20) / snap.ma20) * 100
@@ -302,8 +326,11 @@ export function computeWeeklyFactors(
     confirmedBars: confirmed.length,
     runningWeekIncluded,
     lastWeekTime: lastBar.time,
+    // 最新价保留「含未完成本周」的实时值，供展示/排序
     close: lastBar.close,
-    weekChangePercent,
+    confirmedClose,
+    // 「只用完整周」时，本周涨幅回退到最近已收盘周，避免把盘中半天涨幅当成整周
+    weekChangePercent: options.completeWeeksOnly ? confirmedWeekChange : weekChangePercent,
     ma30,
     high52w: Number.isFinite(high52w) ? high52w : undefined,
     low52w: Number.isFinite(low52w) ? low52w : undefined,

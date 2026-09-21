@@ -11,6 +11,8 @@
  *    否则「缩量回踩」类战法会被系统性扣分。
  */
 
+import type { NumberRange } from '@/types/opportunityFilter';
+
 export type WeeklyStructure = 'up' | 'down' | 'sideways';
 
 export const WEEKLY_STRUCTURE_LABELS: Record<WeeklyStructure, string> = {
@@ -114,7 +116,12 @@ export interface WeeklyFactors {
 
   /** 最新价（含未完成周） */
   close: number;
-  /** 最新一周涨跌幅（%） */
+  /**
+   * 最近已收盘周的收盘价（不含进行中的本周）。
+   * 供「只用完整周」模式下的价格筛选使用：勾选后筛选走该值，展示仍用实时 close。
+   */
+  confirmedClose?: number;
+  /** 最新一周涨跌幅（%）：勾选「只用完整周」时回退为最近已收盘周涨幅 */
   weekChangePercent: number;
 
   // ===== 趋势 =====
@@ -212,6 +219,24 @@ export interface WeeklyFactors {
   pb?: number;
   /** 市盈率(TTM) = 最新价 / 最近已披露 4 期每股收益之和 */
   peTtm?: number;
+  /**
+   * 总市值（亿元）：复用机会分析结果（StockOpportunityData.marketCap）。
+   * 未跑机会分析或该股无详情数据时为 undefined。
+   */
+  marketCap?: number;
+  /** 总股数（亿股）：由机会分析结果的 totalShares(股) 折算，缺省时用「总市值/最新价」兜底 */
+  totalShares?: number;
+  /**
+   * 总营收（亿元）：来自机会分析「获取营收净利润」写入 IndexedDB 的财务指标，
+   * 原始单位为元，这里统一折算成亿元。未拉取过该数据时为 undefined。
+   */
+  financeRevenue?: number;
+  /** 归母净利润（亿元）：同上，原始单位为元，这里折算成亿元 */
+  financeNetProfit?: number;
+  /** 总营收增长率（%）：接口原值已是百分数 */
+  financeRevenueGrowth?: number;
+  /** 归母净利润增长率（%）：接口原值已是百分数 */
+  financeNetProfitGrowth?: number;
   structure: WeeklyStructure;
   /** 趋势回归年化斜率（%） */
   annualSlope?: number;
@@ -436,4 +461,23 @@ export interface WeeklyFilterOptions {
   excludeDowntrend?: boolean;
   /** 是否要求日线站上 20 日均线（无日线数据时自动跳过） */
   requireDailyAboveMa20?: boolean;
+  /** 数据筛选：价格范围（元），基于最新周收盘价；range 已设置但缺值即排除 */
+  priceRange?: NumberRange;
+  /** 数据筛选：总市值范围（亿元） */
+  marketCapRange?: NumberRange;
+  /** 数据筛选：总股数范围（亿股） */
+  totalSharesRange?: NumberRange;
+  /** 数据筛选：总营收范围（亿元） */
+  financeRevenueRange?: NumberRange;
+  /** 数据筛选：归母净利润范围（亿元） */
+  financeNetProfitRange?: NumberRange;
+  /** 数据筛选：总营收增长率范围（%） */
+  financeRevenueGrowthRange?: NumberRange;
+  /** 数据筛选：归母净利润增长率范围（%） */
+  financeNetProfitGrowthRange?: NumberRange;
+  /**
+   * 只用完整周：价格筛选改用最近已收盘周收盘价（confirmedClose），
+   * 不再使用可能含「进行中的本周」的最新价，保证结果可复现。
+   */
+  completeWeeksOnly?: boolean;
 }
