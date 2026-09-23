@@ -232,6 +232,11 @@
   font-weight: 400;
 }
 
+/* 整行可点击：打开日K与筹码弹窗 */
+.clickableRow {
+  cursor: pointer;
+}
+
 .tableArea :global(.ant-table-pagination) {
   margin-top: 4px !important;
   margin-bottom: 0 !important;

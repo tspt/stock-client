@@ -28,8 +28,32 @@ import { logger } from '@/utils/business/logger';
 
 const { Text } = Typography;
 
+/** 筹码统计项：上标签、下数值 */
+function ChipStatItem({
+  label,
+  value,
+  valueColor,
+}: {
+  label: string;
+  value: string;
+  valueColor?: string;
+}) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <Text type="secondary" style={{ fontSize: 13 }}>
+        {label}
+      </Text>
+      <Text strong style={{ fontSize: 13, color: valueColor }}>
+        {value}
+      </Text>
+    </div>
+  );
+}
+
 /** 筹码分布面板宽度（px），与K线图并排展示 */
 const CHIP_PANEL_WIDTH = 260;
+/** 筹码统计面板宽度（px），位于筹码图右侧 */
+const CHIP_STATS_WIDTH = 180;
 /** 图表区域高度（px），两侧容器等高才能保证纵轴逐像素对齐 */
 const CHART_HEIGHT = 520;
 /** 默认展示最近多少根 */
@@ -81,6 +105,8 @@ interface KlineChartBuildInput {
   /** 与我方推导的价格区间一致；null 时退回 ECharts 自适应 */
   yRange: PriceRange | null;
   zoom: { start: number; end: number };
+  /** 十字星指向的 K 线下标；null 时涨幅退回可见区间最后一根 */
+  hoverIndex?: number | null;
 }
 
 function formatDate(time: number): string {
@@ -113,9 +139,29 @@ function nicePriceRange(min: number, max: number): PriceRange | null {
 }
 
 function buildKlineChartOption(input: KlineChartBuildInput): EChartsOption {
-  const { data, name, periodLabel, indicators, yRange, zoom } = input;
+  const { data, name, periodLabel, indicators, yRange, zoom, hoverIndex = null } = input;
   const { ma5, ma10, ma20, ma30, ma60 } = indicators.ma;
   const kdj = indicators.kdj;
+
+  /**
+   * 涨幅取「当前可见区间最后一根」相对前一根的涨跌，随 dataZoom 缩放/平移动态变化。
+   * 索引换算方式与 ECharts dataZoom 百分比一致（percent / 100 × (len - 1)）。
+   */
+  const visibleEndIndex =
+    data.length === 0
+      ? -1
+      : Math.min(data.length - 1, Math.max(0, Math.round((zoom.end / 100) * (data.length - 1))));
+  /** 十字星优先，未悬停时退回可见区间最后一根 */
+  const changeIndex =
+    hoverIndex !== null && hoverIndex >= 0 && hoverIndex < data.length ? hoverIndex : visibleEndIndex;
+  const lastBar = changeIndex >= 0 ? data[changeIndex] : undefined;
+  const prevBar = changeIndex > 0 ? data[changeIndex - 1] : undefined;
+  const changePct =
+    lastBar && prevBar && prevBar.close > 0
+      ? ((lastBar.close - prevBar.close) / prevBar.close) * 100
+      : null;
+  const changeText = changePct === null ? '' : `${changePct >= 0 ? '+' : ''}${changePct.toFixed(2)}%`;
+  const changeColor = changePct !== null && changePct < 0 ? '#26a69a' : '#ef5350';
 
   const timeAxis = (gridIndex?: number) => ({
     type: 'category' as const,
@@ -130,9 +176,14 @@ function buildKlineChartOption(input: KlineChartBuildInput): EChartsOption {
 
   return {
     title: {
-      text: `${name} ${periodLabel}K（MA5 / MA10 / MA20 / MA30 / MA60）`,
+      text: `${name} ${periodLabel}K（MA5 / MA10 / MA20 / MA30 / MA60）${
+        changeText ? `  {chg|${changeText}}` : ''
+      }`,
       left: 0,
-      textStyle: { fontSize: 14 },
+      textStyle: {
+        fontSize: 14,
+        rich: { chg: { color: changeColor, fontSize: 15, fontWeight: 'bold' } },
+      },
     },
     tooltip: {
       trigger: 'axis',
@@ -220,9 +271,12 @@ function buildKlineChartOption(input: KlineChartBuildInput): EChartsOption {
         type: 'candlestick',
         data: data.map((d) => [d.open, d.close, d.low, d.high]),
         itemStyle: {
-          color: '#ef5350',
-          color0: '#26a69a',
+          // 阳线（红）空心：内部透明、仅红色描边
+          color: 'transparent',
           borderColor: '#ef5350',
+          borderWidth: 1,
+          // 阴线（绿）保持实心
+          color0: '#26a69a',
           borderColor0: '#26a69a',
         },
       },
@@ -296,7 +350,8 @@ export function DailyChartModal({
 }: DailyChartModalProps) {
   const { message } = App.useApp();
   const chartRef = useRef<ReactECharts>(null);
-  const [chipPeriod, setChipPeriod] = useState<ChipPeriod>('day');
+  /** 筹码周期固定为日线口径 */
+  const chipPeriod: ChipPeriod = 'day';
 
   /** 默认可见区间：最近 120 根 */
   const defaultZoom = useCallback((bars: KLineData[]) => {
@@ -318,6 +373,9 @@ export function DailyChartModal({
   /** 十字星指向的筹码下标；null 表示跟随最新一根 */
   const [chipIndex, setChipIndex] = useState<number | null>(null);
 
+  /** 十字星指向的主图 K 线下标；null 表示未悬停（涨幅退回可见区间最后一根） */
+  const [hoverIndex, setHoverIndex] = useState<number | null>(null);
+
   /** 按日期对齐筹码 K 线（两份数据起点/长度不同，不能直接用数组下标对应） */
   const chipIndexByDate = useMemo(() => {
     const map = new Map<string, number>();
@@ -329,6 +387,11 @@ export function DailyChartModal({
   useEffect(() => {
     setChipIndex(null);
   }, [code, chipBars]);
+
+  // 换股票 / K线数据变化时十字星复位（顶部涨幅回到可见区间最后一根）
+  useEffect(() => {
+    setHoverIndex(null);
+  }, [code, kline]);
 
   const resolvedChipIndex = useMemo(() => {
     if (chipBars.length === 0) {
@@ -358,12 +421,9 @@ export function DailyChartModal({
   /** 当前筹码对应的日期 */
   const chipDate = resolvedChipIndex >= 0 ? chipBars[resolvedChipIndex]?.date : undefined;
 
-  /** 十字星日期 → 筹码下标（早于筹码窗口用最早一根，晚于窗口用最后一根） */
+  /** 十字星日期 → 主图下标（驱动顶部涨幅）＋ 筹码下标（早于筹码窗口用最早一根，晚于窗口用最后一根） */
   const handleAxisPointer = useCallback(
     (params: unknown) => {
-      if (chipBars.length === 0) {
-        return;
-      }
       const payload = params as { axesInfo?: Array<{ axisDim?: string; value?: unknown }> };
       const xInfo = payload?.axesInfo?.find((info) => info.axisDim === 'x');
       if (!xInfo) {
@@ -390,6 +450,13 @@ export function DailyChartModal({
         return;
       }
 
+      // 顶部涨幅跟随十字星所在 K 线（与筹码是否就绪无关）
+      setHoverIndex((prev) => (prev === dataIndex ? prev : dataIndex));
+
+      if (chipBars.length === 0) {
+        return;
+      }
+
       const date = formatDate(bar.time);
       const exact = chipIndexByDate.get(date);
       let next: number;
@@ -408,6 +475,7 @@ export function DailyChartModal({
   /** 鼠标移出图表回到最新一根 */
   const handleGlobalOut = useCallback(() => {
     setChipIndex((prev) => (prev === null ? prev : null));
+    setHoverIndex((prev) => (prev === null ? prev : null));
   }, []);
 
   const periodLabel = PERIOD_LABEL[period] ?? '日';
@@ -518,8 +586,9 @@ export function DailyChartModal({
       indicators,
       yRange: priceRange,
       zoom,
+      hoverIndex,
     });
-  }, [kline, name, periodLabel, indicators, priceRange, zoom]);
+  }, [kline, name, periodLabel, indicators, priceRange, zoom, hoverIndex]);
 
   const chipOption = useMemo(
     () =>
@@ -553,7 +622,7 @@ export function DailyChartModal({
     <Modal
       open={open}
       onCancel={onClose}
-      width={1360}
+      width={1540}
       title={`${name || ''} ${code} K线分析`}
       footer={[
         <Button key="export" icon={<DownloadOutlined />} onClick={handleExportChart}>
@@ -569,17 +638,8 @@ export function DailyChartModal({
       <div
         style={{ marginBottom: 8, display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}
       >
-        <Segmented
-          size="small"
-          value={chipPeriod}
-          onChange={(value) => setChipPeriod(value as ChipPeriod)}
-          options={[
-            { label: '日线筹码', value: 'day' },
-            { label: '周线筹码', value: 'week' },
-          ]}
-        />
         {chipDate && (
-          <Text type="secondary" style={{ fontSize: 12 }}>
+          <Text type="secondary" style={{ fontSize: 13 }}>
             筹码日期 <Text strong>{chipDate}</Text>
             {resolvedChipIndex !== chipBars.length - 1 ? '（跟随十字星）' : '（最新）'}
           </Text>
@@ -593,32 +653,6 @@ export function DailyChartModal({
           <Text type="danger" style={{ fontSize: 12 }}>
             筹码分布：{chipError}
           </Text>
-        )}
-        {!chipLoading && chip && (
-          <>
-            <Text type="secondary" style={{ fontSize: 12 }}>
-              获利比例{' '}
-              <Text strong style={{ color: chip.benefitRatio >= 0.5 ? '#ef5350' : '#26a69a' }}>
-                {(chip.benefitRatio * 100).toFixed(1)}%
-              </Text>
-            </Text>
-            <Text type="secondary" style={{ fontSize: 12 }}>
-              平均成本 <Text strong>{chip.avgCost.toFixed(2)}</Text>
-            </Text>
-            <Text type="secondary" style={{ fontSize: 12 }}>
-              90%成本{' '}
-              <Text strong>
-                {chip.range90.low.toFixed(2)} ~ {chip.range90.high.toFixed(2)}
-              </Text>
-              （集中度 {chip.range90.concentration.toFixed(3)}）
-            </Text>
-            <Text type="secondary" style={{ fontSize: 12 }}>
-              70%成本{' '}
-              <Text strong>
-                {chip.range70.low.toFixed(2)} ~ {chip.range70.high.toFixed(2)}
-              </Text>
-            </Text>
-          </>
         )}
         {period !== 'day' && (
           <Text type="warning" style={{ fontSize: 12 }}>
@@ -666,6 +700,45 @@ export function DailyChartModal({
                 </Text>
               )}
             </div>
+          )}
+        </div>
+        <div
+          style={{
+            width: CHIP_STATS_WIDTH,
+            flex: '0 0 auto',
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 12,
+            paddingTop: 2,
+          }}
+        >
+          {chip ? (
+            <>
+              <ChipStatItem
+                label="获利比例"
+                value={`${(chip.benefitRatio * 100).toFixed(1)}%`}
+                valueColor={chip.benefitRatio >= 0.5 ? '#ef5350' : '#26a69a'}
+              />
+              <ChipStatItem label="平均成本" value={chip.avgCost.toFixed(2)} />
+              <ChipStatItem
+                label="90%成本"
+                value={`${chip.range90.low.toFixed(2)} ~ ${chip.range90.high.toFixed(2)}`}
+              />
+              <Text type="secondary" style={{ fontSize: 11, marginTop: -8 }}>
+                集中度 {chip.range90.concentration.toFixed(3)}
+              </Text>
+              <ChipStatItem
+                label="70%成本"
+                value={`${chip.range70.low.toFixed(2)} ~ ${chip.range70.high.toFixed(2)}`}
+              />
+            </>
+          ) : (
+            !chipLoading && (
+              <Text type="secondary" style={{ fontSize: 12 }}>
+                暂无筹码数据
+              </Text>
+            )
           )}
         </div>
       </div>

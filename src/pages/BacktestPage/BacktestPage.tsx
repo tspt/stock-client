@@ -37,6 +37,7 @@ import {
 } from '@/utils/storage/opportunityIndexedDB';
 import { getAllStockRecords } from '@/services/opportunity/recordService';
 import { AddStocksToWatchListModal } from '@/components/AddStocksToWatchListModal/AddStocksToWatchListModal';
+import { DailyChartModal } from '@/pages/OpportunityPage/DailyChartModal';
 import {
   HIGH_LIFT_SCENARIOS,
   SCENARIOS,
@@ -257,6 +258,8 @@ export function BacktestPage() {
   /** 「追踪统计」浮层是否展开：归因统计较重，只在展开时才算 */
   const [statsPopoverOpen, setStatsPopoverOpen] = useState(false);
   const [showAddTrackingLatestModal, setShowAddTrackingLatestModal] = useState(false);
+  /** 点击表格行：展示该股日K与筹码分布弹窗 */
+  const [chartState, setChartState] = useState<{ code: string; name: string } | null>(null);
   const [searchText, setSearchText] = useState('');
   const [activeTab, setActiveTab] = useState<'tracking' | 'history'>('tracking');
   const [tablePageSize, setTablePageSize] = useState(100);
@@ -591,6 +594,30 @@ export function BacktestPage() {
     });
     return rows.sort(compareTrackedSignals);
   }, [rowsByDate]);
+
+  /** code → 日线历史（同时登记带/不带市场前缀两种 key，兼容列表里的两种写法） */
+  const historyByCode = useMemo(() => {
+    const map = new Map<string, StockHistoryRecord>();
+    allHistories.forEach((history) => {
+      map.set(history.code, history);
+      map.set(history.code.replace(/^(SH|SZ)/i, ''), history);
+    });
+    return map;
+  }, [allHistories]);
+
+  /** 点击行：打开该股的日K + 筹码弹窗 */
+  const handleOpenChart = useCallback((record: { code: string; name: string }) => {
+    setChartState({ code: normalizeSectorStockCode(record.code), name: record.name });
+  }, []);
+
+  /** 弹窗 K 线：直接复用页面已缓存的日线历史，不再单独请求 */
+  const chartKline = useMemo(() => {
+    if (!chartState) return [];
+    const history =
+      historyByCode.get(chartState.code) ||
+      historyByCode.get(chartState.code.replace(/^(SH|SZ)/i, ''));
+    return history?.dailyLines ?? [];
+  }, [chartState, historyByCode]);
 
   const handleScanLatestSignals = async () => {
     const sortSignals = (signals: ReturnType<typeof scanLatestScenarioSignals>) =>
@@ -1290,6 +1317,13 @@ export function BacktestPage() {
       render: (text: string) => <Text style={{ color: '#1890ff', textShadow: '0 0 0.25px currentcolor' }}>{text}</Text>,
     },
     {
+      title: '所属行业',
+      width: 120,
+      sorter: compareIndustry,
+      showSorterTooltip: { title: '按所属行业排序' },
+      render: renderIndustry,
+    },
+    {
       title: '买点日期',
       dataIndex: 'date',
       width: 110,
@@ -1302,13 +1336,6 @@ export function BacktestPage() {
       dataIndex: 'scenarioName',
       width: 150,
       render: (_, record) => <StockFeatureTag text={record.scenarioName} variant="red" />,
-    },
-    {
-      title: '所属行业',
-      width: 120,
-      sorter: compareIndustry,
-      showSorterTooltip: { title: '按所属行业排序' },
-      render: renderIndustry,
     },
     { title: '买入价', dataIndex: 'entryPrice', width: 90 },
     { title: '命中项', dataIndex: 'hitCount', width: 80 },
@@ -1334,6 +1361,13 @@ export function BacktestPage() {
       width: 80,
       fixed: 'left',
       render: (text: string) => <Text style={{ color: '#1890ff', textShadow: '0 0 0.25px currentcolor' }}>{text}</Text>,
+    },
+    {
+      title: '所属行业',
+      width: 120,
+      sorter: compareIndustry,
+      showSorterTooltip: { title: '按所属行业排序' },
+      render: renderIndustry,
     },
     { title: '信号日期', dataIndex: 'signalDate', width: 110, sorter: (a, b) => a.timestamp - b.timestamp },
     { title: '收盘价', dataIndex: 'close', width: 90 },
@@ -1363,13 +1397,6 @@ export function BacktestPage() {
       dataIndex: 'scenarioName',
       width: 150,
       render: (_, record) => <StockFeatureTag text={record.scenarioName} variant="red" />,
-    },
-    {
-      title: '所属行业',
-      width: 120,
-      sorter: compareIndustry,
-      showSorterTooltip: { title: '按所属行业排序' },
-      render: renderIndustry,
     },
     {
       title: '机会记录',
@@ -1876,6 +1903,10 @@ export function BacktestPage() {
                 rowKey={(record) => `${record.code}-${record.date}-${record.scenario}-${record.timestamp}`}
                 columns={activeColumns}
                 dataSource={activeDataSource}
+                onRow={(record) => ({
+                  onClick: () => handleOpenChart(record),
+                  className: styles.clickableRow,
+                })}
                 pagination={{
                   pageSize: tablePageSize,
                   showSizeChanger: true,
@@ -1894,6 +1925,14 @@ export function BacktestPage() {
           </Card>
         </div>
       </Content>
+      <DailyChartModal
+        open={chartState !== null}
+        code={chartState?.code ?? ''}
+        name={chartState?.name ?? ''}
+        kline={chartKline}
+        period="day"
+        onClose={() => setChartState(null)}
+      />
       <AddStocksToWatchListModal
         visible={showAddTrackingLatestModal}
         stocks={trackingLatestSignalStocks.stocks}
