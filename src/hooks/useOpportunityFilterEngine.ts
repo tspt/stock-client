@@ -549,13 +549,15 @@ export function useOpportunityFilterEngine({
   /**
    * 把 Worker 计算出的交易信号合并进筛选结果。
    * 信号是异步算出来的，算好后只做一次轻量 map，不会重跑筛选。
+   * 交易信号筛选也在这里做：信号由 Worker 异步算，主线程拿到后才能判断。
    */
+  const tradingSignalTypes = filters.tradingSignalTypes;
   const filteredData = useMemo(() => {
     if (!signalMap) {
-      // 信号尚未就绪，保留原样，避免表格列闪烁
+      // 信号尚未就绪，保留原样，避免表格列闪烁（此时也不做信号筛选）
       return filteredRawData;
     }
-    return filteredRawData.map((item) => {
+    const merged = filteredRawData.map((item) => {
       const signal = signalMap.get(item.code);
       if (signal) {
         return { ...item, tradingSignal: signal };
@@ -566,7 +568,15 @@ export function useOpportunityFilterEngine({
       const { tradingSignal: _unused, ...rest } = item;
       return rest;
     });
-  }, [filteredRawData, signalMap]);
+
+    if (!tradingSignalTypes || tradingSignalTypes.length === 0) {
+      return merged;
+    }
+
+    // 勾选多个类型为「或」关系；无信号的股票不命中
+    const allowed = new Set(tradingSignalTypes);
+    return merged.filter((item) => !!item.tradingSignal && allowed.has(item.tradingSignal.type));
+  }, [filteredRawData, signalMap, tradingSignalTypes]);
 
   return {
     filteredData,

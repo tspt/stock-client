@@ -1,4 +1,4 @@
-import type { ConsolidationType, StockOpportunityData } from '@/types/stock';
+import type { ConsolidationType, StockOpportunityData, TradingSignalType } from '@/types/stock';
 
 export interface NumberRange {
   min?: number;
@@ -78,6 +78,11 @@ export interface OpportunityFilterSnapshot {
   rsiRange: NumberRange;
   /** RSI周期 */
   rsiPeriod: number;
+  /**
+   * 交易信号筛选：勾选任一信号类型即入选（OR）；
+   * 空数组 / 不传表示不按交易信号筛选。无信号（K 线不足 60 根）视为不命中。
+   */
+  tradingSignalTypes?: TradingSignalType[];
   /** 布林带阈值（0-1之间，默认0.02即2%） */
   bollingerThreshold: number;
   /** MACD金叉 */

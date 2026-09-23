@@ -6,7 +6,7 @@ import { memo, useMemo, useState } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 import { Button, Drawer, Space, Collapse, InputNumber, Checkbox, Select } from 'antd';
 import { FilterOutlined } from '@ant-design/icons';
-import type { ConsolidationType } from '@/types/stock';
+import type { ConsolidationType, TradingSignalType } from '@/types/stock';
 import { PatternTooltip } from '@/components/PatternTooltip/PatternTooltip';
 import { normalizeStockNameList } from '@/utils/format/format';
 import {
@@ -21,6 +21,15 @@ const ALL_FILTER_PANEL_KEYS = ['data', 'aiAnalysis', 'consolidation', 'trendLine
 const VOLUME_PULLBACK_TRIGGER_OPTIONS: { label: string; value: 'any' | 'limitUp' }[] = [
   { label: '大涨 / 盘中触及涨停', value: 'any' },
   { label: '必须收盘涨停', value: 'limitUp' },
+];
+
+/** 交易信号筛选选项（文案与机会表格「交易信号」列保持一致） */
+const TRADING_SIGNAL_FILTER_OPTIONS: { label: string; value: TradingSignalType }[] = [
+  { label: '强烈买入', value: 'STRONG_BUY' },
+  { label: '建议买入', value: 'BUY' },
+  { label: '观望', value: 'HOLD' },
+  { label: '建议卖出', value: 'SELL' },
+  { label: '强烈卖出', value: 'STRONG_SELL' },
 ];
 
 /** 筛选抽屉宽度：加宽以减少表单项折行与纵向滚动 */
@@ -91,6 +100,8 @@ export function buildOpportunityFilterSummary(p: {
   financeNetProfitGrowthRange: NumRange;
   // 新增技术指标筛选
   rsiRange: NumRange;
+  // 交易信号筛选
+  tradingSignalTypes?: TradingSignalType[];
   // AI分析筛选
   aiAnalysisEnabled: boolean;
   aiTrendUp: boolean;
@@ -135,6 +146,13 @@ export function buildOpportunityFilterSummary(p: {
   }
   if (p.recentLimitDownCount != null) {
     parts.push(`跌停≥${p.recentLimitDownCount}·${p.limitDownPeriod}天`);
+  }
+  if (p.tradingSignalTypes && p.tradingSignalTypes.length > 0) {
+    const labels = p.tradingSignalTypes.map((t) => {
+      const o = TRADING_SIGNAL_FILTER_OPTIONS.find((x) => x.value === t);
+      return o ? o.label : t;
+    });
+    parts.push(`信号${labels.join('、')}`);
   }
   if (p.consolidationFilterEnabled) {
     let typePart: string;
@@ -356,6 +374,9 @@ export interface OpportunityFiltersPanelProps {
   setRsiRange: SetRange;
   rsiPeriod: number;
   setRsiPeriod: (v: number) => void;
+  // 交易信号筛选 props
+  tradingSignalTypes?: TradingSignalType[];
+  setTradingSignalTypes?: (v: TradingSignalType[]) => void;
   // AI分析筛选 props
   aiAnalysisEnabled: boolean;
   setAiAnalysisEnabled: (v: boolean) => void;
@@ -524,6 +545,9 @@ function OpportunityFiltersPanelComponent({
   setRsiRange,
   rsiPeriod,
   setRsiPeriod,
+  // 交易信号筛选
+  tradingSignalTypes = [],
+  setTradingSignalTypes = () => { },
   // AI分析筛选
   aiAnalysisEnabled,
   setAiAnalysisEnabled,
@@ -644,6 +668,7 @@ function OpportunityFiltersPanelComponent({
         financeRevenueGrowthRange,
         financeNetProfitGrowthRange,
         rsiRange,
+        tradingSignalTypes,
         aiAnalysisEnabled,
         aiTrendUp,
         aiTrendDown,
@@ -709,6 +734,7 @@ function OpportunityFiltersPanelComponent({
       financeRevenueGrowthRange,
       financeNetProfitGrowthRange,
       rsiRange,
+      tradingSignalTypes,
       aiAnalysisEnabled,
       aiTrendUp,
       aiTrendDown,
@@ -1207,6 +1233,24 @@ function OpportunityFiltersPanelComponent({
                           }}
                         />
                         <span style={{ marginLeft: 4 }}>天</span>
+                      </div>
+                    </div>
+                    <div className={styles.filterRow}>
+                      <div className={styles.filterItem}>
+                        <span className={styles.filterLabel}>交易信号：</span>
+                        <Select
+                          mode="multiple"
+                          allowClear
+                          value={tradingSignalTypes}
+                          style={{ width: 320 }}
+                          placeholder="全部（不筛选）"
+                          maxTagCount="responsive"
+                          onChange={(values) => setTradingSignalTypes(values as TradingSignalType[])}
+                          options={TRADING_SIGNAL_FILTER_OPTIONS}
+                        />
+                        <span className={styles.filterHint} style={{ marginLeft: 8 }}>
+                          可多选，满足任一即入选（无信号不命中）
+                        </span>
                       </div>
                     </div>
                   </div>

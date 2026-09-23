@@ -80,7 +80,7 @@ import {
   OPPORTUNITY_DEFAULT_INDUSTRY_GROUP_FILTER,
 } from '@/utils/config/opportunityAnalysisDefaults';
 import { getUnifiedSectorBasics } from '@/services/hot/unified-sectors';
-import type { IndustrySectorBasicInfo, ConceptSectorBasicInfo } from '@/types/stock';
+import type { IndustrySectorBasicInfo, ConceptSectorBasicInfo, TradingSignalType } from '@/types/stock';
 import {
   getMappedConcepts,
   getMappedIndustry,
@@ -195,6 +195,8 @@ const INITIAL_FILTER_STATE = {
   // 技术指标筛选
   rsiRange: {} as { min?: number; max?: number },
   rsiPeriod: OPPORTUNITY_DEFAULT_INDICATORS.rsiPeriod,
+  // 交易信号筛选（空数组＝不筛选）
+  tradingSignalTypes: [] as TradingSignalType[],
   bollingerThreshold: OPPORTUNITY_DEFAULT_INDICATORS.bollingerThreshold,
   macdGoldenCross: false,
   macdDeathCross: false,
@@ -555,6 +557,10 @@ export function OpportunityPage() {
   // 新增技术指标筛选状态
   const [rsiRange, setRsiRange] = useState<{ min?: number; max?: number }>(INITIAL_FILTER_STATE.rsiRange);
   const [rsiPeriod, setRsiPeriod] = useState<number>(INITIAL_FILTER_STATE.rsiPeriod);
+  // 交易信号筛选状态（空数组＝不筛选）
+  const [tradingSignalTypes, setTradingSignalTypes] = useState<TradingSignalType[]>(
+    INITIAL_FILTER_STATE.tradingSignalTypes
+  );
   const [bollingerThreshold, setBollingerThreshold] = useState<number>(INITIAL_FILTER_STATE.bollingerThreshold);
   const [macdGoldenCross, setMacdGoldenCross] = useState<boolean>(INITIAL_FILTER_STATE.macdGoldenCross);
   const [macdDeathCross, setMacdDeathCross] = useState<boolean>(INITIAL_FILTER_STATE.macdDeathCross);
@@ -746,6 +752,8 @@ export function OpportunityPage() {
           // 新增技术指标筛选 actions
           setRsiRange,
           setRsiPeriod,
+          // 交易信号筛选 actions
+          setTradingSignalTypes,
           // AI分析筛选 actions
           setAiAnalysisEnabled,
           setAiTrendUp,
@@ -869,6 +877,7 @@ export function OpportunityPage() {
         volumePullbackUpperShadowRatio,
         rsiRange: { ...rsiRange },
         rsiPeriod,
+        tradingSignalTypes: [...tradingSignalTypes],
         aiAnalysisEnabled,
         aiTrendUp,
         aiTrendDown,
@@ -941,6 +950,7 @@ export function OpportunityPage() {
     volumePullbackUpperShadowRatio,
     rsiRange,
     rsiPeriod,
+    tradingSignalTypes,
     aiAnalysisEnabled,
     aiTrendUp,
     aiTrendDown,
@@ -1022,6 +1032,7 @@ export function OpportunityPage() {
         volumePullbackUpperShadowRatio,
         rsiRange: { ...rsiRange },
         rsiPeriod,
+        tradingSignalTypes: [...tradingSignalTypes],
         aiAnalysisEnabled,
         aiTrendUp,
         aiTrendDown,
@@ -1096,6 +1107,7 @@ export function OpportunityPage() {
     volumePullbackUpperShadowRatio,
     rsiRange,
     rsiPeriod,
+    tradingSignalTypes,
     aiAnalysisEnabled,
     aiTrendUp,
     aiTrendDown,
@@ -1325,6 +1337,7 @@ export function OpportunityPage() {
       volumePullbackUpperShadowRatio,
       rsiRange,
       rsiPeriod,
+      tradingSignalTypes,
       bollingerThreshold,
       macdGoldenCross,
       macdDeathCross,
@@ -1403,6 +1416,7 @@ export function OpportunityPage() {
       volumePullbackUpperShadowRatio,
       rsiRange,
       rsiPeriod,
+      tradingSignalTypes,
       bollingerThreshold,
       macdGoldenCross,
       macdDeathCross,
@@ -1487,6 +1501,7 @@ export function OpportunityPage() {
         volumePullbackRequireUpperShadow,
         volumePullbackUpperShadowRatio,
         rsiRange,
+        tradingSignalTypes,
         aiAnalysisEnabled,
         aiTrendUp,
         aiTrendDown,
@@ -1554,6 +1569,7 @@ export function OpportunityPage() {
       volumePullbackRequireUpperShadow,
       volumePullbackUpperShadowRatio,
       rsiRange,
+      tradingSignalTypes,
       aiAnalysisEnabled,
       aiTrendUp,
       aiTrendDown,
@@ -1771,6 +1787,8 @@ export function OpportunityPage() {
     // 重置新增的技术指标筛选
     setRsiRange({ ...s.rsiRange });
     setRsiPeriod(s.rsiPeriod);
+    // 重置交易信号筛选
+    setTradingSignalTypes([...s.tradingSignalTypes]);
     // 重置AI分析筛选
     setAiAnalysisEnabled(s.aiAnalysisEnabled);
     setAiTrendUp(s.aiTrendUp);
@@ -2549,6 +2567,9 @@ export function OpportunityPage() {
             setRsiRange={setRsiRange}
             rsiPeriod={rsiPeriod}
             setRsiPeriod={setRsiPeriod}
+            // 交易信号筛选 props
+            tradingSignalTypes={tradingSignalTypes}
+            setTradingSignalTypes={setTradingSignalTypes}
             // AI分析筛选 props
             aiAnalysisEnabled={aiAnalysisEnabled}
             setAiAnalysisEnabled={setAiAnalysisEnabled}

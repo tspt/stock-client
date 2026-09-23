@@ -3,7 +3,7 @@
  * 与 IndexedDB 中的分析结果 + K 线缓存配合，实现纯前端筛选与二次访问还原。
  */
 
-import type { ConsolidationType, KLinePeriod } from '@/types/stock';
+import type { ConsolidationType, KLinePeriod, TradingSignalType } from '@/types/stock';
 import {
   OPPORTUNITY_DEFAULT_CONSOLIDATION,
   OPPORTUNITY_DEFAULT_SHARP_MOVE,
@@ -91,6 +91,14 @@ export function visibilityFromActiveFilterPanelKey(
 
 const VALID_PERIODS: KLinePeriod[] = ['day', 'week', 'month', 'year'];
 const VALID_CONSOLIDATION_TYPES: ConsolidationType[] = ['low_stable', 'high_stable', 'box'];
+/** 交易信号类型（用于校验持久化数据） */
+const VALID_TRADING_SIGNAL_TYPES: TradingSignalType[] = [
+  'STRONG_BUY',
+  'BUY',
+  'HOLD',
+  'SELL',
+  'STRONG_SELL',
+];
 /** 名称筛选面板可用的行业分组标签（用于校验持久化数据） */
 const VALID_INDUSTRY_GROUP_LABELS = new Set(OPPORTUNITY_INDUSTRY_GROUPS.map((group) => group.label));
 
@@ -176,6 +184,8 @@ export interface OpportunityFilterPrefs {
   rsiRange: { min?: number; max?: number };
   /** RSI周期 */
   rsiPeriod: number;
+  /** 交易信号筛选（空数组＝不筛选） */
+  tradingSignalTypes: TradingSignalType[];
   /** AI分析筛选 */
   aiAnalysisEnabled: boolean;
   aiTrendUp: boolean;
@@ -236,6 +246,18 @@ function parseConsolidationTypes(v: unknown): ConsolidationType[] {
   for (const item of v) {
     if (typeof item === 'string' && VALID_CONSOLIDATION_TYPES.includes(item as ConsolidationType)) {
       out.push(item as ConsolidationType);
+    }
+  }
+  return out;
+}
+
+/** 解析交易信号筛选（非法值丢弃；缺省为空数组＝不筛选） */
+function parseTradingSignalTypes(v: unknown): TradingSignalType[] {
+  if (!Array.isArray(v)) return [];
+  const out: TradingSignalType[] = [];
+  for (const item of v) {
+    if (typeof item === 'string' && VALID_TRADING_SIGNAL_TYPES.includes(item as TradingSignalType)) {
+      out.push(item as TradingSignalType);
     }
   }
   return out;
@@ -367,6 +389,8 @@ export function loadOpportunityFilterPrefs(): OpportunityFilterPrefs | null {
       // 新增技术指标筛选
       rsiRange: parseRange(p.rsiRange),
       rsiPeriod: isFiniteNumber(p.rsiPeriod) ? Math.floor(p.rsiPeriod) : 6,
+      // 交易信号筛选
+      tradingSignalTypes: parseTradingSignalTypes(p.tradingSignalTypes),
       // AI分析筛选
       aiAnalysisEnabled: p.aiAnalysisEnabled === true,
       aiTrendUp: p.aiTrendUp === true,
@@ -476,6 +500,8 @@ export function getDefaultFilterPrefsFields(): Omit<
     // 新增技术指标筛选默认值
     rsiRange: {},
     rsiPeriod: 6,
+    // 交易信号筛选默认值（不筛选）
+    tradingSignalTypes: [],
     // AI分析筛选默认值
     aiAnalysisEnabled: false,
     aiTrendUp: false,
@@ -585,6 +611,8 @@ export interface OpportunityFilterPrefsApplyActions {
   // 新增技术指标筛选 actions
   setRsiRange: (v: { min?: number; max?: number }) => void;
   setRsiPeriod: (v: number) => void;
+  // 交易信号筛选 actions
+  setTradingSignalTypes: (v: TradingSignalType[]) => void;
   // AI分析筛选 actions
   setAiAnalysisEnabled: (v: boolean) => void;
   setAiTrendUp: (v: boolean) => void;
@@ -666,6 +694,8 @@ export function applyOpportunityFilterPrefsToState(
   // 应用新增技术指标筛选
   actions.setRsiRange({ ...prefs.rsiRange });
   actions.setRsiPeriod(prefs.rsiPeriod);
+  // 应用交易信号筛选
+  actions.setTradingSignalTypes([...prefs.tradingSignalTypes]);
   // 应用AI分析筛选
   actions.setAiAnalysisEnabled(prefs.aiAnalysisEnabled);
   actions.setAiTrendUp(prefs.aiTrendUp);
