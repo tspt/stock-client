@@ -71,6 +71,11 @@ import {
   type WeeklyFetchProgress,
 } from '@/services/stocks/weeklyKlineService';
 import { exportWeeklyResultToPng } from '@/utils/export/weeklyKlineExportUtils';
+import {
+  findDefaultTableSorter,
+  sortRowsByTableSorter,
+  type ActiveTableSorter,
+} from '@/utils/sort/tableSort';
 import { logger } from '@/utils/business/logger';
 import {
   OPPORTUNITY_TABLE_HEIGHT_EXTRA_PADDING,
@@ -603,6 +608,8 @@ export function WeeklyKPage() {
     showTotal: (total) => `共 ${total} 条`,
     pageSizeOptions: ['50', '100', '200'],
   });
+  /** 表格当前排序状态（点表头后由 onChange 写入）；null = 还没点过，用列的 defaultSortOrder 兜底 */
+  const [tableSorter, setTableSorter] = useState<ActiveTableSorter | null>(null);
   const tableCardRef = useRef<HTMLDivElement>(null);
 
   const cancelRef = useRef(false);
@@ -1274,6 +1281,39 @@ export function WeeklyKPage() {
     [watchColumns]
   );
 
+  /**
+   * 图表弹窗的行导航列表：顺序与「本周名单」表格当前排序完全一致，
+   * 保证 ← / → 切到的是屏幕上真正的上一行 / 下一行。
+   * 用户还没点过表头时，用列声明的 defaultSortOrder（综合分降序）兜底。
+   */
+  const chartNavRecords = useMemo(() => {
+    const sorted = sortRowsByTableSorter(
+      displayRows,
+      watchColumns,
+      tableSorter ?? findDefaultTableSorter(watchColumns)
+    );
+    return sorted.map((row) => ({ code: row.code, name: row.name }));
+  }, [displayRows, watchColumns, tableSorter]);
+
+  /**
+   * 弹窗内切换到表格上一行 / 下一行：
+   * 同步把表格翻到该行所在页，避免「弹窗换了、表格还停在旧页」。
+   */
+  const handleChartNavigate = useCallback(
+    (record: { code: string; name: string }) => {
+      const index = chartNavRecords.findIndex((item) => item.code === record.code);
+      const pageSize = Number(tablePagination.pageSize) || 100;
+      if (index >= 0) {
+        const targetPage = Math.floor(index / pageSize) + 1;
+        setTablePagination((prev) =>
+          prev.current === targetPage ? prev : { ...prev, current: targetPage }
+        );
+      }
+      setChartState({ code: record.code, name: record.name });
+    },
+    [chartNavRecords, tablePagination.pageSize]
+  );
+
   return (
     <Layout className={styles.weeklyPage}>
       <div className={styles.toolbarRow}>
@@ -1689,13 +1729,19 @@ export function WeeklyKPage() {
             virtual
             scroll={{ x: tableScrollX, y: tableHeight }}
             pagination={tablePagination}
-            onChange={(paginationConfig) =>
+            onChange={(paginationConfig, _filters, sorter) => {
+              // 记录当前排序：弹窗里的 ← / → 要按排序后的顺序切换
+              const current = Array.isArray(sorter) ? sorter[0] : sorter;
+              setTableSorter({
+                columnKey: current?.columnKey != null ? String(current.columnKey) : null,
+                order: current?.order ?? null,
+              });
               setTablePagination((prev) => ({
                 ...prev,
                 current: paginationConfig.current,
                 pageSize: paginationConfig.pageSize,
-              }))
-            }
+              }));
+            }}
             onRow={(record) => ({
               onClick: () => setChartState({ code: record.code, name: record.name }),
               className: styles.clickableRow,
@@ -1726,6 +1772,8 @@ export function WeeklyKPage() {
         name={chartState?.name ?? ''}
         kline={chartState ? klines.get(chartState.code) ?? [] : []}
         analysis={chartState ? rows.find((row) => row.code === chartState.code) ?? null : null}
+        records={chartNavRecords}
+        onNavigate={handleChartNavigate}
         onClose={() => setChartState(null)}
       />
     </Layout>

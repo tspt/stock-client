@@ -14,7 +14,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Modal, Button, Space, Tag, Tooltip, Typography, App, Spin } from 'antd';
-import { DownloadOutlined } from '@ant-design/icons';
+import { DownloadOutlined, LeftOutlined, RightOutlined } from '@ant-design/icons';
 import ReactECharts from 'echarts-for-react';
 import type { EChartsOption } from 'echarts';
 import type { KLineData } from '@/types/stock';
@@ -26,6 +26,8 @@ import { YI, type WeeklyAnalysis } from '@/utils/analysis/weekly';
 import { formatVolume } from '@/utils/format/format';
 import { downloadDataUrl } from '@/utils/export/weeklyKlineExportUtils';
 import { useChipDistribution } from '@/hooks/useChipDistribution';
+import { useModalDrag } from '@/hooks/useModalDrag';
+import { useRecordNavigation } from '@/hooks/useRecordNavigation';
 import { logger } from '@/utils/business/logger';
 
 const { Text } = Typography;
@@ -71,6 +73,10 @@ interface WeeklyChartModalProps {
   name: string;
   kline: KLineData[];
   analysis: WeeklyAnalysis | null;
+  /** 表格当前展示顺序的股票列表，用于 ← / → 快速切换上一行 / 下一行 */
+  records?: Array<{ code: string; name: string }>;
+  /** 切换相邻行时回调，父级据此更新弹窗数据 */
+  onNavigate?: (record: { code: string; name: string }) => void;
   onClose: () => void;
 }
 
@@ -147,6 +153,8 @@ function buildWeeklyChartOption(input: WeeklyChartBuildInput): EChartsOption {
       : null;
   const changeText = changePct === null ? '' : `${changePct >= 0 ? '+' : ''}${changePct.toFixed(2)}%`;
   const changeColor = changePct !== null && changePct < 0 ? '#26a69a' : '#ef5350';
+  /** 收盘价与涨幅同源（十字星所指那一根优先），按「当前价 涨幅」习惯顺序显示在涨幅左侧 */
+  const closeText = lastBar ? lastBar.close.toFixed(2) : '';
 
   const timeAxis = (gridIndex?: number) => ({
     type: 'category' as const,
@@ -162,8 +170,8 @@ function buildWeeklyChartOption(input: WeeklyChartBuildInput): EChartsOption {
   return {
     title: {
       text: `${name} 周K（MA5≈月线 / MA10≈季线 / MA20≈半年线 / MA60≈牛熊线）${
-        changeText ? `  {chg|${changeText}}` : ''
-      }`,
+        closeText ? `  {chg|当前价 ${closeText}}` : ''
+      }${changeText ? `  {chg|涨幅 ${changeText}}` : ''}`,
       left: 0,
       textStyle: {
         fontSize: 14,
@@ -317,11 +325,31 @@ function buildWeeklyChartOption(input: WeeklyChartBuildInput): EChartsOption {
   };
 }
 
-export function WeeklyChartModal({ open, code, name, kline, analysis, onClose }: WeeklyChartModalProps) {
+export function WeeklyChartModal({
+  open,
+  code,
+  name,
+  kline,
+  analysis,
+  records = [],
+  onNavigate,
+  onClose,
+}: WeeklyChartModalProps) {
   const { message } = App.useApp();
   const chartRef = useRef<ReactECharts>(null);
   /** 周线分析弹窗固定使用周线口径筹码 */
   const chipPeriod: ChipPeriod = 'week';
+
+  /** ← / →（或底部按钮）在表格行之间切换：切换后 code / kline 变化会自动复位缩放、十字星与筹码 */
+  const navigation = useRecordNavigation({
+    enabled: open,
+    records,
+    currentCode: code,
+    onNavigate,
+  });
+
+  /** 拖拽：按住标题栏可整体移动弹窗，关闭后自动复位居中 */
+  const modalDrag = useModalDrag(open);
 
   /** 默认可见区间：最近 120 根周K（约两年多） */
   const defaultZoom = useCallback((bars: KLineData[]) => {
@@ -590,15 +618,36 @@ export function WeeklyChartModal({ open, code, name, kline, analysis, onClose }:
       open={open}
       onCancel={onClose}
       width={1540}
-      title={`${name || ''} ${code} 周线分析`}
-      footer={[
-        <Button key="export" icon={<DownloadOutlined />} onClick={handleExportChart}>
-          导出周K图(PNG)
-        </Button>,
-        <Button key="close" type="primary" onClick={onClose}>
-          关闭
-        </Button>,
-      ]}
+      title={
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+          <span>{`${name || ''} ${code} 周线分析`}</span>
+          {analysis?.industryName && (
+            <Tag color="blue" style={{ marginInlineEnd: 0 }}>
+              {analysis.industryName}
+            </Tag>
+          )}
+          {navigation.currentIndex >= 0 && navigation.total > 1 && (
+            <Text type="secondary" style={{ fontSize: 12, fontWeight: 'normal' }}>
+              第 {navigation.currentIndex + 1} / {navigation.total} 只
+            </Text>
+          )}
+        </div>
+      }
+      footer={
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ flex: 1 }} />
+          <Space size={8}>
+            <Button key="export" icon={<DownloadOutlined />} onClick={handleExportChart}>
+              导出周K图(PNG)
+            </Button>
+            <Button key="close" type="primary" onClick={onClose}>
+              关闭
+            </Button>
+          </Space>
+        </div>
+      }
+      modalRender={modalDrag.modalRender}
+      styles={{ header: modalDrag.styles.header }}
       destroyOnHidden
       centered
     >
@@ -606,7 +655,6 @@ export function WeeklyChartModal({ open, code, name, kline, analysis, onClose }:
         <div style={{ marginBottom: 12 }}>
           <Space wrap size={[6, 6]}>
             <Text strong>评分 {analysis.score}</Text>
-            {analysis.industryName && <Tag>{analysis.industryName}</Tag>}
             {analysis.pxAboveMa8 && <Tag color="orange">站上周MA8</Tag>}
             {analysis.pxAboveMa60 && <Tag color="purple">站上60周线</Tag>}
             {analysis.ma60FlatOrUp && <Tag color="purple">60周线走平/上翘</Tag>}

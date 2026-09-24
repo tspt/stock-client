@@ -39,6 +39,11 @@ import { getAllStockRecords } from '@/services/opportunity/recordService';
 import { AddStocksToWatchListModal } from '@/components/AddStocksToWatchListModal/AddStocksToWatchListModal';
 import { DailyChartModal } from '@/pages/OpportunityPage/DailyChartModal';
 import {
+  findDefaultTableSorter,
+  sortRowsByTableSorter,
+  type ActiveTableSorter,
+} from '@/utils/sort/tableSort';
+import {
   HIGH_LIFT_SCENARIOS,
   SCENARIOS,
   scanHistoricalBuyPoints,
@@ -263,10 +268,20 @@ export function BacktestPage() {
   const [searchText, setSearchText] = useState('');
   const [activeTab, setActiveTab] = useState<'tracking' | 'history'>('tracking');
   const [tablePageSize, setTablePageSize] = useState(100);
+  /** 表格当前页（受控）：弹窗内 ← / → 切换股票时同步翻页 */
+  const [tablePage, setTablePage] = useState(1);
+  /** 表格当前排序状态（点表头后由 onChange 写入）；null = 还没点过，用列的 defaultSortOrder 兜底 */
+  const [tableSorter, setTableSorter] = useState<ActiveTableSorter | null>(null);
   const [tableScrollY, setTableScrollY] = useState(360);
   /** 扫描最新的截止月 YYYY-MM；空=用各股日K最后一根 */
   const [asOfMonth, setAsOfMonth] = useState<string | null>(null);
   const tableAreaRef = useRef<HTMLDivElement>(null);
+
+  // 切换 Tab 后列定义不同，旧的排序状态失效：回到「未点过表头」，由列的 defaultSortOrder 兜底
+  useEffect(() => {
+    setTableSorter(null);
+    setTablePage(1);
+  }, [activeTab]);
 
   useEffect(() => {
     const loadSectorMapping = async () => {
@@ -1551,6 +1566,66 @@ export function BacktestPage() {
       : filteredHistorySignals;
   const activeScrollX = activeTab === 'tracking' ? 2680 : 1800;
 
+  /** 表格当前生效的排序：优先用户点选的，其次列上声明的 defaultSortOrder */
+  const activeTableSorter = useMemo(
+    () => tableSorter ?? findDefaultTableSorter(activeColumns),
+    [tableSorter, activeColumns]
+  );
+
+  /** 与表格展示顺序一致的当前 Tab 数据（按 antd 同口径复现排序） */
+  const sortedActiveRows = useMemo(
+    () =>
+      sortRowsByTableSorter(
+        activeDataSource as Array<{ code: string; name: string }>,
+        activeColumns,
+        activeTableSorter
+      ),
+    [activeDataSource, activeColumns, activeTableSorter]
+  );
+
+  /**
+   * 图表弹窗的行导航列表：顺序与表格当前排序一致。
+   * 同一只票可能出现多行（不同信号日），按代码去重，
+   * 让「上一只 / 下一只」切的是另一只票，而不是同一只票的另一行。
+   */
+  const chartNavRecords = useMemo(() => {
+    const seen = new Set<string>();
+    const list: Array<{ code: string; name: string }> = [];
+    sortedActiveRows.forEach((row) => {
+      const code = normalizeSectorStockCode(row.code);
+      if (seen.has(code)) return;
+      seen.add(code);
+      list.push({ code, name: row.name });
+    });
+    return list;
+  }, [sortedActiveRows]);
+
+  /** 弹窗标题展示的所属行业：跟随当前弹窗个股（行内行业优先，缺失时回退板块映射） */
+  const chartIndustry = useMemo(() => {
+    if (!chartState) return undefined;
+    const row = (activeDataSource as Array<{ code: string; industry?: SectorInfo | null }>).find(
+      (item) => normalizeSectorStockCode(item.code) === chartState.code
+    );
+    if (!row) return undefined;
+    return (row.industry || getMappedIndustry(row.code, industryMapping))?.name;
+  }, [chartState, activeDataSource, industryMapping]);
+
+  /** 弹窗内切换上一只 / 下一只：同步把表格翻到该股票所在页 */
+  const handleChartNavigate = useCallback(
+    (record: { code: string; name: string }) => {
+      const rowIndex = sortedActiveRows.findIndex(
+        (row) => normalizeSectorStockCode(row.code) === record.code
+      );
+      const pageSize = tablePageSize || 100;
+      if (rowIndex >= 0) {
+        const targetPage = Math.floor(rowIndex / pageSize) + 1;
+        setTablePage((prev) => (prev === targetPage ? prev : targetPage));
+      }
+      setChartState({ code: record.code, name: record.name });
+    },
+    [sortedActiveRows, tablePageSize]
+  );
+
   return (
     <Layout className={styles.backtestPage}>
       <Header className={styles.header}>
@@ -1907,11 +1982,23 @@ export function BacktestPage() {
                   onClick: () => handleOpenChart(record),
                   className: styles.clickableRow,
                 })}
+                onChange={(_pagination, _filters, sorter) => {
+                  // 记录当前排序：弹窗里的 ← / → 要按排序后的顺序切换
+                  const current = Array.isArray(sorter) ? sorter[0] : sorter;
+                  setTableSorter({
+                    columnKey: current?.columnKey != null ? String(current.columnKey) : null,
+                    order: current?.order ?? null,
+                  });
+                }}
                 pagination={{
+                  current: tablePage,
                   pageSize: tablePageSize,
                   showSizeChanger: true,
                   pageSizeOptions: ['50', '100', '200'],
-                  onChange: (_, pageSize) => setTablePageSize(pageSize),
+                  onChange: (page, pageSize) => {
+                    setTablePage(page);
+                    setTablePageSize(pageSize);
+                  },
                 }}
                 scroll={{
                   x: activeScrollX,
@@ -1931,6 +2018,9 @@ export function BacktestPage() {
         name={chartState?.name ?? ''}
         kline={chartKline}
         period="day"
+        industry={chartIndustry}
+        records={chartNavRecords}
+        onNavigate={handleChartNavigate}
         onClose={() => setChartState(null)}
       />
       <AddStocksToWatchListModal

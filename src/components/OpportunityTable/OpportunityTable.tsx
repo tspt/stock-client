@@ -6,7 +6,7 @@ import { useMemo, useState, memo } from 'react';
 import { Table } from 'antd';
 import type React from 'react';
 import type { ColumnsType, TablePaginationConfig } from 'antd/es/table';
-import type { OverviewSortConfig, StockOpportunityData, TradingSignalType } from '@/types/stock';
+import type { OverviewSortConfig, StockOpportunityData } from '@/types/stock';
 import type { ColumnConfig } from '@/types/common';
 import {
   formatPrice,
@@ -20,19 +20,8 @@ import {
   formatGrowthPercent,
 } from '@/utils/format/format';
 import { StockConceptTags, StockFeatureTag, StockStatusTag } from '@/components/common/Tags';
+import { createOpportunityColumnSorter } from '@/utils/sort/tableSort';
 import styles from './OpportunityTable.module.css';
-
-/**
- * 交易信号排序权重：买入类相邻、卖出类相邻，观望排在最后。
- * 升序顺序：建议买入 → 强烈买入 → 建议卖出 → 强烈卖出 → 观望（无信号始终最后）
- */
-const TRADING_SIGNAL_SORT_WEIGHT: Record<TradingSignalType, number> = {
-  BUY: 0,
-  STRONG_BUY: 1,
-  SELL: 2,
-  STRONG_SELL: 3,
-  HOLD: 4,
-};
 
 interface OpportunityTableProps {
   data: StockOpportunityData[];
@@ -43,60 +32,39 @@ interface OpportunityTableProps {
   onShowAIAnalysis?: (record: StockOpportunityData) => void;
   /** 行点击回调（传入后整行可点击） */
   onRowClick?: (record: StockOpportunityData) => void;
+  /** 受控分页（与 onPaginationChange 配合，只需传 current / pageSize）；不传则由组件内部维护 */
+  pagination?: TablePaginationConfig;
+  /** 受控分页变化回调；用于「弹窗切换股票时同步表格翻页」等场景 */
+  onPaginationChange?: (pagination: TablePaginationConfig) => void;
 }
 
-export const OpportunityTable = memo(function OpportunityTable({ data, columns, sortConfig, onSortChange, tableHeight = 600, onShowAIAnalysis, onRowClick }: OpportunityTableProps) {
-  const [pagination, setPagination] = useState<TablePaginationConfig>({
-    current: 1,
-    pageSize: 100,
-    showSizeChanger: true,
-    showTotal: (total) => `共 ${total} 条`,
-    pageSizeOptions: ['50', '100', '200'],
-  });
+/** 分页默认配置：受控模式下父级只需给出 current / pageSize */
+const DEFAULT_PAGINATION: TablePaginationConfig = {
+  current: 1,
+  pageSize: 100,
+  showSizeChanger: true,
+  showTotal: (total) => `共 ${total} 条`,
+  pageSizeOptions: ['50', '100', '200'],
+};
 
-  const getSortValue = (record: StockOpportunityData, key: string): string | number | null | undefined => {
-    switch (key) {
-      case 'consolidationStatus':
-        return record.consolidation?.isConsolidation ? 1 : 0;
-      case 'consolidationTypes':
-        return record.consolidation?.matchedTypeLabels?.join('、') ?? '';
-      case 'consolidationReason':
-        return record.consolidation?.reasonText ?? '';
-      case 'trendLineStatus':
-        return record.trendLine?.isHit ? 1 : 0;
-      case 'trendLineReason':
-        return record.trendLine?.reasonText ?? '';
-      case 'sharpMoveLabels':
-        return record.sharpMovePatterns?.labels?.join('、') ?? '';
-      case 'pullbackLabels':
-        return record.pullbackPattern?.labels?.join('、') ?? '';
-      case 'industry':
-        return record.industry?.name ?? '';
-      case 'concepts':
-        return record.concepts?.map(c => c.name).join('、') ?? '';
-      case 'tradingSignal': {
-        const signalType = record.tradingSignal?.type;
-        // 用权重而非类型字符串排序：避免 HOLD 插在买入与卖出之间、且 STRONG_* 被字典序排到最后
-        return signalType ? TRADING_SIGNAL_SORT_WEIGHT[signalType] ?? 5 : undefined;
-      }
-      case 'financeRevenue':
-        return record.finance?.revenue;
-      case 'financeNetProfit':
-        return record.finance?.netProfit;
-      default:
-        return (record as any)[key];
-    }
-  };
+export const OpportunityTable = memo(function OpportunityTable({
+  data,
+  columns,
+  sortConfig,
+  onSortChange,
+  tableHeight = 600,
+  onShowAIAnalysis,
+  onRowClick,
+  pagination,
+  onPaginationChange,
+}: OpportunityTableProps) {
+  const [innerPagination, setInnerPagination] = useState<TablePaginationConfig>(DEFAULT_PAGINATION);
 
-  const compareSortValue = (
-    aVal: string | number | null | undefined,
-    bVal: string | number | null | undefined
-  ): number => {
-    if (aVal === null || aVal === undefined || aVal === '') return 1;
-    if (bVal === null || bVal === undefined || bVal === '') return -1;
-    if (typeof aVal === 'number' && typeof bVal === 'number') return aVal - bVal;
-    return String(aVal).localeCompare(String(bVal));
-  };
+  /** 传入 pagination 即切换为受控模式（如弹窗切换股票时需要驱动表格翻页），否则组件内部维护 */
+  const resolvedPagination = useMemo<TablePaginationConfig>(
+    () => ({ ...DEFAULT_PAGINATION, ...(pagination ?? innerPagination) }),
+    [pagination, innerPagination]
+  );
 
   const formatValue = (value: any, key: string, record?: StockOpportunityData): string | number | React.ReactNode => {
     if (key === 'consolidationStatus') {
@@ -320,8 +288,8 @@ export const OpportunityTable = memo(function OpportunityTable({ data, columns, 
       if (col.key === 'name') {
         column.fixed = 'left';
       } else {
-        column.sorter = (a: StockOpportunityData, b: StockOpportunityData) =>
-          compareSortValue(getSortValue(a, col.key), getSortValue(b, col.key));
+        // 与「图表弹窗行导航」共用同一套比较函数，保证弹窗里的 ← / → 顺序与表格排序一致
+        column.sorter = createOpportunityColumnSorter(col.key);
 
         column.sortOrder =
           sortConfig.key === col.key
@@ -373,11 +341,13 @@ export const OpportunityTable = memo(function OpportunityTable({ data, columns, 
 
   const handleTableChange = (paginationConfig: TablePaginationConfig, _filters: any, sorter: any) => {
     if (paginationConfig) {
-      setPagination((prev) => ({
-        ...prev,
+      const nextPagination: TablePaginationConfig = {
+        ...resolvedPagination,
         current: paginationConfig.current,
         pageSize: paginationConfig.pageSize,
-      }));
+      };
+      if (pagination) onPaginationChange?.(nextPagination);
+      else setInnerPagination(nextPagination);
     }
 
     if (sorter && sorter.columnKey) {
@@ -396,7 +366,7 @@ export const OpportunityTable = memo(function OpportunityTable({ data, columns, 
         columns={tableColumns}
         dataSource={data}
         rowKey="code"
-        pagination={pagination}
+        pagination={resolvedPagination}
         virtual
         scroll={{ x: scrollX, y: tableHeight }}
         onChange={handleTableChange}

@@ -4,6 +4,7 @@
 
 import { useEffect, useState, useMemo, useRef, useCallback, useLayoutEffect } from 'react';
 import { Layout, Card, Button, Space, Progress, Select, Collapse, App, Input, InputNumber, Dropdown, Alert, Tag, Tooltip, Badge, Popover, Checkbox, Spin } from 'antd';
+import type { TablePaginationConfig } from 'antd';
 import {
   RocketOutlined,
   StopOutlined,
@@ -47,6 +48,7 @@ import type {
   StockOpportunityData,
 } from '@/types/stock';
 import { useAllStocks } from '@/hooks/useAllStocks';
+import { sortOpportunityData } from '@/utils/sort/tableSort';
 import { logger } from '@/utils/business/logger';
 import { useOpportunityFilterEngine } from '@/hooks/useOpportunityFilterEngine';
 import { getPureCode } from '@/utils/format/format';
@@ -412,6 +414,11 @@ export function OpportunityPage() {
   const [aiAnalysisVisible, setAiAnalysisVisible] = useState(false);
   const [selectedStockForAI, setSelectedStockForAI] = useState<{ code: string; name: string } | null>(null);
   const [chartState, setChartState] = useState<{ code: string; name: string } | null>(null); // K线弹窗状态
+  /** 表格分页（受控）：弹窗内 ← / → 切换股票时同步翻页，保证表格与弹窗始终指向同一只 */
+  const [tablePagination, setTablePagination] = useState<TablePaginationConfig>({
+    current: 1,
+    pageSize: 100,
+  });
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false); // 筛选抽屉状态
   const [filterDiagnosticsDrawerOpen, setFilterDiagnosticsDrawerOpen] = useState(false); // 筛选诊断抽屉状态
   const [errorExpanded, setErrorExpanded] = useState(false); // 失败详情展开状态
@@ -1637,6 +1644,45 @@ export function OpportunityPage() {
     );
   }, [displayAnalysisData, financeMap]);
 
+  /**
+   * 图表弹窗的行导航列表：顺序与表格当前排序（sortConfig，含用户点选的列排序）完全一致，
+   * 因此 ← / → 切到的就是屏幕上真正的上一行 / 下一行。
+   */
+  const chartNavRecords = useMemo(
+    () =>
+      sortOpportunityData(displayAnalysisDataWithFinance, sortConfig).map((item) => ({
+        code: item.code,
+        name: item.name,
+      })),
+    [displayAnalysisDataWithFinance, sortConfig]
+  );
+
+  /** 弹窗标题展示的所属行业：跟随当前弹窗个股 */
+  const chartIndustry = useMemo(
+    () =>
+      displayAnalysisDataWithFinance.find((item) => item.code === chartState?.code)?.industry?.name,
+    [displayAnalysisDataWithFinance, chartState?.code]
+  );
+
+  /**
+   * 弹窗内切换到表格上一行 / 下一行：
+   * 除更新弹窗数据外，同步把表格翻到该行所在页，避免「弹窗换了、表格还停在旧页」。
+   */
+  const handleChartNavigate = useCallback(
+    (record: { code: string; name: string }) => {
+      const index = chartNavRecords.findIndex((item) => item.code === record.code);
+      const pageSize = Number(tablePagination.pageSize) || 100;
+      if (index >= 0) {
+        const targetPage = Math.floor(index / pageSize) + 1;
+        setTablePagination((prev) =>
+          prev.current === targetPage ? prev : { ...prev, current: targetPage }
+        );
+      }
+      setChartState({ code: record.code, name: record.name });
+    },
+    [chartNavRecords, tablePagination.pageSize]
+  );
+
   // 页面卸载时中断未完成的营收净利润请求
   useEffect(() => {
     return () => {
@@ -2749,6 +2795,8 @@ export function OpportunityPage() {
               tableHeight={tableHeight}
               onShowAIAnalysis={handleShowAIAnalysis}
               onRowClick={(record) => setChartState({ code: record.code, name: record.name })}
+              pagination={tablePagination}
+              onPaginationChange={setTablePagination}
             />
           </Card>
         ) : (
@@ -2792,6 +2840,9 @@ export function OpportunityPage() {
         name={chartState?.name ?? ''}
         kline={chartState ? klineDataCache.get(chartState.code) ?? [] : []}
         period={currentPeriod}
+        industry={chartIndustry}
+        records={chartNavRecords}
+        onNavigate={handleChartNavigate}
         onClose={() => setChartState(null)}
       />
 
