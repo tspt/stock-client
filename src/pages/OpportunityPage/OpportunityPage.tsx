@@ -1664,6 +1664,12 @@ export function OpportunityPage() {
     [displayAnalysisDataWithFinance, chartState?.code]
   );
 
+  /** 弹窗标题展示的所属概念：跟随当前弹窗个股 */
+  const chartConcepts = useMemo(
+    () => displayAnalysisDataWithFinance.find((item) => item.code === chartState?.code)?.concepts,
+    [displayAnalysisDataWithFinance, chartState?.code]
+  );
+
   /**
    * 弹窗内切换到表格上一行 / 下一行：
    * 除更新弹窗数据外，同步把表格翻到该行所在页，避免「弹窗换了、表格还停在旧页」。
@@ -2841,6 +2847,7 @@ export function OpportunityPage() {
         kline={chartState ? klineDataCache.get(chartState.code) ?? [] : []}
         period={currentPeriod}
         industry={chartIndustry}
+        concepts={chartConcepts}
         records={chartNavRecords}
         onNavigate={handleChartNavigate}
         onClose={() => setChartState(null)}

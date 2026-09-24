@@ -1610,6 +1610,15 @@ export function BacktestPage() {
     return (row.industry || getMappedIndustry(row.code, industryMapping))?.name;
   }, [chartState, activeDataSource, industryMapping]);
 
+  /** 弹窗标题展示的所属概念：行内概念优先，缺失时回退板块映射 */
+  const chartConcepts = useMemo(() => {
+    if (!chartState) return undefined;
+    const row = (activeDataSource as Array<{ code: string; concepts?: SectorInfo[] }>).find(
+      (item) => normalizeSectorStockCode(item.code) === chartState.code
+    );
+    return row ? getRecordConcepts(row) : undefined;
+  }, [chartState, activeDataSource, conceptMapping]);
+
   /** 弹窗内切换上一只 / 下一只：同步把表格翻到该股票所在页 */
   const handleChartNavigate = useCallback(
     (record: { code: string; name: string }) => {
@@ -2019,6 +2028,7 @@ export function BacktestPage() {
         kline={chartKline}
         period="day"
         industry={chartIndustry}
+        concepts={chartConcepts}
         records={chartNavRecords}
         onNavigate={handleChartNavigate}
         onClose={() => setChartState(null)}

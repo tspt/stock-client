@@ -194,6 +194,8 @@ export interface WeeklyFactors {
   industryCode?: string;
   /** 所属行业名称 */
   industryName?: string;
+  /** 所属概念板块（由页面按股票池补充，仅用于展示，不参与评分/过滤） */
+  concepts?: Array<{ code?: string; name: string }>;
   /** 最新周量能 / 前 5 周均量 */
   volRatio5?: number;
 

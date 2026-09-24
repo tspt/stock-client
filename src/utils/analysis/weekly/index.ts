@@ -99,6 +99,8 @@ export interface WeeklyAnalyzeOptions {
   /** 参与横截面参考量（scoreRank）的股票代码集合 */
   poolCodes?: Set<string> | string[] | null;
   industries?: Map<string, { code: string; name: string }>;
+  /** 所属概念板块（复用股票池，仅用于展示） */
+  conceptsByCode?: Map<string, Array<{ code?: string; name: string }>>;
   /** 日线数据（复用机会分析的 stockHistory），用于多周期共振 */
   dailyKlines?: Map<string, KLineData[]>;
   /** 基本面（总市值/总股数/营收/净利润及其增长率）：复用机会分析缓存，用于数据筛选 */
@@ -145,12 +147,14 @@ export function analyzeWeeklyKlines(
       completeWeeksOnly: options.completeWeeksOnly,
     });
     const ind = options.industries?.get(code);
+    const concepts = options.conceptsByCode?.get(code);
     const daily = options.dailyKlines?.get(code);
     const fund = options.fundamentals?.get(code);
     return {
       ...f,
       industryCode: ind?.code ?? f.industryCode,
       industryName: ind?.name ?? f.industryName,
+      concepts: concepts ?? f.concepts,
       dailyAboveMa20: daily ? isDailyAboveMa(daily) : undefined,
       marketCap: fund?.marketCap,
       totalShares: fund?.totalShares,

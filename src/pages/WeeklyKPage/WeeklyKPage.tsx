@@ -44,6 +44,12 @@ import { useAllStocks } from '@/hooks/useAllStocks';
 import { getPureCode, normalizeStockNameList } from '@/utils/format/format';
 import { getUnifiedSectorBasics } from '@/services/hot/unified-sectors';
 import { getSinaFinanceMetricsBatch } from '@/services/fundamental/sinaFinance';
+import {
+  getMappedConcepts,
+  loadSectorStockMapping,
+  type SectorInfo,
+} from '@/services/stocks/sectorMapping';
+import { StockConceptTags } from '@/components/common/Tags';
 import { apiCache } from '@/utils/storage/apiCache';
 import {
   DEFAULT_WEEKLY_FILTERS,
@@ -172,6 +178,25 @@ function rangeLabel(range?: NumberRange): string | null {
 
 /** 周线筛选分组 key：新增分组时在此登记（供「展开全部」使用） */
 const WEEKLY_FILTER_PANEL_KEYS = ['data', 'nameFilter'] as const;
+
+/**
+ * 周线页专用默认筛选条件。
+ *
+ * 「总市值 / 总股数 / 总营收 / 归母净利润」只能复用机会分析写入 IndexedDB 的基本面缓存，
+ * 一旦取不到值，applyWeeklyFilters 里的 withinRange 会判定为不通过，
+ * 会把整份名单（评分池几千只）全部筛空；因此这里把它们覆盖为「不限」，
+ * 需要时由用户在「数据筛选」面板里显式填写（跑过一次机会分析后即可用）。
+ *
+ * 价格来自周K（永远有值），保留其默认区间。
+ * 仅作用于周线页，不改动共享的 DEFAULT_WEEKLY_FILTERS。
+ */
+const WEEKLY_PAGE_FILTER_DEFAULTS: WeeklyFilterOptions = {
+  ...DEFAULT_WEEKLY_FILTERS,
+  marketCapRange: {},
+  totalSharesRange: {},
+  financeRevenueRange: {},
+  financeNetProfitRange: {},
+};
 
 /** 名称筛选面板：行业分组选项（与机会分析页共用同一份分组定义） */
 const NAME_FILTER_INDUSTRY_GROUP_OPTIONS = OPPORTUNITY_INDUSTRY_GROUPS.map((group) => ({
@@ -549,11 +574,13 @@ export function WeeklyKPage() {
   const [industrySectorOptions, setIndustrySectorOptions] = useState<
     { label: string; value: string }[]
   >([]);
+  /** 概念板块映射（股票池自带概念缺失时的兜底，与机会分析/回测页同源） */
+  const [conceptMapping, setConceptMapping] = useState<Map<string, SectorInfo[]>>(new Map());
   const [klineCount, setKlineCount] = useState<number>(WEEKLY_KLINE_DEFAULT_COUNT);
   const [forceRefresh, setForceRefresh] = useState(false);
   /** 只用完整周：忽略「进行中的本周」，评分/涨幅/价格筛选一律按最近已收盘周 */
   const [completeWeeksOnly, setCompleteWeeksOnly] = useState(true);
-  const [filters, setFilters] = useState<WeeklyFilterOptions>({ ...DEFAULT_WEEKLY_FILTERS });
+  const [filters, setFilters] = useState<WeeklyFilterOptions>({ ...WEEKLY_PAGE_FILTER_DEFAULTS });
   /** 名称筛选：与机会分析页「名称筛选」面板同一套字段与默认值 */
   const [nameFilterIndustryGroups, setNameFilterIndustryGroups] = useState<string[]>([
     ...OPPORTUNITY_DEFAULT_INDUSTRY_GROUP_FILTER.selectedGroups,
@@ -625,6 +652,41 @@ export function WeeklyKPage() {
     return map;
   }, [allStocks]);
 
+  /**
+   * code → 所属概念（仅用于展示）：股票池自带概念优先，缺失时回退成分股板块映射，
+   * 与机会分析页 / 历史回测页保持同一取值口径。
+   */
+  const conceptMap = useMemo(() => {
+    const map = new Map<string, Array<{ code?: string; name: string }>>();
+    allStocks.forEach((stock) => {
+      const concepts =
+        stock.concepts && stock.concepts.length > 0
+          ? stock.concepts
+          : getMappedConcepts(stock.code, conceptMapping);
+      if (concepts.length > 0) {
+        map.set(stock.code, concepts);
+      }
+    });
+    return map;
+  }, [allStocks, conceptMapping]);
+
+  // 概念板块映射：股票池自带概念缺失时的兜底（与机会分析/回测页共用同一套映射）
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const { conceptsByCode } = await loadSectorStockMapping();
+        if (cancelled) return;
+        setConceptMapping(conceptsByCode);
+      } catch (error) {
+        logger.error('[WeeklyKPage] 加载概念板块映射失败:', error);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   // 行业板块选项：与机会分析页面共用统一缓存服务
   useEffect(() => {
     let cancelled = false;
@@ -651,13 +713,14 @@ export function WeeklyKPage() {
       const analyzed = analyzeWeeklyKlines(klineMap, names, {
         poolCodes,
         industries: industryMap,
+        conceptsByCode: conceptMap,
         dailyKlines,
         fundamentals,
         completeWeeksOnly,
       });
       setRows(analyzed);
     },
-    [industryMap, dailyKlines, fundamentals, completeWeeksOnly]
+    [industryMap, conceptMap, dailyKlines, fundamentals, completeWeeksOnly]
   );
 
   /**
@@ -1124,13 +1187,21 @@ export function WeeklyKPage() {
         render: (name: string) => <span className={styles.nameCell}>{name}</span>,
       },
       {
-        title: '行业',
+        title: '所属行业',
         dataIndex: 'industryName',
         width: 96,
         render: (v: string | undefined) => v || '未知',
         // 按中文拼音排序，未归类统一落入「未知」
         sorter: (a, b) =>
           (a.industryName || '未知').localeCompare(b.industryName || '未知', 'zh-Hans-CN'),
+      },
+      {
+        title: '所属概念',
+        dataIndex: 'concepts',
+        width: 240,
+        render: (_: unknown, row: WeeklyAnalysis) => (
+          <StockConceptTags concepts={row.concepts} max={3} />
+        ),
       },
       {
         title: '最新价',

@@ -27,6 +27,7 @@ import { useChipDistribution } from '@/hooks/useChipDistribution';
 import { useModalDrag } from '@/hooks/useModalDrag';
 import { useRecordNavigation } from '@/hooks/useRecordNavigation';
 import { logger } from '@/utils/business/logger';
+import { StockConceptTags } from '@/components/common/Tags';
 
 const { Text } = Typography;
 
@@ -88,6 +89,8 @@ interface DailyChartModalProps {
   period: KLinePeriod;
   /** 所属行业名称，由页面传入（弹窗内不额外拉取股票列表） */
   industry?: string;
+  /** 所属概念（由页面传入，弹窗内不额外拉取股票列表） */
+  concepts?: Array<string | { code?: string; name: string }>;
   /** 表格当前展示顺序的股票列表，用于 ← / → 快速切换上一行 / 下一行 */
   records?: Array<{ code: string; name: string }>;
   /** 切换相邻行时回调，父级据此更新弹窗数据 */
@@ -357,6 +360,7 @@ export function DailyChartModal({
   kline,
   period,
   industry,
+  concepts,
   records = [],
   onNavigate,
   onClose,
@@ -655,6 +659,7 @@ export function DailyChartModal({
               {industry}
             </Tag>
           )}
+          {concepts && concepts.length > 0 && <StockConceptTags concepts={concepts} max={3} />}
           {navigation.currentIndex >= 0 && navigation.total > 1 && (
             <Text type="secondary" style={{ fontSize: 12, fontWeight: 'normal' }}>
               第 {navigation.currentIndex + 1} / {navigation.total} 只

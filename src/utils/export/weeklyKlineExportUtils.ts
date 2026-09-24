@@ -37,6 +37,13 @@ const EXPORT_COLUMNS: WeeklyExportColumn[] = [
   { title: '代码', width: 70, align: 'left', get: (r) => pureCode(r.code) },
   { title: '名称', width: 90, align: 'left', get: (r) => r.name },
   { title: '行业', width: 90, align: 'left', get: (r) => r.industryName || '-' },
+  {
+    title: '所属概念',
+    width: 160,
+    align: 'left',
+    get: (r) =>
+      r.concepts && r.concepts.length > 0 ? r.concepts.map((c) => c.name).join(' ') : '-',
+  },
   { title: '最新价', width: 70, align: 'right', get: (r) => fixed(r.close) },
   {
     title: '本周涨幅',
