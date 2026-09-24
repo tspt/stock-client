@@ -600,6 +600,8 @@ export function WeeklyKPage() {
   const [filterPanelActiveKey, setFilterPanelActiveKey] = useState<string[]>(['data', 'nameFilter']);
   /** 右侧筛选抽屉开关 */
   const [showFilterPanel, setShowFilterPanel] = useState(false);
+  /** 「本周周K尚未收盘」提示是否已被手动叉掉（重新分析 / 切换「只用完整周」后重新提示） */
+  const [runningWeekAlertDismissed, setRunningWeekAlertDismissed] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState('');
   const [showAddToWatchList, setShowAddToWatchList] = useState(false);
   const [showBacktest, setShowBacktest] = useState(false);
@@ -886,6 +888,7 @@ export function WeeklyKPage() {
       return;
     }
     cancelRef.current = false;
+    setRunningWeekAlertDismissed(false);
     setLoading(true);
     setFailures([]);
     // 先刷新机会分析写入的日线与基本面，保证「多周期共振」与「数据筛选」用的不是过期数据
@@ -1268,7 +1271,7 @@ export function WeeklyKPage() {
       {
         title: <Tooltip title="MA20 与近 8 周结构低点取更近者">止损</Tooltip>,
         dataIndex: 'stopLoss',
-        width: 78,
+        width: 100,
         render: (v: number | undefined, row: WeeklyAnalysis) =>
           v === undefined ? (
             '-'
@@ -1332,9 +1335,11 @@ export function WeeklyKPage() {
         sortDirections: ['descend', 'ascend'],
         render: (v: string[] | undefined) =>
           v && v.length > 0 ? (
-            <Text type="danger" style={{ fontSize: 12 }}>
-              {v.join('；')}
-            </Text>
+            <Tooltip title={v.join('；')}>
+              <Text type="danger" className={styles.exitSignalsCell}>
+                {v.join('；')}
+              </Text>
+            </Tooltip>
           ) : (
             <Text type="secondary">-</Text>
           ),
@@ -1517,7 +1522,11 @@ export function WeeklyKPage() {
           <Tooltip title="只按最近一个已收盘周计算名单、涨幅与价格筛选；关闭后「本周涨幅」会采用进行中的本周实时数据">
             <Checkbox
               checked={completeWeeksOnly}
-              onChange={(e) => setCompleteWeeksOnly(e.target.checked)}
+              onChange={(e) => {
+                // 提示文案随该开关变化，切换后重新显示
+                setRunningWeekAlertDismissed(false);
+                setCompleteWeeksOnly(e.target.checked);
+              }}
               disabled={loading}
             >
               只用完整周
@@ -1742,10 +1751,12 @@ export function WeeklyKPage() {
           />
         )}
 
-        {runningWeek && rows.length > 0 && (
+        {runningWeek && rows.length > 0 && !runningWeekAlertDismissed && (
           <Alert
             type="info"
             showIcon
+            closable
+            onClose={() => setRunningWeekAlertDismissed(true)}
             style={{ margin: '12px 16px 0' }}
             message={
               completeWeeksOnly

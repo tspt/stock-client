@@ -167,6 +167,15 @@
   white-space: nowrap;
 }
 
+/** 卖出信号：多条信号单行展示，超出列宽省略（hover 由 Tooltip 展示完整信号） */
+.exitSignalsCell {
+  display: block;
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .clickableRow {
   cursor: pointer;
 }
