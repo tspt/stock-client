@@ -110,6 +110,25 @@ function mergeSavedColumns(saved: ColumnConfig[]): ColumnConfig[] {
   return merged;
 }
 
+/** 旧版默认列顺序中「所属概念」的下标（排在「区间最大值回撤比」之后） */
+const LEGACY_CONCEPTS_ORDER = 21;
+
+/**
+ * 旧版默认列顺序迁移：「所属概念」改为紧跟「所属行业」。
+ * 仅当保存的顺序仍是旧默认顺序时生效（即用户从未在「列设置」里调整过顺序），
+ * 避免覆盖用户自定义的列排序。
+ */
+function migrateConceptColumnOrder(config: ColumnConfig[]): ColumnConfig[] {
+  const industryIndex = config.findIndex((col) => col.key === 'industry');
+  const conceptsIndex = config.findIndex((col) => col.key === 'concepts');
+  if (industryIndex !== 1 || conceptsIndex !== LEGACY_CONCEPTS_ORDER) return config;
+
+  const next = [...config];
+  const [conceptsColumn] = next.splice(conceptsIndex, 1);
+  next.splice(industryIndex + 1, 0, conceptsColumn);
+  return next.map((col, index) => ({ ...col, order: index }));
+}
+
 export const useOpportunityStore = create<OpportunityState>((set, get) => ({
   analysisData: [],
   loading: false,
@@ -427,7 +446,9 @@ try {
   const saved = localStorage.getItem(OPPORTUNITY_COLUMN_CONFIG_KEY);
   if (saved) {
     const config = JSON.parse(saved) as ColumnConfig[];
-    useOpportunityStore.setState({ columnConfig: mergeSavedColumns(config) });
+    useOpportunityStore.setState({
+      columnConfig: migrateConceptColumnOrder(mergeSavedColumns(config)),
+    });
   }
 } catch (error) {
   logger.error('加载机会分析列配置失败:', error);

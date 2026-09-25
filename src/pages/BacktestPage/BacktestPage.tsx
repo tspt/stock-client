@@ -1333,6 +1333,7 @@ export function BacktestPage() {
       showSorterTooltip: { title: '按所属行业排序' },
       render: renderIndustry,
     },
+    { title: '所属概念', width: 260, render: renderConcepts },
     {
       title: '买点日期',
       dataIndex: 'date',
@@ -1347,7 +1348,6 @@ export function BacktestPage() {
       width: 150,
       render: (_, record) => <StockFeatureTag text={record.scenarioName} variant="red" />,
     },
-    { title: '所属概念', width: 260, render: renderConcepts },
     { title: '买入价', dataIndex: 'entryPrice', width: 90 },
     { title: '命中项', dataIndex: 'hitCount', width: 80 },
     { title: '1日', width: 80, sorter: (a, b) => compareReturn(a.returns, b.returns, 'd1'), render: (_, record) => renderReturn(record.returns, 'd1') },
@@ -1379,6 +1379,7 @@ export function BacktestPage() {
       showSorterTooltip: { title: '按所属行业排序' },
       render: renderIndustry,
     },
+    { title: '所属概念', width: 260, render: renderConcepts },
     { title: '信号日期', dataIndex: 'signalDate', width: 110, sorter: (a, b) => a.timestamp - b.timestamp },
     { title: '收盘价', dataIndex: 'close', width: 90 },
     {
@@ -1400,7 +1401,6 @@ export function BacktestPage() {
       width: 150,
       render: (_, record) => <StockFeatureTag text={record.scenarioName} variant="red" />,
     },
-    { title: '所属概念', width: 260, render: renderConcepts },
     {
       title: '机会记录',
       dataIndex: 'opportunityRecordHit',
