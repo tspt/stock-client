@@ -402,7 +402,7 @@ export function AnalysisRecordPage() {
     },
     {
       title: '所属概念',
-      width: 280,
+      width: 200,
       render: (_, record) => <StockConceptTags concepts={record.concepts} max={3} />,
     },
   ];

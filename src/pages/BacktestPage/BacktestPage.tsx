@@ -241,7 +241,7 @@ export function BacktestPage() {
   const [historySignals, setHistorySignals] = useState<BuyPointSignal[]>([]);
   const [historyScenarioFilter, setHistoryScenarioFilter] = useState<string>('all');
   const [trackingScenarioFilter, setTrackingScenarioFilter] = useState<string>('all');
-  const [trackingOddsTiers, setTrackingOddsTiers] = useState<Array<'S' | 'A' | 'B' | 'C'>>(['S', 'A', 'B', 'C']);
+  const [trackingOddsTiers, setTrackingOddsTiers] = useState<Array<'S' | 'A' | 'B' | 'C'>>(['S', 'B', 'C']);
   const [trackingBcQualityFilter, setTrackingBcQualityFilter] = useState(true);
   const [trackingDateRange, setTrackingDateRange] = useState<string>('today');
   const [trackingStatusFilter, setTrackingStatusFilter] = useState<TrackingStatus[]>([
@@ -1277,11 +1277,6 @@ export function BacktestPage() {
     return <StockStatusTag status={status} positiveText="已达标" negativeText="未达标" processingText="验证中" />;
   };
 
-  const renderOddsTier = (tier?: TrackedLatestSignal['oddsTier']) => {
-    if (!tier) return <StockFeatureTag text="未知" variant="red" />;
-    return <StockFeatureTag text={tier} variant="red" />;
-  };
-
   const getRuleShortLabel = (rule: string): string => {
     const limitUpMatch = rule.match(/近5日近似涨停根数=(\d+)/);
     if (limitUpMatch) return `涨停≥${limitUpMatch[1]}`;
@@ -1352,6 +1347,7 @@ export function BacktestPage() {
       width: 150,
       render: (_, record) => <StockFeatureTag text={record.scenarioName} variant="red" />,
     },
+    { title: '所属概念', width: 260, render: renderConcepts },
     { title: '买入价', dataIndex: 'entryPrice', width: 90 },
     { title: '命中项', dataIndex: 'hitCount', width: 80 },
     { title: '1日', width: 80, sorter: (a, b) => compareReturn(a.returns, b.returns, 'd1'), render: (_, record) => renderReturn(record.returns, 'd1') },
@@ -1360,7 +1356,6 @@ export function BacktestPage() {
     { title: '4日', width: 80, sorter: (a, b) => compareReturn(a.returns, b.returns, 'd4'), render: (_, record) => renderReturn(record.returns, 'd4') },
     { title: '5日', width: 80, sorter: (a, b) => compareReturn(a.returns, b.returns, 'd5'), render: (_, record) => renderReturn(record.returns, 'd5') },
     { title: '6日', width: 80, sorter: (a, b) => compareReturn(a.returns, b.returns, 'd6'), render: (_, record) => renderReturn(record.returns, 'd6') },
-    { title: '所属概念', width: 360, render: renderConcepts },
     {
       title: '命中规则',
       dataIndex: 'matchedRule',
@@ -1387,13 +1382,6 @@ export function BacktestPage() {
     { title: '信号日期', dataIndex: 'signalDate', width: 110, sorter: (a, b) => a.timestamp - b.timestamp },
     { title: '收盘价', dataIndex: 'close', width: 90 },
     {
-      title: '赔率档',
-      dataIndex: 'oddsTier',
-      width: 80,
-      sorter: (a, b) => (a.oddsScore || 0) - (b.oddsScore || 0),
-      render: (tier) => renderOddsTier(tier),
-    },
-    {
       title: '赔率分',
       dataIndex: 'oddsScore',
       width: 80,
@@ -1406,13 +1394,13 @@ export function BacktestPage() {
       ellipsis: true,
       width: 180,
     },
-    { title: 'lift', dataIndex: 'lift', width: 80, render: (v) => v?.toFixed(2) },
     {
       title: '场景',
       dataIndex: 'scenarioName',
       width: 150,
       render: (_, record) => <StockFeatureTag text={record.scenarioName} variant="red" />,
     },
+    { title: '所属概念', width: 260, render: renderConcepts },
     {
       title: '机会记录',
       dataIndex: 'opportunityRecordHit',
@@ -1436,7 +1424,6 @@ export function BacktestPage() {
     { title: '已发生', dataIndex: 'occurredCount', width: 80 },
     { title: '命中', dataIndex: 'hitCount', width: 80 },
     { title: '状态', dataIndex: 'status', width: 90, render: renderTrackingStatus },
-    { title: '所属概念', width: 360, render: renderConcepts },
     {
       title: '命中规则',
       dataIndex: 'matchedRule',
@@ -1564,7 +1551,7 @@ export function BacktestPage() {
     activeTab === 'tracking'
       ? filteredTrackingRows
       : filteredHistorySignals;
-  const activeScrollX = activeTab === 'tracking' ? 2680 : 1800;
+  const activeScrollX = activeTab === 'tracking' ? 2520 : 1800;
 
   /** 表格当前生效的排序：优先用户点选的，其次列上声明的 defaultSortOrder */
   const activeTableSorter = useMemo(

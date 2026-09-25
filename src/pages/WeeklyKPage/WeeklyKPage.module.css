@@ -162,6 +162,11 @@
   overflow: hidden;
 }
 
+/** 表头不加粗：与机会分析页 OpportunityTable 的表头保持一致 */
+.tableCard :global(.ant-table-thead > tr > th) {
+  font-weight: 400;
+}
+
 .nameCell {
   font-weight: 500;
   white-space: nowrap;

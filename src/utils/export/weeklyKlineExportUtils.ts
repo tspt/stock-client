@@ -39,7 +39,7 @@ const EXPORT_COLUMNS: WeeklyExportColumn[] = [
   { title: '行业', width: 90, align: 'left', get: (r) => r.industryName || '-' },
   {
     title: '所属概念',
-    width: 160,
+    width: 200,
     align: 'left',
     get: (r) =>
       r.concepts && r.concepts.length > 0 ? r.concepts.map((c) => c.name).join(' ') : '-',

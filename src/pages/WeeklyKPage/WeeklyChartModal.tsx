@@ -153,7 +153,7 @@ function buildWeeklyChartOption(input: WeeklyChartBuildInput): EChartsOption {
       : null;
   const changeText = changePct === null ? '' : `${changePct >= 0 ? '+' : ''}${changePct.toFixed(2)}%`;
   const changeColor = changePct !== null && changePct < 0 ? '#26a69a' : '#ef5350';
-  /** 收盘价与涨幅同源（十字星所指那一根优先），按「当前价 涨幅」习惯顺序显示在涨幅左侧 */
+  /** 当前价（收盘价）与涨幅同源（十字星所指那一根优先），显示在涨幅左侧 */
   const closeText = lastBar ? lastBar.close.toFixed(2) : '';
 
   const timeAxis = (gridIndex?: number) => ({

@@ -1177,14 +1177,9 @@ export function WeeklyKPage() {
 
   const watchColumns = useMemo<ColumnsType<WeeklyAnalysis>>(
     () => [
+      // 「代码」列按机会分析页口径隐藏（表格不再展示，仅搜索/导出仍可用代码）
       {
-        title: '代码',
-        dataIndex: 'code',
-        width: 76,
-        render: (code: string) => code.replace(/^(SH|SZ|BJ)/i, ''),
-      },
-      {
-        title: '名称',
+        title: '股票名称',
         dataIndex: 'name',
         width: 96,
         render: (name: string) => <span className={styles.nameCell}>{name}</span>,
