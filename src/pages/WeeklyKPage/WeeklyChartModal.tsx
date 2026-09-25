@@ -46,10 +46,10 @@ function ChipStatItem({
 }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-      <Text type="secondary" style={{ fontSize: 13 }}>
+      <Text type="secondary" style={{ fontSize: 14 }}>
         {label}
       </Text>
-      <Text strong style={{ fontSize: 13, color: valueColor }}>
+      <Text strong style={{ fontSize: 14, color: valueColor }}>
         {value}
       </Text>
     </div>

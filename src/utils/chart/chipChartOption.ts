@@ -82,8 +82,9 @@ export function buildChipChartOption(
     subtext: `获利 ${(benefitRatio * 100).toFixed(1)}%`,
     left: 'center' as const,
     top: 0,
-    textStyle: { fontSize: 12 },
-    subtextStyle: { fontSize: 11, color: benefitRatio >= 0.5 ? '#ef5350' : '#26a69a' },
+    // 标题与获利副标题统一 14px（与右侧统计栏字号观感对齐）
+    textStyle: { fontSize: 14 },
+    subtextStyle: { fontSize: 14, color: benefitRatio >= 0.5 ? '#ef5350' : '#26a69a' },
   };
 
   const shareOf = (amount: number) => (totalChips === 0 ? 0 : (amount / totalChips) * 100);

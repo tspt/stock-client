@@ -303,7 +303,7 @@ export const WEEKLY_KLINE_ADJUST = 'qfq';
  * 筹码分布：东方财富 K 线拉取根数。
  * 东财官网「筹码分布」固定取 210 根（日线约 1 年 / 周线约 4 年），保持一致。
  */
-export const CHIP_KLINE_LIMIT = 210;
+export const CHIP_KLINE_LIMIT = 500;
 /** 筹码分布 K 线内存缓存时长（毫秒）：数据只有收盘后才有意义，5 分钟足够 */
 export const CHIP_KLINE_CACHE_TTL = 5 * 60 * 1000;
 
