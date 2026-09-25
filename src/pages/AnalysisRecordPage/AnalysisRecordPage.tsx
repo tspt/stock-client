@@ -488,7 +488,7 @@ export function AnalysisRecordPage() {
                           pageSize: tablePageSize,
                           showSizeChanger: true,
                           showTotal: (total) => `共 ${total} 条记录`,
-                          pageSizeOptions: ['50', '100', '200'],
+                          pageSizeOptions: ['100', '200'],
                           onChange: (_, pageSize) => setTablePageSize(pageSize),
                         }}
                         scroll={{ x: 800, y: 'calc(100vh - 330px)' }}
@@ -660,7 +660,7 @@ export function AnalysisRecordPage() {
                           pageSize: trackingPageSize,
                           showSizeChanger: true,
                           showTotal: (total) => `共 ${total} 条记录`,
-                          pageSizeOptions: ['50', '100', '200'],
+                          pageSizeOptions: ['100', '200'],
                           onChange: (_, pageSize) => setTrackingPageSize(pageSize),
                         }}
                         scroll={{ x: 1400, y: 'calc(100vh - 420px)' }}

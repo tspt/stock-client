@@ -78,7 +78,10 @@ import {
 } from '@/utils/export/backtestExportUtils';
 import { exportStockNamesToPng } from '@/utils/export/stockNamesExportUtils';
 import { logger } from '@/utils/business/logger';
-import { OPPORTUNITY_INDUSTRY_GROUPS } from '@/utils/config/opportunityAnalysisDefaults';
+import {
+  OPPORTUNITY_DEFAULT_INDUSTRY_GROUP_FILTER,
+  OPPORTUNITY_INDUSTRY_GROUPS,
+} from '@/utils/config/opportunityAnalysisDefaults';
 import { StockConceptTags, StockFeatureTag, StockStatusTag } from '@/components/common/Tags';
 import {
   getMappedConcepts,
@@ -251,8 +254,13 @@ export function BacktestPage() {
     'passed',
   ]);
   const [trackingIntersectionFilters, setTrackingIntersectionFilters] = useState<string[]>([]);
-  const [trackingIndustryGroupLabels, setTrackingIndustryGroupLabels] = useState<string[]>([]);
-  const [trackingIndustryInvert, setTrackingIndustryInvert] = useState(true);
+  /** 行业分组：默认值与「机会分析」名称筛选面板共用同一份常量，避免两处口径漂移 */
+  const [trackingIndustryGroupLabels, setTrackingIndustryGroupLabels] = useState<string[]>([
+    ...OPPORTUNITY_DEFAULT_INDUSTRY_GROUP_FILTER.selectedGroups,
+  ]);
+  const [trackingIndustryInvert, setTrackingIndustryInvert] = useState<boolean>(
+    OPPORTUNITY_DEFAULT_INDUSTRY_GROUP_FILTER.invertEnabled
+  );
   /** 输入值（立即回显）与生效值（防抖，避免每次按键都重算全表） */
   const [trackingThresholdInput, setTrackingThresholdInput] = useState(5);
   const [trackingThreshold, setTrackingThreshold] = useState(5);
@@ -2052,7 +2060,7 @@ export function BacktestPage() {
                   current: tablePage,
                   pageSize: tablePageSize,
                   showSizeChanger: true,
-                  pageSizeOptions: ['50', '100', '200'],
+                  pageSizeOptions: ['100', '200'],
                   onChange: (page, pageSize) => {
                     setTablePage(page);
                     setTablePageSize(pageSize);

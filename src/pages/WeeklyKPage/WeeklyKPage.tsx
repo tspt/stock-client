@@ -637,7 +637,7 @@ export function WeeklyKPage() {
     pageSize: 100,
     showSizeChanger: true,
     showTotal: (total) => `共 ${total} 条`,
-    pageSizeOptions: ['50', '100', '200'],
+    pageSizeOptions: ['100', '200'],
   });
   /** 表格当前排序状态（点表头后由 onChange 写入）；null = 还没点过，用列的 defaultSortOrder 兜底 */
   const [tableSorter, setTableSorter] = useState<ActiveTableSorter | null>(null);
