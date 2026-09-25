@@ -132,7 +132,6 @@ stockClient/
 │   │   ├── indicators.ts
 │   │   ├── constants.ts
 │   │   ├── exportUtils.ts
-│   │   ├── opportunityExportUtils.ts
 │   │   ├── stockNamesExportUtils.ts    # 股票名称等导出辅助
 │   │   ├── opportunityFilterPrefs.ts
 │   │   ├── trendLineAnalysis.ts

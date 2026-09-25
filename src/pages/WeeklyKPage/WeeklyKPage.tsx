@@ -77,6 +77,8 @@ import {
   type WeeklyFetchProgress,
 } from '@/services/stocks/weeklyKlineService';
 import { exportWeeklyResultToPng } from '@/utils/export/weeklyKlineExportUtils';
+import { exportStockNamesToPng } from '@/utils/export/stockNamesExportUtils';
+import { useTempStockListStore } from '@/stores/tempStockListStore';
 import {
   findDefaultTableSorter,
   sortRowsByTableSorter,
@@ -1097,6 +1099,35 @@ export function WeeklyKPage() {
     }
   };
 
+  /** K线弹窗里「加入临时列表」收集的股票（全局、仅内存） */
+  const tempStockList = useTempStockListStore((state) => state.items);
+
+  /** 导出弹窗内「加入临时列表」收集到的股票名称（PNG，多列排版） */
+  const handleExportTempList = async () => {
+    if (tempStockList.length === 0) {
+      message.warning('临时列表为空，请先在周K弹窗中点击「加入临时列表」');
+      return;
+    }
+    const names = tempStockList
+      .map((item) => (item.name || item.code || '').trim())
+      .filter(Boolean);
+    if (names.length === 0) {
+      message.warning('临时列表没有可用的股票名称');
+      return;
+    }
+    try {
+      const exportTime = new Date().toLocaleString('zh-CN');
+      await exportStockNamesToPng(names, {
+        fileNamePrefix: '周线选股_临时列表',
+        filterSummary: `来源: 周线选股\n临时列表共 ${names.length} 只\n导出时间: ${exportTime}`,
+      });
+      message.success('临时列表已导出为图片');
+    } catch (error) {
+      logger.error('[WeeklyKPage] 导出临时列表失败:', error);
+      message.error(error instanceof Error ? error.message : '导出临时列表失败');
+    }
+  };
+
   const handleAddToRecord = async () => {
     if (displayRows.length === 0) {
       message.warning('没有数据可添加');
@@ -1611,9 +1642,40 @@ export function WeeklyKPage() {
             </Button>
           </Dropdown>
 
-          <Button icon={<ExportOutlined />} disabled={displayRows.length === 0} onClick={() => void handleExportPng()}>
-            导出图片(PNG)
-          </Button>
+          <Dropdown
+            menu={{
+              items: [
+                {
+                  key: 'png',
+                  label: '导出图片(PNG)',
+                  disabled: displayRows.length === 0,
+                },
+                { type: 'divider' },
+                {
+                  key: 'tempList',
+                  label: `导出临时列表(PNG)${
+                    tempStockList.length > 0 ? `（${tempStockList.length}）` : ''
+                  }`,
+                  disabled: tempStockList.length === 0,
+                },
+              ],
+              onClick: ({ key }) => {
+                if (key === 'png') {
+                  void handleExportPng();
+                } else if (key === 'tempList') {
+                  void handleExportTempList();
+                }
+              },
+            }}
+          >
+            <Button
+              icon={<ExportOutlined />}
+              disabled={displayRows.length === 0 && tempStockList.length === 0}
+              title="导出周线选股结果 / K线弹窗中收藏的临时列表（弹窗内快捷键：↑ 加入 / ↓ 取消）"
+            >
+              导出 <DownOutlined />
+            </Button>
+          </Dropdown>
 
           <WeeklyFiltersPanel
             filterPanelActiveKey={filterPanelActiveKey}

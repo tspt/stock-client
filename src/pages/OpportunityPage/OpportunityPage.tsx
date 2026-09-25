@@ -37,7 +37,6 @@ import { OpportunityTable } from '@/components/OpportunityTable/OpportunityTable
 import { ColumnSettings } from '@/components/ColumnSettings/ColumnSettings';
 import { AIAnalysisModal } from '@/components/AIAnalysisModal';
 import { AddStocksToWatchListModal } from '@/components/AddStocksToWatchListModal/AddStocksToWatchListModal';
-import { exportOpportunityToExcel } from '@/utils/export/opportunityExportUtils';
 import { exportStockNamesToPng } from '@/utils/export/stockNamesExportUtils';
 import { addStocksToTodayRecord } from '@/services/opportunity/recordService';
 import { getSinaFinanceMetricsBatch } from '@/services/fundamental/sinaFinance';
@@ -2033,24 +2032,6 @@ export function OpportunityPage() {
     }
   };
 
-  const handleExport = async (format: 'excel') => {
-    if (displayAnalysisData.length === 0) {
-      message.warning('没有数据可导出');
-      return;
-    }
-
-    try {
-      if (format === 'excel') {
-        await exportOpportunityToExcel(displayAnalysisDataWithFinance, columnConfig);
-        message.success('Excel导出成功');
-      }
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : '导出失败';
-      message.error(errorMessage);
-      logger.error('导出失败:', error);
-    }
-  };
-
   /** 当前筛选结果中的股票名称，按列最多 20 条导出为图片 */
   const handleExportNames = async () => {
     if (displayAnalysisData.length === 0) {
@@ -2098,8 +2079,8 @@ export function OpportunityPage() {
     try {
       const exportTime = new Date().toLocaleString('zh-CN');
       await exportStockNamesToPng(names, {
-        fileNamePrefix: '临时列表_股票名称',
-        filterSummary: `临时列表共 ${names.length} 只\n导出时间: ${exportTime}`,
+        fileNamePrefix: '机会分析_临时列表',
+        filterSummary: `来源: 机会分析\n临时列表共 ${names.length} 只\n导出时间: ${exportTime}`,
       });
       message.success('临时列表已导出为图片');
     } catch (error) {
@@ -2416,8 +2397,6 @@ export function OpportunityPage() {
           <Dropdown
             menu={{
               items: [
-                { key: 'excel', label: '导出Excel' },
-                { type: 'divider' },
                 { key: 'png', label: '导出名称(PNG)' },
                 { type: 'divider' },
                 {
@@ -2433,8 +2412,6 @@ export function OpportunityPage() {
               onClick: ({ key }) => {
                 if (key === 'columns') {
                   setColumnSettingsVisible(true);
-                } else if (key === 'excel') {
-                  void handleExport('excel');
                 } else if (key === 'png') {
                   void handleExportNames();
                 } else if (key === 'tempList') {

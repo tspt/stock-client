@@ -1229,8 +1229,8 @@ export function BacktestPage() {
     try {
       const exportTime = new Date().toLocaleString('zh-CN');
       await exportStockNamesToPng(names, {
-        fileNamePrefix: '临时列表_股票名称',
-        filterSummary: `临时列表共 ${names.length} 只\n导出时间: ${exportTime}`,
+        fileNamePrefix: '历史回测_临时列表',
+        filterSummary: `来源: 历史回测\n临时列表共 ${names.length} 只\n导出时间: ${exportTime}`,
       });
       message.success('临时列表已导出为图片');
     } catch (error) {
