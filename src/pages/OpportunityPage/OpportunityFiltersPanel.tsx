@@ -7,7 +7,6 @@ import type { Dispatch, SetStateAction } from 'react';
 import { Button, Drawer, Space, Collapse, InputNumber, Checkbox, Select } from 'antd';
 import { FilterOutlined } from '@ant-design/icons';
 import type { ConsolidationType, TradingSignalType } from '@/types/stock';
-import { PatternTooltip } from '@/components/PatternTooltip/PatternTooltip';
 import { normalizeStockNameList } from '@/utils/format/format';
 import {
   OPPORTUNITY_INDUSTRY_GROUPS,
@@ -418,12 +417,6 @@ export interface OpportunityFiltersPanelProps {
   setNameFilterIndustryGroups?: (v: string[]) => void;
   nameFilterIndustryInvert?: boolean;
   setNameFilterIndustryInvert?: (v: boolean) => void;
-  // 概念板块筛选
-  conceptSectors?: string[];
-  setConceptSectors: (v: string[]) => void;
-  conceptSectorOptions?: { label: string; value: string }[];
-  conceptSectorInvert?: boolean;
-  setConceptSectorInvert?: (v: boolean) => void;
   // 名称筛选
   enableNameKeywordFilter?: boolean;
   setEnableNameKeywordFilter?: (v: boolean) => void;
@@ -589,12 +582,6 @@ function OpportunityFiltersPanelComponent({
   setNameFilterIndustryGroups = () => { },
   nameFilterIndustryInvert = false,
   setNameFilterIndustryInvert = () => { },
-  // 概念板块筛选
-  conceptSectors,
-  setConceptSectors,
-  conceptSectorOptions = [],
-  conceptSectorInvert = false,
-  setConceptSectorInvert,
   // 名称筛选
   enableNameKeywordFilter = true,
   setEnableNameKeywordFilter = () => { },

@@ -273,7 +273,7 @@ export const WEEKLY_KLINE_ADJUST = 'qfq';
  * 筹码分布：东方财富 K 线拉取根数。
  * 东财官网「筹码分布」固定取 210 根（日线约 1 年 / 周线约 4 年），保持一致。
  */
-export const CHIP_KLINE_LIMIT = 210;
+export const CHIP_KLINE_LIMIT = 500;
 /** 筹码分布 K 线内存缓存时长（毫秒）：数据只有收盘后才有意义，5 分钟足够 */
 export const CHIP_KLINE_CACHE_TTL = 5 * 60 * 1000;
 /** 行情批次间延迟（毫秒） */
@@ -286,6 +286,7 @@ export const QUOTES_BATCH_SIZE = 100;
 export const OPPORTUNITY_DEFAULT_COLUMNS = [
     { key: 'name', title: '股票名称', visible: true, width: 88 },
     { key: 'industry', title: '所属行业', visible: true, width: 120 },
+    { key: 'concepts', title: '所属概念', visible: true, width: 300 },
     { key: 'price', title: '当前价', visible: true, width: 88 },
     { key: 'change', title: '当日涨跌额', visible: false, width: 110 },
     { key: 'changePercent', title: '当日涨跌幅', visible: true, width: 110 },
@@ -305,7 +306,6 @@ export const OPPORTUNITY_DEFAULT_COLUMNS = [
     { key: 'highPrice', title: '区间最高价', visible: false, width: 110 },
     { key: 'lowPrice', title: '区间最低价', visible: false, width: 110 },
     { key: 'opportunityChangePercent', title: '区间最大值回撤比', visible: true, width: 150 },
-    { key: 'concepts', title: '所属概念', visible: true, width: 300 },
     { key: 'tradingSignal', title: '交易信号', visible: true, width: 240 },
     { key: 'consolidationStatus', title: '横盘状态', visible: true, width: 100 },
     { key: 'consolidationTypes', title: '命中类型', visible: true, width: 280 },

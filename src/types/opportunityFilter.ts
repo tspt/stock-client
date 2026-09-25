@@ -83,20 +83,6 @@ export interface OpportunityFilterSnapshot {
    * 空数组 / 不传表示不按交易信号筛选。无信号（K 线不足 60 根）视为不命中。
    */
   tradingSignalTypes?: TradingSignalType[];
-  /** 布林带阈值（0-1之间，默认0.02即2%） */
-  bollingerThreshold: number;
-  /** MACD金叉 */
-  macdGoldenCross: boolean;
-  /** MACD死叉 */
-  macdDeathCross: boolean;
-  /** MACD背离 */
-  macdDivergence: boolean;
-  /** 布林带上轨 */
-  bollingerUpper: boolean;
-  /** 布林带中轨 */
-  bollingerMiddle: boolean;
-  /** 布林带下轨 */
-  bollingerLower: boolean;
   /** AI分析筛选开关 */
   aiAnalysisEnabled: boolean;
   /** AI趋势预测方向筛选 */

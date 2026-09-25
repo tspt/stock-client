@@ -2,18 +2,7 @@ import { calculateConsolidationInLookback } from '@/utils/analysis/consolidation
 import { analyzeSharpMovePatterns } from '@/utils/analysis/sharpMovePatterns';
 import { analyzeVolumePullback } from '@/utils/analysis/volumePullbackAnalysis';
 import { calculateTrendLineInLookback } from '@/utils/analysis/trendLineAnalysis';
-import {
-  calculateRSI,
-  calculateMACD,
-  isMACDGoldenCross,
-  isMACDDeathCross,
-  hasMACDDivergence,
-  calculateBollingerBands,
-  isNearUpperBand,
-  isNearMiddleBand,
-  isNearLowerBand,
-  calculateADX,
-} from '@/utils/analysis/technicalIndicators';
+import { calculateRSI } from '@/utils/analysis/technicalIndicators';
 // ⚠️ 当前项目仅使用 v5.0：其余版本已注释，避免把 7 个 AI 模块（约 295KB 源码）全部打进 worker bundle。
 // 需要启用其它版本时：取消注释对应 import 与下方 useVersionAnalyzer 分支即可。
 import { performAIAnalysis as performAIV5Analysis } from '@/services/opportunity/ai-v5.0';
@@ -102,16 +91,7 @@ function passesSharpMoveFilter(
 
 /** 检查技术指标筛选是否激活 */
 function technicalIndicatorsFilterActive(filters: OpportunityFilterSnapshot): boolean {
-  return (
-    filters.rsiRange.min !== undefined ||
-    filters.rsiRange.max !== undefined ||
-    filters.macdGoldenCross ||
-    filters.macdDeathCross ||
-    filters.macdDivergence ||
-    filters.bollingerUpper ||
-    filters.bollingerMiddle ||
-    filters.bollingerLower
-  );
+  return filters.rsiRange.min !== undefined || filters.rsiRange.max !== undefined;
 }
 
 /** 检查AI分析筛选是否激活（至少有一个子条件启用） */
@@ -153,7 +133,6 @@ function passesTechnicalIndicatorsFilter(
   }
 
   const len = klineData.length;
-  const lastClose = klineData[len - 1].close;
 
   // RSI筛选
   if (filters.rsiRange.min !== undefined || filters.rsiRange.max !== undefined) {
@@ -169,43 +148,6 @@ function passesTechnicalIndicatorsFilter(
       return false;
     }
     if (filters.rsiRange.max !== undefined && lastRSI > filters.rsiRange.max) {
-      return false;
-    }
-  }
-
-  // MACD筛选（OR关系：至少满足一个勾选的条件即可）
-  if (filters.macdGoldenCross || filters.macdDeathCross || filters.macdDivergence) {
-    const macd = calculateMACD(klineData);
-
-    const isGolden = filters.macdGoldenCross && isMACDGoldenCross(macd.dif, macd.dea, len - 1);
-    const isDeath = filters.macdDeathCross && isMACDDeathCross(macd.dif, macd.dea, len - 1);
-    const isDiv = filters.macdDivergence && hasMACDDivergence(klineData, macd.dif, 20);
-
-    if (!isGolden && !isDeath && !isDiv) {
-      return false;
-    }
-  }
-
-  // 布林带筛选
-  if (filters.bollingerUpper || filters.bollingerMiddle || filters.bollingerLower) {
-    const bb = calculateBollingerBands(klineData, 20, 2);
-    const lastUpper = bb.upper[len - 1];
-    const lastMiddle = bb.middle[len - 1];
-    const lastLower = bb.lower[len - 1];
-
-    // 使用配置的阈值，默认0.02（2%）
-    const bbThreshold = filters.bollingerThreshold || 0.02;
-    const nearUpper = isNearUpperBand(lastClose, lastUpper, lastMiddle, lastLower, bbThreshold);
-    const nearMiddle = isNearMiddleBand(lastClose, lastUpper, lastMiddle, lastLower, bbThreshold);
-    const nearLower = isNearLowerBand(lastClose, lastUpper, lastMiddle, lastLower, bbThreshold);
-
-    // 至少满足一个布林带条件
-    const bbMatched =
-      (filters.bollingerUpper && nearUpper) ||
-      (filters.bollingerMiddle && nearMiddle) ||
-      (filters.bollingerLower && nearLower);
-
-    if (!bbMatched) {
       return false;
     }
   }

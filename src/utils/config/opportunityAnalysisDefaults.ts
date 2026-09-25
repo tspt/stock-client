@@ -372,8 +372,6 @@ export const OPPORTUNITY_DEFAULT_VOLUME_PULLBACK = {
 export const OPPORTUNITY_DEFAULT_INDICATORS = {
   /** RSI周期 */
   rsiPeriod: 14,
-  /** 布林带阈值（0-1之间，即百分比） */
-  bollingerThreshold: 0.02,
 } as const;
 
 // ==================== 8. 名称过滤 ====================

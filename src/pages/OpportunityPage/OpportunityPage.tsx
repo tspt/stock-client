@@ -3,7 +3,7 @@
  */
 
 import { useEffect, useState, useMemo, useRef, useCallback, useLayoutEffect } from 'react';
-import { Layout, Card, Button, Space, Progress, Select, Collapse, App, Input, InputNumber, Dropdown, Alert, Tag, Tooltip, Badge, Popover, Checkbox, Spin } from 'antd';
+import { Layout, Card, Button, Space, Progress, Select, App, Input, InputNumber, Dropdown, Tooltip, Badge, Checkbox, Spin } from 'antd';
 import type { TablePaginationConfig } from 'antd';
 import {
   RocketOutlined,
@@ -67,7 +67,6 @@ import { DailyChartModal } from './DailyChartModal';
 import { FilterDiagnosticsDrawer } from '@/components/FilterDiagnosticsDrawer';
 import {
   OPPORTUNITY_DEFAULT_CONSOLIDATION,
-  OPPORTUNITY_DEFAULT_SHARP_MOVE,
   OPPORTUNITY_DEFAULT_TREND_LINE,
   OPPORTUNITY_DEFAULT_AI_ANALYSIS,
   OPPORTUNITY_DEFAULT_INDICATORS,
@@ -82,7 +81,7 @@ import {
   OPPORTUNITY_DEFAULT_INDUSTRY_GROUP_FILTER,
 } from '@/utils/config/opportunityAnalysisDefaults';
 import { getUnifiedSectorBasics } from '@/services/hot/unified-sectors';
-import type { IndustrySectorBasicInfo, ConceptSectorBasicInfo, TradingSignalType } from '@/types/stock';
+import type { TradingSignalType } from '@/types/stock';
 import {
   getMappedConcepts,
   getMappedIndustry,
@@ -97,8 +96,7 @@ import {
 } from '@/utils/config/constants';
 import styles from './OpportunityPage.module.css';
 
-const { Header, Content } = Layout;
-const { Panel } = Collapse;
+const { Content } = Layout;
 
 const PERIOD_OPTIONS: { label: string; value: KLinePeriod }[] = [
   { label: '日', value: 'day' },
@@ -199,13 +197,6 @@ const INITIAL_FILTER_STATE = {
   rsiPeriod: OPPORTUNITY_DEFAULT_INDICATORS.rsiPeriod,
   // 交易信号筛选（空数组＝不筛选）
   tradingSignalTypes: [] as TradingSignalType[],
-  bollingerThreshold: OPPORTUNITY_DEFAULT_INDICATORS.bollingerThreshold,
-  macdGoldenCross: false,
-  macdDeathCross: false,
-  macdDivergence: false,
-  bollingerUpper: false,
-  bollingerMiddle: false,
-  bollingerLower: false,
 
   // AI分析筛选
   aiAnalysisEnabled: OPPORTUNITY_DEFAULT_AI_ANALYSIS.enabled,
@@ -370,7 +361,7 @@ export function OpportunityPage() {
   const [financeNetProfitGrowthRange, setFinanceNetProfitGrowthRange] = useState<{ min?: number; max?: number }>(
     INITIAL_FILTER_STATE.financeNetProfitGrowthRange
   );
-  /** 筛选 Collapse 当前展开的面板 key 列表；[] 表示各组均收起。默认展开所有筛选项 */
+  /** 筛选面板当前展开的 key 列表；[] 表示各组均收起。默认展开所有筛选项 */
   const [filterPanelActiveKey, setFilterPanelActiveKey] = useState<string[]>(['data', 'nameFilter', 'aiAnalysis', 'sharpMove', 'volumePullback', 'consolidation', 'trendLine']);
 
   // 涨停/跌停筛选状态
@@ -409,7 +400,6 @@ export function OpportunityPage() {
     INITIAL_FILTER_STATE.trendLineFilterEnabled
   );
 
-  const [filterSkippedExpanded, setFilterSkippedExpanded] = useState(false);
   const [tableHeight, setTableHeight] = useState<number>(400); // 表格高度
   const [tableSearchKeyword, setTableSearchKeyword] = useState<string>(''); // 表格模糊搜索关键字
   const tableCardRef = useRef<HTMLDivElement>(null); // 表格Card的引用
@@ -570,13 +560,6 @@ export function OpportunityPage() {
   const [tradingSignalTypes, setTradingSignalTypes] = useState<TradingSignalType[]>(
     INITIAL_FILTER_STATE.tradingSignalTypes
   );
-  const [bollingerThreshold, setBollingerThreshold] = useState<number>(INITIAL_FILTER_STATE.bollingerThreshold);
-  const [macdGoldenCross, setMacdGoldenCross] = useState<boolean>(INITIAL_FILTER_STATE.macdGoldenCross);
-  const [macdDeathCross, setMacdDeathCross] = useState<boolean>(INITIAL_FILTER_STATE.macdDeathCross);
-  const [macdDivergence, setMacdDivergence] = useState<boolean>(INITIAL_FILTER_STATE.macdDivergence);
-  const [bollingerUpper, setBollingerUpper] = useState<boolean>(INITIAL_FILTER_STATE.bollingerUpper);
-  const [bollingerMiddle, setBollingerMiddle] = useState<boolean>(INITIAL_FILTER_STATE.bollingerMiddle);
-  const [bollingerLower, setBollingerLower] = useState<boolean>(INITIAL_FILTER_STATE.bollingerLower);
 
   // AI分析筛选状态
   const [aiAnalysisEnabled, setAiAnalysisEnabled] = useState<boolean>(INITIAL_FILTER_STATE.aiAnalysisEnabled);
@@ -1347,13 +1330,6 @@ export function OpportunityPage() {
       rsiRange,
       rsiPeriod,
       tradingSignalTypes,
-      bollingerThreshold,
-      macdGoldenCross,
-      macdDeathCross,
-      macdDivergence,
-      bollingerUpper,
-      bollingerMiddle,
-      bollingerLower,
       aiAnalysisEnabled,
       aiTrendUp,
       aiTrendDown,
@@ -1426,13 +1402,6 @@ export function OpportunityPage() {
       rsiRange,
       rsiPeriod,
       tradingSignalTypes,
-      bollingerThreshold,
-      macdGoldenCross,
-      macdDeathCross,
-      macdDivergence,
-      bollingerUpper,
-      bollingerMiddle,
-      bollingerLower,
       aiAnalysisEnabled,
       aiTrendUp,
       aiTrendDown,
@@ -1768,12 +1737,6 @@ export function OpportunityPage() {
       logger.debug('==================');
     }
   }, [filteredAnalysisData, industrySectors, conceptSectors, industrySectorInvert, conceptSectorInvert]);
-
-  useEffect(() => {
-    if (filterSkippedItems.length === 0) {
-      setFilterSkippedExpanded(false);
-    }
-  }, [filterSkippedItems.length]);
 
   /** 仅重置顶部：市场、名称类型、周期、K 线数量 */
   const handleResetQueryBar = () => {
@@ -2679,12 +2642,6 @@ export function OpportunityPage() {
             setNameFilterIndustryGroups={setNameFilterIndustryGroups}
             nameFilterIndustryInvert={nameFilterIndustryInvert}
             setNameFilterIndustryInvert={setNameFilterIndustryInvert}
-            // 概念板块筛选
-            conceptSectors={conceptSectors}
-            setConceptSectors={setConceptSectors}
-            conceptSectorOptions={conceptSectorOptions}
-            conceptSectorInvert={conceptSectorInvert}
-            setConceptSectorInvert={setConceptSectorInvert}
             // 名称过滤
             // 名称筛选
             enableNameKeywordFilter={enableNameKeywordFilter}
