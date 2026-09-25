@@ -42,26 +42,6 @@
   min-height: 0;
 }
 
-.progressCard {
-  margin: 16px;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  border: 1px solid var(--ant-color-border-secondary);
-  background: var(--ant-color-bg-container);
-}
-
-.progressInfo {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.progressText {
-  font-size: 14px;
-  color: var(--ant-color-text-secondary);
-  font-weight: 500;
-}
-
 .errorCard {
   margin: 16px;
   border-radius: 8px;
@@ -442,9 +422,5 @@
 
 [data-theme='dark'] .errorCard {
   box-shadow: 0 2px 8px rgba(255, 77, 79, 0.2);
-}
-
-[data-theme='dark'] .progressCard {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 

@@ -8,7 +8,6 @@ import {
   OPPORTUNITY_DEFAULT_CONSOLIDATION,
   OPPORTUNITY_DEFAULT_SHARP_MOVE,
   OPPORTUNITY_DEFAULT_TREND_LINE,
-  OPPORTUNITY_DEFAULT_INDUSTRY_SECTORS,
   OPPORTUNITY_DEFAULT_BASIC_FILTERS,
   OPPORTUNITY_DEFAULT_NAME_FILTERS,
   OPPORTUNITY_DEFAULT_AI_ANALYSIS,
@@ -35,6 +34,20 @@ export const OPPORTUNITY_FILTER_PANEL_KEYS = {
   aiAnalysis: 'aiAnalysis',
   nameFilter: 'nameFilter',
 } as const;
+
+/**
+ * 筛选面板默认展开项（按界面展示顺序）。
+ * 初始值与「重置筛选」共用同一份，避免两处列表不一致。
+ */
+export const DEFAULT_FILTER_PANEL_ACTIVE_KEYS: string[] = [
+  OPPORTUNITY_FILTER_PANEL_KEYS.data,
+  OPPORTUNITY_FILTER_PANEL_KEYS.nameFilter,
+  OPPORTUNITY_FILTER_PANEL_KEYS.aiAnalysis,
+  OPPORTUNITY_FILTER_PANEL_KEYS.sharpMove,
+  OPPORTUNITY_FILTER_PANEL_KEYS.volumePullback,
+  OPPORTUNITY_FILTER_PANEL_KEYS.consolidation,
+  OPPORTUNITY_FILTER_PANEL_KEYS.trendLine,
+];
 
 /** 由 localStorage 中「展开」布尔字段推导当前应展开的面板（可多组同时展开） */
 export function activeFilterPanelKeyFromPrefs(
@@ -437,7 +450,7 @@ export function clearOpportunityFilterPrefs(): void {
   }
 }
 
-/** 与 OpportunityPage 中 INITIAL_FILTER_STATE 的筛选项默认值保持一致（不含市场/名称/周期/K 线数量） */
+/** 与 INITIAL_FILTER_STATE（opportunityAnalysisDefaults.ts）的筛选项默认值保持一致（不含市场/名称/周期/K 线数量） */
 export function getDefaultFilterPrefsFields(): Omit<
   OpportunityFilterPrefs,
   'version' | 'selectedMarket' | 'nameType' | 'currentPeriod' | 'currentCount'

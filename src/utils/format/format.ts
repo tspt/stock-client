@@ -122,10 +122,11 @@ export function getMarketFromCode(code: string): 'SH' | 'SZ' | null {
 }
 
 /**
- * 从统一格式代码中提取纯数字代码
+ * 从统一格式代码中提取纯数字代码。
+ * 兼容大小写前缀与北交所 BJ 前缀（如 sh600000 / SZ000001 / bj430047）。
  */
 export function getPureCode(code: string): string {
-  return code.replace(/^(SH|SZ)/, '');
+  return code.replace(/^(SH|SZ|BJ)/i, '');
 }
 
 /**

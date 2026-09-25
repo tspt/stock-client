@@ -3,7 +3,7 @@
  */
 
 import { useEffect, useState, useMemo, useRef, useCallback, useLayoutEffect } from 'react';
-import { Layout, Card, Button, Space, Progress, Select, App, Input, InputNumber, Dropdown, Tooltip, Badge, Checkbox, Spin } from 'antd';
+import { Layout, Card, Button, Space, Select, App, Input, InputNumber, Dropdown, Tooltip, Badge, Checkbox, Spin } from 'antd';
 import type { TablePaginationConfig } from 'antd';
 import {
   RocketOutlined,
@@ -30,9 +30,6 @@ import {
   getStocksHistory,
   getAllStockFinanceMetrics,
 } from '@/utils/storage/opportunityIndexedDB';
-import {
-  CONSOLIDATION_TYPE_LABELS,
-} from '@/utils/analysis/consolidationAnalysis';
 import { OpportunityTable } from '@/components/OpportunityTable/OpportunityTable';
 import { ColumnSettings } from '@/components/ColumnSettings/ColumnSettings';
 import { AIAnalysisModal } from '@/components/AIAnalysisModal';
@@ -43,7 +40,6 @@ import { getSinaFinanceMetricsBatch } from '@/services/fundamental/sinaFinance';
 import type {
   ConsolidationType,
   KLinePeriod,
-  StockInfo,
   StockFinanceMetrics,
   StockOpportunityData,
 } from '@/types/stock';
@@ -53,28 +49,39 @@ import { logger } from '@/utils/business/logger';
 import { useOpportunityFilterEngine } from '@/hooks/useOpportunityFilterEngine';
 import { getPureCode } from '@/utils/format/format';
 import {
+  DEFAULT_FILTER_PANEL_ACTIVE_KEYS,
   applyOpportunityFilterPrefsToState,
   loadOpportunityFilterPrefs,
   patchSavedPrefsFiltersToDefaults,
   patchSavedPrefsQueryToDefaults,
   saveOpportunityFilterPrefs,
-  visibilityFromActiveFilterPanelKey,
 } from '@/utils/config/opportunityFilterPrefs';
-import type { OpportunityFilterPrefs } from '@/utils/config/opportunityFilterPrefs';
-import type { OpportunityFilterSnapshot } from '@/types/opportunityFilter';
+import {
+  buildOpportunityFilterPrefs,
+  buildOpportunityFilterSnapshot,
+  type OpportunityFilterFormState,
+} from '@/utils/config/opportunityFilterFormState';
+import {
+  AI_VERSION_OPTIONS,
+  CONSOLIDATION_TYPE_OPTIONS,
+  ENABLED_AI_VERSION,
+  MARKET_OPTIONS,
+  NAME_TYPE_OPTIONS,
+  PERIOD_OPTIONS,
+  getAiVersionLabel,
+  resolveEnabledAiVersion,
+  type AiVersion,
+} from '@/utils/config/opportunityPageOptions';
+import { filterStocksByMarketAndSectors } from '@/utils/analysis/stockFiltering';
+import { mergeFinanceMetrics } from '@/utils/analysis/stockFinanceMerge';
+import { filterByStockKeyword } from '@/utils/format/textMatch';
+import { ProgressCard } from '@/components/common/ProgressCard/ProgressCard';
 import { OpportunityFiltersPanel, buildOpportunityFilterSummary } from './OpportunityFiltersPanel';
 import { DailyChartModal } from './DailyChartModal';
 import { FilterDiagnosticsDrawer } from '@/components/FilterDiagnosticsDrawer';
 import {
-  OPPORTUNITY_DEFAULT_CONSOLIDATION,
-  OPPORTUNITY_DEFAULT_TREND_LINE,
-  OPPORTUNITY_DEFAULT_AI_ANALYSIS,
-  OPPORTUNITY_DEFAULT_INDICATORS,
-  OPPORTUNITY_DEFAULT_LIMIT_MOVES,
-  OPPORTUNITY_DEFAULT_FINANCE_FILTERS,
-  OPPORTUNITY_DEFAULT_BASIC_FILTERS,
-  OPPORTUNITY_DEFAULT_SHARP_MOVE_FULL,
-  OPPORTUNITY_DEFAULT_VOLUME_PULLBACK,
+  INITIAL_FILTER_STATE,
+  INITIAL_OPPORTUNITY_QUERY,
   OPPORTUNITY_DEFAULT_INDUSTRY_SECTORS,
   OPPORTUNITY_DEFAULT_NAME_FILTERS,
   OPPORTUNITY_INDUSTRY_GROUPS,
@@ -97,136 +104,6 @@ import {
 import styles from './OpportunityPage.module.css';
 
 const { Content } = Layout;
-
-const PERIOD_OPTIONS: { label: string; value: KLinePeriod }[] = [
-  { label: '日', value: 'day' },
-  { label: '周', value: 'week' },
-  { label: '月', value: 'month' },
-  { label: '年', value: 'year' },
-];
-
-const MARKET_OPTIONS: { label: string; value: string }[] = [
-  { label: '沪深主板', value: 'hs_main' },
-  { label: '创业板', value: 'sz_gem' },
-];
-
-const NAME_TYPE_OPTIONS: { label: string; value: string }[] = [
-  { label: '不限', value: 'all' },
-  { label: 'ST', value: 'st' },
-  { label: '非ST', value: 'non_st' },
-];
-
-const CONSOLIDATION_TYPE_OPTIONS: { label: string; value: ConsolidationType }[] = [
-  { label: CONSOLIDATION_TYPE_LABELS.low_stable, value: 'low_stable' },
-  { label: CONSOLIDATION_TYPE_LABELS.high_stable, value: 'high_stable' },
-  { label: CONSOLIDATION_TYPE_LABELS.box, value: 'box' },
-];
-
-const DEFAULT_CONSOLIDATION_TYPES: ConsolidationType[] = [];
-
-/** 与下方 useState 初始值保持一致，供「重置」同步恢复 */
-const INITIAL_FILTER_STATE = {
-  // 基础筛选
-  selectedMarket: OPPORTUNITY_DEFAULT_BASIC_FILTERS.selectedMarket,
-  nameType: OPPORTUNITY_DEFAULT_BASIC_FILTERS.nameType,
-  priceRange: { ...OPPORTUNITY_DEFAULT_BASIC_FILTERS.priceRange },
-  marketCapRange: { ...OPPORTUNITY_DEFAULT_BASIC_FILTERS.marketCapRange },
-  totalSharesRange: { ...OPPORTUNITY_DEFAULT_BASIC_FILTERS.totalSharesRange },
-  turnoverRateRange: { ...OPPORTUNITY_DEFAULT_BASIC_FILTERS.turnoverRateRange },
-  peRatioRange: {} as { min?: number; max?: number },
-  kdjJRange: {} as { min?: number; max?: number },
-  financeRevenueRange: { min: OPPORTUNITY_DEFAULT_FINANCE_FILTERS.revenueMin } as {
-    min?: number;
-    max?: number;
-  },
-  financeNetProfitRange: { min: OPPORTUNITY_DEFAULT_FINANCE_FILTERS.netProfitMin } as {
-    min?: number;
-    max?: number;
-  },
-  financeRevenueGrowthRange: {} as { min?: number; max?: number },
-  financeNetProfitGrowthRange: {} as { min?: number; max?: number },
-
-  // 涨跌停筛选（默认近10天有1次涨停）
-  recentLimitUpCount: OPPORTUNITY_DEFAULT_LIMIT_MOVES.minLimitUpCount,
-  recentLimitDownCount: undefined as number | undefined,
-  limitUpPeriod: OPPORTUNITY_DEFAULT_LIMIT_MOVES.period,
-  limitDownPeriod: OPPORTUNITY_DEFAULT_LIMIT_MOVES.period,
-
-  // 横盘筛选
-  consolidationTypes: DEFAULT_CONSOLIDATION_TYPES,
-  consolidationLookback: OPPORTUNITY_DEFAULT_CONSOLIDATION.lookback,
-  consolidationConsecutive: OPPORTUNITY_DEFAULT_CONSOLIDATION.consecutive,
-  consolidationThreshold: OPPORTUNITY_DEFAULT_CONSOLIDATION.threshold,
-  consolidationRequireAboveMa10: OPPORTUNITY_DEFAULT_CONSOLIDATION.requireClosesAboveMa10,
-  consolidationFilterEnabled: false,
-
-  // 趋势线筛选
-  trendLineLookback: OPPORTUNITY_DEFAULT_TREND_LINE.lookback,
-  trendLineConsecutive: OPPORTUNITY_DEFAULT_TREND_LINE.consecutive,
-  trendLineFilterEnabled: false,
-
-  // 异动筛选
-  sharpMoveFilterEnabled: false,
-  sharpMoveWindowBars: OPPORTUNITY_DEFAULT_SHARP_MOVE_FULL.windowBars,
-  sharpMoveMagnitude: OPPORTUNITY_DEFAULT_SHARP_MOVE_FULL.magnitude,
-  sharpMoveFlatThreshold: OPPORTUNITY_DEFAULT_SHARP_MOVE_FULL.flatThreshold,
-  sharpMoveOnlyDrop: OPPORTUNITY_DEFAULT_SHARP_MOVE_FULL.onlyDrop,
-  sharpMoveOnlyRise: OPPORTUNITY_DEFAULT_SHARP_MOVE_FULL.onlyRise,
-  sharpMoveDropThenRiseLoose: OPPORTUNITY_DEFAULT_SHARP_MOVE_FULL.dropThenRiseLoose,
-  sharpMoveRiseThenDropLoose: OPPORTUNITY_DEFAULT_SHARP_MOVE_FULL.riseThenDropLoose,
-  sharpMoveDropFlatRise: OPPORTUNITY_DEFAULT_SHARP_MOVE_FULL.dropFlatRise,
-  sharpMoveRiseFlatDrop: OPPORTUNITY_DEFAULT_SHARP_MOVE_FULL.riseFlatDrop,
-
-  // 量价回踩筛选（默认关闭）
-  volumePullbackFilterEnabled: false,
-  volumePullbackLookback: OPPORTUNITY_DEFAULT_VOLUME_PULLBACK.lookback,
-  volumePullbackMinRisePct: OPPORTUNITY_DEFAULT_VOLUME_PULLBACK.minRisePct,
-  volumePullbackTriggerType: OPPORTUNITY_DEFAULT_VOLUME_PULLBACK.triggerType,
-  volumePullbackVolumeRatio: OPPORTUNITY_DEFAULT_VOLUME_PULLBACK.volumeRatio,
-  volumePullbackVolumeMaPeriod: OPPORTUNITY_DEFAULT_VOLUME_PULLBACK.volumeMaPeriod,
-  volumePullbackMaxBars: OPPORTUNITY_DEFAULT_VOLUME_PULLBACK.maxBars,
-  volumePullbackMinPullbackPct: OPPORTUNITY_DEFAULT_VOLUME_PULLBACK.minPullbackPct,
-  volumePullbackMaxPullbackPct: OPPORTUNITY_DEFAULT_VOLUME_PULLBACK.maxPullbackPct,
-  volumePullbackVolumeShrink: OPPORTUNITY_DEFAULT_VOLUME_PULLBACK.volumeShrink,
-  volumePullbackMa10TolerancePct: OPPORTUNITY_DEFAULT_VOLUME_PULLBACK.ma10TolerancePct,
-  volumePullbackRequireUpperShadow: OPPORTUNITY_DEFAULT_VOLUME_PULLBACK.requireUpperShadow,
-  volumePullbackUpperShadowRatio: OPPORTUNITY_DEFAULT_VOLUME_PULLBACK.upperShadowRatio,
-
-  // 技术指标筛选
-  rsiRange: {} as { min?: number; max?: number },
-  rsiPeriod: OPPORTUNITY_DEFAULT_INDICATORS.rsiPeriod,
-  // 交易信号筛选（空数组＝不筛选）
-  tradingSignalTypes: [] as TradingSignalType[],
-
-  // AI分析筛选
-  aiAnalysisEnabled: OPPORTUNITY_DEFAULT_AI_ANALYSIS.enabled,
-  aiTrendUp: OPPORTUNITY_DEFAULT_AI_ANALYSIS.trendUp,
-  aiTrendDown: OPPORTUNITY_DEFAULT_AI_ANALYSIS.trendDown,
-  aiTrendSideways: OPPORTUNITY_DEFAULT_AI_ANALYSIS.trendSideways,
-  aiConfidenceRange: { min: OPPORTUNITY_DEFAULT_AI_ANALYSIS.confidenceMin },
-  aiRecommendScoreRange: {},
-  aiTechnicalScoreRange: { min: OPPORTUNITY_DEFAULT_AI_ANALYSIS.technicalScoreMin },
-  aiPatternScoreRange: { min: OPPORTUNITY_DEFAULT_AI_ANALYSIS.patternScoreMin },
-  aiTrendScoreRange: { min: OPPORTUNITY_DEFAULT_AI_ANALYSIS.trendScoreMin },
-  aiRiskScoreRange: { min: OPPORTUNITY_DEFAULT_AI_ANALYSIS.riskScoreMin },
-
-  // v3.0 新增筛选条件
-  aiSignalConfluence: false,
-  aiMinSignalCount: 4,
-  aiMinSignalRatio: 0.6,
-  aiPatternWinRateRange: {} as { min?: number; max?: number },
-  aiMinSimilarPatterns: 3,
-  aiMinRiskRewardRatio: undefined as number | undefined,
-
-  // 名称过滤
-  excludedNameKeywords: [...OPPORTUNITY_DEFAULT_NAME_FILTERS.excludedNameKeywords],
-};
-
-/** 与 opportunityStore 初始值一致，用于「重置」恢复周期与 K 线数量 */
-const INITIAL_OPPORTUNITY_QUERY = {
-  currentPeriod: 'day' as KLinePeriod,
-  currentCount: 500,
-};
 
 export function OpportunityPage() {
   const { message } = App.useApp();
@@ -362,7 +239,9 @@ export function OpportunityPage() {
     INITIAL_FILTER_STATE.financeNetProfitGrowthRange
   );
   /** 筛选面板当前展开的 key 列表；[] 表示各组均收起。默认展开所有筛选项 */
-  const [filterPanelActiveKey, setFilterPanelActiveKey] = useState<string[]>(['data', 'nameFilter', 'aiAnalysis', 'sharpMove', 'volumePullback', 'consolidation', 'trendLine']);
+  const [filterPanelActiveKey, setFilterPanelActiveKey] = useState<string[]>([
+    ...DEFAULT_FILTER_PANEL_ACTIVE_KEYS,
+  ]);
 
   // 涨停/跌停筛选状态
   const [recentLimitUpCount, setRecentLimitUpCount] = useState<number | undefined>(
@@ -416,20 +295,19 @@ export function OpportunityPage() {
   const [errorExpanded, setErrorExpanded] = useState(false); // 失败详情展开状态
 
   // AI分析版本选择（切换时自动刷新）；与 store.analysisAiVersion 对齐供一键分析使用
-  const [aiVersion, setAiVersion] = useState<'v1' | 'v2' | 'v3' | 'v4' | 'v5' | 'v6' | 'v7'>('v5');
+  const [aiVersion, setAiVersion] = useState<AiVersion>(ENABLED_AI_VERSION);
   const [showAddToWatchListModal, setShowAddToWatchListModal] = useState(false);
   const [aiRefreshLoading, setAiRefreshLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(false); // 初始数据加载状态
 
-  const aiVersionLabel = (version: 'v1' | 'v2' | 'v3' | 'v4' | 'v5' | 'v6' | 'v7') =>
-    version === 'v7' ? 'v7.0安全增强' : version === 'v6' ? 'v6.0性能增强' : version === 'v5' ? 'v5.0智能增强' : version === 'v3' ? 'v3.0增强版' : version === 'v2' ? 'v2.0优化版' : version === 'v4' ? 'v4.0结构增强' : 'v1.0原始版';
-
   // AI版本切换时自动执行刷新（无分析数据时仅写入 store，供下次一键分析使用）
-  const handleAiVersionChange = async (selectedVersion: 'v1' | 'v2' | 'v3' | 'v4' | 'v5' | 'v6' | 'v7') => {
-    // ⚠️ 当前项目仅启用 v5.0，其余版本暂时停用（模块已注释），自动回退到 v5
-    const version = selectedVersion === 'v5' ? selectedVersion : ('v5' as const);
+  const handleAiVersionChange = async (selectedVersion: AiVersion) => {
+    // ⚠️ 当前项目仅启用 v5.0，其余版本暂时停用（模块已注释），自动回退到已启用版本
+    const version = resolveEnabledAiVersion(selectedVersion);
     if (selectedVersion !== version) {
-      message.info(`${aiVersionLabel(selectedVersion)} 当前未启用，已使用 v5.0 智能增强`);
+      message.info(
+        `${getAiVersionLabel(selectedVersion)} 当前未启用，已使用 ${getAiVersionLabel(version)}`
+      );
     }
     logger.info(`[AI版本切换] 切换到 ${version}`);
     setAiVersion(version);
@@ -437,13 +315,13 @@ export function OpportunityPage() {
 
     if (analysisData.length === 0) {
       setAiVersion(version);
-      message.info(`已选择 ${aiVersionLabel(version)}，请执行一键分析生效`);
+      message.info(`已选择 ${getAiVersionLabel(version)}，请执行一键分析生效`);
       return;
     }
 
     try {
       setAiRefreshLoading(true);
-      message.loading({ content: `正在切换到${aiVersionLabel(version)}...`, key: 'aiVersionChange' });
+      message.loading({ content: `正在切换到${getAiVersionLabel(version)}...`, key: 'aiVersionChange' });
 
       logger.info(`切换AI版本到${version}，总股票数: ${analysisData.length}`);
 
@@ -455,7 +333,7 @@ export function OpportunityPage() {
       // 详见 src/workers/opportunityFilterWorker.ts
       const result = await recomputeAI(analysisData, ({ completed, total, percent }) => {
         message.loading({
-          content: `正在切换到${aiVersionLabel(version)}... ${completed}/${total}（${percent}%）`,
+          content: `正在切换到${getAiVersionLabel(version)}... ${completed}/${total}（${percent}%）`,
           key: 'aiVersionChange',
         });
       });
@@ -479,7 +357,7 @@ export function OpportunityPage() {
 
       message.success({
         content:
-          `已切换到${aiVersionLabel(version)}，共更新 ${result.updatedCount} 只股票` +
+          `已切换到${getAiVersionLabel(version)}，共更新 ${result.updatedCount} 只股票` +
           (result.skippedCount > 0 ? `，跳过 ${result.skippedCount} 只` : ''),
         key: 'aiVersionChange'
       });
@@ -811,475 +689,11 @@ export function OpportunityPage() {
     };
   }, []);
 
-  // 在页面卸载时保存当前的筛选条件
-  useEffect(() => {
-    return () => {
-      const prefs: OpportunityFilterPrefs = {
-        version: 1,
-        selectedMarket,
-        nameType,
-        currentPeriod,
-        currentCount,
-        priceRange: { ...priceRange },
-        marketCapRange: { ...marketCapRange },
-        totalSharesRange: { ...totalSharesRange },
-        turnoverRateRange: { ...turnoverRateRange },
-        peRatioRange: { ...peRatioRange },
-        kdjJRange: { ...kdjJRange },
-        financeRevenueRange: { ...financeRevenueRange },
-        financeNetProfitRange: { ...financeNetProfitRange },
-        financeRevenueGrowthRange: { ...financeRevenueGrowthRange },
-        financeNetProfitGrowthRange: { ...financeNetProfitGrowthRange },
-        ...visibilityFromActiveFilterPanelKey(filterPanelActiveKey),
-        recentLimitUpCount,
-        recentLimitDownCount,
-        limitUpPeriod,
-        limitDownPeriod,
-        consolidationTypes: [...consolidationTypes],
-        consolidationLookback,
-        consolidationConsecutive,
-        consolidationThreshold,
-        consolidationRequireAboveMa10,
-        consolidationFilterEnabled,
-        trendLineLookback,
-        trendLineConsecutive,
-        trendLineFilterEnabled,
-        sharpMoveFilterEnabled,
-        sharpMoveWindowBars,
-        sharpMoveMagnitude,
-        sharpMoveFlatThreshold,
-        sharpMoveOnlyDrop,
-        sharpMoveOnlyRise,
-        sharpMoveDropThenRiseLoose,
-        sharpMoveRiseThenDropLoose,
-        sharpMoveDropFlatRise,
-        sharpMoveRiseFlatDrop,
-        volumePullbackFilterEnabled,
-        volumePullbackLookback,
-        volumePullbackMinRisePct,
-        volumePullbackTriggerType,
-        volumePullbackVolumeRatio,
-        volumePullbackVolumeMaPeriod,
-        volumePullbackMaxBars,
-        volumePullbackMinPullbackPct,
-        volumePullbackMaxPullbackPct,
-        volumePullbackVolumeShrink,
-        volumePullbackMa10TolerancePct,
-        volumePullbackRequireUpperShadow,
-        volumePullbackUpperShadowRatio,
-        rsiRange: { ...rsiRange },
-        rsiPeriod,
-        tradingSignalTypes: [...tradingSignalTypes],
-        aiAnalysisEnabled,
-        aiTrendUp,
-        aiTrendDown,
-        aiTrendSideways,
-        aiConfidenceRange: { ...aiConfidenceRange },
-        aiRecommendScoreRange: { ...aiRecommendScoreRange },
-        aiTechnicalScoreRange: { ...aiTechnicalScoreRange },
-        aiPatternScoreRange: { ...aiPatternScoreRange },
-        aiTrendScoreRange: { ...aiTrendScoreRange },
-        aiRiskScoreRange: { ...aiRiskScoreRange },
-        enableNameKeywordFilter,
-        excludedNameKeywords: [...excludedNameKeywords],
-        enableShortTermNameFilter,
-        excludedShortTermNames: [...excludedShortTermNames],
-        nameFilterIndustryGroups: [...nameFilterIndustryGroups],
-        nameFilterIndustryInvert,
-      };
-      saveOpportunityFilterPrefs(prefs);
-    };
-  }, [
-    selectedMarket,
-    nameType,
-    currentPeriod,
-    currentCount,
-    priceRange,
-    marketCapRange,
-    turnoverRateRange,
-    peRatioRange,
-    kdjJRange,
-    financeRevenueRange,
-    financeNetProfitRange,
-    financeRevenueGrowthRange,
-    financeNetProfitGrowthRange,
-    filterPanelActiveKey,
-    recentLimitUpCount,
-    recentLimitDownCount,
-    limitUpPeriod,
-    limitDownPeriod,
-    consolidationTypes,
-    consolidationLookback,
-    consolidationConsecutive,
-    consolidationThreshold,
-    consolidationRequireAboveMa10,
-    consolidationFilterEnabled,
-    trendLineLookback,
-    trendLineConsecutive,
-    trendLineFilterEnabled,
-    sharpMoveFilterEnabled,
-    sharpMoveWindowBars,
-    sharpMoveMagnitude,
-    sharpMoveFlatThreshold,
-    sharpMoveOnlyDrop,
-    sharpMoveOnlyRise,
-    sharpMoveDropThenRiseLoose,
-    sharpMoveRiseThenDropLoose,
-    sharpMoveDropFlatRise,
-    sharpMoveRiseFlatDrop,
-    volumePullbackFilterEnabled,
-    volumePullbackLookback,
-    volumePullbackMinRisePct,
-    volumePullbackTriggerType,
-    volumePullbackVolumeRatio,
-    volumePullbackVolumeMaPeriod,
-    volumePullbackMaxBars,
-    volumePullbackMinPullbackPct,
-    volumePullbackMaxPullbackPct,
-    volumePullbackVolumeShrink,
-    volumePullbackMa10TolerancePct,
-    volumePullbackRequireUpperShadow,
-    volumePullbackUpperShadowRatio,
-    rsiRange,
-    rsiPeriod,
-    tradingSignalTypes,
-    aiAnalysisEnabled,
-    aiTrendUp,
-    aiTrendDown,
-    aiTrendSideways,
-    aiConfidenceRange,
-    aiRecommendScoreRange,
-    aiTechnicalScoreRange,
-    aiPatternScoreRange,
-    aiTrendScoreRange,
-    aiRiskScoreRange,
-    enableNameKeywordFilter,
-    excludedNameKeywords,
-    enableShortTermNameFilter,
-    excludedShortTermNames,
-    nameFilterIndustryGroups,
-    nameFilterIndustryInvert,
-  ]);
-
-  // 筛选条件变化时自动保存（防抖300ms）
-  useEffect(() => {
-    // 如果还未完成初始恢复，不执行保存
-    if (!isRestoredRef.current) {
-      return;
-    }
-
-    const timer = setTimeout(() => {
-      const prefs: OpportunityFilterPrefs = {
-        version: 1,
-        selectedMarket,
-        nameType,
-        currentPeriod,
-        currentCount,
-        priceRange: { ...priceRange },
-        marketCapRange: { ...marketCapRange },
-        totalSharesRange: { ...totalSharesRange },
-        turnoverRateRange: { ...turnoverRateRange },
-        peRatioRange: { ...peRatioRange },
-        kdjJRange: { ...kdjJRange },
-        financeRevenueRange: { ...financeRevenueRange },
-        financeNetProfitRange: { ...financeNetProfitRange },
-        financeRevenueGrowthRange: { ...financeRevenueGrowthRange },
-        financeNetProfitGrowthRange: { ...financeNetProfitGrowthRange },
-        ...visibilityFromActiveFilterPanelKey(filterPanelActiveKey),
-        recentLimitUpCount,
-        recentLimitDownCount,
-        limitUpPeriod,
-        limitDownPeriod,
-        consolidationTypes: [...consolidationTypes],
-        consolidationLookback,
-        consolidationConsecutive,
-        consolidationThreshold,
-        consolidationRequireAboveMa10,
-        consolidationFilterEnabled,
-        trendLineLookback,
-        trendLineConsecutive,
-        trendLineFilterEnabled,
-        sharpMoveFilterEnabled,
-        sharpMoveWindowBars,
-        sharpMoveMagnitude,
-        sharpMoveFlatThreshold,
-        sharpMoveOnlyDrop,
-        sharpMoveOnlyRise,
-        sharpMoveDropThenRiseLoose,
-        sharpMoveRiseThenDropLoose,
-        sharpMoveDropFlatRise,
-        sharpMoveRiseFlatDrop,
-        volumePullbackFilterEnabled,
-        volumePullbackLookback,
-        volumePullbackMinRisePct,
-        volumePullbackTriggerType,
-        volumePullbackVolumeRatio,
-        volumePullbackVolumeMaPeriod,
-        volumePullbackMaxBars,
-        volumePullbackMinPullbackPct,
-        volumePullbackMaxPullbackPct,
-        volumePullbackVolumeShrink,
-        volumePullbackMa10TolerancePct,
-        volumePullbackRequireUpperShadow,
-        volumePullbackUpperShadowRatio,
-        rsiRange: { ...rsiRange },
-        rsiPeriod,
-        tradingSignalTypes: [...tradingSignalTypes],
-        aiAnalysisEnabled,
-        aiTrendUp,
-        aiTrendDown,
-        aiTrendSideways,
-        aiConfidenceRange: { ...aiConfidenceRange },
-        aiRecommendScoreRange: { ...aiRecommendScoreRange },
-        aiTechnicalScoreRange: { ...aiTechnicalScoreRange },
-        aiPatternScoreRange: { ...aiPatternScoreRange },
-        aiTrendScoreRange: { ...aiTrendScoreRange },
-        aiRiskScoreRange: { ...aiRiskScoreRange },
-        enableNameKeywordFilter,
-        excludedNameKeywords: [...excludedNameKeywords],
-        enableShortTermNameFilter,
-        excludedShortTermNames: [...excludedShortTermNames],
-        nameFilterIndustryGroups: [...nameFilterIndustryGroups],
-        nameFilterIndustryInvert,
-      };
-      saveOpportunityFilterPrefs(prefs);
-    }, FILTER_SAVE_DEBOUNCE_DELAY); // 防抖300ms
-
-    return () => clearTimeout(timer);
-  }, [
-    selectedMarket,
-    nameType,
-    currentPeriod,
-    currentCount,
-    priceRange,
-    marketCapRange,
-    turnoverRateRange,
-    peRatioRange,
-    kdjJRange,
-    financeRevenueRange,
-    financeNetProfitRange,
-    financeRevenueGrowthRange,
-    financeNetProfitGrowthRange,
-    filterPanelActiveKey,
-    recentLimitUpCount,
-    recentLimitDownCount,
-    limitUpPeriod,
-    limitDownPeriod,
-    consolidationTypes,
-    consolidationLookback,
-    consolidationConsecutive,
-    consolidationThreshold,
-    consolidationRequireAboveMa10,
-    consolidationFilterEnabled,
-    trendLineLookback,
-    trendLineConsecutive,
-    trendLineFilterEnabled,
-    sharpMoveFilterEnabled,
-    sharpMoveWindowBars,
-    sharpMoveMagnitude,
-    sharpMoveFlatThreshold,
-    sharpMoveOnlyDrop,
-    sharpMoveOnlyRise,
-    sharpMoveDropThenRiseLoose,
-    sharpMoveRiseThenDropLoose,
-    sharpMoveDropFlatRise,
-    sharpMoveRiseFlatDrop,
-    volumePullbackFilterEnabled,
-    volumePullbackLookback,
-    volumePullbackMinRisePct,
-    volumePullbackTriggerType,
-    volumePullbackVolumeRatio,
-    volumePullbackVolumeMaPeriod,
-    volumePullbackMaxBars,
-    volumePullbackMinPullbackPct,
-    volumePullbackMaxPullbackPct,
-    volumePullbackVolumeShrink,
-    volumePullbackMa10TolerancePct,
-    volumePullbackRequireUpperShadow,
-    volumePullbackUpperShadowRatio,
-    rsiRange,
-    rsiPeriod,
-    tradingSignalTypes,
-    aiAnalysisEnabled,
-    aiTrendUp,
-    aiTrendDown,
-    aiTrendSideways,
-    aiConfidenceRange,
-    aiRecommendScoreRange,
-    aiTechnicalScoreRange,
-    aiPatternScoreRange,
-    aiTrendScoreRange,
-    aiRiskScoreRange,
-    enableNameKeywordFilter,
-    excludedNameKeywords,
-    enableShortTermNameFilter,
-    excludedShortTermNames,
-    nameFilterIndustryGroups,
-    nameFilterIndustryInvert,
-  ]);
-
-  // 计算表格高度
-  const updateTableHeight = useCallback(() => {
-    if (!tableCardRef.current) {
-      return;
-    }
-
-    const cardBody = tableCardRef.current.querySelector('.ant-card-body') as HTMLElement;
-    if (!cardBody) {
-      return;
-    }
-
-    const bodyHeight = cardBody.clientHeight;
-    if (bodyHeight > 0) {
-      // 查找分页器
-      const pagination = cardBody.querySelector('.ant-pagination') as HTMLElement;
-      const paginationHeight = pagination ? pagination.offsetHeight : 24;
-
-      // 表格可用高度 = body高度 - 分页器高度 - 一些边距
-      const height = bodyHeight - paginationHeight - OPPORTUNITY_TABLE_HEIGHT_PADDING - OPPORTUNITY_TABLE_HEIGHT_EXTRA_PADDING - OPPORTUNITY_TABLE_HEIGHT_MARGIN;
-      setTableHeight(Math.max(100, height));
-    }
-  }, []);
-
-  // 使用useLayoutEffect在DOM更新后立即计算高度
-  useLayoutEffect(() => {
-    if (analysisData.length === 0) {
-      return;
-    }
-    updateTableHeight();
-  }, [
-    analysisData.length,
-    filterPanelActiveKey,
-    loading,
-    errors.length,
-    updateTableHeight,
-  ]);
-
-  // 使用ResizeObserver监听表格Card大小变化
-  useEffect(() => {
-    if (!tableCardRef.current || analysisData.length === 0) {
-      return;
-    }
-
-    const resizeObserver = new ResizeObserver(() => {
-      updateTableHeight();
-    });
-
-    resizeObserver.observe(tableCardRef.current);
-
-    return () => {
-      resizeObserver.disconnect();
-    };
-  }, [updateTableHeight, analysisData.length]);
-
-  // 根据选择的市场类型、名称类型、行业和概念板块筛选股票
-  // 优化：简化过滤逻辑，减少分支判断
-  const filteredStocks = useMemo<StockInfo[]>(() => {
-    if (allStocks.length === 0) {
-      return [];
-    }
-
-    // 预先确定市场匹配函数，避免在循环中重复 switch
-    let marketMatchFn: (code: string) => boolean;
-
-    // 如果没有选择任何市场，则不显示任何股票
-    if (selectedMarket.length === 0) {
-      return [];
-    }
-
-    // 构建市场匹配函数数组
-    const marketMatchers: Array<(pureCode: string) => boolean> = [];
-    selectedMarket.forEach(market => {
-      switch (market) {
-        case 'hs_main':
-          marketMatchers.push((pureCode: string) => pureCode.startsWith('60') || pureCode.startsWith('00'));
-          break;
-        case 'sz_gem':
-          marketMatchers.push((pureCode: string) => pureCode.startsWith('30'));
-          break;
-      }
-    });
-
-    // 如果没有任何有效的市场选择，返回空数组
-    if (marketMatchers.length === 0) {
-      return [];
-    }
-
-    // 只要匹配任何一个选中的市场即可
-    marketMatchFn = (pureCode: string) => marketMatchers.some(matcher => matcher(pureCode));
-
-    // 预先确定名称类型匹配函数
-    let nameTypeMatchFn: (isST: boolean) => boolean;
-    switch (nameType) {
-      case 'st':
-        nameTypeMatchFn = (isST: boolean) => isST;
-        break;
-      case 'non_st':
-        nameTypeMatchFn = (isST: boolean) => !isST;
-        break;
-      case 'all':
-      default:
-        nameTypeMatchFn = () => true;
-    }
-
-    // 单次遍历，使用预定义的匹配函数
-    return allStocks.filter((stock) => {
-      const pureCode = getPureCode(stock.code);
-      const isST = stock.name.includes('ST');
-      const industry = stock.industry || getMappedIndustry(stock.code, industryMapping) || undefined;
-      const concepts =
-        (stock.concepts && stock.concepts.length > 0
-          ? stock.concepts
-          : getMappedConcepts(stock.code, conceptMapping));
-
-      // 市场筛选
-      if (!marketMatchFn(pureCode)) return false;
-
-      // 名称类型筛选
-      if (!nameTypeMatchFn(isST)) return false;
-
-      // 行业板块筛选（预过滤）
-      if (industrySectors && industrySectors.length > 0) {
-        const hasIndustry = industry && industrySectors.includes(industry.code);
-        if (industrySectorInvert) {
-          // 反选模式：排除选中板块的股票
-          if (hasIndustry) return false;
-        } else {
-          // 正常模式：只包含选中板块的股票
-          if (!hasIndustry) return false;
-        }
-      }
-
-      // 概念板块筛选（预过滤）
-      if (conceptSectors && conceptSectors.length > 0) {
-        if (!concepts || concepts.length === 0) {
-          // 如果股票没有概念板块
-          if (!conceptSectorInvert) {
-            return false; // 正常模式：没有概念板块的股票被排除
-          }
-          // 反选模式：没有概念板块的股票保留（因为不在排除列表中）
-        } else {
-          const hasMatchingConcept = concepts.some((c: { code: string; name: string }) => conceptSectors.includes(c.code));
-          if (conceptSectorInvert) {
-            // 反选模式：排除选中板块的股票
-            if (hasMatchingConcept) return false;
-          } else {
-            // 正常模式：只包含选中板块的股票
-            if (!hasMatchingConcept) return false;
-          }
-        }
-      }
-
-      return true;
-    });
-  }, [allStocks, selectedMarket, nameType, industrySectors, conceptSectors, industrySectorInvert, conceptSectorInvert, industryMapping, conceptMapping]);
-
-  // 处理添加到自选股
-  const handleAddToWatchList = () => {
-    setShowAddToWatchListModal(true);
-  };
-
-  const filterSnapshot = useMemo<OpportunityFilterSnapshot>(
+  /**
+   * 筛选表单状态汇总：既是 localStorage 持久化的来源，也是筛选引擎快照的来源。
+   * 字段清单与归一化规则集中在 utils/config/opportunityFilterFormState.ts，避免多处重复维护。
+   */
+  const filterFormState = useMemo<OpportunityFilterFormState>(
     () => ({
       priceRange,
       marketCapRange,
@@ -1340,78 +754,171 @@ export function OpportunityPage() {
       aiPatternScoreRange,
       aiTrendScoreRange,
       aiRiskScoreRange,
-      aiVersion,
-      industrySectors,
-      conceptSectors,
-      industrySectorInvert,
-      conceptSectorInvert,
-      nameFilterIndustryCodes,
-      nameFilterIndustryInvert,
-      nameType: nameType as 'all' | 'st' | 'non_st',
       enableNameKeywordFilter,
       excludedNameKeywords,
       enableShortTermNameFilter,
       excludedShortTermNames,
     }),
     [
-      priceRange,
-      marketCapRange,
-      turnoverRateRange,
-      peRatioRange,
-      kdjJRange,
-      financeRevenueRange,
-      financeNetProfitRange,
-      financeRevenueGrowthRange,
-      financeNetProfitGrowthRange,
-      recentLimitUpCount,
-      recentLimitDownCount,
-      limitUpPeriod,
-      limitDownPeriod,
-      consolidationTypes,
-      consolidationLookback,
-      consolidationConsecutive,
-      consolidationThreshold,
-      consolidationRequireAboveMa10,
-      consolidationFilterEnabled,
-      trendLineLookback,
-      trendLineConsecutive,
-      trendLineFilterEnabled,
-      sharpMoveFilterEnabled,
-      sharpMoveWindowBars,
-      sharpMoveMagnitude,
-      sharpMoveFlatThreshold,
-      sharpMoveOnlyDrop,
-      sharpMoveOnlyRise,
-      sharpMoveDropThenRiseLoose,
-      sharpMoveRiseThenDropLoose,
-      sharpMoveDropFlatRise,
-      sharpMoveRiseFlatDrop,
-      volumePullbackFilterEnabled,
-      volumePullbackLookback,
-      volumePullbackMinRisePct,
-      volumePullbackTriggerType,
-      volumePullbackVolumeRatio,
-      volumePullbackVolumeMaPeriod,
-      volumePullbackMaxBars,
-      volumePullbackMinPullbackPct,
-      volumePullbackMaxPullbackPct,
-      volumePullbackVolumeShrink,
-      volumePullbackMa10TolerancePct,
-      volumePullbackRequireUpperShadow,
-      volumePullbackUpperShadowRatio,
-      rsiRange,
-      rsiPeriod,
-      tradingSignalTypes,
-      aiAnalysisEnabled,
-      aiTrendUp,
-      aiTrendDown,
-      aiTrendSideways,
-      aiConfidenceRange,
-      aiRecommendScoreRange,
-      aiTechnicalScoreRange,
-      aiPatternScoreRange,
-      aiTrendScoreRange,
-      aiRiskScoreRange,
+      priceRange, marketCapRange, totalSharesRange, turnoverRateRange, peRatioRange, kdjJRange,
+      financeRevenueRange, financeNetProfitRange, financeRevenueGrowthRange, financeNetProfitGrowthRange,
+      recentLimitUpCount, recentLimitDownCount, limitUpPeriod, limitDownPeriod,
+      consolidationTypes, consolidationLookback, consolidationConsecutive, consolidationThreshold,
+      consolidationRequireAboveMa10, consolidationFilterEnabled,
+      trendLineLookback, trendLineConsecutive, trendLineFilterEnabled,
+      sharpMoveFilterEnabled, sharpMoveWindowBars, sharpMoveMagnitude, sharpMoveFlatThreshold,
+      sharpMoveOnlyDrop, sharpMoveOnlyRise, sharpMoveDropThenRiseLoose, sharpMoveRiseThenDropLoose,
+      sharpMoveDropFlatRise, sharpMoveRiseFlatDrop,
+      volumePullbackFilterEnabled, volumePullbackLookback, volumePullbackMinRisePct,
+      volumePullbackTriggerType, volumePullbackVolumeRatio, volumePullbackVolumeMaPeriod,
+      volumePullbackMaxBars, volumePullbackMinPullbackPct, volumePullbackMaxPullbackPct,
+      volumePullbackVolumeShrink, volumePullbackMa10TolerancePct,
+      volumePullbackRequireUpperShadow, volumePullbackUpperShadowRatio,
+      rsiRange, rsiPeriod, tradingSignalTypes,
+      aiAnalysisEnabled, aiTrendUp, aiTrendDown, aiTrendSideways,
+      aiConfidenceRange, aiRecommendScoreRange, aiTechnicalScoreRange,
+      aiPatternScoreRange, aiTrendScoreRange, aiRiskScoreRange,
+      enableNameKeywordFilter, excludedNameKeywords, enableShortTermNameFilter, excludedShortTermNames,
+    ]
+  );
+
+  /** 当前筛选状态对应的持久化偏好（顶部查询条 + 表单状态） */
+  const currentFilterPrefs = useCallback(
+    () =>
+      buildOpportunityFilterPrefs(
+        filterFormState,
+        {
+          selectedMarket,
+          nameType,
+          filterPanelActiveKey,
+          nameFilterIndustryGroups,
+          nameFilterIndustryInvert,
+        },
+        { currentPeriod, currentCount }
+      ),
+    [
+      filterFormState,
+      selectedMarket,
+      nameType,
+      filterPanelActiveKey,
+      currentPeriod,
+      currentCount,
+      nameFilterIndustryGroups,
+      nameFilterIndustryInvert,
+    ]
+  );
+
+  // 在页面卸载时保存当前的筛选条件
+  useEffect(() => {
+    return () => {
+      saveOpportunityFilterPrefs(currentFilterPrefs());
+    };
+  }, [currentFilterPrefs]);
+
+  // 筛选条件变化时自动保存（防抖300ms）
+  useEffect(() => {
+    // 如果还未完成初始恢复，不执行保存
+    if (!isRestoredRef.current) {
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      saveOpportunityFilterPrefs(currentFilterPrefs());
+    }, FILTER_SAVE_DEBOUNCE_DELAY); // 防抖300ms
+
+    return () => clearTimeout(timer);
+  }, [currentFilterPrefs]);
+
+  // 计算表格高度
+  const updateTableHeight = useCallback(() => {
+    if (!tableCardRef.current) {
+      return;
+    }
+
+    const cardBody = tableCardRef.current.querySelector('.ant-card-body') as HTMLElement;
+    if (!cardBody) {
+      return;
+    }
+
+    const bodyHeight = cardBody.clientHeight;
+    if (bodyHeight > 0) {
+      // 查找分页器
+      const pagination = cardBody.querySelector('.ant-pagination') as HTMLElement;
+      const paginationHeight = pagination ? pagination.offsetHeight : 24;
+
+      // 表格可用高度 = body高度 - 分页器高度 - 一些边距
+      const height = bodyHeight - paginationHeight - OPPORTUNITY_TABLE_HEIGHT_PADDING - OPPORTUNITY_TABLE_HEIGHT_EXTRA_PADDING - OPPORTUNITY_TABLE_HEIGHT_MARGIN;
+      setTableHeight(Math.max(100, height));
+    }
+  }, []);
+
+  // 使用useLayoutEffect在DOM更新后立即计算高度
+  useLayoutEffect(() => {
+    if (analysisData.length === 0) {
+      return;
+    }
+    updateTableHeight();
+  }, [
+    analysisData.length,
+    filterPanelActiveKey,
+    loading,
+    errors.length,
+    updateTableHeight,
+  ]);
+
+  // 使用ResizeObserver监听表格Card大小变化
+  useEffect(() => {
+    if (!tableCardRef.current || analysisData.length === 0) {
+      return;
+    }
+
+    const resizeObserver = new ResizeObserver(() => {
+      updateTableHeight();
+    });
+
+    resizeObserver.observe(tableCardRef.current);
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [updateTableHeight, analysisData.length]);
+
+  // 根据选择的市场、名称类型、行业和概念板块筛选股票池（实现见 utils/analysis/stockFiltering）
+  const filteredStocks = useMemo(
+    () =>
+      filterStocksByMarketAndSectors(allStocks, {
+        selectedMarket,
+        nameType,
+        industrySectors,
+        conceptSectors,
+        industrySectorInvert,
+        conceptSectorInvert,
+        industryMapping,
+        conceptMapping,
+      }),
+    [allStocks, selectedMarket, nameType, industrySectors, conceptSectors, industrySectorInvert, conceptSectorInvert, industryMapping, conceptMapping]
+  );
+
+  // 处理添加到自选股
+  const handleAddToWatchList = () => {
+    setShowAddToWatchListModal(true);
+  };
+
+  // 筛选引擎快照：共享字段来自 filterFormState，其余为不参与持久化的补充项
+  const filterSnapshot = useMemo(
+    () =>
+      buildOpportunityFilterSnapshot(filterFormState, {
+        aiVersion,
+        industrySectors,
+        conceptSectors,
+        industrySectorInvert,
+        conceptSectorInvert,
+        nameFilterIndustryCodes,
+        nameFilterIndustryInvert,
+        nameType: nameType as 'all' | 'st' | 'non_st',
+      }),
+    [
+      filterFormState,
       aiVersion,
       industrySectors,
       conceptSectors,
@@ -1420,164 +927,40 @@ export function OpportunityPage() {
       nameFilterIndustryCodes,
       nameFilterIndustryInvert,
       nameType,
-      enableNameKeywordFilter,
-      excludedNameKeywords,
-      enableShortTermNameFilter,
-      excludedShortTermNames,
     ]
   );
 
-  // 筛选条件摘要：原先是 JSX 里的 IIFE，每次渲染都会重算；改为按依赖缓存，输出完全一致
+  // 筛选条件摘要：共享字段来自 filterFormState，输出与拆分前完全一致
   const filterSummaryText = useMemo(
     () =>
       buildOpportunityFilterSummary({
-        priceRange,
-        marketCapRange,
-        totalSharesRange,
-        turnoverRateRange,
-        peRatioRange,
-        kdjJRange,
-        financeRevenueRange,
-        financeNetProfitRange,
-        financeRevenueGrowthRange,
-        financeNetProfitGrowthRange,
-        recentLimitUpCount,
-        recentLimitDownCount,
-        limitUpPeriod,
-        limitDownPeriod,
-        consolidationFilterEnabled,
-        consolidationTypes,
-        consolidationLookback,
-        consolidationConsecutive,
-        consolidationThreshold,
-        consolidationRequireAboveMa10,
+        ...filterFormState,
         consolidationTypeOptions: CONSOLIDATION_TYPE_OPTIONS,
-        trendLineFilterEnabled,
-        trendLineLookback,
-        trendLineConsecutive,
-        sharpMoveFilterEnabled,
-        sharpMoveWindowBars,
-        sharpMoveMagnitude,
-        sharpMoveFlatThreshold,
-        sharpMoveOnlyDrop,
-        sharpMoveOnlyRise,
-        sharpMoveDropThenRiseLoose,
-        sharpMoveRiseThenDropLoose,
-        sharpMoveDropFlatRise,
-        sharpMoveRiseFlatDrop,
-        volumePullbackFilterEnabled,
-        volumePullbackLookback,
-        volumePullbackMinRisePct,
-        volumePullbackTriggerType,
-        volumePullbackVolumeRatio,
-        volumePullbackVolumeMaPeriod,
-        volumePullbackMaxBars,
-        volumePullbackMinPullbackPct,
-        volumePullbackMaxPullbackPct,
-        volumePullbackVolumeShrink,
-        volumePullbackMa10TolerancePct,
-        volumePullbackRequireUpperShadow,
-        volumePullbackUpperShadowRatio,
-        rsiRange,
-        tradingSignalTypes,
-        aiAnalysisEnabled,
-        aiTrendUp,
-        aiTrendDown,
-        aiTrendSideways,
-        aiConfidenceRange,
-        aiRecommendScoreRange,
-        aiTechnicalScoreRange,
-        aiPatternScoreRange,
-        aiTrendScoreRange,
-        aiRiskScoreRange,
+        aiVersion,
         industrySectors,
         conceptSectors,
         industrySectorOptions,
         conceptSectorOptions,
         nameFilterIndustryGroups,
         nameFilterIndustryInvert,
-        excludedNameKeywords,
-        excludedShortTermNames,
       }),
     [
-      priceRange,
-      marketCapRange,
-      totalSharesRange,
-      turnoverRateRange,
-      peRatioRange,
-      kdjJRange,
-      financeRevenueRange,
-      financeNetProfitRange,
-      financeRevenueGrowthRange,
-      financeNetProfitGrowthRange,
-      recentLimitUpCount,
-      recentLimitDownCount,
-      limitUpPeriod,
-      limitDownPeriod,
-      consolidationFilterEnabled,
-      consolidationTypes,
-      consolidationLookback,
-      consolidationConsecutive,
-      consolidationThreshold,
-      consolidationRequireAboveMa10,
-      trendLineFilterEnabled,
-      trendLineLookback,
-      trendLineConsecutive,
-      sharpMoveFilterEnabled,
-      sharpMoveWindowBars,
-      sharpMoveMagnitude,
-      sharpMoveFlatThreshold,
-      sharpMoveOnlyDrop,
-      sharpMoveOnlyRise,
-      sharpMoveDropThenRiseLoose,
-      sharpMoveRiseThenDropLoose,
-      sharpMoveDropFlatRise,
-      sharpMoveRiseFlatDrop,
-      volumePullbackFilterEnabled,
-      volumePullbackLookback,
-      volumePullbackMinRisePct,
-      volumePullbackTriggerType,
-      volumePullbackVolumeRatio,
-      volumePullbackVolumeMaPeriod,
-      volumePullbackMaxBars,
-      volumePullbackMinPullbackPct,
-      volumePullbackMaxPullbackPct,
-      volumePullbackVolumeShrink,
-      volumePullbackMa10TolerancePct,
-      volumePullbackRequireUpperShadow,
-      volumePullbackUpperShadowRatio,
-      rsiRange,
-      tradingSignalTypes,
-      aiAnalysisEnabled,
-      aiTrendUp,
-      aiTrendDown,
-      aiTrendSideways,
-      aiConfidenceRange,
-      aiRecommendScoreRange,
-      aiTechnicalScoreRange,
-      aiPatternScoreRange,
-      aiTrendScoreRange,
-      aiRiskScoreRange,
+      filterFormState,
+      aiVersion,
       industrySectors,
       conceptSectors,
       industrySectorOptions,
       conceptSectorOptions,
       nameFilterIndustryGroups,
       nameFilterIndustryInvert,
-      excludedNameKeywords,
-      excludedShortTermNames,
     ]
   );
 
   // 合并已获取的营收/净利润数据（供筛选与展示；不影响交易信号计算）
-  const processedDataWithFinance = useMemo(() => {
-    if (Object.keys(financeMap).length === 0) {
-      return processedData;
-    }
-    return processedData.map((item) =>
-      financeMap[item.code] ? { ...item, finance: financeMap[item.code] } : item
-    );
-  }, [processedData, financeMap]);
+  const processedDataWithFinance = useMemo(
+    () => mergeFinanceMetrics(processedData, financeMap),
+    [processedData, financeMap]
+  );
 
   const { filteredData: filteredAnalysisData, filtering: filteringAnalysisData, skipped: filterSkippedItems, clearAICache, recomputeAI } =
     useOpportunityFilterEngine({
@@ -1591,29 +974,17 @@ export function OpportunityPage() {
       signalCodes,
     });
 
-  // 表格层面的股票名称/代码模糊过滤
-  const displayAnalysisData = useMemo(() => {
-    const kw = tableSearchKeyword.trim().toLowerCase();
-    if (!kw) {
-      return filteredAnalysisData;
-    }
-    return filteredAnalysisData.filter((item) => {
-      const name = (item.name || '').toLowerCase();
-      const code = (item.code || '').toLowerCase();
-      const pureCode = code.replace(/^(sh|sz|bj)/, '');
-      return name.includes(kw) || code.includes(kw) || pureCode.includes(kw);
-    });
-  }, [filteredAnalysisData, tableSearchKeyword]);
+  // 表格层面的股票名称/代码模糊过滤（复用 getPureCode 归一，见 utils/format/textMatch）
+  const displayAnalysisData = useMemo(
+    () => filterByStockKeyword(filteredAnalysisData, tableSearchKeyword),
+    [filteredAnalysisData, tableSearchKeyword]
+  );
 
   // 将已获取的营收 / 净利润数据合并到表格行
-  const displayAnalysisDataWithFinance = useMemo(() => {
-    if (Object.keys(financeMap).length === 0) {
-      return displayAnalysisData;
-    }
-    return displayAnalysisData.map((item) =>
-      financeMap[item.code] ? { ...item, finance: financeMap[item.code] } : item
-    );
-  }, [displayAnalysisData, financeMap]);
+  const displayAnalysisDataWithFinance = useMemo(
+    () => mergeFinanceMetrics(displayAnalysisData, financeMap),
+    [displayAnalysisData, financeMap]
+  );
 
   /**
    * 图表弹窗的行导航列表：顺序与表格当前排序（sortConfig，含用户点选的列排序）完全一致，
@@ -1639,6 +1010,15 @@ export function OpportunityPage() {
   const chartConcepts = useMemo(
     () => displayAnalysisDataWithFinance.find((item) => item.code === chartState?.code)?.concepts,
     [displayAnalysisDataWithFinance, chartState?.code]
+  );
+
+  /** AI 分析弹窗的数据：按当前选中个股缓存，避免每次渲染都遍历分析结果 */
+  const selectedStockAIAnalysis = useMemo(
+    () =>
+      selectedStockForAI
+        ? analysisData.find((item) => item.code === selectedStockForAI.code)?.aiAnalysis ?? null
+        : null,
+    [analysisData, selectedStockForAI]
   );
 
   /**
@@ -1705,39 +1085,6 @@ export function OpportunityPage() {
     message,
   ]);
 
-  // 打印反选后的股票信息
-  useEffect(() => {
-    const hasIndustryFilter = industrySectors && industrySectors.length > 0;
-    const hasConceptFilter = conceptSectors && conceptSectors.length > 0;
-
-    if ((hasIndustryFilter || hasConceptFilter) && filteredAnalysisData.length > 0) {
-      logger.debug('=== 板块筛选结果 ===');
-
-      if (hasIndustryFilter) {
-        logger.debug('行业筛选:', {
-          选中板块: industrySectors,
-          模式: industrySectorInvert ? '排除选中' : '只包含选中'
-        });
-      }
-
-      if (hasConceptFilter) {
-        logger.debug('概念筛选:', {
-          选中板块: conceptSectors,
-          模式: conceptSectorInvert ? '排除选中' : '只包含选中'
-        });
-      }
-
-      logger.debug('筛选后股票数量:', filteredAnalysisData.length);
-      logger.debug('筛选后股票列表:', filteredAnalysisData.map(item => ({
-        code: item.code,
-        name: item.name,
-        industry: item.industry,
-        concepts: item.concepts
-      })));
-      logger.debug('==================');
-    }
-  }, [filteredAnalysisData, industrySectors, conceptSectors, industrySectorInvert, conceptSectorInvert]);
-
   /** 仅重置顶部：市场、名称类型、周期、K 线数量 */
   const handleResetQueryBar = () => {
     const s = INITIAL_FILTER_STATE;
@@ -1763,7 +1110,7 @@ export function OpportunityPage() {
     setFinanceNetProfitRange({ ...s.financeNetProfitRange });
     setFinanceRevenueGrowthRange({ ...s.financeRevenueGrowthRange });
     setFinanceNetProfitGrowthRange({ ...s.financeNetProfitGrowthRange });
-    setFilterPanelActiveKey(['data', 'consolidation', 'trendLine', 'sharpMove', 'volumePullback', 'technicalIndicators', 'aiAnalysis']);
+    setFilterPanelActiveKey([...DEFAULT_FILTER_PANEL_ACTIVE_KEYS]);
     setRecentLimitUpCount(s.recentLimitUpCount);
     setRecentLimitDownCount(s.recentLimitDownCount);
     setLimitUpPeriod(s.limitUpPeriod);
@@ -2314,15 +1661,7 @@ export function OpportunityPage() {
             value={aiVersion}
             onChange={handleAiVersionChange}
             style={{ width: 140 }}
-            options={[
-              { label: 'v1.0 原始版', value: 'v1' },
-              { label: 'v2.0 优化版', value: 'v2' },
-              { label: 'v3.0 增强版', value: 'v3' },
-              { label: 'v4.0 结构增强', value: 'v4' },
-              { label: 'v5.0 智能增强', value: 'v5' },
-              { label: 'v6.0 性能增强', value: 'v6' },
-              { label: 'v7.0 安全增强', value: 'v7' },
-            ]}
+            options={AI_VERSION_OPTIONS}
             disabled={loading || aiRefreshLoading}
             title="切换AI分析算法版本（自动刷新）"
             data-testid="ai-version-select"
@@ -2406,49 +1745,26 @@ export function OpportunityPage() {
 
       <Content className={styles.content}>
         {loading && (
-          <Card className={styles.progressCard}>
-            <div className={styles.progressInfo}>
-              <Progress
-                percent={progress.percent}
-                status={loading ? 'active' : 'success'}
-                format={(percent) => `${percent?.toFixed(1)}%`}
-              />
-              <div className={styles.progressText}>
-                进度: {progress.completed} / {progress.total} (失败: {progress.failed})
-              </div>
-            </div>
-          </Card>
+          <ProgressCard
+            percent={progress.percent}
+            status="active"
+            formatPercent={(percent) => `${(percent ?? 0).toFixed(1)}%`}
+            text={`进度: ${progress.completed} / ${progress.total} (失败: ${progress.failed})`}
+          />
         )}
 
         {exportingKline && exportKlineProgress.total > 0 && (
-          <Card className={styles.progressCard}>
-            <div className={styles.progressInfo}>
-              <Progress
-                percent={Math.round((exportKlineProgress.current / exportKlineProgress.total) * 100)}
-                status="active"
-                format={(percent) => `${percent}%`}
-              />
-              <div className={styles.progressText}>
-                导出K线进度: {exportKlineProgress.current} / {exportKlineProgress.total}
-              </div>
-            </div>
-          </Card>
+          <ProgressCard
+            percent={Math.round((exportKlineProgress.current / exportKlineProgress.total) * 100)}
+            text={`导出K线进度: ${exportKlineProgress.current} / ${exportKlineProgress.total}`}
+          />
         )}
 
         {financeLoading && financeProgress.total > 0 && (
-          <Card className={styles.progressCard}>
-            <div className={styles.progressInfo}>
-              <Progress
-                percent={Math.round((financeProgress.completed / financeProgress.total) * 100)}
-                status="active"
-                format={(percent) => `${percent}%`}
-              />
-              <div className={styles.progressText}>
-                获取营收净利润进度: {financeProgress.completed} / {financeProgress.total}（失败:{' '}
-                {financeProgress.failed}）
-              </div>
-            </div>
-          </Card>
+          <ProgressCard
+            percent={Math.round((financeProgress.completed / financeProgress.total) * 100)}
+            text={`获取营收净利润进度: ${financeProgress.completed} / ${financeProgress.total}（失败: ${financeProgress.failed}）`}
+          />
         )}
 
         {errors.length > 0 && (
@@ -2799,7 +2115,7 @@ export function OpportunityPage() {
 
       <AIAnalysisModal
         visible={aiAnalysisVisible}
-        analysis={selectedStockForAI ? analysisData.find(d => d.code === selectedStockForAI.code)?.aiAnalysis || null : null}
+        analysis={selectedStockAIAnalysis}
         stockName={selectedStockForAI?.name || ''}
         stockCode={selectedStockForAI?.code || ''}
         onClose={() => {

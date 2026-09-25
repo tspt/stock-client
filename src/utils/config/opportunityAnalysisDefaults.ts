@@ -4,6 +4,8 @@
  * 注意：常量顺序按照界面显示顺序排列
  */
 
+import type { ConsolidationType, KLinePeriod, TradingSignalType } from '@/types/stock';
+
 // ==================== 1. 数据筛选 ====================
 
 /** 基础筛选默认配置 */
@@ -597,3 +599,112 @@ export const OPPORTUNITY_DEFAULT_NAME_FILTERS = {
     // '无锡振华',
   ],
 } as const;
+
+// ==================== 9. 页面初始状态（原 OpportunityPage 内常量） ====================
+
+/**
+ * 机会页筛选表单的初始值。
+ * 与页面上各 useState 的初始值保持一致，供「重置筛选」同步恢复。
+ */
+export const INITIAL_FILTER_STATE = {
+  // 基础筛选
+  selectedMarket: OPPORTUNITY_DEFAULT_BASIC_FILTERS.selectedMarket,
+  nameType: OPPORTUNITY_DEFAULT_BASIC_FILTERS.nameType,
+  priceRange: { ...OPPORTUNITY_DEFAULT_BASIC_FILTERS.priceRange },
+  marketCapRange: { ...OPPORTUNITY_DEFAULT_BASIC_FILTERS.marketCapRange },
+  totalSharesRange: { ...OPPORTUNITY_DEFAULT_BASIC_FILTERS.totalSharesRange },
+  turnoverRateRange: { ...OPPORTUNITY_DEFAULT_BASIC_FILTERS.turnoverRateRange },
+  peRatioRange: {} as { min?: number; max?: number },
+  kdjJRange: {} as { min?: number; max?: number },
+  financeRevenueRange: { min: OPPORTUNITY_DEFAULT_FINANCE_FILTERS.revenueMin } as {
+    min?: number;
+    max?: number;
+  },
+  financeNetProfitRange: { min: OPPORTUNITY_DEFAULT_FINANCE_FILTERS.netProfitMin } as {
+    min?: number;
+    max?: number;
+  },
+  financeRevenueGrowthRange: {} as { min?: number; max?: number },
+  financeNetProfitGrowthRange: {} as { min?: number; max?: number },
+
+  // 涨跌停筛选（默认近10天有1次涨停）
+  recentLimitUpCount: OPPORTUNITY_DEFAULT_LIMIT_MOVES.minLimitUpCount,
+  recentLimitDownCount: undefined as number | undefined,
+  limitUpPeriod: OPPORTUNITY_DEFAULT_LIMIT_MOVES.period,
+  limitDownPeriod: OPPORTUNITY_DEFAULT_LIMIT_MOVES.period,
+
+  // 横盘筛选
+  consolidationTypes: [] as ConsolidationType[],
+  consolidationLookback: OPPORTUNITY_DEFAULT_CONSOLIDATION.lookback,
+  consolidationConsecutive: OPPORTUNITY_DEFAULT_CONSOLIDATION.consecutive,
+  consolidationThreshold: OPPORTUNITY_DEFAULT_CONSOLIDATION.threshold,
+  consolidationRequireAboveMa10: OPPORTUNITY_DEFAULT_CONSOLIDATION.requireClosesAboveMa10,
+  consolidationFilterEnabled: false,
+
+  // 趋势线筛选
+  trendLineLookback: OPPORTUNITY_DEFAULT_TREND_LINE.lookback,
+  trendLineConsecutive: OPPORTUNITY_DEFAULT_TREND_LINE.consecutive,
+  trendLineFilterEnabled: false,
+
+  // 异动筛选
+  sharpMoveFilterEnabled: false,
+  sharpMoveWindowBars: OPPORTUNITY_DEFAULT_SHARP_MOVE_FULL.windowBars,
+  sharpMoveMagnitude: OPPORTUNITY_DEFAULT_SHARP_MOVE_FULL.magnitude,
+  sharpMoveFlatThreshold: OPPORTUNITY_DEFAULT_SHARP_MOVE_FULL.flatThreshold,
+  sharpMoveOnlyDrop: OPPORTUNITY_DEFAULT_SHARP_MOVE_FULL.onlyDrop,
+  sharpMoveOnlyRise: OPPORTUNITY_DEFAULT_SHARP_MOVE_FULL.onlyRise,
+  sharpMoveDropThenRiseLoose: OPPORTUNITY_DEFAULT_SHARP_MOVE_FULL.dropThenRiseLoose,
+  sharpMoveRiseThenDropLoose: OPPORTUNITY_DEFAULT_SHARP_MOVE_FULL.riseThenDropLoose,
+  sharpMoveDropFlatRise: OPPORTUNITY_DEFAULT_SHARP_MOVE_FULL.dropFlatRise,
+  sharpMoveRiseFlatDrop: OPPORTUNITY_DEFAULT_SHARP_MOVE_FULL.riseFlatDrop,
+
+  // 量价回踩筛选（默认关闭）
+  volumePullbackFilterEnabled: false,
+  volumePullbackLookback: OPPORTUNITY_DEFAULT_VOLUME_PULLBACK.lookback,
+  volumePullbackMinRisePct: OPPORTUNITY_DEFAULT_VOLUME_PULLBACK.minRisePct,
+  volumePullbackTriggerType: OPPORTUNITY_DEFAULT_VOLUME_PULLBACK.triggerType,
+  volumePullbackVolumeRatio: OPPORTUNITY_DEFAULT_VOLUME_PULLBACK.volumeRatio,
+  volumePullbackVolumeMaPeriod: OPPORTUNITY_DEFAULT_VOLUME_PULLBACK.volumeMaPeriod,
+  volumePullbackMaxBars: OPPORTUNITY_DEFAULT_VOLUME_PULLBACK.maxBars,
+  volumePullbackMinPullbackPct: OPPORTUNITY_DEFAULT_VOLUME_PULLBACK.minPullbackPct,
+  volumePullbackMaxPullbackPct: OPPORTUNITY_DEFAULT_VOLUME_PULLBACK.maxPullbackPct,
+  volumePullbackVolumeShrink: OPPORTUNITY_DEFAULT_VOLUME_PULLBACK.volumeShrink,
+  volumePullbackMa10TolerancePct: OPPORTUNITY_DEFAULT_VOLUME_PULLBACK.ma10TolerancePct,
+  volumePullbackRequireUpperShadow: OPPORTUNITY_DEFAULT_VOLUME_PULLBACK.requireUpperShadow,
+  volumePullbackUpperShadowRatio: OPPORTUNITY_DEFAULT_VOLUME_PULLBACK.upperShadowRatio,
+
+  // 技术指标筛选
+  rsiRange: {} as { min?: number; max?: number },
+  rsiPeriod: OPPORTUNITY_DEFAULT_INDICATORS.rsiPeriod,
+  // 交易信号筛选（空数组＝不筛选）
+  tradingSignalTypes: [] as TradingSignalType[],
+
+  // AI分析筛选
+  aiAnalysisEnabled: OPPORTUNITY_DEFAULT_AI_ANALYSIS.enabled,
+  aiTrendUp: OPPORTUNITY_DEFAULT_AI_ANALYSIS.trendUp,
+  aiTrendDown: OPPORTUNITY_DEFAULT_AI_ANALYSIS.trendDown,
+  aiTrendSideways: OPPORTUNITY_DEFAULT_AI_ANALYSIS.trendSideways,
+  aiConfidenceRange: { min: OPPORTUNITY_DEFAULT_AI_ANALYSIS.confidenceMin },
+  aiRecommendScoreRange: {},
+  aiTechnicalScoreRange: { min: OPPORTUNITY_DEFAULT_AI_ANALYSIS.technicalScoreMin },
+  aiPatternScoreRange: { min: OPPORTUNITY_DEFAULT_AI_ANALYSIS.patternScoreMin },
+  aiTrendScoreRange: { min: OPPORTUNITY_DEFAULT_AI_ANALYSIS.trendScoreMin },
+  aiRiskScoreRange: { min: OPPORTUNITY_DEFAULT_AI_ANALYSIS.riskScoreMin },
+
+  // v3.0 新增筛选条件
+  aiSignalConfluence: false,
+  aiMinSignalCount: 4,
+  aiMinSignalRatio: 0.6,
+  aiPatternWinRateRange: {} as { min?: number; max?: number },
+  aiMinSimilarPatterns: 3,
+  aiMinRiskRewardRatio: undefined as number | undefined,
+
+  // 名称过滤
+  excludedNameKeywords: [...OPPORTUNITY_DEFAULT_NAME_FILTERS.excludedNameKeywords],
+};
+
+/** 与 opportunityStore 初始值一致，用于「重置」恢复周期与 K 线数量 */
+export const INITIAL_OPPORTUNITY_QUERY = {
+  currentPeriod: 'day' as KLinePeriod,
+  currentCount: 500,
+};
