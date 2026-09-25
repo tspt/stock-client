@@ -25,11 +25,12 @@ import {
   Tooltip,
   DatePicker,
   Popover,
+  Dropdown,
 } from 'antd';
 import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
 import type { ColumnsType } from 'antd/es/table';
-import { BarChartOutlined, DatabaseOutlined, ExportOutlined, InfoCircleOutlined, ReloadOutlined, SearchOutlined, SyncOutlined } from '@ant-design/icons';
+import { BarChartOutlined, DatabaseOutlined, DownOutlined, ExportOutlined, InfoCircleOutlined, ReloadOutlined, SearchOutlined, SyncOutlined } from '@ant-design/icons';
 import {
   getStocksHistory,
   invalidateStocksHistoryCache,
@@ -38,6 +39,7 @@ import {
 import { getAllStockRecords } from '@/services/opportunity/recordService';
 import { AddStocksToWatchListModal } from '@/components/AddStocksToWatchListModal/AddStocksToWatchListModal';
 import { DailyChartModal } from '@/pages/OpportunityPage/DailyChartModal';
+import { useTempStockListStore } from '@/stores/tempStockListStore';
 import {
   findDefaultTableSorter,
   sortRowsByTableSorter,
@@ -265,6 +267,8 @@ export function BacktestPage() {
   const [showAddTrackingLatestModal, setShowAddTrackingLatestModal] = useState(false);
   /** 点击表格行：展示该股日K与筹码分布弹窗 */
   const [chartState, setChartState] = useState<{ code: string; name: string } | null>(null);
+  /** K线/筹码弹窗里「加入临时列表」收集的股票（全局、仅内存） */
+  const tempStockList = useTempStockListStore((state) => state.items);
   const [searchText, setSearchText] = useState('');
   const [activeTab, setActiveTab] = useState<'tracking' | 'history'>('tracking');
   const [tablePageSize, setTablePageSize] = useState(100);
@@ -1209,6 +1213,32 @@ export function BacktestPage() {
     }
   };
 
+  /** 导出弹窗内「加入临时列表」收集到的股票名称（PNG，多列排版） */
+  const handleExportTempList = async () => {
+    if (tempStockList.length === 0) {
+      message.warning('临时列表为空，请先在K线弹窗中点击「加入临时列表」');
+      return;
+    }
+    const names = tempStockList
+      .map((item) => (item.name || item.code || '').trim())
+      .filter(Boolean);
+    if (names.length === 0) {
+      message.warning('临时列表没有可用的股票名称');
+      return;
+    }
+    try {
+      const exportTime = new Date().toLocaleString('zh-CN');
+      await exportStockNamesToPng(names, {
+        fileNamePrefix: '临时列表_股票名称',
+        filterSummary: `临时列表共 ${names.length} 只\n导出时间: ${exportTime}`,
+      });
+      message.success('临时列表已导出为图片');
+    } catch (error) {
+      logger.error('[BacktestPage] 导出临时列表失败:', error);
+      message.error('导出临时列表失败: ' + (error as Error).message);
+    }
+  };
+
   const handleAddTrackingLatestStocks = () => {
     if (trackingLatestSignalStocks.stocks.length === 0) {
       message.warning('没有可添加的最新信号日期股票');
@@ -1622,6 +1652,44 @@ export function BacktestPage() {
     [sortedActiveRows, tablePageSize]
   );
 
+  /**
+   * Tab 栏右侧「导出 ▾」：与机会分析页「导出/设置」一致的下拉形式。
+   * 两个 Tab 共用同一个元素——买点追踪下紧挨其它操作按钮，历史好买点下也不会缺失导出入口。
+   */
+  const exportDropdown = (
+    <Dropdown
+      trigger={['click']}
+      menu={{
+        items: [
+          {
+            key: 'names',
+            label: '导出名称(PNG)',
+            disabled: loadingTracking || trackingLatestSignalStocks.stocks.length === 0,
+          },
+          { type: 'divider' },
+          {
+            key: 'tempList',
+            label: `导出临时列表(PNG)${
+              tempStockList.length > 0 ? `（${tempStockList.length}）` : ''
+            }`,
+            disabled: tempStockList.length === 0,
+          },
+        ],
+        onClick: ({ key }) => {
+          if (key === 'names') {
+            void handleExportTrackingLatestNames();
+          } else if (key === 'tempList') {
+            void handleExportTempList();
+          }
+        },
+      }}
+    >
+      <Button size="small" icon={<ExportOutlined />} title="导出名称(PNG) / 导出临时列表(PNG)（弹窗内快捷键：↑ 加入 / ↓ 取消）">
+        导出 <DownOutlined />
+      </Button>
+    </Dropdown>
+  );
+
   return (
     <Layout className={styles.backtestPage}>
       <Header className={styles.header}>
@@ -1776,14 +1844,7 @@ export function BacktestPage() {
                     >
                       更新收益
                     </Button>
-                    <Button
-                      size="small"
-                      icon={<ExportOutlined />}
-                      disabled={loadingTracking || trackingLatestSignalStocks.stocks.length === 0}
-                      onClick={() => void handleExportTrackingLatestNames()}
-                    >
-                      导出名称(PNG)
-                    </Button>
+                    {exportDropdown}
                     <Button
                       size="small"
                       icon={<DatabaseOutlined />}
@@ -1804,6 +1865,7 @@ export function BacktestPage() {
                     >
                       扫描历史
                     </Button>
+                    {exportDropdown}
                   </Space>
                 )
               }

@@ -31,6 +31,9 @@ function trimKlineDataCache(map: Map<string, KLineData[]>) {
 
 const OPPORTUNITY_COLUMN_CONFIG_KEY = 'opportunity_column_config';
 
+/** 默认排序：所属行业升序（首屏即按行业分组展示，用户点表头后覆盖） */
+const OPPORTUNITY_DEFAULT_SORT_CONFIG: OverviewSortConfig = { key: 'industry', direction: 'asc' };
+
 interface OpportunityState {
   analysisData: StockOpportunityData[];
   loading: boolean;
@@ -136,7 +139,7 @@ export const useOpportunityStore = create<OpportunityState>((set, get) => ({
   currentPeriod: 'day',
   currentCount: 500,
   columnConfig: initColumnConfig(),
-  sortConfig: { key: null, direction: null },
+  sortConfig: OPPORTUNITY_DEFAULT_SORT_CONFIG,
   errors: [],
   cancelFn: null,
   klineDataCache: new Map(),

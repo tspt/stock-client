@@ -22,6 +22,7 @@ import {
 } from '@ant-design/icons';
 import { useOpportunityStore } from '@/stores/opportunityStore';
 import { useStockStore } from '@/stores/stockStore';
+import { useTempStockListStore } from '@/stores/tempStockListStore';
 import { apiCache } from '@/utils/storage/apiCache';
 import {
   clearStockHistory,
@@ -239,6 +240,8 @@ const INITIAL_OPPORTUNITY_QUERY = {
 
 export function OpportunityPage() {
   const { message } = App.useApp();
+  /** K线/筹码弹窗里「加入临时列表」收集的股票（全局、仅内存） */
+  const tempStockList = useTempStockListStore((state) => state.items);
   const {
     analysisData,
     loading,
@@ -2079,6 +2082,33 @@ export function OpportunityPage() {
     }
   };
 
+  /** 导出弹窗内「加入临时列表」收集到的股票名称（PNG，多列排版） */
+  const handleExportTempList = async () => {
+    if (tempStockList.length === 0) {
+      message.warning('临时列表为空');
+      return;
+    }
+    const names = tempStockList
+      .map((item) => (item.name || item.code || '').trim())
+      .filter(Boolean);
+    if (names.length === 0) {
+      message.warning('临时列表没有可用的股票名称');
+      return;
+    }
+    try {
+      const exportTime = new Date().toLocaleString('zh-CN');
+      await exportStockNamesToPng(names, {
+        fileNamePrefix: '临时列表_股票名称',
+        filterSummary: `临时列表共 ${names.length} 只\n导出时间: ${exportTime}`,
+      });
+      message.success('临时列表已导出为图片');
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : '导出失败';
+      message.error(errorMessage);
+      logger.error('导出临时列表失败:', error);
+    }
+  };
+
   /** 导出 IndexedDB 中的全量 K 线数据到本地文件 (docs/回测优化/股票数据) */
   const handleExportAllKlineData = async () => {
     if (!window.electronAPI?.batchExportKlineData) {
@@ -2390,6 +2420,14 @@ export function OpportunityPage() {
                 { type: 'divider' },
                 { key: 'png', label: '导出名称(PNG)' },
                 { type: 'divider' },
+                {
+                  key: 'tempList',
+                  label: `导出临时列表(PNG)${
+                    tempStockList.length > 0 ? `（${tempStockList.length}）` : ''
+                  }`,
+                  disabled: tempStockList.length === 0,
+                },
+                { type: 'divider' },
                 { key: 'columns', label: '列设置', icon: <SettingOutlined /> }
               ],
               onClick: ({ key }) => {
@@ -2399,6 +2437,8 @@ export function OpportunityPage() {
                   void handleExport('excel');
                 } else if (key === 'png') {
                   void handleExportNames();
+                } else if (key === 'tempList') {
+                  void handleExportTempList();
                 }
               },
             }}

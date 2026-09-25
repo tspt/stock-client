@@ -37,8 +37,11 @@ export interface UseRecordNavigationResult<T extends NavigableRecord> {
   goNext: () => void;
 }
 
-/** 方向键是否落在可编辑控件上（此时不应劫持，交还输入框自身行为） */
-function isEditableTarget(target: EventTarget | null): boolean {
+/**
+ * 方向键是否落在可编辑控件上（此时不应劫持，交还输入框自身行为）。
+ * 供所有「弹窗内全局方向键快捷键」复用（← / → 换股、↑ / ↓ 加入与取消）。
+ */
+export function isEditableTarget(target: EventTarget | null): boolean {
   const el = target as HTMLElement | null;
   if (!el) return false;
   if (el.isContentEditable) return true;

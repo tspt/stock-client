@@ -677,9 +677,6 @@ export function WeeklyChartModal({
             <Button key="export" icon={<DownloadOutlined />} onClick={handleExportChart}>
               导出周K图(PNG)
             </Button>
-            <Button key="close" type="primary" onClick={onClose}>
-              关闭
-            </Button>
           </Space>
         </div>
       }

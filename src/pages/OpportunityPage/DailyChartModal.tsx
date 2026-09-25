@@ -13,7 +13,13 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Modal, Button, Space, Tag, Typography, App, Segmented, Spin } from 'antd';
-import { DownloadOutlined, LeftOutlined, RightOutlined } from '@ant-design/icons';
+import {
+  DownloadOutlined,
+  LeftOutlined,
+  RightOutlined,
+  PlusOutlined,
+  MinusOutlined,
+} from '@ant-design/icons';
 import ReactECharts from 'echarts-for-react';
 import type { EChartsOption } from 'echarts';
 import type { KLineData, KLinePeriod } from '@/types/stock';
@@ -26,8 +32,9 @@ import { downloadDataUrl } from '@/utils/export/weeklyKlineExportUtils';
 import { StockConceptTags } from '@/components/common/Tags';
 import { useChipDistribution } from '@/hooks/useChipDistribution';
 import { useModalDrag } from '@/hooks/useModalDrag';
-import { useRecordNavigation } from '@/hooks/useRecordNavigation';
+import { useRecordNavigation, isEditableTarget } from '@/hooks/useRecordNavigation';
 import { useThemeStore } from '@/stores/themeStore';
+import { useTempStockListStore } from '@/stores/tempStockListStore';
 import { logger } from '@/utils/business/logger';
 
 const { Text } = Typography;
@@ -421,6 +428,68 @@ export function DailyChartModal({
 }: DailyChartModalProps) {
   const { message } = App.useApp();
   const chartRef = useRef<ReactECharts>(null);
+
+  /** 临时列表（全局、仅内存）：本弹窗加入，机会分析页「导出/设置」里导出 */
+  const tempListCount = useTempStockListStore((state) => state.items.length);
+  const inTempList = useTempStockListStore((state) =>
+    state.items.some((item) => item.code === code)
+  );
+  const addToTempList = useTempStockListStore((state) => state.addStock);
+  const removeFromTempList = useTempStockListStore((state) => state.removeStock);
+
+  /** 加入临时列表：按 code 去重，重复加入只提示不新增 */
+  const handleAddToTempList = useCallback(() => {
+    if (!code) {
+      return;
+    }
+    const stockName = name || code;
+    if (addToTempList({ code, name: stockName })) {
+      message.success(`已加入临时列表：${stockName}（共 ${tempListCount + 1} 只）`);
+    } else {
+      message.info(`${stockName} 已在临时列表中`);
+    }
+  }, [addToTempList, code, message, name, tempListCount]);
+
+  /** 取消加入：把当前股票从临时列表移除（不在列表中时只提示） */
+  const handleRemoveFromTempList = useCallback(() => {
+    if (!code) {
+      return;
+    }
+    const stockName = name || code;
+    if (!inTempList) {
+      message.info(`${stockName} 不在临时列表中`);
+      return;
+    }
+    removeFromTempList(code);
+    message.success(`已取消加入：${stockName}（剩余 ${Math.max(0, tempListCount - 1)} 只）`);
+  }, [code, inTempList, message, name, removeFromTempList, tempListCount]);
+
+  /**
+   * ↑ 加入 / ↓ 取消 快捷键：
+   * 与 ← / → 换股同一套约定——ECharts 画布不接收焦点，必须监听 window，
+   * 弹窗打开时注册、关闭即移除；输入框等可编辑控件内不劫持，组合键交还系统。
+   */
+  useEffect(() => {
+    if (!open) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') return;
+      if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+      if (isEditableTarget(event.target)) return;
+
+      // 方向键默认会滚动页面 / 弹窗内容，这里必须拦下
+      event.preventDefault();
+      if (event.key === 'ArrowUp') {
+        handleAddToTempList();
+      } else {
+        handleRemoveFromTempList();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [open, handleAddToTempList, handleRemoveFromTempList]);
+
   /** 深色主题下副图配色需切换（黑色线条在深色底不可见） */
   const isDark = useThemeStore((state) => state.theme === 'dark');
   /** 副图 KDJ 配色：与图内线条同源，用于图表外的颜色说明 */
@@ -728,13 +797,22 @@ export function DailyChartModal({
       }
       footer={
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Text type="secondary" style={{ fontSize: 12 }}>
+            临时列表 {tempListCount} 只（↑ 加入 / ↓ 取消）
+          </Text>
           <div style={{ flex: 1 }} />
           <Space size={8}>
+            <Button
+              key="toggle-temp"
+              icon={inTempList ? <MinusOutlined /> : <PlusOutlined />}
+              disabled={!code}
+              onClick={inTempList ? handleRemoveFromTempList : handleAddToTempList}
+              title="快捷键：↑ 加入临时列表 / ↓ 取消加入"
+            >
+              {inTempList ? '取消加入' : '加入临时列表'}
+            </Button>
             <Button key="export" icon={<DownloadOutlined />} onClick={handleExportChart}>
               导出K线图(PNG)
-            </Button>
-            <Button key="close" type="primary" onClick={onClose}>
-              关闭
             </Button>
           </Space>
         </div>
