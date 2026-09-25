@@ -23,9 +23,11 @@ import { buildChipChartOption } from '@/utils/chart/chipChartOption';
 import { calculateChipDistribution } from '@/utils/analysis/chipDistribution';
 import { formatVolume } from '@/utils/format/format';
 import { downloadDataUrl } from '@/utils/export/weeklyKlineExportUtils';
+import { StockConceptTags } from '@/components/common/Tags';
 import { useChipDistribution } from '@/hooks/useChipDistribution';
 import { useModalDrag } from '@/hooks/useModalDrag';
 import { useRecordNavigation } from '@/hooks/useRecordNavigation';
+import { useThemeStore } from '@/stores/themeStore';
 import { logger } from '@/utils/business/logger';
 
 const { Text } = Typography;
@@ -64,6 +66,18 @@ const DEFAULT_VISIBLE_BARS = 120;
 const MAIN_GRID = { top: '10%', height: '50%' };
 /** 纵轴分段数，两侧保持一致以便刻度文字相同 */
 const Y_SPLIT_COUNT = 5;
+/** 缩放条高度（px）：ECharts 默认 30 会压住 KDJ 底部刻度，收窄后把空间让给副图 */
+const ZOOM_SLIDER_HEIGHT = 22;
+/** 副图 KDJ 网格：上沿避开成交量刻度、下沿避开缩放条，把能用的高度都给 KDJ */
+const SUB_GRID = { top: '80.5%', height: '14%' };
+/**
+ * KDJ 三线配色：K 蓝 / D 橙 / J 黑。
+ * J 是摆动最剧烈、最需要一眼看到的那条线，用黑色压住；深色主题下换成浅灰，避免黑线淹没在深色背景里。
+ */
+const KDJ_COLOR = {
+  light: { k: '#1677ff', d: '#fa8c16', j: '#000000' },
+  dark: { k: '#4096ff', d: '#ffa940', j: '#f0f0f0' },
+} as const;
 
 /** K 线周期中文标签 */
 const PERIOD_LABEL: Record<KLinePeriod, string> = {
@@ -88,6 +102,8 @@ interface DailyChartModalProps {
   period: KLinePeriod;
   /** 所属行业名称，由页面传入（弹窗内不额外拉取股票列表） */
   industry?: string;
+  /** 所属概念板块列表，由页面传入（弹窗内不额外拉取股票列表） */
+  concepts?: Array<{ code?: string; name: string }>;
   /** 表格当前展示顺序的股票列表，用于 ← / → 快速切换上一行 / 下一行 */
   records?: Array<{ code: string; name: string }>;
   /** 切换相邻行时回调，父级据此更新弹窗数据 */
@@ -113,6 +129,8 @@ interface KlineChartBuildInput {
   /** 与我方推导的价格区间一致；null 时退回 ECharts 自适应 */
   yRange: PriceRange | null;
   zoom: { start: number; end: number };
+  /** 是否深色主题：决定副图配色（黑色线条在深色底不可见） */
+  isDark: boolean;
   /** 十字星指向的 K 线下标；null 时涨幅退回可见区间最后一根 */
   hoverIndex?: number | null;
 }
@@ -147,9 +165,38 @@ function nicePriceRange(min: number, max: number): PriceRange | null {
 }
 
 function buildKlineChartOption(input: KlineChartBuildInput): EChartsOption {
-  const { data, name, periodLabel, indicators, yRange, zoom, hoverIndex = null } = input;
+  const { data, name, periodLabel, indicators, yRange, zoom, isDark, hoverIndex = null } = input;
   const { ma5, ma10, ma20, ma30, ma60 } = indicators.ma;
   const kdj = indicators.kdj;
+  const kdjColor = isDark ? KDJ_COLOR.dark : KDJ_COLOR.light;
+
+  /**
+   * KDJ 纵轴范围：固定以 -50 ~ 150 为基准（刻度 -50 / 0 / 50 / 100 / 150），
+   * 这样超买超卖区间（0~100）在框内的相对位置恒定，不同股票之间可直接横向比较。
+   * 只有当可见区间内的 K/D/J 真的冲出 -50 ~ 150 时，才再向外扩到 10 的倍数，避免被裁掉。
+   */
+  const kdjAxis = (() => {
+    const total = data.length;
+    const baseMin = -50;
+    const baseMax = 150;
+    if (total === 0) {
+      return { min: baseMin, max: baseMax };
+    }
+    // 与主图价格轴一致：两端各多取 1 根，避免边界处的极值被漏掉
+    const startIndex = Math.max(0, Math.floor((zoom.start / 100) * (total - 1)) - 1);
+    const endIndex = Math.min(total - 1, Math.ceil((zoom.end / 100) * (total - 1)) + 1);
+
+    let lo = baseMin;
+    let hi = baseMax;
+    for (let i = startIndex; i <= endIndex; i += 1) {
+      for (const value of [kdj.k[i], kdj.d[i], kdj.j[i]]) {
+        if (!Number.isFinite(value)) continue;
+        if (value < lo) lo = value;
+        if (value > hi) hi = value;
+      }
+    }
+    return { min: Math.floor(lo / 10) * 10, max: Math.ceil(hi / 10) * 10 };
+  })();
 
   /**
    * 涨幅取「当前可见区间最后一根」相对前一根的涨跌，随 dataZoom 缩放/平移动态变化。
@@ -224,7 +271,8 @@ function buildKlineChartOption(input: KlineChartBuildInput): EChartsOption {
         const d = kdj.d[dataIndex];
         const j = kdj.j[dataIndex];
         if (Number.isFinite(k) && Number.isFinite(d)) {
-          html += `<div>K: ${k.toFixed(2)} / D: ${d.toFixed(2)} / J: ${j.toFixed(2)}</div>`;
+          // 数值颜色与副图线条一一对应，配合图表上方的颜色说明即可确认哪条线是哪个值
+          html += `<div><span style="color:${kdjColor.k}">K: ${k.toFixed(2)}</span> / <span style="color:${kdjColor.d}">D: ${d.toFixed(2)}</span> / <span style="color:${kdjColor.j}">J: ${Number.isFinite(j) ? j.toFixed(2) : '-'}</span></div>`;
         }
         return html;
       },
@@ -232,7 +280,7 @@ function buildKlineChartOption(input: KlineChartBuildInput): EChartsOption {
     grid: [
       { left: '8%', right: '4%', top: MAIN_GRID.top, height: MAIN_GRID.height },
       { left: '8%', right: '4%', top: '64%', height: '13%' },
-      { left: '8%', right: '4%', top: '81%', height: '13%' },
+      { left: '8%', right: '4%', top: SUB_GRID.top, height: SUB_GRID.height },
     ],
     xAxis: [timeAxis(), timeAxis(1), timeAxis(2)],
     yAxis: [
@@ -256,9 +304,12 @@ function buildKlineChartOption(input: KlineChartBuildInput): EChartsOption {
       {
         scale: true,
         gridIndex: 2,
-        min: 0,
-        max: 100,
-        splitNumber: 2,
+        min: kdjAxis.min,
+        max: kdjAxis.max,
+        // 基准区间 200 跨 4 段 → 刻度正好落在 -50 / 0 / 50 / 100 / 150
+        splitNumber: 4,
+        // 容器高度较小时自动隐藏重叠刻度，避免数字叠在一起
+        axisLabel: { show: true, hideOverlap: true },
         axisLine: { show: false },
         axisTick: { show: false },
         splitLine: { show: false },
@@ -271,6 +322,7 @@ function buildKlineChartOption(input: KlineChartBuildInput): EChartsOption {
         xAxisIndex: [0, 1, 2],
         type: 'slider',
         bottom: 0,
+        height: ZOOM_SLIDER_HEIGHT,
         start: zoom.start,
         end: zoom.end,
       },
@@ -323,7 +375,9 @@ function buildKlineChartOption(input: KlineChartBuildInput): EChartsOption {
         yAxisIndex: 2,
         data: kdj.k,
         showSymbol: false,
-        lineStyle: { width: 1, color: '#f5222d' },
+        // itemStyle.color 同时决定图例色块，保证图例与线条颜色一致
+        itemStyle: { color: kdjColor.k },
+        lineStyle: { width: 1.5, color: kdjColor.k },
         animation: false,
       },
       {
@@ -333,7 +387,8 @@ function buildKlineChartOption(input: KlineChartBuildInput): EChartsOption {
         yAxisIndex: 2,
         data: kdj.d,
         showSymbol: false,
-        lineStyle: { width: 1, color: '#1890ff' },
+        itemStyle: { color: kdjColor.d },
+        lineStyle: { width: 1.5, color: kdjColor.d },
         animation: false,
       },
       {
@@ -343,7 +398,9 @@ function buildKlineChartOption(input: KlineChartBuildInput): EChartsOption {
         yAxisIndex: 2,
         data: kdj.j,
         showSymbol: false,
-        lineStyle: { width: 1, color: '#faad14' },
+        itemStyle: { color: kdjColor.j },
+        // J 摆动最剧烈，线宽再粗一档，黑色线条也能压住其它两条
+        lineStyle: { width: 1.5, color: kdjColor.j },
         animation: false,
       },
     ],
@@ -357,12 +414,17 @@ export function DailyChartModal({
   kline,
   period,
   industry,
+  concepts,
   records = [],
   onNavigate,
   onClose,
 }: DailyChartModalProps) {
   const { message } = App.useApp();
   const chartRef = useRef<ReactECharts>(null);
+  /** 深色主题下副图配色需切换（黑色线条在深色底不可见） */
+  const isDark = useThemeStore((state) => state.theme === 'dark');
+  /** 副图 KDJ 配色：与图内线条同源，用于图表外的颜色说明 */
+  const kdjKey = isDark ? KDJ_COLOR.dark : KDJ_COLOR.light;
   /** 筹码周期固定为日线口径 */
   const chipPeriod: ChipPeriod = 'day';
 
@@ -610,9 +672,10 @@ export function DailyChartModal({
       indicators,
       yRange: priceRange,
       zoom,
+      isDark,
       hoverIndex,
     });
-  }, [kline, name, periodLabel, indicators, priceRange, zoom, hoverIndex]);
+  }, [kline, name, periodLabel, indicators, priceRange, zoom, isDark, hoverIndex]);
 
   const chipOption = useMemo(
     () =>
@@ -655,6 +718,7 @@ export function DailyChartModal({
               {industry}
             </Tag>
           )}
+          {concepts && concepts.length > 0 && <StockConceptTags concepts={concepts} max={3} />}
           {navigation.currentIndex >= 0 && navigation.total > 1 && (
             <Text type="secondary" style={{ fontSize: 12, fontWeight: 'normal' }}>
               第 {navigation.currentIndex + 1} / {navigation.total} 只
@@ -704,6 +768,26 @@ export function DailyChartModal({
             当前列表缓存为{periodLabel}线数据，如需日K请将顶部周期切换为「日」后重新分析
           </Text>
         )}
+        {/* 副图 KDJ 配色说明：放在图表外，不占用副图高度 */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 12 }}>
+          {([['K', kdjKey.k], ['D', kdjKey.d], ['J', kdjKey.j]] as const).map(([label, color]) => (
+            <span
+              key={label}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color }}
+            >
+              <span
+                style={{
+                  width: 14,
+                  height: 3,
+                  borderRadius: 2,
+                  background: color,
+                  display: 'inline-block',
+                }}
+              />
+              {label}
+            </span>
+          ))}
+        </div>
       </div>
       <div style={{ display: 'flex', gap: 8, height: CHART_HEIGHT }}>
         <div style={{ flex: 1, minWidth: 0, height: '100%' }}>

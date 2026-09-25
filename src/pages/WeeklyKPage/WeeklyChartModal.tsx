@@ -25,9 +25,11 @@ import { calculateChipDistribution } from '@/utils/analysis/chipDistribution';
 import { YI, type WeeklyAnalysis } from '@/utils/analysis/weekly';
 import { formatVolume } from '@/utils/format/format';
 import { downloadDataUrl } from '@/utils/export/weeklyKlineExportUtils';
+import { StockConceptTags } from '@/components/common/Tags';
 import { useChipDistribution } from '@/hooks/useChipDistribution';
 import { useModalDrag } from '@/hooks/useModalDrag';
 import { useRecordNavigation } from '@/hooks/useRecordNavigation';
+import { useThemeStore } from '@/stores/themeStore';
 import { logger } from '@/utils/business/logger';
 
 const { Text } = Typography;
@@ -66,6 +68,18 @@ const DEFAULT_VISIBLE_BARS = 120;
 const MAIN_GRID = { top: '10%', height: '50%' };
 /** 纵轴分段数，两侧保持一致以便刻度文字相同 */
 const Y_SPLIT_COUNT = 5;
+/** 缩放条高度（px）：ECharts 默认 30 会压住副图底部刻度，收窄后把空间让给副图 */
+const ZOOM_SLIDER_HEIGHT = 22;
+/** 副图 MACD 网格：上沿避开成交量刻度、下沿避开缩放条，把能用的高度都给副图 */
+const SUB_GRID = { top: '80.5%', height: '14%' };
+/**
+ * MACD 快慢线配色：快线（DIF）蓝、慢线（DEA）橙，与日K弹窗 KDJ 的蓝/橙口径保持一致；
+ * 深色主题下整体提亮，避免颜色淹没在深色背景里。
+ */
+const MACD_COLOR = {
+  light: { dif: '#1677ff', dea: '#fa8c16' },
+  dark: { dif: '#4096ff', dea: '#ffa940' },
+} as const;
 
 interface WeeklyChartModalProps {
   open: boolean;
@@ -97,6 +111,8 @@ interface WeeklyChartBuildInput {
   /** 与推导出的价格区间一致；null 时退回 ECharts 自适应 */
   yRange: PriceRange | null;
   zoom: { start: number; end: number };
+  /** 是否深色主题：决定副图配色 */
+  isDark: boolean;
   /** 十字星指向的 K 线下标；null 时涨幅退回可见区间最后一根 */
   hoverIndex?: number | null;
 }
@@ -131,9 +147,10 @@ function nicePriceRange(min: number, max: number): PriceRange | null {
 }
 
 function buildWeeklyChartOption(input: WeeklyChartBuildInput): EChartsOption {
-  const { data, name, indicators, yRange, zoom, hoverIndex = null } = input;
+  const { data, name, indicators, yRange, zoom, isDark, hoverIndex = null } = input;
   const { ma5, ma10, ma20, ma30, ma60 } = indicators.ma;
   const macd = indicators.macd;
+  const macdColor = isDark ? MACD_COLOR.dark : MACD_COLOR.light;
 
   /**
    * 顶部涨幅：十字星所指那一根优先，未悬停时取当前可见区间最后一根。
@@ -207,7 +224,8 @@ function buildWeeklyChartOption(input: WeeklyChartBuildInput): EChartsOption {
         const dea = macd.dea[dataIndex];
         const bar = macd.macd[dataIndex];
         if (Number.isFinite(dif) && Number.isFinite(dea)) {
-          html += `<div>DIF: ${dif.toFixed(3)} / DEA: ${dea.toFixed(3)} / MACD: ${bar.toFixed(3)}</div>`;
+          // 数值颜色与副图线条一一对应，配合图表上方的颜色说明即可确认哪条线是哪个值
+          html += `<div><span style="color:${macdColor.dif}">DIF: ${dif.toFixed(3)}</span> / <span style="color:${macdColor.dea}">DEA: ${dea.toFixed(3)}</span> / MACD: ${Number.isFinite(bar) ? bar.toFixed(3) : '-'}</div>`;
         }
         return html;
       },
@@ -215,7 +233,7 @@ function buildWeeklyChartOption(input: WeeklyChartBuildInput): EChartsOption {
     grid: [
       { left: '8%', right: '4%', top: MAIN_GRID.top, height: MAIN_GRID.height },
       { left: '8%', right: '4%', top: '64%', height: '13%' },
-      { left: '8%', right: '4%', top: '81%', height: '13%' },
+      { left: '8%', right: '4%', top: SUB_GRID.top, height: SUB_GRID.height },
     ],
     xAxis: [timeAxis(), timeAxis(1), timeAxis(2)],
     yAxis: [
@@ -247,7 +265,15 @@ function buildWeeklyChartOption(input: WeeklyChartBuildInput): EChartsOption {
     ],
     dataZoom: [
       { type: 'inside', xAxisIndex: [0, 1, 2], start: zoom.start, end: zoom.end },
-      { show: true, xAxisIndex: [0, 1, 2], type: 'slider', bottom: 0, start: zoom.start, end: zoom.end },
+      {
+        show: true,
+        xAxisIndex: [0, 1, 2],
+        type: 'slider',
+        bottom: 0,
+        height: ZOOM_SLIDER_HEIGHT,
+        start: zoom.start,
+        end: zoom.end,
+      },
     ],
     series: [
       {
@@ -308,7 +334,9 @@ function buildWeeklyChartOption(input: WeeklyChartBuildInput): EChartsOption {
         yAxisIndex: 2,
         data: macd.dif,
         showSymbol: false,
-        lineStyle: { width: 1, color: '#faad14' },
+        // itemStyle.color 同时决定图例色块，保证图例与线条颜色一致
+        itemStyle: { color: macdColor.dif },
+        lineStyle: { width: 1.5, color: macdColor.dif },
         animation: false,
       },
       {
@@ -318,7 +346,8 @@ function buildWeeklyChartOption(input: WeeklyChartBuildInput): EChartsOption {
         yAxisIndex: 2,
         data: macd.dea,
         showSymbol: false,
-        lineStyle: { width: 1, color: '#1890ff' },
+        itemStyle: { color: macdColor.dea },
+        lineStyle: { width: 1.5, color: macdColor.dea },
         animation: false,
       },
     ],
@@ -337,6 +366,10 @@ export function WeeklyChartModal({
 }: WeeklyChartModalProps) {
   const { message } = App.useApp();
   const chartRef = useRef<ReactECharts>(null);
+  /** 深色主题下副图配色需切换 */
+  const isDark = useThemeStore((state) => state.theme === 'dark');
+  /** 副图 MACD 配色：与图内线条同源，用于图表外的颜色说明 */
+  const macdKey = isDark ? MACD_COLOR.dark : MACD_COLOR.light;
   /** 周线分析弹窗固定使用周线口径筹码 */
   const chipPeriod: ChipPeriod = 'week';
 
@@ -581,9 +614,10 @@ export function WeeklyChartModal({
       indicators,
       yRange: priceRange,
       zoom,
+      isDark,
       hoverIndex,
     });
-  }, [kline, name, indicators, priceRange, zoom, hoverIndex]);
+  }, [kline, name, indicators, priceRange, zoom, isDark, hoverIndex]);
 
   const chipOption = useMemo(
     () =>
@@ -625,6 +659,9 @@ export function WeeklyChartModal({
             <Tag color="blue" style={{ marginInlineEnd: 0 }}>
               {analysis.industryName}
             </Tag>
+          )}
+          {analysis?.concepts && analysis.concepts.length > 0 && (
+            <StockConceptTags concepts={analysis.concepts} max={3} />
           )}
           {navigation.currentIndex >= 0 && navigation.total > 1 && (
             <Text type="secondary" style={{ fontSize: 12, fontWeight: 'normal' }}>
@@ -727,6 +764,26 @@ export function WeeklyChartModal({
             筹码分布：{chipError}
           </Text>
         )}
+        {/* 副图 MACD 配色说明：放在图表外，不占用副图高度 */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 12 }}>
+          {([['DIF', macdKey.dif], ['DEA', macdKey.dea]] as const).map(([label, color]) => (
+            <span
+              key={label}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color }}
+            >
+              <span
+                style={{
+                  width: 14,
+                  height: 3,
+                  borderRadius: 2,
+                  background: color,
+                  display: 'inline-block',
+                }}
+              />
+              {label}
+            </span>
+          ))}
+        </div>
       </div>
       <div style={{ display: 'flex', gap: 8, height: CHART_HEIGHT }}>
         <div style={{ flex: 1, minWidth: 0, height: '100%' }}>

@@ -255,6 +255,24 @@ function buildKLineChartOption(data: KLineData[], period: KLinePeriod, patternsC
   const kdjData = calculateKDJ(data);
   const rsiData = calculateAllRSI(data);
 
+  /**
+   * KDJ 纵轴范围：与弹窗口径保持一致，以 -50 ~ 150 为基准（刻度 -50 / 0 / 50 / 100 / 150）。
+   * K/D 基本落在 0~100，但 J 常冲到 120+ 或跌成负数，写死 0~100 会被截断；
+   * 该组件不跟踪缩放状态，因此按全量数据取极值，超出基准时才向外扩到 10 的倍数。
+   */
+  const kdjAxis = (() => {
+    let lo = -50;
+    let hi = 150;
+    for (let i = 0; i < kdjData.j.length; i += 1) {
+      for (const value of [kdjData.k[i], kdjData.d[i], kdjData.j[i]]) {
+        if (!Number.isFinite(value)) continue;
+        if (value < lo) lo = value;
+        if (value > hi) hi = value;
+      }
+    }
+    return { min: Math.floor(lo / 10) * 10, max: Math.ceil(hi / 10) * 10 };
+  })();
+
   // 预计算形态检测结果（回溯窗口20根）
   const patterns = detectCandlestickPatternsInWindow(data, 20);
 
@@ -435,10 +453,12 @@ function buildKLineChartOption(data: KLineData[], period: KLinePeriod, patternsC
       {
         scale: true,
         gridIndex: 2,
-        splitNumber: 2,
-        min: 0,
-        max: 100,
-        axisLabel: { show: true },
+        // 基准区间 200 跨 4 段 → 刻度落在 -50 / 0 / 50 / 100 / 150
+        splitNumber: 4,
+        min: kdjAxis.min,
+        max: kdjAxis.max,
+        // 容器高度较小时自动隐藏重叠刻度，避免数字叠在一起
+        axisLabel: { show: true, hideOverlap: true },
         axisLine: { show: false },
         axisTick: { show: false },
         splitLine: { show: false },
