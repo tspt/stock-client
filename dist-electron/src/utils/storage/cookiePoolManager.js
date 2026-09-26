@@ -33,6 +33,13 @@ class CookiePoolManager {
             writable: true,
             value: false
         });
+        /** 初始化中的 promise，用于合并并发调用（如 React.StrictMode 双挂载） */
+        Object.defineProperty(this, "initPromise", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: null
+        });
         // Cookie负载均衡配置常量
         Object.defineProperty(this, "USAGE_TOLERANCE", {
             enumerable: true,
@@ -64,12 +71,29 @@ class CookiePoolManager {
     }
     /**
      * 初始化 - 从IndexedDB加载Cookie
+     *
+     * 幂等保证：并发调用（含 React.StrictMode 下的双挂载）复用同一个 in-flight promise，
+     * 避免「检查-执行」竞态导致重复读取 IndexedDB 与重复副作用。
      */
     async initialize() {
         if (this.isInitialized) {
-            logger.info('[CookiePool] 已经初始化，跳过');
+            logger.debug('[CookiePool] 已经初始化，跳过');
             return;
         }
+        if (this.initPromise) {
+            return this.initPromise;
+        }
+        this.initPromise = this.loadCookiesFromDB().catch((error) => {
+            // 失败时不缓存 promise，允许后续重试
+            this.initPromise = null;
+            throw error;
+        });
+        return this.initPromise;
+    }
+    /**
+     * 从IndexedDB装载Cookie（仅供 initialize 调用，不对外暴露）
+     */
+    async loadCookiesFromDB() {
         try {
             const cookies = await getAllCookies();
             this.cookies.clear();

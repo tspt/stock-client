@@ -2,7 +2,7 @@
  * 主应用组件
  */
 
-import { Suspense, lazy, useEffect, useState } from 'react';
+import { Suspense, lazy, useEffect, useRef, useState } from 'react';
 import { ConfigProvider, App as AntdApp, theme, Layout, Tabs, Spin } from 'antd';
 import { StockOutlined, BellOutlined, BarChartOutlined, FireOutlined, ClusterOutlined, AppstoreOutlined, PartitionOutlined, KeyOutlined, DatabaseOutlined, SafetyCertificateOutlined, TrophyOutlined, HistoryOutlined, ExperimentOutlined, LineChartOutlined } from '@ant-design/icons';
 import zhCN from 'antd/locale/zh_CN';
@@ -44,6 +44,8 @@ function AppContent() {
   const { theme: currentTheme } = useTheme();
   const { setSelectedStock } = useStockStore();
   const [activeTab, setActiveTab] = useState('opportunity');
+  // Cookie池初始化守卫：StrictMode 下 effect 会执行两次，避免重复触发初始化与重复日志
+  const cookiePoolBootstrappedRef = useRef(false);
 
   // 检查 electronAPI 是否可用
   useEffect(() => {
@@ -113,14 +115,19 @@ function AppContent() {
       };
     }
 
-    CookiePoolManager.getInstance()
-      .initialize()
-      .then(() => {
-        logger.info('[App] Cookie池管理器初始化完成');
-      })
-      .catch((error) => {
-        logger.error('[App] Cookie池管理器初始化失败:', error);
-      });
+    if (!cookiePoolBootstrappedRef.current) {
+      cookiePoolBootstrappedRef.current = true;
+      CookiePoolManager.getInstance()
+        .initialize()
+        .then(() => {
+          logger.info('[App] Cookie池管理器初始化完成');
+        })
+        .catch((error) => {
+          logger.error('[App] Cookie池管理器初始化失败:', error);
+          // 初始化失败时允许后续重试
+          cookiePoolBootstrappedRef.current = false;
+        });
+    }
 
     return () => {
       if (cleanupListener) {

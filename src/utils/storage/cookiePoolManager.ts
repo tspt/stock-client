@@ -24,6 +24,8 @@ class CookiePoolManager {
   private operationLogs: CookieOperationLog[] = [];
   private healthCheckInterval: ReturnType<typeof setInterval> | null = null;
   private isInitialized = false;
+  /** 初始化中的 promise，用于合并并发调用（如 React.StrictMode 双挂载） */
+  private initPromise: Promise<void> | null = null;
 
   // Cookie负载均衡配置常量
   private readonly USAGE_TOLERANCE = 5; // 使用次数容忍度
@@ -44,13 +46,33 @@ class CookiePoolManager {
 
   /**
    * 初始化 - 从IndexedDB加载Cookie
+   *
+   * 幂等保证：并发调用（含 React.StrictMode 下的双挂载）复用同一个 in-flight promise，
+   * 避免「检查-执行」竞态导致重复读取 IndexedDB 与重复副作用。
    */
   async initialize(): Promise<void> {
     if (this.isInitialized) {
-      logger.info('[CookiePool] 已经初始化，跳过');
+      logger.debug('[CookiePool] 已经初始化，跳过');
       return;
     }
 
+    if (this.initPromise) {
+      return this.initPromise;
+    }
+
+    this.initPromise = this.loadCookiesFromDB().catch((error) => {
+      // 失败时不缓存 promise，允许后续重试
+      this.initPromise = null;
+      throw error;
+    });
+
+    return this.initPromise;
+  }
+
+  /**
+   * 从IndexedDB装载Cookie（仅供 initialize 调用，不对外暴露）
+   */
+  private async loadCookiesFromDB(): Promise<void> {
     try {
       const cookies = await getAllCookies();
       this.cookies.clear();
