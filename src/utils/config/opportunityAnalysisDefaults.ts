@@ -626,6 +626,9 @@ export const INITIAL_FILTER_STATE = {
   },
   financeRevenueGrowthRange: {} as { min?: number; max?: number },
   financeNetProfitGrowthRange: {} as { min?: number; max?: number },
+  // ROE / 资产负债率默认不限额，避免影响既有筛选结果
+  financeRoeRange: {} as { min?: number; max?: number },
+  financeDebtRatioRange: {} as { min?: number; max?: number },
 
   // 涨跌停筛选（默认近10天有1次涨停）
   recentLimitUpCount: OPPORTUNITY_DEFAULT_LIMIT_MOVES.minLimitUpCount,

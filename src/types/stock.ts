@@ -348,6 +348,10 @@ export interface StockFinanceMetrics {
   netProfit?: number;
   /** 归属母公司净利润增长率（单位：%，接口原值已是百分数，如 -7.38 表示 -7.38%） */
   netProfitYoy?: number;
+  /** 净资产收益率（ROE，单位：%，接口原值已是百分数，如 2.23 表示 2.23%） */
+  roe?: number;
+  /** 资产负债率（单位：%，接口原值已是百分数，如 59.28 表示 59.28%） */
+  debtRatio?: number;
 }
 
 /**

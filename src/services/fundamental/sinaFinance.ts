@@ -48,6 +48,14 @@ const TITLE_NET_PROFIT = '归母净利润';
 const TITLE_REVENUE_GROWTH = '营业总收入增长率';
 const TITLE_NET_PROFIT_GROWTH = '归属母公司净利润增长率';
 
+/**
+ * 跨分组指标的 item_title 关键词（包含匹配）。
+ * ROE 位于「盈利能力」分组、资产负债率位于「偿债能力」分组，均不在「成长能力」内；
+ * 且 ROE 标题可能带「(ROE)/加权」等后缀，故用包含匹配而非全等。
+ */
+const TITLE_ROE_KEYWORD = '净资产收益率';
+const TITLE_DEBT_RATIO_KEYWORD = '资产负债率';
+
 /** 接口原始指标项 */
 interface SinaFinanceRawItem {
   item_field?: string;
@@ -119,7 +127,10 @@ function normalizeReportEntries(
 }
 
 /**
- * 从单个报告期提取「成长能力」四项指标。
+ * 从单个报告期提取财务指标：
+ * - 「成长能力」四项：营业总收入、归母净利润及其增长率
+ * - 跨分组两项：净资产收益率（ROE，盈利能力）、资产负债率（偿债能力）
+ *
  * 优先在「成长能力」分组内按 item_title 匹配，找不到时退化为全数组匹配；
  * 增长率缺失时用对应指标的 item_tongbi（小数）换算为百分比兜底。
  */
@@ -148,10 +159,17 @@ function extractGrowthMetrics(report: SinaFinanceRawReport): Omit<
     scoped.find((item) => (item.item_title || '').trim() === title) ??
     items.find((item) => (item.item_title || '').trim() === title);
 
+  // ROE / 资产负债率不在「成长能力」分组，且标题可能带括号后缀，使用包含匹配兜底
+  const findByTitleContains = (keyword: string): SinaFinanceRawItem | undefined =>
+    scoped.find((item) => (item.item_title || '').includes(keyword)) ??
+    items.find((item) => (item.item_title || '').includes(keyword));
+
   const revenueItem = findByTitle(TITLE_REVENUE);
   const netProfitItem = findByTitle(TITLE_NET_PROFIT);
   const revenueGrowthItem = findByTitle(TITLE_REVENUE_GROWTH);
   const netProfitGrowthItem = findByTitle(TITLE_NET_PROFIT_GROWTH);
+  const roeItem = findByTitleContains(TITLE_ROE_KEYWORD);
+  const debtRatioItem = findByTitleContains(TITLE_DEBT_RATIO_KEYWORD);
 
   // 增长率项的 item_value 已是百分比；缺失时用 item_tongbi(小数) * 100 兜底
   const fallbackGrowth = (item?: SinaFinanceRawItem): number | undefined => {
@@ -164,6 +182,8 @@ function extractGrowthMetrics(report: SinaFinanceRawReport): Omit<
     netProfit: toNumber(netProfitItem?.item_value),
     revenueYoy: toNumber(revenueGrowthItem?.item_value) ?? fallbackGrowth(revenueItem),
     netProfitYoy: toNumber(netProfitGrowthItem?.item_value) ?? fallbackGrowth(netProfitItem),
+    roe: toNumber(roeItem?.item_value),
+    debtRatio: toNumber(debtRatioItem?.item_value),
   };
 }
 

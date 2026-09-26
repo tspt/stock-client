@@ -238,6 +238,14 @@ export function OpportunityPage() {
   const [financeNetProfitGrowthRange, setFinanceNetProfitGrowthRange] = useState<{ min?: number; max?: number }>(
     INITIAL_FILTER_STATE.financeNetProfitGrowthRange
   );
+  /** 净资产收益率（ROE）范围（%） */
+  const [financeRoeRange, setFinanceRoeRange] = useState<{ min?: number; max?: number }>(
+    INITIAL_FILTER_STATE.financeRoeRange
+  );
+  /** 资产负债率范围（%） */
+  const [financeDebtRatioRange, setFinanceDebtRatioRange] = useState<{ min?: number; max?: number }>(
+    INITIAL_FILTER_STATE.financeDebtRatioRange
+  );
   /** 筛选面板当前展开的 key 列表；[] 表示各组均收起。默认展开所有筛选项 */
   const [filterPanelActiveKey, setFilterPanelActiveKey] = useState<string[]>([
     ...DEFAULT_FILTER_PANEL_ACTIVE_KEYS,
@@ -581,6 +589,8 @@ export function OpportunityPage() {
           setFinanceNetProfitRange,
           setFinanceRevenueGrowthRange,
           setFinanceNetProfitGrowthRange,
+          setFinanceRoeRange,
+          setFinanceDebtRatioRange,
           setFilterPanelActiveKey,
           setRecentLimitUpCount,
           setRecentLimitDownCount,
@@ -705,6 +715,8 @@ export function OpportunityPage() {
       financeNetProfitRange,
       financeRevenueGrowthRange,
       financeNetProfitGrowthRange,
+      financeRoeRange,
+      financeDebtRatioRange,
       recentLimitUpCount,
       recentLimitDownCount,
       limitUpPeriod,
@@ -762,6 +774,7 @@ export function OpportunityPage() {
     [
       priceRange, marketCapRange, totalSharesRange, turnoverRateRange, peRatioRange, kdjJRange,
       financeRevenueRange, financeNetProfitRange, financeRevenueGrowthRange, financeNetProfitGrowthRange,
+      financeRoeRange, financeDebtRatioRange,
       recentLimitUpCount, recentLimitDownCount, limitUpPeriod, limitDownPeriod,
       consolidationTypes, consolidationLookback, consolidationConsecutive, consolidationThreshold,
       consolidationRequireAboveMa10, consolidationFilterEnabled,
@@ -1110,6 +1123,8 @@ export function OpportunityPage() {
     setFinanceNetProfitRange({ ...s.financeNetProfitRange });
     setFinanceRevenueGrowthRange({ ...s.financeRevenueGrowthRange });
     setFinanceNetProfitGrowthRange({ ...s.financeNetProfitGrowthRange });
+    setFinanceRoeRange({ ...s.financeRoeRange });
+    setFinanceDebtRatioRange({ ...s.financeDebtRatioRange });
     setFilterPanelActiveKey([...DEFAULT_FILTER_PANEL_ACTIVE_KEYS]);
     setRecentLimitUpCount(s.recentLimitUpCount);
     setRecentLimitDownCount(s.recentLimitDownCount);
@@ -1194,7 +1209,7 @@ export function OpportunityPage() {
   );
 
   /**
-   * 批量获取指定股票池的营业总收入 / 归母净利润（含增长率），结果合并进 financeMap。
+   * 批量获取指定股票池的财务指标（营业总收入、归母净利润及其增长率、ROE、资产负债率），结果合并进 financeMap。
    * 注意：请求量越大越容易触发新浪限流，因此「筛选后」按钮只请求当前筛选结果。
    */
   const fetchFinanceForStocks = async (stocks: Array<{ code: string }>, emptyHint: string) => {
@@ -1220,7 +1235,7 @@ export function OpportunityPage() {
       });
 
       if (map.size === 0) {
-        message.warning('未获取到营收/净利润数据');
+        message.warning('未获取到财务指标数据');
         return;
       }
 
@@ -1231,7 +1246,7 @@ export function OpportunityPage() {
         });
         return next;
       });
-      message.success(`营收/净利润数据已就绪，共 ${map.size} 只（命中本地缓存的不重复请求）`);
+      message.success(`财务指标数据已就绪，共 ${map.size} 只（命中本地缓存的不重复请求）`);
     } catch (error) {
       if (error instanceof DOMException && error.name === 'AbortError') {
         message.info('已取消获取营收净利润');
@@ -1639,7 +1654,7 @@ export function OpportunityPage() {
             onClick={handleFetchFinance}
             loading={financeLoading}
             disabled={loading || financeLoading || filteredStocks.length === 0}
-            title={`获取当前股票池（${filteredStocks.length} 只）的营业总收入与归母净利润`}
+            title={`获取当前股票池（${filteredStocks.length} 只）的营业总收入、归母净利润、ROE 与资产负债率`}
           >
             获取营收净利润
           </Button>
@@ -1648,7 +1663,7 @@ export function OpportunityPage() {
             onClick={handleFetchFinanceForFiltered}
             loading={financeLoading}
             disabled={loading || financeLoading}
-            title={`仅获取当前筛选结果（${filteredAnalysisData.length} 只）的营业总收入、归母净利润及其增长率，避免全池请求触发新浪限流`}
+            title={`仅获取当前筛选结果（${filteredAnalysisData.length} 只）的营业总收入、归母净利润及其增长率、ROE、资产负债率，避免全池请求触发新浪限流`}
           >
             获取筛选后营收净利润
           </Button>
@@ -1836,6 +1851,10 @@ export function OpportunityPage() {
             setFinanceRevenueGrowthRange={setFinanceRevenueGrowthRange}
             financeNetProfitGrowthRange={financeNetProfitGrowthRange}
             setFinanceNetProfitGrowthRange={setFinanceNetProfitGrowthRange}
+            financeRoeRange={financeRoeRange}
+            setFinanceRoeRange={setFinanceRoeRange}
+            financeDebtRatioRange={financeDebtRatioRange}
+            setFinanceDebtRatioRange={setFinanceDebtRatioRange}
             recentLimitUpCount={recentLimitUpCount}
             setRecentLimitUpCount={setRecentLimitUpCount}
             recentLimitDownCount={recentLimitDownCount}

@@ -74,6 +74,10 @@ export interface OpportunityFilterSnapshot {
   financeRevenueGrowthRange?: NumberRange;
   /** 归母净利润增长率范围（单位：%，数据来自「获取营收净利润」） */
   financeNetProfitGrowthRange?: NumberRange;
+  /** 净资产收益率（ROE）范围（单位：%，数据来自「获取营收净利润」） */
+  financeRoeRange?: NumberRange;
+  /** 资产负债率范围（单位：%，数据来自「获取营收净利润」） */
+  financeDebtRatioRange?: NumberRange;
   /** RSI指标范围 */
   rsiRange: NumberRange;
   /** RSI周期 */

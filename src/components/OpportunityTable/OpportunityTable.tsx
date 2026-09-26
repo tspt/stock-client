@@ -133,6 +133,24 @@ export const OpportunityTable = memo(function OpportunityTable({
       );
     }
 
+    if (key === 'financeRoe' || key === 'financeDebtRatio') {
+      const metrics = record?.finance;
+      const value = key === 'financeRoe' ? metrics?.roe : metrics?.debtRatio;
+      if (value === undefined) {
+        return '';
+      }
+      const title = metrics
+        ? [metrics.reportLabel, metrics.publishDate ? `公告日 ${metrics.publishDate}` : '']
+            .filter(Boolean)
+            .join(' · ')
+        : '';
+      return (
+        <span title={title || undefined} style={{ whiteSpace: 'nowrap' }}>
+          {value.toFixed(2)}%
+        </span>
+      );
+    }
+
     if (value === null || value === undefined || value === '') {
       return '';
     }

@@ -132,6 +132,27 @@ function migrateConceptColumnOrder(config: ColumnConfig[]): ColumnConfig[] {
   return next.map((col, index) => ({ ...col, order: index }));
 }
 
+/** 「ROE 列位置」一次性迁移标记（localStorage） */
+const OPPORTUNITY_COLUMN_ROE_MIGRATED_KEY = 'opportunity_column_roe_migrated';
+
+/**
+ * 迁移：把「ROE(%)」列移动到「市盈率(PE)」之后。
+ *
+ * ROE 为新增列，存量列配置中会被 {@link mergeSavedColumns} 追加到末尾。
+ * 该迁移只执行一次（由 OPPORTUNITY_COLUMN_ROE_MIGRATED_KEY 控制），
+ * 结果写回 localStorage 后，用户在「列设置」中的后续调整不会再被覆盖。
+ */
+function migrateRoeColumnOrder(config: ColumnConfig[]): ColumnConfig[] {
+  const roeIndex = config.findIndex((col) => col.key === 'financeRoe');
+  const peIndex = config.findIndex((col) => col.key === 'peRatio');
+  if (roeIndex < 0 || peIndex < 0 || roeIndex === peIndex + 1) return config;
+
+  const next = [...config];
+  const [roeColumn] = next.splice(roeIndex, 1);
+  next.splice(peIndex + 1, 0, roeColumn);
+  return next.map((col, index) => ({ ...col, order: index }));
+}
+
 export const useOpportunityStore = create<OpportunityState>((set, get) => ({
   analysisData: [],
   loading: false,
@@ -449,9 +470,15 @@ try {
   const saved = localStorage.getItem(OPPORTUNITY_COLUMN_CONFIG_KEY);
   if (saved) {
     const config = JSON.parse(saved) as ColumnConfig[];
-    useOpportunityStore.setState({
-      columnConfig: migrateConceptColumnOrder(mergeSavedColumns(config)),
-    });
+    // 先跑既有「所属概念」顺序迁移（其判定依赖旧默认下标），再做 ROE 一次性位置迁移
+    const legacyMigrated = migrateConceptColumnOrder(mergeSavedColumns(config));
+    const roeMigrated = localStorage.getItem(OPPORTUNITY_COLUMN_ROE_MIGRATED_KEY) === '1';
+    const columnConfig = roeMigrated ? legacyMigrated : migrateRoeColumnOrder(legacyMigrated);
+    if (!roeMigrated) {
+      localStorage.setItem(OPPORTUNITY_COLUMN_ROE_MIGRATED_KEY, '1');
+      localStorage.setItem(OPPORTUNITY_COLUMN_CONFIG_KEY, JSON.stringify(columnConfig));
+    }
+    useOpportunityStore.setState({ columnConfig });
   }
 } catch (error) {
   logger.error('加载机会分析列配置失败:', error);

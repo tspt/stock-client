@@ -57,6 +57,10 @@ export function getOpportunitySortValue(
       return record.finance?.revenue;
     case 'financeNetProfit':
       return record.finance?.netProfit;
+    case 'financeRoe':
+      return record.finance?.roe;
+    case 'financeDebtRatio':
+      return record.finance?.debtRatio;
     default:
       return (record as unknown as Record<string, string | number | null | undefined>)[key];
   }

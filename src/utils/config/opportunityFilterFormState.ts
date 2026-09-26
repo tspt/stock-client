@@ -30,6 +30,8 @@ export interface OpportunityFilterFormState {
   financeNetProfitRange: NumberRange;
   financeRevenueGrowthRange: NumberRange;
   financeNetProfitGrowthRange: NumberRange;
+  financeRoeRange: NumberRange;
+  financeDebtRatioRange: NumberRange;
 
   // 涨跌停筛选
   recentLimitUpCount: number | undefined;
@@ -140,6 +142,8 @@ export function buildOpportunityFilterPrefs(
     financeNetProfitRange: { ...form.financeNetProfitRange },
     financeRevenueGrowthRange: { ...form.financeRevenueGrowthRange },
     financeNetProfitGrowthRange: { ...form.financeNetProfitGrowthRange },
+    financeRoeRange: { ...form.financeRoeRange },
+    financeDebtRatioRange: { ...form.financeDebtRatioRange },
 
     // 面板可见性由当前展开项推导
     ...visibilityFromActiveFilterPanelKey(extras.filterPanelActiveKey),

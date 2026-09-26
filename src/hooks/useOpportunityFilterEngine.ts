@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import type { KLineData, StockOpportunityData, TradingSignal } from '@/types/stock';
 import type { FilterSkippedItem, OpportunityFilterSnapshot } from '@/types/opportunityFilter';
+import { matchOptionalRange, matchOptionalRangeWithScale } from '@/utils/analysis/rangeFilter';
 import type { OpportunityFilterWorkerOutboundMessage } from '@/workers/opportunityFilterWorkerTypes';
 
 /** 对外暴露 signalMap 时用于替代 null 的空映射（保持引用稳定） */
@@ -26,96 +27,31 @@ function passLightFilters(item: StockOpportunityData, filters: OpportunityFilter
     if (nameType === 'non_st' && isST) return false;
   }
 
-  if (filters.priceRange.min !== undefined && item.price < filters.priceRange.min) return false;
-  if (filters.priceRange.max !== undefined && item.price > filters.priceRange.max) return false;
-
-  if (filters.marketCapRange.min !== undefined) {
-    if (item.marketCap === null || item.marketCap === undefined) return false;
-    if (item.marketCap < filters.marketCapRange.min) return false;
-  }
-  if (filters.marketCapRange.max !== undefined) {
-    if (item.marketCap === null || item.marketCap === undefined) return false;
-    if (item.marketCap > filters.marketCapRange.max) return false;
-  }
-
-  if (filters.totalSharesRange.min !== undefined) {
-    if (item.totalShares === null || item.totalShares === undefined) return false;
-    // totalShares 单位是股，筛选条件单位是亿，需要转换
-    const totalSharesInYi = item.totalShares / 1e8;
-    if (totalSharesInYi < filters.totalSharesRange.min) return false;
-  }
-  if (filters.totalSharesRange.max !== undefined) {
-    if (item.totalShares === null || item.totalShares === undefined) return false;
-    // totalShares 单位是股，筛选条件单位是亿，需要转换
-    const totalSharesInYi = item.totalShares / 1e8;
-    if (totalSharesInYi > filters.totalSharesRange.max) return false;
-  }
-
-  if (filters.turnoverRateRange.min !== undefined) {
-    if (item.turnoverRate === null || item.turnoverRate === undefined) return false;
-    if (item.turnoverRate < filters.turnoverRateRange.min) return false;
-  }
-  if (filters.turnoverRateRange.max !== undefined) {
-    if (item.turnoverRate === null || item.turnoverRate === undefined) return false;
-    if (item.turnoverRate > filters.turnoverRateRange.max) return false;
-  }
-
-  if (filters.peRatioRange.min !== undefined) {
-    if (item.peRatio === null || item.peRatio === undefined) return false;
-    if (item.peRatio < filters.peRatioRange.min) return false;
-  }
-  if (filters.peRatioRange.max !== undefined) {
-    if (item.peRatio === null || item.peRatio === undefined) return false;
-    if (item.peRatio > filters.peRatioRange.max) return false;
-  }
-
-  if (filters.kdjJRange.min !== undefined || filters.kdjJRange.max !== undefined) {
-    if (item.kdjJ === null || item.kdjJ === undefined) return false;
-    if (filters.kdjJRange.min !== undefined && item.kdjJ < filters.kdjJRange.min) return false;
-    if (filters.kdjJRange.max !== undefined && item.kdjJ > filters.kdjJRange.max) return false;
-  }
+  if (!matchOptionalRange(item.price, filters.priceRange)) return false;
+  if (!matchOptionalRange(item.marketCap, filters.marketCapRange)) return false;
+  // totalShares 单位是股，筛选条件单位是亿，需要转换
+  if (!matchOptionalRangeWithScale(item.totalShares, filters.totalSharesRange, 1e8)) return false;
+  if (!matchOptionalRange(item.turnoverRate, filters.turnoverRateRange)) return false;
+  if (!matchOptionalRange(item.peRatio, filters.peRatioRange)) return false;
+  if (!matchOptionalRange(item.kdjJ, filters.kdjJRange)) return false;
 
   // 总营收 / 归母净利润（筛选单位：亿元；数据需先点「获取营收净利润」才有）
-  const revenueRange = filters.financeRevenueRange;
-  if (revenueRange && (revenueRange.min !== undefined || revenueRange.max !== undefined)) {
-    const revenue = item.finance?.revenue;
-    if (revenue === null || revenue === undefined) return false;
-    const revenueInYi = revenue / 1e8;
-    if (revenueRange.min !== undefined && revenueInYi < revenueRange.min) return false;
-    if (revenueRange.max !== undefined && revenueInYi > revenueRange.max) return false;
+  if (!matchOptionalRangeWithScale(item.finance?.revenue, filters.financeRevenueRange, 1e8)) {
+    return false;
   }
-
-  const netProfitRange = filters.financeNetProfitRange;
-  if (netProfitRange && (netProfitRange.min !== undefined || netProfitRange.max !== undefined)) {
-    const netProfit = item.finance?.netProfit;
-    if (netProfit === null || netProfit === undefined) return false;
-    const netProfitInYi = netProfit / 1e8;
-    if (netProfitRange.min !== undefined && netProfitInYi < netProfitRange.min) return false;
-    if (netProfitRange.max !== undefined && netProfitInYi > netProfitRange.max) return false;
+  if (!matchOptionalRangeWithScale(item.finance?.netProfit, filters.financeNetProfitRange, 1e8)) {
+    return false;
   }
 
   // 总营收增长率 / 归母净利润增长率（筛选单位：%；数据需先点「获取营收净利润」才有）
-  const revenueGrowthRange = filters.financeRevenueGrowthRange;
-  if (
-    revenueGrowthRange &&
-    (revenueGrowthRange.min !== undefined || revenueGrowthRange.max !== undefined)
-  ) {
-    const growth = item.finance?.revenueYoy;
-    if (growth === null || growth === undefined) return false;
-    if (revenueGrowthRange.min !== undefined && growth < revenueGrowthRange.min) return false;
-    if (revenueGrowthRange.max !== undefined && growth > revenueGrowthRange.max) return false;
+  if (!matchOptionalRange(item.finance?.revenueYoy, filters.financeRevenueGrowthRange)) return false;
+  if (!matchOptionalRange(item.finance?.netProfitYoy, filters.financeNetProfitGrowthRange)) {
+    return false;
   }
 
-  const netProfitGrowthRange = filters.financeNetProfitGrowthRange;
-  if (
-    netProfitGrowthRange &&
-    (netProfitGrowthRange.min !== undefined || netProfitGrowthRange.max !== undefined)
-  ) {
-    const growth = item.finance?.netProfitYoy;
-    if (growth === null || growth === undefined) return false;
-    if (netProfitGrowthRange.min !== undefined && growth < netProfitGrowthRange.min) return false;
-    if (netProfitGrowthRange.max !== undefined && growth > netProfitGrowthRange.max) return false;
-  }
+  // 净资产收益率（ROE）/ 资产负债率（筛选单位：%；数据需先点「获取营收净利润」才有）
+  if (!matchOptionalRange(item.finance?.roe, filters.financeRoeRange)) return false;
+  if (!matchOptionalRange(item.finance?.debtRatio, filters.financeDebtRatioRange)) return false;
 
   return true;
 }

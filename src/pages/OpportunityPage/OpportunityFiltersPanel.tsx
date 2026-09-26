@@ -97,6 +97,9 @@ export function buildOpportunityFilterSummary(p: {
   // 总营收增长率 / 归母净利润增长率（%）
   financeRevenueGrowthRange: NumRange;
   financeNetProfitGrowthRange: NumRange;
+  // 净资产收益率（ROE） / 资产负债率（%）
+  financeRoeRange: NumRange;
+  financeDebtRatioRange: NumRange;
   // 新增技术指标筛选
   rsiRange: NumRange;
   // 交易信号筛选
@@ -140,6 +143,8 @@ export function buildOpportunityFilterSummary(p: {
   pushRange(parts, '归母净利润', p.financeNetProfitRange, '亿');
   pushRange(parts, '总营收增长率', p.financeRevenueGrowthRange, '%');
   pushRange(parts, '归母净利润增长率', p.financeNetProfitGrowthRange, '%');
+  pushRange(parts, 'ROE', p.financeRoeRange, '%');
+  pushRange(parts, '资产负债率', p.financeDebtRatioRange, '%');
   if (p.recentLimitUpCount != null) {
     parts.push(`涨停≥${p.recentLimitUpCount}·${p.limitUpPeriod}天`);
   }
@@ -368,6 +373,11 @@ export interface OpportunityFiltersPanelProps {
   setFinanceRevenueGrowthRange: SetRange;
   financeNetProfitGrowthRange: { min?: number; max?: number };
   setFinanceNetProfitGrowthRange: SetRange;
+  // 净资产收益率（ROE） / 资产负债率 props（单位：%）
+  financeRoeRange: { min?: number; max?: number };
+  setFinanceRoeRange: SetRange;
+  financeDebtRatioRange: { min?: number; max?: number };
+  setFinanceDebtRatioRange: SetRange;
   // 新增技术指标筛选 props
   rsiRange: { min?: number; max?: number };
   setRsiRange: SetRange;
@@ -533,6 +543,11 @@ function OpportunityFiltersPanelComponent({
   setFinanceRevenueGrowthRange,
   financeNetProfitGrowthRange,
   setFinanceNetProfitGrowthRange,
+  // 净资产收益率（ROE） / 资产负债率
+  financeRoeRange,
+  setFinanceRoeRange,
+  financeDebtRatioRange,
+  setFinanceDebtRatioRange,
   // 新增技术指标筛选
   rsiRange,
   setRsiRange,
@@ -654,6 +669,8 @@ function OpportunityFiltersPanelComponent({
         financeNetProfitRange,
         financeRevenueGrowthRange,
         financeNetProfitGrowthRange,
+        financeRoeRange,
+        financeDebtRatioRange,
         rsiRange,
         tradingSignalTypes,
         aiAnalysisEnabled,
@@ -720,6 +737,8 @@ function OpportunityFiltersPanelComponent({
       financeNetProfitRange,
       financeRevenueGrowthRange,
       financeNetProfitGrowthRange,
+      financeRoeRange,
+      financeDebtRatioRange,
       rsiRange,
       tradingSignalTypes,
       aiAnalysisEnabled,
@@ -1112,6 +1131,68 @@ function OpportunityFiltersPanelComponent({
                           placeholder="最大值"
                           onChange={(v) => {
                             setFinanceNetProfitGrowthRange((prev) => ({
+                              ...prev,
+                              max: typeof v === 'number' && isFinite(v) ? v : undefined,
+                            }));
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <div className={styles.filterRow}>
+                      <div className={styles.filterItem}>
+                        <span className={styles.filterLabel}>净资产收益率ROE(%)：</span>
+                        <InputNumber
+                          value={financeRoeRange.min}
+                          step={1}
+                          precision={2}
+                          style={{ width: 100 }}
+                          placeholder="最小值"
+                          onChange={(v) => {
+                            setFinanceRoeRange((prev) => ({
+                              ...prev,
+                              min: typeof v === 'number' && isFinite(v) ? v : undefined,
+                            }));
+                          }}
+                        />
+                        <span style={{ margin: '0 4px' }}>~</span>
+                        <InputNumber
+                          value={financeRoeRange.max}
+                          step={1}
+                          precision={2}
+                          style={{ width: 100 }}
+                          placeholder="最大值"
+                          onChange={(v) => {
+                            setFinanceRoeRange((prev) => ({
+                              ...prev,
+                              max: typeof v === 'number' && isFinite(v) ? v : undefined,
+                            }));
+                          }}
+                        />
+                      </div>
+                      <div className={styles.filterItem}>
+                        <span className={styles.filterLabel}>资产负债率(%)：</span>
+                        <InputNumber
+                          value={financeDebtRatioRange.min}
+                          step={1}
+                          precision={2}
+                          style={{ width: 100 }}
+                          placeholder="最小值"
+                          onChange={(v) => {
+                            setFinanceDebtRatioRange((prev) => ({
+                              ...prev,
+                              min: typeof v === 'number' && isFinite(v) ? v : undefined,
+                            }));
+                          }}
+                        />
+                        <span style={{ margin: '0 4px' }}>~</span>
+                        <InputNumber
+                          value={financeDebtRatioRange.max}
+                          step={1}
+                          precision={2}
+                          style={{ width: 100 }}
+                          placeholder="最大值"
+                          onChange={(v) => {
+                            setFinanceDebtRatioRange((prev) => ({
                               ...prev,
                               max: typeof v === 'number' && isFinite(v) ? v : undefined,
                             }));

@@ -193,6 +193,10 @@ export interface OpportunityFilterPrefs {
   financeRevenueGrowthRange: { min?: number; max?: number };
   /** 归母净利润增长率范围（单位：%） */
   financeNetProfitGrowthRange: { min?: number; max?: number };
+  /** 净资产收益率（ROE）范围（单位：%） */
+  financeRoeRange: { min?: number; max?: number };
+  /** 资产负债率范围（单位：%） */
+  financeDebtRatioRange: { min?: number; max?: number };
   /** RSI指标范围 */
   rsiRange: { min?: number; max?: number };
   /** RSI周期 */
@@ -399,6 +403,9 @@ export function loadOpportunityFilterPrefs(): OpportunityFilterPrefs | null {
       // 总营收增长率 / 归母净利润增长率（%）
       financeRevenueGrowthRange: parseRange(p.financeRevenueGrowthRange),
       financeNetProfitGrowthRange: parseRange(p.financeNetProfitGrowthRange),
+      // 净资产收益率 / 资产负债率（%）
+      financeRoeRange: parseRange(p.financeRoeRange),
+      financeDebtRatioRange: parseRange(p.financeDebtRatioRange),
       // 新增技术指标筛选
       rsiRange: parseRange(p.rsiRange),
       rsiPeriod: isFiniteNumber(p.rsiPeriod) ? Math.floor(p.rsiPeriod) : 6,
@@ -510,6 +517,9 @@ export function getDefaultFilterPrefsFields(): Omit<
     // 总营收增长率 / 归母净利润增长率（%）
     financeRevenueGrowthRange: {},
     financeNetProfitGrowthRange: {},
+    // 净资产收益率 / 资产负债率（%）：默认不限额
+    financeRoeRange: {},
+    financeDebtRatioRange: {},
     // 新增技术指标筛选默认值
     rsiRange: {},
     rsiPeriod: 6,
@@ -621,6 +631,9 @@ export interface OpportunityFilterPrefsApplyActions {
   // 总营收增长率 / 归母净利润增长率 actions
   setFinanceRevenueGrowthRange: (v: { min?: number; max?: number }) => void;
   setFinanceNetProfitGrowthRange: (v: { min?: number; max?: number }) => void;
+  // 净资产收益率 / 资产负债率 actions
+  setFinanceRoeRange: (v: { min?: number; max?: number }) => void;
+  setFinanceDebtRatioRange: (v: { min?: number; max?: number }) => void;
   // 新增技术指标筛选 actions
   setRsiRange: (v: { min?: number; max?: number }) => void;
   setRsiPeriod: (v: number) => void;
@@ -704,6 +717,9 @@ export function applyOpportunityFilterPrefsToState(
   // 应用总营收增长率 / 归母净利润增长率
   actions.setFinanceRevenueGrowthRange({ ...prefs.financeRevenueGrowthRange });
   actions.setFinanceNetProfitGrowthRange({ ...prefs.financeNetProfitGrowthRange });
+  // 应用净资产收益率 / 资产负债率
+  actions.setFinanceRoeRange({ ...prefs.financeRoeRange });
+  actions.setFinanceDebtRatioRange({ ...prefs.financeDebtRatioRange });
   // 应用新增技术指标筛选
   actions.setRsiRange({ ...prefs.rsiRange });
   actions.setRsiPeriod(prefs.rsiPeriod);
