@@ -206,6 +206,11 @@ stockClient/
 | [机会分析缓存与筛选](docs/机会分析缓存与筛选.md) | IndexedDB 与筛选偏好、纯前端筛选范围 |
 | [API 代理说明](docs/api-proxy-solutions.md) | 开发环境跨域与代理方案 |
 
+## 编码约定
+
+页面文件（`src/pages/**/XxxPage.tsx`）只保留状态、副作用与 JSX；常量、公用方法、可复用组件必须抽离至 `src/utils/`、`src/components/common/`。
+详见 [AGENTS.md](AGENTS.md)。
+
 ## 注意事项
 
 1. **图标文件**：打包时需要提供 `build/icon.ico` 图标文件
