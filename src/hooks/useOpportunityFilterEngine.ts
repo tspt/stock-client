@@ -493,7 +493,9 @@ export function useOpportunityFilterEngine({
       // 信号尚未就绪，保留原样，避免表格列闪烁（此时也不做信号筛选）
       return filteredRawData;
     }
-    const merged = filteredRawData.map((item) => {
+    // 显式标注返回类型：否则「解构剩余项（rest）」会推出一个不含 tradingSignal 的
+    // 联合成员，导致下方按属性取值时类型报错
+    const merged = filteredRawData.map((item): StockOpportunityData => {
       const signal = signalMap.get(item.code);
       if (signal) {
         return { ...item, tradingSignal: signal };
@@ -501,8 +503,10 @@ export function useOpportunityFilterEngine({
       if (!item.tradingSignal) {
         return item;
       }
-      const { tradingSignal: _unused, ...rest } = item;
-      return rest;
+      // 本次未算出信号：清掉旧信号，避免展示上一轮的陈旧结果
+      const next = { ...item };
+      delete next.tradingSignal;
+      return next;
     });
 
     if (!tradingSignalTypes || tradingSignalTypes.length === 0) {

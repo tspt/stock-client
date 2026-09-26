@@ -3,6 +3,8 @@
  */
 
 export { analyzeAllStocksOpportunity } from './analyzer';
+export { loadOpportunityKlines, fetchOpportunityKline } from './klineSource';
+export type { OpportunityKlineQuery } from './klineSource';
 export { performAIAnalysis, predictTrend, findSimilarPatterns } from './ai';
 export {
   addStocksToTodayRecord,

@@ -68,7 +68,6 @@ import {
 import {
   getAllStockFinanceMetrics,
   getOpportunityData,
-  getOpportunityKlines,
   getStocksHistory,
 } from '@/utils/storage/opportunityIndexedDB';
 import {
@@ -715,27 +714,20 @@ export function WeeklyKPage() {
   );
 
   /**
-   * 载入日线数据用于「多周期共振」：机会分析页面已写入 IndexedDB，这里直接复用其全量缓存，
-   * 不额外发起网络请求。返回最终 Map，便于「一键分析」拿到最新日线后再触发评分。
+   * 载入日线数据用于「多周期共振」：只读 `stockHistory`，不额外发起网络请求。
+   *
+   * 机会分析跑日线时同样会把日线写进 stockHistory（见 getKLineData 的同步逻辑），
+   * 所以这里不再读机会分析的独立 K 线表 —— 那张表只承载周/月/年与回测截断数据，
+   * 拿来当日线用会在错误周期上算「站上 20 日均线」。
+   * 返回最终 Map，便于「一键分析」拿到最新日线后再触发评分。
    */
   const loadDailyKlines = useCallback(async (): Promise<Map<string, KLineData[]>> => {
     try {
-      /**
-       * 首选机会分析的日线缓存 opportunityKlineCache：每次机会分析都会整表重写，
-       * 是最新的一份日线数据（也是文档第三章「日线站上20日均线」的判定依据）。
-       * 老版本数据可能只落在 stockHistory 里，故保留一次回退读取。
-       */
+      const histories = await getStocksHistory([]);
       const map = new Map<string, KLineData[]>();
-      const cached = await getOpportunityKlines();
-      cached.forEach(([code, kline]) => {
-        if (kline && kline.length > 0) map.set(code, kline);
+      histories.forEach((h) => {
+        if (h.dailyLines && h.dailyLines.length > 0) map.set(h.code, h.dailyLines);
       });
-      if (map.size === 0) {
-        const histories = await getStocksHistory([]);
-        histories.forEach((h) => {
-          if (h.dailyLines && h.dailyLines.length > 0) map.set(h.code, h.dailyLines);
-        });
-      }
       setDailyKlines(map);
       return map;
     } catch (error) {

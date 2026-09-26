@@ -5,6 +5,7 @@
 import type {
   OpportunityAnalysisResult,
   KLineData,
+  KLinePeriod,
   StockQuote,
   StockDetail,
   IndustryInfo,
@@ -19,6 +20,8 @@ import {
   STOCK_HISTORY_STORE_NAME,
   STOCK_FINANCE_STORE_NAME,
 } from '../config/constants';
+import { needsDedicatedKlineStore } from '../analysis/opportunityKlinePolicy';
+import { mergeStockHistoryRecord } from './stockHistoryMerge';
 
 let dbInstance: IDBDatabase | null = null;
 
@@ -105,10 +108,15 @@ export async function initOpportunityDB(): Promise<IDBDatabase> {
 const KLINE_WRITE_BATCH = 500;
 
 /**
- * 保存 K 线缓存（独立存储）：先清空旧数据，再分批写入
+ * 保存 K 线缓存（独立存储）：先清空旧数据，再分批写入。
+ *
+ * 只承载「日线以外的周期」与「带截止日的日线（回测）」——普通日线分析复用 stockHistory，
+ * 传空数组即表示本次不落盘（仅清空，避免上一次其它周期的数据被误读）。
+ * 每条记录带上 period，供读取侧校验周期是否与当前分析一致。
  */
 export async function saveOpportunityKlines(
-  entries: Array<[string, KLineData[]]>
+  entries: Array<[string, KLineData[]]>,
+  period?: KLinePeriod
 ): Promise<void> {
   const db = await initOpportunityDB();
 
@@ -128,16 +136,23 @@ export async function saveOpportunityKlines(
         reject(new Error(`写入K线缓存失败：第 ${Math.floor(index / KLINE_WRITE_BATCH) + 1} 批`));
       const store = transaction.objectStore(OPPORTUNITY_KLINE_STORE_NAME);
       batch.forEach(([code, kline]) => {
-        store.put({ code, kline });
+        store.put({ code, kline, period });
       });
     });
   }
 }
 
+/** 独立 K 线表快照：条目 + 写入时的周期（旧数据无 period） */
+export interface OpportunityKlineSnapshot {
+  /** 写入该批数据时的分析周期；改造前写入的旧数据没有该字段 */
+  period?: KLinePeriod;
+  entries: Array<[string, KLineData[]]>;
+}
+
 /**
- * 读取全部 K 线缓存（一次性读回，保证与拆分前的数据集合完全一致）
+ * 读取独立表全部 K 线（一次性读回，保证与拆分前的数据集合完全一致）
  */
-export async function getOpportunityKlines(): Promise<Array<[string, KLineData[]]>> {
+export async function getOpportunityKlineSnapshot(): Promise<OpportunityKlineSnapshot> {
   const db = await initOpportunityDB();
 
   return new Promise((resolve, reject) => {
@@ -145,8 +160,15 @@ export async function getOpportunityKlines(): Promise<Array<[string, KLineData[]
     const request = transaction.objectStore(OPPORTUNITY_KLINE_STORE_NAME).getAll();
 
     request.onsuccess = () => {
-      const rows = (request.result || []) as Array<{ code: string; kline: KLineData[] }>;
-      resolve(rows.map((row) => [row.code, row.kline]));
+      const rows = (request.result || []) as Array<{
+        code: string;
+        kline: KLineData[];
+        period?: KLinePeriod;
+      }>;
+      resolve({
+        period: rows.find((row) => row.period)?.period,
+        entries: rows.map((row) => [row.code, row.kline]),
+      });
     };
     request.onerror = () => reject(new Error('获取K线缓存失败'));
   });
@@ -154,12 +176,15 @@ export async function getOpportunityKlines(): Promise<Array<[string, KLineData[]
 
 /**
  * 保存分析结果。
- * K 线缓存单独存表：先写 K 线再写主记录，避免主记录已更新而 K 线缺失导致读到不完整数据。
+ * - K 线优先落盘：先写 K 线再写主记录，避免主记录已更新而 K 线缺失导致读到不完整数据；
+ * - 但只有「非日线周期」或「带截止日的日线（回测）」才落独立表，
+ *   普通日线分析复用 getKLineData 旁路写入的 stockHistory（见 needsDedicatedKlineStore）。
  */
 export async function saveOpportunityData(data: OpportunityAnalysisResult): Promise<void> {
   const { klineDataCache, ...rest } = data;
+  const dedicated = needsDedicatedKlineStore(data.period, data.asOfDate);
 
-  await saveOpportunityKlines(klineDataCache ?? []);
+  await saveOpportunityKlines(dedicated ? klineDataCache ?? [] : [], data.period);
 
   const db = await initOpportunityDB();
   const transaction = db.transaction([OPPORTUNITY_STORE_NAME], 'readwrite');
@@ -177,8 +202,11 @@ export async function saveOpportunityData(data: OpportunityAnalysisResult): Prom
 }
 
 /**
- * 获取最新的分析结果。
- * 新版从独立存储读回 K 线；老数据（K 线仍在 `latest` 主记录内）自动回退读取，保证升级前后一致。
+ * 获取最新的分析结果（仅主记录）。
+ *
+ * 这里不拼装 K 线：日线复用 stockHistory、周/月/年与回测读独立表，
+ * 统一由 `services/opportunity/klineSource` 按周期策略解析；
+ * 主记录里自带的 klineDataCache 仅作为老版本数据的兜底（由调用方决定是否采用）。
  */
 export async function getOpportunityData(): Promise<OpportunityAnalysisResult | null> {
   const db = await initOpportunityDB();
@@ -195,15 +223,7 @@ export async function getOpportunityData(): Promise<OpportunityAnalysisResult | 
   }
 
   const { id: _id, ...data } = mainRecord;
-  const result = data as OpportunityAnalysisResult;
-
-  // 新存储有数据时覆盖；否则沿用主记录里旧版自带的 klineDataCache
-  const klineEntries = await getOpportunityKlines();
-  if (klineEntries.length > 0) {
-    result.klineDataCache = klineEntries;
-  }
-
-  return result;
+  return data as OpportunityAnalysisResult;
 }
 
 /**
@@ -263,7 +283,10 @@ export interface StockHistoryRecord {
 }
 
 /**
- * 保存或更新股票历史数据
+ * 保存或更新股票历史数据（字段级合并写入）。
+ *
+ * 写入方各自只持有部分字段（详情只有 latestDetail、K 线只有 dailyLines），
+ * 直接 put 会用空值覆盖对方的数据，故先读旧记录再合并，见 utils/storage/stockHistoryMerge。
  */
 export async function saveStockHistory(record: StockHistoryRecord): Promise<void> {
   const db = await initOpportunityDB();
@@ -271,12 +294,19 @@ export async function saveStockHistory(record: StockHistoryRecord): Promise<void
   const store = transaction.objectStore(STOCK_HISTORY_STORE_NAME);
 
   return new Promise((resolve, reject) => {
-    const request = store.put(record);
-    request.onsuccess = () => {
-      invalidateStocksHistoryCache();
-      resolve();
+    const getRequest = store.get(record.code);
+
+    getRequest.onerror = () => reject(new Error('读取股票历史数据失败'));
+    getRequest.onsuccess = () => {
+      const previous = getRequest.result as StockHistoryRecord | undefined;
+      const request = store.put(mergeStockHistoryRecord(previous, record));
+
+      request.onsuccess = () => {
+        invalidateStocksHistoryCache();
+        resolve();
+      };
+      request.onerror = () => reject(new Error('保存股票历史数据失败'));
     };
-    request.onerror = () => reject(new Error('保存股票历史数据失败'));
   });
 }
 

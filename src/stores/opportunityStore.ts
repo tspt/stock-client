@@ -12,7 +12,11 @@ import type {
   KLineData,
 } from '@/types/stock';
 import type { ColumnConfig } from '@/types/common';
-import { analyzeAllStocksOpportunity } from '@/services/opportunity';
+import {
+  analyzeAllStocksOpportunity,
+  loadOpportunityKlines,
+  fetchOpportunityKline,
+} from '@/services/opportunity';
 import { saveOpportunityData, getOpportunityData } from '@/utils/storage/opportunityIndexedDB';
 import { logger } from '@/utils/business/logger';
 import {
@@ -69,6 +73,8 @@ interface OpportunityState {
   cancelAnalysis: () => void;
   retryFailedStocks: () => Promise<void>;
   loadCachedData: () => Promise<void>;
+  /** K 线弹窗按需补齐单只 K 线（本地命中则不发请求） */
+  ensureKlineForCode: (code: string) => Promise<void>;
   updateColumnConfig: (config: ColumnConfig[]) => void;
   updateSortConfig: (config: OverviewSortConfig) => void;
   clearData: () => void;
@@ -230,6 +236,7 @@ export const useOpportunityStore = create<OpportunityState>((set, get) => ({
         timestamp: Date.now(),
         period,
         count,
+        asOfDate: asOf ?? null,
         groupId: '', // 不再使用 groupId，保留字段以保持兼容性
         total: stocks.length,
         success: results.filter((r) => !r.error).length,
@@ -382,6 +389,7 @@ export const useOpportunityStore = create<OpportunityState>((set, get) => ({
         timestamp: Date.now(),
         period: currentPeriod,
         count: currentCount,
+        asOfDate: analysisAsOfDate,
         groupId: '',
         total: failedStocks.length,
         success: results.filter((r) => !r.error).length,
@@ -409,25 +417,62 @@ export const useOpportunityStore = create<OpportunityState>((set, get) => ({
     try {
       const cached = await getOpportunityData();
       if (cached) {
-        // 恢复 klineDataCache（从数组格式恢复为 Map）
-        const klineDataCache = new Map<string, KLineData[]>();
-        if (cached.klineDataCache) {
-          cached.klineDataCache.forEach(([code, klineData]) => {
+        /**
+         * K 线按周期策略装载：普通日线走 stockHistory，周/月/年与回测走独立表，
+         * 由 services/opportunity/klineSource 统一判定，页面侧不感知差异。
+         */
+        const klineDataCache = await loadOpportunityKlines({
+          period: cached.period,
+          asOfDate: cached.asOfDate ?? null,
+          count: cached.count,
+          codes: cached.data?.map((item) => item.code),
+        });
+
+        // 老版本记录（v7 之前）把 K 线直接塞在 latest 里，作为兜底补上
+        (cached.klineDataCache ?? []).forEach(([code, klineData]) => {
+          if (klineData?.length && !klineDataCache.has(code)) {
             klineDataCache.set(code, klineData);
-          });
-        }
+          }
+        });
         trimKlineDataCache(klineDataCache);
 
         set({
           analysisData: cached.data,
           currentPeriod: cached.period,
           currentCount: cached.count,
+          // 截止日必须一并恢复：重试失败股票 / 单只补齐 K 线都要用它区分「回测视角」与「实时」
+          analysisAsOfDate: cached.asOfDate ?? null,
           klineDataCache,
           analysisTimestamp: cached.timestamp || null,
         });
       }
     } catch (error) {
       logger.error('加载机会分析缓存数据失败:', error);
+    }
+  },
+
+  ensureKlineForCode: async (code) => {
+    const { klineDataCache, currentPeriod, currentCount, analysisAsOfDate } = get();
+    if ((klineDataCache.get(code)?.length ?? 0) > 0) {
+      return;
+    }
+
+    try {
+      const bars = await fetchOpportunityKline(code, {
+        period: currentPeriod,
+        asOfDate: analysisAsOfDate,
+        count: currentCount,
+      });
+      if (bars.length === 0) {
+        return;
+      }
+
+      const newCache = new Map(get().klineDataCache);
+      newCache.set(code, bars);
+      trimKlineDataCache(newCache);
+      set({ klineDataCache: newCache });
+    } catch (error) {
+      logger.warn(`[机会分析] 补齐 ${code} K线失败:`, error);
     }
   },
 

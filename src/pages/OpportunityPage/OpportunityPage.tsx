@@ -124,6 +124,7 @@ export function OpportunityPage() {
     cancelAnalysis,
     retryFailedStocks,
     loadCachedData,
+    ensureKlineForCode,
     updateColumnConfig,
     updateSortConfig,
     resetColumnConfig,
@@ -1059,6 +1060,16 @@ export function OpportunityPage() {
       financeAbortRef.current?.abort();
     };
   }, []);
+
+  /**
+   * K 线弹窗打开（含弹窗内左右切换）时确保该股 K 线就绪。
+   * 普通日线走 stockHistory 恢复，命中则不发请求；缺失时才按需补齐。
+   */
+  useEffect(() => {
+    if (chartState?.code) {
+      void ensureKlineForCode(chartState.code);
+    }
+  }, [chartState?.code, ensureKlineForCode]);
 
   // 一键分析无失败：筛选完成后自动「添加到记录」（与手动按钮同一批筛选结果）
   useEffect(() => {

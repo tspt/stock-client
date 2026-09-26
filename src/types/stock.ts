@@ -685,6 +685,8 @@ export interface OpportunityAnalysisResult {
   period: KLinePeriod;
   /** K线条数 */
   count: number;
+  /** 截止日 YYYY-MM-DD；存在表示回测模式（K 线为截断到该日的历史视角） */
+  asOfDate?: string | null;
   /** 分组ID（__all__/__self__/自定义分组） */
   groupId: string;
   /** 总数量 */
@@ -693,7 +695,12 @@ export interface OpportunityAnalysisResult {
   success: number;
   /** 失败数量 */
   failed: number;
-  /** K线数据缓存（序列化后的数组格式：Array<[code, klineData]>） */
+  /**
+   * K线数据缓存（序列化后的数组格式：Array<[code, klineData]>）。
+   *
+   * 日线普通分析不再落盘（复用 stockHistory，见 utils/analysis/opportunityKlinePolicy）；
+   * 该字段现主要用于「内存态传递」与老版本记录的兜底读取。
+   */
   klineDataCache?: Array<[string, KLineData[]]>;
 }
 
