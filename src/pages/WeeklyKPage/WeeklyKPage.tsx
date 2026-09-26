@@ -521,7 +521,7 @@ function WeeklyFiltersPanel({
                         />
                       </div>
                     </div>
-                    <div className={styles.filterRow} style={{ marginTop: 16, alignItems: 'flex-start' }}>
+                    <div className={styles.filterRow} style={{ alignItems: 'flex-start' }}>
                       <div
                         className={styles.filterItem}
                         style={{ flex: '0 0 160px', justifyContent: 'flex-start' }}

@@ -903,7 +903,7 @@ function OpportunityFiltersPanelComponent({
                         />
                       </div>
                       <div className={styles.filterItem}>
-                        <span className={styles.filterLabel}>市盈率：</span>
+                        <span className={styles.filterLabel}>市盈率(PE)：</span>
                         <InputNumber
                           value={peRatioRange.min}
                           min={0}
