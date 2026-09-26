@@ -72,6 +72,11 @@ import {
   getStocksHistory,
 } from '@/utils/storage/opportunityIndexedDB';
 import {
+  applyFinanceMetrics,
+  mergeFundamentalsFromHistories,
+  type FundamentalsMap,
+} from '@/utils/analysis/weekly/fundamentals';
+import {
   fetchWeeklyKlines,
   loadCachedWeeklyKlines,
   type WeeklyFetchProgress,
@@ -97,7 +102,7 @@ import {
   OPPORTUNITY_DEFAULT_NAME_FILTERS,
   OPPORTUNITY_INDUSTRY_GROUPS,
 } from '@/utils/config/opportunityAnalysisDefaults';
-import type { KLineData, StockFinanceMetrics } from '@/types/stock';
+import type { KLineData } from '@/types/stock';
 import type { NumberRange } from '@/types/opportunityFilter';
 import { WeeklyChartModal } from './WeeklyChartModal';
 import { WeeklyBacktestDrawer } from './WeeklyBacktestDrawer';
@@ -138,38 +143,6 @@ function percentNode(value: number | undefined, digits = 2) {
   return <span style={{ color }}>{value.toFixed(digits)}%</span>;
 }
 
-/**
- * 基本面：总市值(亿) / 总股数(亿股) / 总营收·归母净利润(亿) / 增长率(%)，
- * 复用机会分析缓存与「获取营收净利润」结果。
- */
-type FundamentalsMap = Map<
-  string,
-  {
-    marketCap?: number;
-    totalShares?: number;
-    financeRevenue?: number;
-    financeNetProfit?: number;
-    financeRevenueGrowth?: number;
-    financeNetProfitGrowth?: number;
-  }
->;
-
-/** 把单只股票的最新财务指标折算成「亿元 / %」写入基本面 Map */
-function applyFinanceMetrics(
-  map: FundamentalsMap,
-  code: string,
-  metrics: StockFinanceMetrics
-): void {
-  const prev = map.get(code) ?? {};
-  map.set(code, {
-    ...prev,
-    financeRevenue: metrics.revenue !== undefined ? metrics.revenue / YI : undefined,
-    financeNetProfit: metrics.netProfit !== undefined ? metrics.netProfit / YI : undefined,
-    financeRevenueGrowth: metrics.revenueYoy,
-    financeNetProfitGrowth: metrics.netProfitYoy,
-  });
-}
-
 /** 区间文案：未设置（起止都为空）返回 null */
 function rangeLabel(range?: NumberRange): string | null {
   if (!range) return null;
@@ -180,25 +153,6 @@ function rangeLabel(range?: NumberRange): string | null {
 
 /** 周线筛选分组 key：新增分组时在此登记（供「展开全部」使用） */
 const WEEKLY_FILTER_PANEL_KEYS = ['data', 'nameFilter'] as const;
-
-/**
- * 周线页专用默认筛选条件。
- *
- * 「总市值 / 总股数 / 总营收 / 归母净利润」只能复用机会分析写入 IndexedDB 的基本面缓存，
- * 一旦取不到值，applyWeeklyFilters 里的 withinRange 会判定为不通过，
- * 会把整份名单（评分池几千只）全部筛空；因此这里把它们覆盖为「不限」，
- * 需要时由用户在「数据筛选」面板里显式填写（跑过一次机会分析后即可用）。
- *
- * 价格来自周K（永远有值），保留其默认区间。
- * 仅作用于周线页，不改动共享的 DEFAULT_WEEKLY_FILTERS。
- */
-const WEEKLY_PAGE_FILTER_DEFAULTS: WeeklyFilterOptions = {
-  ...DEFAULT_WEEKLY_FILTERS,
-  marketCapRange: {},
-  totalSharesRange: {},
-  financeRevenueRange: {},
-  financeNetProfitRange: {},
-};
 
 /** 名称筛选面板：行业分组选项（与机会分析页共用同一份分组定义） */
 const NAME_FILTER_INDUSTRY_GROUP_OPTIONS = OPPORTUNITY_INDUSTRY_GROUPS.map((group) => ({
@@ -285,6 +239,10 @@ function WeeklyFiltersPanel({
   setFinanceRevenueGrowthRange,
   financeNetProfitGrowthRange,
   setFinanceNetProfitGrowthRange,
+  financeRoeRange,
+  setFinanceRoeRange,
+  financeDebtRatioRange,
+  setFinanceDebtRatioRange,
   nameFilterIndustryGroups,
   setNameFilterIndustryGroups,
   nameFilterIndustryInvert,
@@ -317,6 +275,12 @@ function WeeklyFiltersPanel({
   setFinanceRevenueGrowthRange: (r: NumberRange) => void;
   financeNetProfitGrowthRange?: NumberRange;
   setFinanceNetProfitGrowthRange: (r: NumberRange) => void;
+  /** 净资产收益率 ROE（%） */
+  financeRoeRange?: NumberRange;
+  setFinanceRoeRange: (r: NumberRange) => void;
+  /** 资产负债率（%） */
+  financeDebtRatioRange?: NumberRange;
+  setFinanceDebtRatioRange: (r: NumberRange) => void;
   /** 名称筛选：行业分组（与顶部「行业」筛选彼此独立） */
   nameFilterIndustryGroups: string[];
   setNameFilterIndustryGroups: (v: string[]) => void;
@@ -432,6 +396,20 @@ function WeeklyFiltersPanel({
                         value={financeNetProfitGrowthRange}
                         disabled={disabled}
                         onChange={setFinanceNetProfitGrowthRange}
+                      />
+                    </div>
+                    <div className={styles.filterRow}>
+                      <RangeField
+                        label="净资产收益率ROE(%)："
+                        value={financeRoeRange}
+                        disabled={disabled}
+                        onChange={setFinanceRoeRange}
+                      />
+                      <RangeField
+                        label="资产负债率(%)："
+                        value={financeDebtRatioRange}
+                        disabled={disabled}
+                        onChange={setFinanceDebtRatioRange}
                       />
                     </div>
                   </div>
@@ -582,7 +560,16 @@ export function WeeklyKPage() {
   const [forceRefresh, setForceRefresh] = useState(false);
   /** 只用完整周：忽略「进行中的本周」，评分/涨幅/价格筛选一律按最近已收盘周 */
   const [completeWeeksOnly, setCompleteWeeksOnly] = useState(true);
-  const [filters, setFilters] = useState<WeeklyFilterOptions>({ ...WEEKLY_PAGE_FILTER_DEFAULTS });
+  /**
+   * 数据筛选默认值与机会分析页完全一致（单一数据源 DEFAULT_WEEKLY_FILTERS）：
+   * 价格 3~100 元、总市值 30~1000 亿、总股数 1~50 亿股、总营收 ≥0 亿、归母净利润 ≥0 亿；
+   * ROE、资产负债率与两个增长率默认不限。
+   *
+   * 注意：营收/净利润（以及 ROE、资产负债率）只有点过「获取营收净利润」的股票才有值，
+   * 一旦设置了区间，未取到值的个股会被该硬门槛排除（withinRange 对「已设区间但缺值」
+   * 判定为不通过）。
+   */
+  const [filters, setFilters] = useState<WeeklyFilterOptions>({ ...DEFAULT_WEEKLY_FILTERS });
   /** 名称筛选：与机会分析页「名称筛选」面板同一套字段与默认值 */
   const [nameFilterIndustryGroups, setNameFilterIndustryGroups] = useState<string[]>([
     ...OPPORTUNITY_DEFAULT_INDUSTRY_GROUP_FILTER.selectedGroups,
@@ -764,7 +751,9 @@ export function WeeklyKPage() {
 
   /**
    * 载入基本面（总市值/总股数/营收/净利润及其增长率）用于「数据筛选」：
-   * - 市值/股本：复用机会分析结果（IndexedDB），保证与机会分析页口径一致；
+   * - 市值/股本：优先复用机会分析结果（IndexedDB），保证与机会分析页口径一致；
+   * - 兜底：机会分析的 `latest` 只覆盖最近一次分析过的股票，其余用日K缓存
+   *   `stockHistory.latestDetail` 里的市值补齐（见 utils/analysis/weekly/fundamentals.ts）；
    * - 营收/净利润：读取机会分析「获取营收净利润」写入的独立缓存。
    * 均不额外发起网络请求；totalShares 折算成「亿股」，营收/净利润折算成「亿元」。
    */
@@ -790,6 +779,15 @@ export function WeeklyKPage() {
       financeRecords.forEach(({ code, metrics }) => applyFinanceMetrics(map, code, metrics));
     } catch (error) {
       logger.error('[WeeklyKPage] 读取营收/净利润失败:', error);
+    }
+    /**
+     * 日K缓存兜底：否则未被最近一次机会分析覆盖的股票取不到市值/股数，
+     * 会被 applyWeeklyFilters 的 withinRange 直接判定不通过，表现为筛选不生效。
+     */
+    try {
+      mergeFundamentalsFromHistories(map, await getStocksHistory([]));
+    } catch (error) {
+      logger.error('[WeeklyKPage] 读取日K缓存基本面失败:', error);
     }
     setFundamentals(map);
     return map;
@@ -1074,6 +1072,12 @@ export function WeeklyKPage() {
       rangeLabel(filters.financeNetProfitGrowthRange)
         ? `归母净利润增长率 ${rangeLabel(filters.financeNetProfitGrowthRange)}%`
         : '',
+      rangeLabel(filters.financeRoeRange)
+        ? `ROE ${rangeLabel(filters.financeRoeRange)}%`
+        : '',
+      rangeLabel(filters.financeDebtRatioRange)
+        ? `资产负债率 ${rangeLabel(filters.financeDebtRatioRange)}%`
+        : '',
     ].filter(Boolean);
     const summaryLines = [
       `分析时间：${updatedAt ? new Date(updatedAt).toLocaleString('zh-CN') : '-'}`,
@@ -1212,13 +1216,13 @@ export function WeeklyKPage() {
       {
         title: '股票名称',
         dataIndex: 'name',
-        width: 96,
+        width: 88,
         render: (name: string) => <span className={styles.nameCell}>{name}</span>,
       },
       {
         title: '所属行业',
         dataIndex: 'industryName',
-        width: 96,
+        width: 120,
         render: (v: string | undefined) => v || '未知',
         // 按中文拼音排序，未归类统一落入「未知」
         sorter: (a, b) =>
@@ -1698,6 +1702,10 @@ export function WeeklyKPage() {
             setFinanceNetProfitGrowthRange={(range) =>
               patchFilters({ financeNetProfitGrowthRange: range })
             }
+            financeRoeRange={filters.financeRoeRange}
+            setFinanceRoeRange={(range) => patchFilters({ financeRoeRange: range })}
+            financeDebtRatioRange={filters.financeDebtRatioRange}
+            setFinanceDebtRatioRange={(range) => patchFilters({ financeDebtRatioRange: range })}
             nameFilterIndustryGroups={nameFilterIndustryGroups}
             setNameFilterIndustryGroups={setNameFilterIndustryGroups}
             nameFilterIndustryInvert={nameFilterIndustryInvert}
@@ -1757,6 +1765,12 @@ export function WeeklyKPage() {
             : ''}
           {rangeLabel(filters.financeNetProfitGrowthRange)
             ? ` + 归母净利润增长${rangeLabel(filters.financeNetProfitGrowthRange)}%`
+            : ''}
+          {rangeLabel(filters.financeRoeRange)
+            ? ` + ROE${rangeLabel(filters.financeRoeRange)}%`
+            : ''}
+          {rangeLabel(filters.financeDebtRatioRange)
+            ? ` + 资产负债率${rangeLabel(filters.financeDebtRatioRange)}%`
             : ''}
           {' + 剔除空头排列'}
           {filters.requireAboveMa60 ? ' + 站上60周线' : ''}

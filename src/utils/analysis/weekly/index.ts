@@ -17,6 +17,7 @@ import {
 import { DEFAULT_WEEKLY_CONFIG, computeWeeklyFactors } from './factors';
 import { isDailyAboveMa } from './resonance';
 import { scoreWeeklyFactors } from './score';
+import type { FundamentalsMap } from './fundamentals';
 import type {
   WeeklyAnalysis,
   WeeklyConfig,
@@ -92,6 +93,9 @@ export const DEFAULT_WEEKLY_FILTERS: WeeklyFilterOptions = {
   financeNetProfitRange: { min: OPPORTUNITY_DEFAULT_FINANCE_FILTERS.netProfitMin },
   financeRevenueGrowthRange: {},
   financeNetProfitGrowthRange: {},
+  /** ROE / 资产负债率默认不限额（与机会分析一致），避免因缺数据筛空名单 */
+  financeRoeRange: {},
+  financeDebtRatioRange: {},
 };
 
 export interface WeeklyAnalyzeOptions {
@@ -103,18 +107,11 @@ export interface WeeklyAnalyzeOptions {
   conceptsByCode?: Map<string, Array<{ code?: string; name: string }>>;
   /** 日线数据（复用机会分析的 stockHistory），用于多周期共振 */
   dailyKlines?: Map<string, KLineData[]>;
-  /** 基本面（总市值/总股数/营收/净利润及其增长率）：复用机会分析缓存，用于数据筛选 */
-  fundamentals?: Map<
-    string,
-    {
-      marketCap?: number;
-      totalShares?: number;
-      financeRevenue?: number;
-      financeNetProfit?: number;
-      financeRevenueGrowth?: number;
-      financeNetProfitGrowth?: number;
-    }
-  >;
+  /**
+   * 基本面（总市值/总股数/营收/净利润及其增长率/ROE/资产负债率）：
+   * 复用机会分析缓存与日K缓存，用于「数据筛选」。类型见 ./fundamentals。
+   */
+  fundamentals?: FundamentalsMap;
   /**
    * 只用完整周：评分/涨幅/价格筛选一律基于最近已收盘周，
    * 忽略「进行中的本周」，保证不同日期运行结果一致。
@@ -162,6 +159,8 @@ export function analyzeWeeklyKlines(
       financeNetProfit: fund?.financeNetProfit,
       financeRevenueGrowth: fund?.financeRevenueGrowth,
       financeNetProfitGrowth: fund?.financeNetProfitGrowth,
+      financeRoe: fund?.financeRoe,
+      financeDebtRatio: fund?.financeDebtRatio,
     };
   });
   return scoreWeeklyFactors(factors, config);

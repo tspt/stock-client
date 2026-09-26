@@ -239,6 +239,10 @@ export interface WeeklyFactors {
   financeRevenueGrowth?: number;
   /** 归母净利润增长率（%）：接口原值已是百分数 */
   financeNetProfitGrowth?: number;
+  /** 净资产收益率 ROE（%）：接口原值已是百分数，未拉取过财务指标时为 undefined */
+  financeRoe?: number;
+  /** 资产负债率（%）：接口原值已是百分数，未拉取过财务指标时为 undefined */
+  financeDebtRatio?: number;
   structure: WeeklyStructure;
   /** 趋势回归年化斜率（%） */
   annualSlope?: number;
@@ -477,6 +481,10 @@ export interface WeeklyFilterOptions {
   financeRevenueGrowthRange?: NumberRange;
   /** 数据筛选：归母净利润增长率范围（%） */
   financeNetProfitGrowthRange?: NumberRange;
+  /** 数据筛选：净资产收益率 ROE 范围（%） */
+  financeRoeRange?: NumberRange;
+  /** 数据筛选：资产负债率范围（%） */
+  financeDebtRatioRange?: NumberRange;
   /**
    * 只用完整周：价格筛选改用最近已收盘周收盘价（confirmedClose），
    * 不再使用可能含「进行中的本周」的最新价，保证结果可复现。

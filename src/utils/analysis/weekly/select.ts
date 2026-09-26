@@ -81,6 +81,9 @@ export function applyWeeklyFilters(
     if (!withinRange(row.financeNetProfit, filters.financeNetProfitRange)) return false;
     if (!withinRange(row.financeRevenueGrowth, filters.financeRevenueGrowthRange)) return false;
     if (!withinRange(row.financeNetProfitGrowth, filters.financeNetProfitGrowthRange)) return false;
+    // 数据筛选：净资产收益率 ROE(%) / 资产负债率(%)
+    if (!withinRange(row.financeRoe, filters.financeRoeRange)) return false;
+    if (!withinRange(row.financeDebtRatio, filters.financeDebtRatioRange)) return false;
     if (row.score < filters.minScore) return false;
     if (filters.excludeDowntrend !== false && !row.gates.notDowntrend) return false;
     if (filters.requireAboveMa60 && !row.gates.aboveMa60) return false;
