@@ -418,11 +418,11 @@ export const useOpportunityStore = create<OpportunityState>((set, get) => ({
       const cached = await getOpportunityData();
       if (cached) {
         /**
-         * K 线按周期策略装载：普通日线走 stockHistory，周/月/年与回测走独立表，
-         * 由 services/opportunity/klineSource 统一判定，页面侧不感知差异。
+         * 机会分析固定日线口径：K 线统一从 stockHistory 装载，
+         * 具体数据来源由 services/opportunity/klineSource 判定，页面侧不感知差异。
          */
         const klineDataCache = await loadOpportunityKlines({
-          period: cached.period,
+          period: 'day',
           asOfDate: cached.asOfDate ?? null,
           count: cached.count,
           codes: cached.data?.map((item) => item.code),
@@ -438,7 +438,7 @@ export const useOpportunityStore = create<OpportunityState>((set, get) => ({
 
         set({
           analysisData: cached.data,
-          currentPeriod: cached.period,
+          currentPeriod: 'day',
           currentCount: cached.count,
           // 截止日必须一并恢复：重试失败股票 / 单只补齐 K 线都要用它区分「回测视角」与「实时」
           analysisAsOfDate: cached.asOfDate ?? null,

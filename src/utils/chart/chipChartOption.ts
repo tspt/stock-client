@@ -1,7 +1,7 @@
 /**
  * 筹码分布图 ECharts 配置构建器
  *
- * 供周K弹窗（WeeklyChartModal）与日K弹窗（DailyChartModal）共用。
+ * 供周K抽屉（WeeklyChartDrawer）与日K抽屉（DailyChartDrawer）共用。
  *
  * 视觉：价格轴在右（数字）、筹码图形在左并自左向右生长；现价以下为获利筹码（红），
  * 以上为套牢筹码（蓝）；平均成本用橙色虚线 + 右端圆圈 + 描边数字标出。

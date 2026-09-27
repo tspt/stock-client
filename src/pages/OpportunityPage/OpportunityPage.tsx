@@ -39,7 +39,6 @@ import { addStocksToTodayRecord } from '@/services/opportunity/recordService';
 import { getSinaFinanceMetricsBatch } from '@/services/fundamental/sinaFinance';
 import type {
   ConsolidationType,
-  KLinePeriod,
   StockFinanceMetrics,
   StockOpportunityData,
 } from '@/types/stock';
@@ -67,7 +66,6 @@ import {
   ENABLED_AI_VERSION,
   MARKET_OPTIONS,
   NAME_TYPE_OPTIONS,
-  PERIOD_OPTIONS,
   getAiVersionLabel,
   resolveEnabledAiVersion,
   type AiVersion,
@@ -77,7 +75,7 @@ import { mergeFinanceMetrics } from '@/utils/analysis/stockFinanceMerge';
 import { filterByStockKeyword } from '@/utils/format/textMatch';
 import { ProgressCard } from '@/components/common/ProgressCard/ProgressCard';
 import { OpportunityFiltersPanel, buildOpportunityFilterSummary } from './OpportunityFiltersPanel';
-import { DailyChartModal } from './DailyChartModal';
+import { DailyChartDrawer } from './DailyChartDrawer';
 import { FilterDiagnosticsDrawer } from '@/components/FilterDiagnosticsDrawer';
 import {
   INITIAL_FILTER_STATE,
@@ -113,7 +111,6 @@ export function OpportunityPage() {
     analysisData,
     loading,
     progress,
-    currentPeriod,
     currentCount,
     columnConfig,
     sortConfig,
@@ -661,7 +658,6 @@ export function OpportunityPage() {
       const st = useOpportunityStore.getState();
       if (st.analysisData.length === 0) {
         useOpportunityStore.setState({
-          currentPeriod: prefs?.currentPeriod || 'day',
           currentCount: prefs?.currentCount || 500,
         });
       }
@@ -808,14 +804,13 @@ export function OpportunityPage() {
           nameFilterIndustryGroups,
           nameFilterIndustryInvert,
         },
-        { currentPeriod, currentCount }
+        { currentPeriod: 'day', currentCount }
       ),
     [
       filterFormState,
       selectedMarket,
       nameType,
       filterPanelActiveKey,
-      currentPeriod,
       currentCount,
       nameFilterIndustryGroups,
       nameFilterIndustryInvert,
@@ -1109,17 +1104,16 @@ export function OpportunityPage() {
     message,
   ]);
 
-  /** 仅重置顶部：市场、名称类型、周期、K 线数量 */
+  /** 仅重置顶部：市场、名称类型、K 线数量 */
   const handleResetQueryBar = () => {
     const s = INITIAL_FILTER_STATE;
     setSelectedMarket([...s.selectedMarket]);
     setNameType(s.nameType);
     useOpportunityStore.setState({
-      currentPeriod: INITIAL_OPPORTUNITY_QUERY.currentPeriod,
       currentCount: INITIAL_OPPORTUNITY_QUERY.currentCount,
     });
     patchSavedPrefsQueryToDefaults();
-    message.info('已恢复默认市场、名称类型、周期与 K 线数量');
+    message.info('已恢复默认市场、名称类型与 K 线数量');
   };
 
   /** 重置数据筛选 / 横盘 / 趋势线 / 急跌急涨等（不含顶部查询条） */
@@ -1313,12 +1307,8 @@ export function OpportunityPage() {
       logger.warn('[机会分析] 清空 IndexedDB 失败:', error);
     }
 
-    await startAnalysis(
-      currentPeriod,
-      filteredStocks,
-      currentCount,
-      aiVersion
-    );
+    // 机会分析固定日线口径，页面不再暴露周期切换
+    await startAnalysis('day', filteredStocks, currentCount, aiVersion);
 
     const {
       errors: analyzeErrors,
@@ -1606,21 +1596,6 @@ export function OpportunityPage() {
             >
               排除选中
             </Checkbox>
-          </Space.Compact>
-          <Space.Compact className={styles.spaceCompact}>
-            <span className={styles.label}>周期：</span>
-            <Select
-              value={currentPeriod}
-              onChange={(value: KLinePeriod) => {
-                useOpportunityStore.setState({ currentPeriod: value });
-                if (analysisData.length > 0) {
-                  message.info('周期已更改，请重新分析');
-                }
-              }}
-              options={PERIOD_OPTIONS}
-              style={{ width: 90 }}
-              disabled={loading}
-            />
           </Space.Compact>
           <Space.Compact className={styles.spaceCompact}>
             <span className={styles.label}>K线：</span>
@@ -2160,12 +2135,12 @@ export function OpportunityPage() {
         skipped={filterSkippedItems}
       />
 
-      <DailyChartModal
+      <DailyChartDrawer
         open={chartState !== null}
         code={chartState?.code ?? ''}
         name={chartState?.name ?? ''}
         kline={chartState ? klineDataCache.get(chartState.code) ?? [] : []}
-        period={currentPeriod}
+        period="day"
         industry={chartIndustry}
         concepts={chartConcepts}
         records={chartNavRecords}

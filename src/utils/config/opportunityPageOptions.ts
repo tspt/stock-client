@@ -5,16 +5,8 @@
  * 避免「文案/选项」在多处各写一份导致不一致。
  */
 
-import type { ConsolidationType, KLinePeriod } from '@/types/stock';
+import type { ConsolidationType } from '@/types/stock';
 import { CONSOLIDATION_TYPE_LABELS } from '@/utils/analysis/consolidationAnalysis';
-
-/** K 线周期选项 */
-export const PERIOD_OPTIONS: { label: string; value: KLinePeriod }[] = [
-  { label: '日', value: 'day' },
-  { label: '周', value: 'week' },
-  { label: '月', value: 'month' },
-  { label: '年', value: 'year' },
-];
 
 /** 市场选项 */
 export const MARKET_OPTIONS: { label: string; value: string }[] = [

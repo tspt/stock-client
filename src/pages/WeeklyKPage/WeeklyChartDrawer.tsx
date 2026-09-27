@@ -1,26 +1,24 @@
 /**
- * 周K图表弹窗：蜡烛图 + 周线均线 + 成交量 + MACD，右侧并排展示筹码分布
+ * 周K图表抽屉：蜡烛图 + 周线均线 + 成交量 + MACD，右侧并排展示筹码分布
  *
  * 左侧K线由周线选股页面已缓存的周K数据直接传入（只有「周」一种周期，不额外发请求）；
  * 筹码分布由 `useChipDistribution` 按需拉取（默认周线口径，与周线选股页面口径一致）。
  *
- * 与机会分析页 DailyChartModal 对齐（不依赖任何 ECharts 内部 API）：
+ * 与机会分析页 DailyChartDrawer 对齐（不依赖任何 ECharts 内部 API）：
  * 1. 由当前 dataZoom 可见窗口 + 均线，在本地推导出价格上下限并取整；
  * 2. 把同一个价格区间同时赋给左侧K线主图与右侧筹码面板的纵轴；
  * 3. 两侧网格的 top/height 保持一致（容器等高，故像素范围相同）。
  * 于是「同一价格落在同一水平线」，且缩放K线时筹码面板同步重算、实时跟随；
  * 十字星移动时右侧筹码切换为对应那一周的分布。
+ *
+ * 采用 Drawer 形态：抽屉高度占满视口，图表区用 flex 自适应拉伸到底部，
+ * 为后续在图表下方追加「股东户数 / 机构持仓 / 十大流通股东」等纵向内容预留空间。
+ * 注意：左右两侧（K线 / 筹码）必须始终等高，否则纵轴无法逐像素对齐。
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Modal, Button, Space, Tag, Tooltip, Typography, App, Spin } from 'antd';
-import {
-  DownloadOutlined,
-  LeftOutlined,
-  RightOutlined,
-  PlusOutlined,
-  MinusOutlined,
-} from '@ant-design/icons';
+import { Drawer, Button, Space, Tag, Tooltip, Typography, App, Spin } from 'antd';
+import { LeftOutlined, RightOutlined, PlusOutlined, MinusOutlined } from '@ant-design/icons';
 import ReactECharts from 'echarts-for-react';
 import type { EChartsOption } from 'echarts';
 import type { KLineData } from '@/types/stock';
@@ -30,14 +28,11 @@ import { buildChipChartOption } from '@/utils/chart/chipChartOption';
 import { calculateChipDistribution } from '@/utils/analysis/chipDistribution';
 import { YI, type WeeklyAnalysis } from '@/utils/analysis/weekly';
 import { formatVolume } from '@/utils/format/format';
-import { downloadDataUrl } from '@/utils/export/weeklyKlineExportUtils';
 import { StockConceptTags } from '@/components/common/Tags';
 import { useChipDistribution } from '@/hooks/useChipDistribution';
-import { useModalDrag } from '@/hooks/useModalDrag';
 import { useRecordNavigation, isEditableTarget } from '@/hooks/useRecordNavigation';
 import { useThemeStore } from '@/stores/themeStore';
 import { useTempStockListStore } from '@/stores/tempStockListStore';
-import { logger } from '@/utils/business/logger';
 
 const { Text } = Typography;
 
@@ -63,12 +58,18 @@ function ChipStatItem({
   );
 }
 
+/** 抽屉宽度：尽量铺满窗口，同时两侧各留 24px 遮罩，便于点击遮罩关闭 */
+const DRAWER_WIDTH = 'min(1540px, calc(100vw - 48px))';
+/**
+ * 图表区域高度（px）：左右两侧容器必须等高，纵轴才能逐像素对齐。
+ * 刻意用固定高度而非 flex 拉伸——抽屉高度占满视口，
+ * 若让图表撑满剩余空间，主图会被拉得过高，底部缩放条还会顶到抽屉页脚。
+ */
+const CHART_HEIGHT = 520;
 /** 筹码分布面板宽度（px），与周K图并排展示 */
 const CHIP_PANEL_WIDTH = 260;
 /** 筹码统计面板宽度（px），位于筹码图右侧 */
 const CHIP_STATS_WIDTH = 180;
-/** 图表区域高度（px），两侧容器等高才能保证纵轴逐像素对齐 */
-const CHART_HEIGHT = 520;
 /** 默认展示最近多少根周K */
 const DEFAULT_VISIBLE_BARS = 120;
 /** K线主图价格网格的位置，筹码面板必须与其完全一致 */
@@ -77,8 +78,14 @@ const MAIN_GRID = { top: '10%', height: '50%' };
 const Y_SPLIT_COUNT = 5;
 /** 缩放条高度（px）：ECharts 默认 30 会压住副图底部刻度，收窄后把空间让给副图 */
 const ZOOM_SLIDER_HEIGHT = 22;
-/** 副图 MACD 网格：上沿避开成交量刻度、下沿避开缩放条，把能用的高度都给副图 */
-const SUB_GRID = { top: '80.5%', height: '14%' };
+/**
+ * 缩放条距容器底部的距离（px）：
+ * ECharts 会把缩放条两端的日期标签渲染在缩放条「下方」，
+ * bottom 为 0 时标签会落到容器外被裁掉（表现为日期只露出半截）。
+ */
+const ZOOM_SLIDER_BOTTOM = 20;
+/** 副图 MACD 网格：上沿避开成交量刻度，下沿给「缩放条 + 日期标签」让出空间 */
+const SUB_GRID = { top: '79%', height: '12%' };
 /**
  * MACD 快慢线配色：快线（DIF）蓝、慢线（DEA）橙，与日K弹窗 KDJ 的蓝/橙口径保持一致；
  * 深色主题下整体提亮，避免颜色淹没在深色背景里。
@@ -88,7 +95,7 @@ const MACD_COLOR = {
   dark: { dif: '#4096ff', dea: '#ffa940' },
 } as const;
 
-interface WeeklyChartModalProps {
+interface WeeklyChartDrawerProps {
   open: boolean;
   code: string;
   name: string;
@@ -276,7 +283,7 @@ function buildWeeklyChartOption(input: WeeklyChartBuildInput): EChartsOption {
         show: true,
         xAxisIndex: [0, 1, 2],
         type: 'slider',
-        bottom: 0,
+        bottom: ZOOM_SLIDER_BOTTOM,
         height: ZOOM_SLIDER_HEIGHT,
         start: zoom.start,
         end: zoom.end,
@@ -361,7 +368,7 @@ function buildWeeklyChartOption(input: WeeklyChartBuildInput): EChartsOption {
   };
 }
 
-export function WeeklyChartModal({
+export function WeeklyChartDrawer({
   open,
   code,
   name,
@@ -370,9 +377,11 @@ export function WeeklyChartModal({
   records = [],
   onNavigate,
   onClose,
-}: WeeklyChartModalProps) {
+}: WeeklyChartDrawerProps) {
   const { message } = App.useApp();
   const chartRef = useRef<ReactECharts>(null);
+  /** 筹码分布图实例：抽屉开合动画结束后需要一并 resize */
+  const chipChartRef = useRef<ReactECharts>(null);
 
   /** 临时列表（全局、仅内存）：本弹窗加入，周线选股页「导出 ▾」里导出 */
   const tempListCount = useTempStockListStore((state) => state.items.length);
@@ -450,8 +459,15 @@ export function WeeklyChartModal({
     onNavigate,
   });
 
-  /** 拖拽：按住标题栏可整体移动弹窗，关闭后自动复位居中 */
-  const modalDrag = useModalDrag(open);
+  /**
+   * 抽屉滑入动画结束后触发一次 ECharts resize：
+   * Drawer 容器在开合过程中尺寸可能尚未就绪，不 resize 会出现空白画布。
+   */
+  const handleAfterOpenChange = useCallback((isOpen: boolean) => {
+    if (!isOpen) return;
+    chartRef.current?.getEchartsInstance()?.resize();
+    chipChartRef.current?.getEchartsInstance()?.resize();
+  }, []);
 
   /** 默认可见区间：最近 120 根周K（约两年多） */
   const defaultZoom = useCallback((bars: KLineData[]) => {
@@ -700,27 +716,12 @@ export function WeeklyChartModal({
     [chip, priceRange]
   );
 
-  const handleExportChart = () => {
-    const instance = chartRef.current?.getEchartsInstance();
-    if (!instance) {
-      message.warning('图表尚未就绪');
-      return;
-    }
-    try {
-      const dataUrl = instance.getDataURL({ type: 'png', pixelRatio: 2, backgroundColor: '#ffffff' });
-      downloadDataUrl(dataUrl, `周K_${name || code}_${formatDate(Date.now())}.png`);
-      message.success('周K图已导出');
-    } catch (error) {
-      logger.error('[WeeklyChartModal] 导出周K图失败:', error);
-      message.error('导出周K图失败');
-    }
-  };
-
   return (
-    <Modal
+    <Drawer
       open={open}
-      onCancel={onClose}
-      width={1540}
+      onClose={onClose}
+      placement="right"
+      width={DRAWER_WIDTH}
       title={
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
           <span>{`${name || ''} ${code} 周线分析`}</span>
@@ -739,35 +740,36 @@ export function WeeklyChartModal({
           )}
         </div>
       }
-      footer={
+      extra={
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <Text type="secondary" style={{ fontSize: 12 }}>
+          <Text type="secondary" style={{ fontSize: 12, whiteSpace: 'nowrap' }}>
             临时列表 {tempListCount} 只（↑ 加入 / ↓ 取消）
           </Text>
-          <div style={{ flex: 1 }} />
-          <Space size={8}>
-            <Button
-              key="toggle-temp"
-              icon={inTempList ? <MinusOutlined /> : <PlusOutlined />}
-              disabled={!code}
-              onClick={inTempList ? handleRemoveFromTempList : handleAddToTempList}
-              title="快捷键：↑ 加入临时列表 / ↓ 取消加入"
-            >
-              {inTempList ? '取消加入' : '加入临时列表'}
-            </Button>
-            <Button key="export" icon={<DownloadOutlined />} onClick={handleExportChart}>
-              导出周K图(PNG)
-            </Button>
-          </Space>
+          <Button
+            key="toggle-temp"
+            icon={inTempList ? <MinusOutlined /> : <PlusOutlined />}
+            disabled={!code}
+            onClick={inTempList ? handleRemoveFromTempList : handleAddToTempList}
+            title="快捷键：↑ 加入临时列表 / ↓ 取消加入"
+          >
+            {inTempList ? '取消加入' : '加入临时列表'}
+          </Button>
         </div>
       }
-      modalRender={modalDrag.modalRender}
-      styles={{ header: modalDrag.styles.header }}
       destroyOnHidden
-      centered
+      afterOpenChange={handleAfterOpenChange}
+      styles={{
+        body: {
+          display: 'flex',
+          flexDirection: 'column',
+          paddingTop: 12,
+          // 图表区自适应拉伸；内容不超出抽屉时不允许 body 自身滚动
+          overflow: 'hidden',
+        },
+      }}
     >
       {analysis && (
-        <div style={{ marginBottom: 12 }}>
+        <div style={{ marginBottom: 12, flexShrink: 0 }}>
           <Space wrap size={[6, 6]}>
             <Text strong>评分 {analysis.score}</Text>
             {analysis.pxAboveMa8 && <Tag color="orange">站上周MA8</Tag>}
@@ -824,10 +826,17 @@ export function WeeklyChartModal({
         </div>
       )}
       <div
-        style={{ marginBottom: 8, display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}
+        style={{
+          marginBottom: 8,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 12,
+          flexWrap: 'wrap',
+          flexShrink: 0,
+        }}
       >
         {chipDate && (
-          <Text type="secondary" style={{ fontSize: 13 }}>
+          <Text type="secondary" style={{ fontSize: 14, paddingLeft: 12 }}>
             筹码日期 <Text strong>{chipDate}</Text>
             {resolvedChipIndex !== chipBars.length - 1 ? '（跟随十字星）' : '（最新）'}
           </Text>
@@ -842,28 +851,17 @@ export function WeeklyChartModal({
             筹码分布：{chipError}
           </Text>
         )}
-        {/* 副图 MACD 配色说明：放在图表外，不占用副图高度 */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 12 }}>
-          {([['DIF', macdKey.dif], ['DEA', macdKey.dea]] as const).map(([label, color]) => (
-            <span
-              key={label}
-              style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color }}
-            >
-              <span
-                style={{
-                  width: 14,
-                  height: 3,
-                  borderRadius: 2,
-                  background: color,
-                  display: 'inline-block',
-                }}
-              />
-              {label}
-            </span>
-          ))}
-        </div>
       </div>
-      <div style={{ display: 'flex', gap: 8, height: CHART_HEIGHT }}>
+      <div
+        style={{
+          display: 'flex',
+          gap: 8,
+          height: CHART_HEIGHT,
+          // 极窄窗口下允许收缩，避免内容溢出抽屉
+          flexShrink: 1,
+          minHeight: 0,
+        }}
+      >
         <div style={{ flex: 1, minWidth: 0, height: '100%' }}>
           {option ? (
             <ReactECharts
@@ -881,6 +879,7 @@ export function WeeklyChartModal({
         <div style={{ width: CHIP_PANEL_WIDTH, flex: '0 0 auto', height: '100%' }}>
           {chipOption ? (
             <ReactECharts
+              ref={chipChartRef}
               option={chipOption}
               lazyUpdate
               style={{ height: '100%', width: '100%' }}
@@ -945,6 +944,6 @@ export function WeeklyChartModal({
           )}
         </div>
       </div>
-    </Modal>
+    </Drawer>
   );
 }

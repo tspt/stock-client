@@ -4,7 +4,7 @@
  * 注意：常量顺序按照界面显示顺序排列
  */
 
-import type { ConsolidationType, KLinePeriod, TradingSignalType } from '@/types/stock';
+import type { ConsolidationType, TradingSignalType } from '@/types/stock';
 
 // ==================== 1. 数据筛选 ====================
 
@@ -706,8 +706,7 @@ export const INITIAL_FILTER_STATE = {
   excludedNameKeywords: [...OPPORTUNITY_DEFAULT_NAME_FILTERS.excludedNameKeywords],
 };
 
-/** 与 opportunityStore 初始值一致，用于「重置」恢复周期与 K 线数量 */
+/** 与 opportunityStore 初始值一致，用于「重置」恢复 K 线数量 */
 export const INITIAL_OPPORTUNITY_QUERY = {
-  currentPeriod: 'day' as KLinePeriod,
   currentCount: 500,
 };

@@ -103,7 +103,7 @@ import {
 } from '@/utils/config/opportunityAnalysisDefaults';
 import type { KLineData } from '@/types/stock';
 import type { NumberRange } from '@/types/opportunityFilter';
-import { WeeklyChartModal } from './WeeklyChartModal';
+import { WeeklyChartDrawer } from './WeeklyChartDrawer';
 import { WeeklyBacktestDrawer } from './WeeklyBacktestDrawer';
 import styles from './WeeklyKPage.module.css';
 
@@ -1911,7 +1911,7 @@ export function WeeklyKPage() {
         onClose={() => setShowBacktest(false)}
       />
 
-      <WeeklyChartModal
+      <WeeklyChartDrawer
         open={chartState !== null}
         code={chartState?.code ?? ''}
         name={chartState?.name ?? ''}

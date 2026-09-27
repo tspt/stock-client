@@ -38,7 +38,7 @@ import {
 } from '@/utils/storage/opportunityIndexedDB';
 import { getAllStockRecords } from '@/services/opportunity/recordService';
 import { AddStocksToWatchListModal } from '@/components/AddStocksToWatchListModal/AddStocksToWatchListModal';
-import { DailyChartModal } from '@/pages/OpportunityPage/DailyChartModal';
+import { DailyChartDrawer } from '@/pages/OpportunityPage/DailyChartDrawer';
 import { useTempStockListStore } from '@/stores/tempStockListStore';
 import {
   findDefaultTableSorter,
@@ -2078,7 +2078,7 @@ export function BacktestPage() {
           </Card>
         </div>
       </Content>
-      <DailyChartModal
+      <DailyChartDrawer
         open={chartState !== null}
         code={chartState?.code ?? ''}
         name={chartState?.name ?? ''}
