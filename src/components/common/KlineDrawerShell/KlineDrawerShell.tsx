@@ -64,6 +64,7 @@ export function KlineDrawerShell({
       onClose={onClose}
       placement="right"
       width={DRAWER_WIDTH}
+      className={styles.drawer}
       title={
         <div className={styles.titleRow}>
           <span>{title}</span>
@@ -103,8 +104,14 @@ export function KlineDrawerShell({
           display: 'flex',
           flexDirection: 'column',
           paddingTop: 12,
-          // 图表区自适应拉伸；内容不超出抽屉时不允许 body 自身滚动
-          overflow: 'hidden',
+          /**
+           * 图表下方还要堆叠 F10 资料（股东人数 / 十大流通股东 / 机构持仓）三块内容，
+           * 总高度必然超过视口，因此这里必须允许 body 纵向滚动。
+           * 配套约定：图表区不再参与纵向收缩（flexShrink: 0），
+           * 高度不足时由 body 滚动而不是把主图压扁。
+           */
+          overflowY: 'auto',
+          overflowX: 'hidden',
         },
       }}
     >

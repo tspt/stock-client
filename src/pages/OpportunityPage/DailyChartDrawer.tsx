@@ -32,6 +32,7 @@ import {
 import { ChipDistributionPanel } from '@/components/common/ChipDistributionPanel/ChipDistributionPanel';
 import { ChipStatsPanel } from '@/components/common/ChipStatsPanel/ChipStatsPanel';
 import { KlineDrawerShell } from '@/components/common/KlineDrawerShell/KlineDrawerShell';
+import { StockF10Panel } from '@/components/common/StockF10Panel/StockF10Panel';
 import { useKlineChipSync } from '@/hooks/useKlineChipSync';
 import { useRecordNavigation } from '@/hooks/useRecordNavigation';
 import { useTempListToggle } from '@/hooks/useTempListToggle';
@@ -207,8 +208,11 @@ export function DailyChartDrawer({
         style={{
           display: 'flex',
           height: CHART_HEIGHT,
-          // 极窄窗口下允许收缩，避免内容溢出抽屉
-          flexShrink: 1,
+          /**
+           * 不参与纵向收缩：抽屉 body 已允许滚动，
+           * 高度不足时由 body 滚动而不是把 K 线主图压扁。
+           */
+          flexShrink: 0,
           minHeight: 0,
         }}
       >
@@ -229,6 +233,8 @@ export function DailyChartDrawer({
         <ChipDistributionPanel option={chipOption} loading={chipLoading} chartRef={chipChartRef} />
         <ChipStatsPanel chip={chip} loading={chipLoading} />
       </div>
+      {/* 图表下方的 F10 资料：默认只读缓存，未命中时由用户点击各区块按钮按需拉取 */}
+      <StockF10Panel code={code} enabled={open} />
     </KlineDrawerShell>
   );
 }

@@ -21,3 +21,28 @@
   font-size: 12px;
   white-space: nowrap;
 }
+
+/* ===== 抽屉内容区的纵向滚动条 =====
+ *
+ * 与矩阵表保持同一套交互：尺寸与颜色沿用全局规则（和机会分析页表格一致），
+ * 但默认隐藏、鼠标移入抽屉内容区才浮现，移出即消失。
+ * 8px 的槽位在隐藏期间依然占位，不会引起内容横向跳动。
+ *
+ * 只覆盖「滑块透明度」而不写一整套颜色：颜色统一走主题变量
+ * （--ant-color-* 已由 App.module.css 提到 [data-theme] 作用域，抽屉 portal 后也能取到），
+ * 也就避免了 [data-theme='dark'] 规则与 :hover 规则同权重互覆盖的问题。
+ */
+.drawer :global(.ant-drawer-body)::-webkit-scrollbar-thumb {
+  /* 默认隐藏 */
+  background: transparent;
+}
+
+/* 轨道保持透明：否则深色主题下隐藏期间会留下一条比抽屉底色更深的色带 */
+.drawer :global(.ant-drawer-body)::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* 鼠标移入抽屉内容区时浮现 */
+.drawer :global(.ant-drawer-body):hover::-webkit-scrollbar-thumb {
+  background: var(--ant-color-border);
+}

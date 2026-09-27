@@ -393,3 +393,32 @@ export const COOKIE_HEALTH_CHECK_INTERVAL = 60 * 60 * 1000; // 1小时检查一�
 export const BILLBOARD_CACHE_DB_NAME = 'BillboardCacheDB';
 export const BILLBOARD_CACHE_DB_VERSION = 1;
 export const BILLBOARD_CACHE_STORE_NAME = 'billboard_cache';
+
+/** F10 资料（股东人数 / 十大流通股东 / 机构持仓）IndexedDB 缓存相关常量 */
+export const F10_CACHE_DB_NAME = 'StockF10DB';
+export const F10_CACHE_DB_VERSION = 1;
+export const F10_CACHE_STORE_NAME = 'f10_detail';
+
+/**
+ * F10 缓存记录的**数据结构**版本（不是 DB 版本）。
+ *
+ * 解析字段或矩阵口径变更时递增：读取时版本不一致的记录会被视为无缓存并丢弃，
+ * 否则旧结构的数据（缺少新字段）会一直渲染成 '-'，且无法自愈。
+ * 参考周K缓存的 `WEEKLY_KLINE_SCHEMA_VERSION`。
+ */
+export const F10_CACHE_SCHEMA_VERSION = 2;
+
+/**
+ * F10 接口单次请求最大返回条数。
+ * 股东人数历史约 40+ 期、十大流通股东不带报告期过滤时会有多期数据，故取 200 一次拉全。
+ */
+export const F10_MAX_PAGE_SIZE = 200;
+
+/**
+ * 股东人数最多保留的报告期数（12 期 ≈ 3 年）。
+ *
+ * 东财该接口按 END_DATE 倒序返回全部历史（实测可达 44 期），而矩阵表以报告期为列，
+ * 期数过多会让横向滚动距离失去意义，故只保留最近 12 期。
+ * 这是接口请求（pageSize）、结果截断、缓存读取三处共用的唯一阈值。
+ */
+export const F10_HOLDER_NUM_MAX_PERIODS = 12;

@@ -3,6 +3,7 @@
  */
 
 export { getFundamentalAnalysis } from './api';
+export { fetchHolderNum, fetchFreeHolders, fetchOrgHoldings } from './f10Service';
 export {
   getSinaFinanceMetrics,
   getSinaFinanceMetricsBatch,

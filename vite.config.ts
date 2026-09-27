@@ -46,6 +46,13 @@ export default defineConfig(({ mode }) => {
             Cookie: env.VITE_EASTMONEY_COOKIE || '',
           },
         },
+        // F10 资料（股东人数 / 十大流通股东 / 机构持仓）：同样转发到 Electron 代理，
+        // 由代理转发到 datacenter.eastmoney.com（与 push2 行情域名不同）。
+        // ⚠️ 必须放在 '/api/eastmoney' 之前，否则会被后者的前缀匹配抢走并被补上 /api/qt 前缀
+        '/api/eastmoney-f10': {
+          target: 'http://localhost:3000',
+          changeOrigin: false,
+        },
         // ⚠️ 开发环境下将东方财富请求转发到 Electron 代理（3000端口）以支持 Cookie 池和 UA 绑定
         '/api/eastmoney': {
           target: 'http://localhost:3000',

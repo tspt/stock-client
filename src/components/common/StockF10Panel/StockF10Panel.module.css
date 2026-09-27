@@ -1,0 +1,77 @@
+/* F10 资料面板：纵向堆叠三个区块，位于 K 线图下方（抽屉 body 已改为可滚动） */
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 12px;
+  /* 不参与抽屉 body 的纵向收缩，保证三块内容按自然高度堆叠 */
+  flex-shrink: 0;
+}
+
+.cardTitle {
+  font-size: 14px;
+}
+
+/* 右上角「缓存于 xx」提示 */
+.cacheTime {
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+/* 区块说明：紧贴标题下方 */
+.hint {
+  display: block;
+  font-size: 12px;
+  margin-bottom: 8px;
+}
+
+.alert {
+  margin-bottom: 8px;
+}
+
+.empty {
+  padding: 8px 0;
+}
+
+/* 十大流通股东所属报告期提示 */
+.periodLine {
+  display: block;
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+
+/* ===== 矩阵表（股东人数 / 机构持仓）的横向滚动条 =====
+ *
+ * 外观与机会分析页表格完全一致（沿用全局 8px 尺寸 + var(--ant-color-border) 滑块色），
+ * 唯一的差别是**默认隐藏、鼠标移入表格才浮现**：
+ * 股东人数可达 40+ 列，常驻一条浅灰滚动条会压住最后一行；
+ * 而 8px 的滚动条槽位在隐藏期间依然占位，不会引起列宽跳动，移入即可抓住。
+ *
+ * 这里只覆盖「滑块透明度」，尺寸/圆角/颜色全部沿用全局规则与主题变量——
+ * 刻意不写 [data-theme='dark'] 单独一套：那会与 :hover 规则权重相同（都是 0,3,0,1），
+ * 后写的一方必然覆盖另一方，深色下悬停会失效。
+ */
+.matrixTable :global(.ant-table-content)::-webkit-scrollbar-thumb,
+.matrixTable :global(.ant-table-body)::-webkit-scrollbar-thumb {
+  /* 默认隐藏 */
+  background: transparent;
+}
+
+/* 轨道保持透明：否则深色主题下隐藏期间会留下一条比抽屉更深的色带 */
+.matrixTable :global(.ant-table-content)::-webkit-scrollbar-track,
+.matrixTable :global(.ant-table-body)::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/*
+ * 鼠标移入表格区域时浮现。
+ * 同时把 :hover 写在容器与滚动容器上，兼容不同 antd 结构。
+ * 选择器同时覆盖 .ant-table-content（无纵向滚动时的滚动容器）与
+ * .ant-table-body（设置了 scroll.y 时 antd 改用这个容器），避免 antd 版本差异导致样式落空。
+ */
+.matrixTable:hover :global(.ant-table-content)::-webkit-scrollbar-thumb,
+.matrixTable:hover :global(.ant-table-body)::-webkit-scrollbar-thumb,
+.matrixTable :global(.ant-table-content):hover::-webkit-scrollbar-thumb,
+.matrixTable :global(.ant-table-body):hover::-webkit-scrollbar-thumb {
+  background: var(--ant-color-border);
+}

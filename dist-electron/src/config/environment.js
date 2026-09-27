@@ -26,6 +26,16 @@ export const API_BASE = {
     EASTMONEY: useLocalProxy
         ? 'http://127.0.0.1:3000/api/eastmoney'
         : 'https://datacenter-web.eastmoney.com',
+    /**
+     * 东方财富 F10 资料（股东人数 / 十大流通股东 / 机构持仓）。
+     *
+     * 刻意不复用 EASTMONEY：本地代理会把 `/api/eastmoney` 前缀补成 `/api/qt` 后转发到
+     * push2.eastmoney.com（行情域名），而 F10 属于 datacenter.eastmoney.com，
+     * 拼过去会变成 push2.eastmoney.com/api/qt/api/data/v1/get 而 404。
+     */
+    F10: useLocalProxy
+        ? 'http://127.0.0.1:3000/api/eastmoney-f10'
+        : 'https://datacenter.eastmoney.com',
     // 同花顺iFinD
     THS: useLocalProxy ? 'http://127.0.0.1:3000/api/ths' : 'https://basic.10jqka.com.cn',
     // 同花顺热股榜（dq.10jqka.com.cn）

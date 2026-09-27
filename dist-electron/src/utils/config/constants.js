@@ -23,9 +23,9 @@ export const DEFAULT_CACHE_TTL = 5 * 60 * 1000; // 5分钟
 export const CACHE_KEYS = {
     /** 全量股票列表 (biyingapi) */
     BIYING_STOCK_LIST: 'biying_hslt_stock_list_v1',
-    /** 行业板块基础信息 */
+    /** 行业板块基础信息（仅 code/name） */
     INDUSTRY_BASIC: 'unified_industry_basic_v1',
-    /** 概念板块基础信息 */
+    /** 概念板块基础信息（仅 code/name） */
     CONCEPT_BASIC: 'unified_concept_basic_v1',
 };
 export const CACHE_TTL = {
@@ -351,3 +351,12 @@ export const COOKIE_HEALTH_CHECK_INTERVAL = 60 * 60 * 1000; // 1小时检查一�
 export const BILLBOARD_CACHE_DB_NAME = 'BillboardCacheDB';
 export const BILLBOARD_CACHE_DB_VERSION = 1;
 export const BILLBOARD_CACHE_STORE_NAME = 'billboard_cache';
+/** F10 资料（股东人数 / 十大流通股东 / 机构持仓）IndexedDB 缓存相关常量 */
+export const F10_CACHE_DB_NAME = 'StockF10DB';
+export const F10_CACHE_DB_VERSION = 1;
+export const F10_CACHE_STORE_NAME = 'f10_detail';
+/**
+ * F10 接口单次请求最大返回条数。
+ * 股东人数历史约 40+ 期、十大流通股东不带报告期过滤时会有多期数据，故取 200 一次拉全。
+ */
+export const F10_MAX_PAGE_SIZE = 200;

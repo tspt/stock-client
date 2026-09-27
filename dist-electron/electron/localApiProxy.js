@@ -96,6 +96,17 @@ const PROXY_CONFIG = {
         referer: process.env.VITE_KLINE_REFERER,
         origin: process.env.VITE_KLINE_ORIGIN,
     },
+    /**
+     * 东财 F10 资料（股东人数 / 十大流通股东 / 机构持仓）。
+     *
+     * ⚠️ 必须排在 '/api/eastmoney' 之前：匹配用的是 startsWith 且取首个命中项，
+     * 排在后面会被 '/api/eastmoney' 抢走，进而被补上 '/api/qt' 前缀转发到 push2 而 404。
+     */
+    '/api/eastmoney-f10': {
+        target: 'https://datacenter.eastmoney.com',
+        referer: process.env.VITE_EASTMONEY_REFERER,
+        origin: process.env.VITE_EASTMONEY_ORIGIN,
+    },
     '/api/eastmoney': {
         target: 'https://push2.eastmoney.com',
         referer: process.env.VITE_EASTMONEY_REFERER,
@@ -127,6 +138,19 @@ function augmentPush2EastMoneyUrl(href) {
     }
 }
 const DATA_EASTMONEY_ORIGIN = 'https://data.eastmoney.com';
+/**
+ * 是否为「东财系列」代理前缀：这些前缀共享同一套传输逻辑——
+ * 不转发浏览器整包请求头（避免 hop-by-hop 头导致对端 TLS RST）、
+ * 把渲染进程的 Cookie 池自定义头转成真实 Cookie、使用与 Cookie 绑定的渲染进程 UA、
+ * 并用 Node https 直连（而非 Chromium net.request）。
+ *
+ * ⚠️ 与 `prefix === '/api/eastmoney'` 的区别：后者还额外包含 push2 专属处理——
+ * `/api/qt` 路径补全、JSONP 判定、按 fs 推导 referer/origin、失败主机切换。
+ * F10 走的是 datacenter.eastmoney.com，不参与这些 push2 专属逻辑。
+ */
+function isEastmoneyFamilyPrefix(prefix) {
+    return prefix === '/api/eastmoney' || prefix === '/api/eastmoney-f10';
+}
 export function startEmbeddedApiProxy(port) {
     return new Promise((resolve, reject) => {
         const server = http.createServer((req, res) => {
@@ -179,13 +203,22 @@ export function startEmbeddedApiProxy(port) {
             const targetPath = pathWithoutQuery || '/';
             const targetUrl = proxyConfig.target + targetPath + (queryString ? '?' + queryString : '');
             const forwardUrl = prefix === '/api/eastmoney' ? augmentPush2EastMoneyUrl(targetUrl) : targetUrl;
-            const eastmoneyCtx = prefix === '/api/eastmoney'
-                ? deriveEastmoneyRefererOrigin(forwardUrl, proxyConfig.referer || `${DATA_EASTMONEY_ORIGIN}/`, proxyConfig.origin || DATA_EASTMONEY_ORIGIN)
+            /**
+             * 东财系列的上游 referer/origin：push2 需按 fs 参数推导（板块页/列表页来源不同），
+             * F10 直接沿用 .env 里配置的 data.eastmoney.com。
+             */
+            const eastmoneyCtx = isEastmoneyFamilyPrefix(prefix)
+                ? prefix === '/api/eastmoney'
+                    ? deriveEastmoneyRefererOrigin(forwardUrl, proxyConfig.referer || `${DATA_EASTMONEY_ORIGIN}/`, proxyConfig.origin || DATA_EASTMONEY_ORIGIN)
+                    : {
+                        referer: proxyConfig.referer || `${DATA_EASTMONEY_ORIGIN}/`,
+                        origin: proxyConfig.origin || DATA_EASTMONEY_ORIGIN,
+                    }
                 : null;
             const u = new URL(forwardUrl);
             // 确定使用的 User-Agent（优先渲染进程经 X-Stock-Client-User-Agent 与 Cookie 同源身份）
             let finalUA = DEFAULT_UA; // 默认使用环境变量中的 UA
-            if (prefix === '/api/eastmoney') {
+            if (isEastmoneyFamilyPrefix(prefix)) {
                 const fromRenderer = getEastmoneyClientUaFromHeader(req);
                 if (fromRenderer) {
                     finalUA = fromRenderer;
@@ -204,7 +237,7 @@ export function startEmbeddedApiProxy(port) {
             }
             // 东方财富：不得转发 Vite/浏览器 的整包 req.headers，其中 connection/content-length 等
             // hop-by-hop 或与本机/上游不一致的头会让对端在 TLS 上直接 RST（ECONNRESET / socket hang up）
-            const headers = prefix === '/api/eastmoney' && eastmoneyCtx
+            const headers = isEastmoneyFamilyPrefix(prefix) && eastmoneyCtx
                 ? (() => {
                     const jsonp = isEastmoneyJsonpUrl(forwardUrl);
                     const poolCookie = getEastmoneyPoolCookie(req);
@@ -240,7 +273,8 @@ export function startEmbeddedApiProxy(port) {
                 const uReq = new URL(forwardUrl);
                 // 东财请求直接使用 Node https 模块，避免 Chromium net.request 的 ERR_BLOCKED_BY_CLIENT 问题
                 // 注：之前使用 net.request 是为了利用 Chromium 的 Cookie 管理，但会与 onBeforeSendHeaders 拦截器冲突
-                const useDirectHttps = prefix === '/api/eastmoney';
+                // F10（/api/eastmoney-f10）同样走这里：该分支不做代理层重试，故不会触发 push2 专属的主机切换
+                const useDirectHttps = isEastmoneyFamilyPrefix(prefix);
                 if (useDirectHttps && uReq.protocol === 'https:') {
                     // 切换主机逻辑（仅在重试时）
                     if (attempt > 0) {
@@ -284,7 +318,7 @@ export function startEmbeddedApiProxy(port) {
                         headers: nodeHeaders,
                     };
                     const proxyReq = https.request(requestOpt, (proxyRes) => {
-                        if (prefix === '/api/eastmoney') {
+                        if (isEastmoneyFamilyPrefix(prefix)) {
                             if (attempt > 0) {
                                 console.log('[代理调试] 东方财富响应 (Node https):', proxyRes.statusCode, proxyRes.statusMessage, `(重试第${attempt}次成功)`);
                             }

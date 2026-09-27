@@ -617,9 +617,7 @@ function setupIpcHandlers() {
                             name: stockData.name,
                             dailyLines: stockData.klineData,
                             latestQuote: stockData.latestQuote || null,
-                            updatedAt: stockData.updatedAt || Date.now(),
                         },
-                        industry: stockData.industry || null,
                         buypointDate: [],
                     };
                     const jsonContent = JSON.stringify(newData, null, 4);

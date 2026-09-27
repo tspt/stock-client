@@ -166,8 +166,16 @@
   margin-right: 6px; 
 }
 
-/* 主题变量 */
-.app[data-theme='light'] {
+/* 主题变量
+ *
+ * 选择器刻意**不带 .app 前缀**，只用 [data-theme]：
+ * `data-theme` 同时挂在 <html>（themeStore 里 setAttribute）与 .app 上，
+ * 所以不带前缀依然生效，同时能让 **被 antd portal 到 document.body 的抽屉 / 弹窗 / 下拉**
+ * 也继承到这些变量——它们不在 .app 子树内，加了前缀就取不到，
+ * 全局 `::-webkit-scrollbar-thumb { background: var(--ant-color-border) }` 之类的
+ * var() 会退化为 initial（透明），表现为「滚动条看不见但仍能拖拽」。
+ */
+[data-theme='light'] {
   --ant-color-bg-container: #ffffff;
   --ant-color-border: #d9d9d9;
   --ant-color-text-secondary: rgba(0, 0, 0, 0.45);
@@ -175,7 +183,7 @@
   --ant-color-primary-bg: #e6f7ff;
 }
 
-.app[data-theme='dark'] {
+[data-theme='dark'] {
   --ant-color-bg-container: #141414;
   --ant-color-border: #434343;
   --ant-color-text-secondary: rgba(255, 255, 255, 0.45);
