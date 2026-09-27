@@ -35,7 +35,7 @@ function passLightFilters(item: StockOpportunityData, filters: OpportunityFilter
   if (!matchOptionalRange(item.peRatio, filters.peRatioRange)) return false;
   if (!matchOptionalRange(item.kdjJ, filters.kdjJRange)) return false;
 
-  // 总营收 / 归母净利润（筛选单位：亿元；数据需先点「获取营收净利润」才有）
+  // 总营收 / 归母净利润（筛选单位：亿元；数据需先点「获取财务指标」才有）
   if (!matchOptionalRangeWithScale(item.finance?.revenue, filters.financeRevenueRange, 1e8)) {
     return false;
   }
@@ -43,13 +43,13 @@ function passLightFilters(item: StockOpportunityData, filters: OpportunityFilter
     return false;
   }
 
-  // 总营收增长率 / 归母净利润增长率（筛选单位：%；数据需先点「获取营收净利润」才有）
+  // 总营收增长率 / 归母净利润增长率（筛选单位：%；数据需先点「获取财务指标」才有）
   if (!matchOptionalRange(item.finance?.revenueYoy, filters.financeRevenueGrowthRange)) return false;
   if (!matchOptionalRange(item.finance?.netProfitYoy, filters.financeNetProfitGrowthRange)) {
     return false;
   }
 
-  // 净资产收益率（ROE）/ 资产负债率（筛选单位：%；数据需先点「获取营收净利润」才有）
+  // 净资产收益率（ROE）/ 资产负债率（筛选单位：%；数据需先点「获取财务指标」才有）
   if (!matchOptionalRange(item.finance?.roe, filters.financeRoeRange)) return false;
   if (!matchOptionalRange(item.finance?.debtRatio, filters.financeDebtRatioRange)) return false;
 

@@ -435,7 +435,7 @@ export interface StockOpportunityData {
   concepts?: ConceptInfo[];
   /** 分析时间戳 */
   analyzedAt: number;
-  /** 营收 / 净利润财务指标（按需拉取，仅内存态，不参与分析持久化） */
+  /** 财务指标（按需拉取，仅内存态，不参与分析持久化） */
   finance?: StockFinanceMetrics;
   /** 错误信息（如果获取失败） */
   error?: string;

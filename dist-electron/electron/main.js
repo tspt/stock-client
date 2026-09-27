@@ -983,7 +983,7 @@ function setupIpcHandlers() {
                 '行业板块.json',
                 '概念板块.json',
                 '股票列表.json',
-                '营收净利润数据.json',
+                '财务指标数据.json',
             ];
             if (!fileName || !ALLOWED_FILES.includes(fileName)) {
                 return { success: false, error: `非法文件名: ${fileName}` };

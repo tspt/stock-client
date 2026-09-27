@@ -6,6 +6,7 @@ import { useEffect, useState, useMemo, useRef, useCallback, useLayoutEffect } fr
 import { Layout, Card, Button, Space, Select, App, Input, InputNumber, Dropdown, Tooltip, Badge, Checkbox, Spin } from 'antd';
 import type { TablePaginationConfig } from 'antd';
 import {
+  AimOutlined,
   RocketOutlined,
   StopOutlined,
   ExportOutlined,
@@ -491,7 +492,7 @@ export function OpportunityPage() {
   /** 导出K线数据状态 */
   const [exportingKline, setExportingKline] = useState(false);
   const [exportKlineProgress, setExportKlineProgress] = useState({ current: 0, total: 0 });
-  /** 营收 / 净利润数据（按股票代码索引，仅内存态） */
+  /** 财务指标数据（按股票代码索引，仅内存态） */
   const [financeMap, setFinanceMap] = useState<Record<string, StockFinanceMetrics>>({});
   const [financeLoading, setFinanceLoading] = useState(false);
   const [financeProgress, setFinanceProgress] = useState({ total: 0, completed: 0, failed: 0 });
@@ -558,7 +559,7 @@ export function OpportunityPage() {
         return;
       }
 
-      // 恢复已持久化的营收/净利润指标（IndexedDB，不受 apiCache.clear() 影响）
+      // 恢复已持久化的财务指标（IndexedDB，不受 apiCache.clear() 影响）
       try {
         const financeRecords = await getAllStockFinanceMetrics();
         if (!cancelled && financeRecords.length > 0) {
@@ -569,7 +570,7 @@ export function OpportunityPage() {
           setFinanceMap(restored);
         }
       } catch (error) {
-        logger.warn('[机会分析] 恢复营收净利润数据失败:', error);
+        logger.warn('[机会分析] 恢复财务指标数据失败:', error);
       }
 
       const prefs = loadOpportunityFilterPrefs();
@@ -965,7 +966,7 @@ export function OpportunityPage() {
     ]
   );
 
-  // 合并已获取的营收/净利润数据（供筛选与展示；不影响交易信号计算）
+  // 合并已获取的财务指标数据（供筛选与展示；不影响交易信号计算）
   const processedDataWithFinance = useMemo(
     () => mergeFinanceMetrics(processedData, financeMap),
     [processedData, financeMap]
@@ -989,7 +990,7 @@ export function OpportunityPage() {
     [filteredAnalysisData, tableSearchKeyword]
   );
 
-  // 将已获取的营收 / 净利润数据合并到表格行
+  // 将已获取的财务指标数据合并到表格行
   const displayAnalysisDataWithFinance = useMemo(
     () => mergeFinanceMetrics(displayAnalysisData, financeMap),
     [displayAnalysisData, financeMap]
@@ -1049,7 +1050,7 @@ export function OpportunityPage() {
     [chartNavRecords, tablePagination.pageSize]
   );
 
-  // 页面卸载时中断未完成的营收净利润请求
+  // 页面卸载时中断未完成的财务指标请求
   useEffect(() => {
     return () => {
       financeAbortRef.current?.abort();
@@ -1254,10 +1255,10 @@ export function OpportunityPage() {
       message.success(`财务指标数据已就绪，共 ${map.size} 只（命中本地缓存的不重复请求）`);
     } catch (error) {
       if (error instanceof DOMException && error.name === 'AbortError') {
-        message.info('已取消获取营收净利润');
+        message.info('已取消获取财务指标');
       } else {
-        logger.error('[OpportunityPage] 获取营收净利润失败:', error);
-        message.error('获取营收净利润失败');
+        logger.error('[OpportunityPage] 获取财务指标失败:', error);
+        message.error('获取财务指标失败');
       }
     } finally {
       financeAbortRef.current = null;
@@ -1270,11 +1271,11 @@ export function OpportunityPage() {
   const handleFetchFinance = () =>
     fetchFinanceForStocks(filteredStocks, '当前市场暂无股票数据');
 
-  /** 仅获取「当前筛选结果」中股票的营收 / 净利润，避免全池请求触发新浪限流 */
+  /** 仅获取「当前筛选结果」中股票的财务指标，避免全池请求触发新浪限流 */
   const handleFetchFinanceForFiltered = () =>
     fetchFinanceForStocks(
       filteredAnalysisData,
-      '当前筛选结果为空，无法获取营收净利润（若由「总营收」等财务条件导致，请先清空该类条件）'
+      '当前筛选结果为空，无法获取财务指标（若由「总营收」等财务条件导致，请先清空该类条件）'
     );
 
   const handleCancelFetchFinance = () => {
@@ -1642,16 +1643,16 @@ export function OpportunityPage() {
             disabled={loading || financeLoading || filteredStocks.length === 0}
             title={`获取当前股票池（${filteredStocks.length} 只）的营业总收入、归母净利润、ROE 与资产负债率`}
           >
-            获取营收净利润
+            获取财务指标
           </Button>
           <Button
-            icon={<FilterOutlined />}
+            icon={<AimOutlined />}
             onClick={handleFetchFinanceForFiltered}
             loading={financeLoading}
             disabled={loading || financeLoading}
             title={`仅获取当前筛选结果（${filteredAnalysisData.length} 只）的营业总收入、归母净利润及其增长率、ROE、资产负债率，避免全池请求触发新浪限流`}
           >
-            获取筛选后营收净利润
+            获取筛选后财务指标
           </Button>
           {financeLoading && (
             <Button icon={<StopOutlined />} onClick={handleCancelFetchFinance}>
@@ -1764,7 +1765,7 @@ export function OpportunityPage() {
         {financeLoading && financeProgress.total > 0 && (
           <ProgressCard
             percent={Math.round((financeProgress.completed / financeProgress.total) * 100)}
-            text={`获取营收净利润进度: ${financeProgress.completed} / ${financeProgress.total}（失败: ${financeProgress.failed}）`}
+            text={`获取财务指标进度: ${financeProgress.completed} / ${financeProgress.total}（失败: ${financeProgress.failed}）`}
           />
         )}
 

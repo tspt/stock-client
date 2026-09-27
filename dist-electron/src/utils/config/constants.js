@@ -237,7 +237,7 @@ export const ALERT_TIME_PERIODS = [
 /** 机会分析相关常量 */
 /** IndexedDB 数据库名 */
 export const OPPORTUNITY_DB_NAME = 'StockOpportunityDB';
-/** IndexedDB 版本（v9：新增营收/净利润指标存储） */
+/** IndexedDB 版本（v9：新增财务指标存储） */
 export const OPPORTUNITY_DB_VERSION = 9;
 /** 对象存储名称 */
 export const OPPORTUNITY_STORE_NAME = 'opportunityData';
@@ -251,7 +251,7 @@ export const OPPORTUNITY_KLINE_STORE_NAME = 'opportunityKlineCache';
 export const STOCK_HISTORY_STORE_NAME = 'stockHistory';
 /** 周K数据缓存存储名称（v8 起，独立于日线历史，避免周线覆盖日线数据） */
 export const WEEKLY_KLINE_STORE_NAME = 'weeklyKlineCache';
-/** 营收/净利润指标存储名称（v9 起，独立存储，避免被分析数据清理逻辑误删） */
+/** 财务指标存储名称（v9 起，独立存储，避免被分析数据清理逻辑误删） */
 export const STOCK_FINANCE_STORE_NAME = 'stockFinanceMetrics';
 /** 默认并发数（每批股票数，与 OPPORTUNITY_BATCH_DELAY 配合控频） */
 export const OPPORTUNITY_CONCURRENT_LIMIT = 8;

@@ -66,17 +66,17 @@ export interface OpportunityFilterSnapshot {
   volumePullbackRequireUpperShadow: boolean;
   /** 上影线占比阈值（%）：上影长度 / 全日振幅 */
   volumePullbackUpperShadowRatio: number;
-  /** 总营收范围（单位：亿元，数据来自「获取营收净利润」） */
+  /** 总营收范围（单位：亿元，数据来自「获取财务指标」） */
   financeRevenueRange?: NumberRange;
-  /** 归母净利润范围（单位：亿元，数据来自「获取营收净利润」） */
+  /** 归母净利润范围（单位：亿元，数据来自「获取财务指标」） */
   financeNetProfitRange?: NumberRange;
-  /** 总营收增长率范围（单位：%，数据来自「获取营收净利润」） */
+  /** 总营收增长率范围（单位：%，数据来自「获取财务指标」） */
   financeRevenueGrowthRange?: NumberRange;
-  /** 归母净利润增长率范围（单位：%，数据来自「获取营收净利润」） */
+  /** 归母净利润增长率范围（单位：%，数据来自「获取财务指标」） */
   financeNetProfitGrowthRange?: NumberRange;
-  /** 净资产收益率（ROE）范围（单位：%，数据来自「获取营收净利润」） */
+  /** 净资产收益率（ROE）范围（单位：%，数据来自「获取财务指标」） */
   financeRoeRange?: NumberRange;
-  /** 资产负债率范围（单位：%，数据来自「获取营收净利润」） */
+  /** 资产负债率范围（单位：%，数据来自「获取财务指标」） */
   financeDebtRatioRange?: NumberRange;
   /** RSI指标范围 */
   rsiRange: NumberRange;

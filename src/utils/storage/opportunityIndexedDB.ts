@@ -96,7 +96,7 @@ export async function initOpportunityDB(): Promise<IDBDatabase> {
         db.createObjectStore(WEEKLY_KLINE_STORE_NAME, { keyPath: 'code' });
       }
 
-      // v9: 营收/净利润指标独立存储（跨重启复用，且不受分析数据清理影响）
+      // v9: 财务指标独立存储（跨重启复用，且不受分析数据清理影响）
       if (!db.objectStoreNames.contains(STOCK_FINANCE_STORE_NAME)) {
         db.createObjectStore(STOCK_FINANCE_STORE_NAME, { keyPath: 'code' });
       }
@@ -404,9 +404,9 @@ export async function getStocksHistory(codes: string[]): Promise<StockHistoryRec
   return getStockHistoriesByCodes(codes);
 }
 
-// ==================== 营收 / 净利润指标管理 ====================
+// ==================== 财务指标管理 ====================
 
-/** 营收/净利润指标记录（带写入时间，供上层做 TTL 判断） */
+/** 财务指标记录（带写入时间，供上层做 TTL 判断） */
 export interface StockFinanceRecord {
   code: string;
   metrics: StockFinanceMetrics;
@@ -414,7 +414,7 @@ export interface StockFinanceRecord {
 }
 
 /**
- * 批量保存营收/净利润指标（按 code 覆盖）。
+ * 批量保存财务指标（按 code 覆盖）。
  * 写入内容为纯数据对象，体积很小，数千条也只是一次小事务。
  */
 export async function saveStockFinanceMetrics(records: StockFinanceRecord[]): Promise<void> {
@@ -425,13 +425,13 @@ export async function saveStockFinanceMetrics(records: StockFinanceRecord[]): Pr
 
   return new Promise((resolve, reject) => {
     transaction.oncomplete = () => resolve();
-    transaction.onerror = () => reject(new Error('保存营收净利润数据失败'));
+    transaction.onerror = () => reject(new Error('保存财务指标数据失败'));
     records.forEach((record) => store.put(record));
   });
 }
 
 /**
- * 按股票代码批量读取营收/净利润指标
+ * 按股票代码批量读取财务指标
  */
 export async function getStockFinanceMetrics(codes: string[]): Promise<StockFinanceRecord[]> {
   if (codes.length === 0) return [];
@@ -460,7 +460,7 @@ export async function getStockFinanceMetrics(codes: string[]): Promise<StockFina
 }
 
 /**
- * 读取全部营收/净利润指标（页面初始化时恢复用）
+ * 读取全部财务指标（页面初始化时恢复用）
  */
 export async function getAllStockFinanceMetrics(): Promise<StockFinanceRecord[]> {
   const db = await initOpportunityDB();
@@ -470,12 +470,12 @@ export async function getAllStockFinanceMetrics(): Promise<StockFinanceRecord[]>
     const request = transaction.objectStore(STOCK_FINANCE_STORE_NAME).getAll();
 
     request.onsuccess = () => resolve((request.result || []) as StockFinanceRecord[]);
-    request.onerror = () => reject(new Error('获取营收净利润数据失败'));
+    request.onerror = () => reject(new Error('获取财务指标数据失败'));
   });
 }
 
 /**
- * 清空全部营收/净利润指标
+ * 清空全部财务指标
  */
 export async function clearStockFinanceMetrics(): Promise<void> {
   const db = await initOpportunityDB();
@@ -483,7 +483,7 @@ export async function clearStockFinanceMetrics(): Promise<void> {
 
   return new Promise((resolve, reject) => {
     transaction.oncomplete = () => resolve();
-    transaction.onerror = () => reject(new Error('清空营收净利润数据失败'));
+    transaction.onerror = () => reject(new Error('清空财务指标数据失败'));
     transaction.objectStore(STOCK_FINANCE_STORE_NAME).clear();
   });
 }

@@ -26,6 +26,7 @@ import {
 } from 'antd';
 import type { ColumnsType, TablePaginationConfig } from 'antd/es/table';
 import {
+  AimOutlined,
   DatabaseOutlined,
   DownOutlined,
   ExperimentOutlined,
@@ -564,7 +565,7 @@ export function WeeklyKPage() {
    * 价格 3~100 元、总市值 30~1000 亿、总股数 1~50 亿股、总营收 ≥0 亿、归母净利润 ≥0 亿；
    * ROE、资产负债率与两个增长率默认不限。
    *
-   * 注意：营收/净利润（以及 ROE、资产负债率）只有点过「获取营收净利润」的股票才有值，
+   * 注意：营收/净利润（以及 ROE、资产负债率）只有点过「获取财务指标」的股票才有值，
    * 一旦设置了区间，未取到值的个股会被该硬门槛排除（withinRange 对「已设区间但缺值」
    * 判定为不通过）。
    */
@@ -609,7 +610,7 @@ export function WeeklyKPage() {
   const [failures, setFailures] = useState<Array<{ code: string; name: string; error: string }>>([]);
   const [staleCache, setStaleCache] = useState(0);
 
-  /** 营收 / 净利润拉取状态 */
+  /** 财务指标拉取状态 */
   const [financeLoading, setFinanceLoading] = useState(false);
   const [financeProgress, setFinanceProgress] = useState({ total: 0, completed: 0, failed: 0 });
   const financeAbortRef = useRef<AbortController | null>(null);
@@ -742,11 +743,11 @@ export function WeeklyKPage() {
   }, [loadDailyKlines]);
 
   /**
-   * 载入基本面（总市值/总股数/营收/净利润及其增长率）用于「数据筛选」：
+   * 载入基本面（总市值/总股数/营收/净利润及其增长率/ROE/资产负债率）用于「数据筛选」：
    * - 市值/股本：优先复用机会分析结果（IndexedDB），保证与机会分析页口径一致；
    * - 兜底：机会分析的 `latest` 只覆盖最近一次分析过的股票，其余用日K缓存
    *   `stockHistory.latestDetail` 里的市值补齐（见 utils/analysis/weekly/fundamentals.ts）；
-   * - 营收/净利润：读取机会分析「获取营收净利润」写入的独立缓存。
+   * - 财务指标：读取机会分析「获取财务指标」写入的独立缓存。
    * 均不额外发起网络请求；totalShares 折算成「亿股」，营收/净利润折算成「亿元」。
    */
   const loadFundamentals = useCallback(async (): Promise<FundamentalsMap> => {
@@ -770,7 +771,7 @@ export function WeeklyKPage() {
       const financeRecords = await getAllStockFinanceMetrics();
       financeRecords.forEach(({ code, metrics }) => applyFinanceMetrics(map, code, metrics));
     } catch (error) {
-      logger.error('[WeeklyKPage] 读取营收/净利润失败:', error);
+      logger.error('[WeeklyKPage] 读取财务指标失败:', error);
     }
     /**
      * 日K缓存兜底：否则未被最近一次机会分析覆盖的股票取不到市值/股数，
@@ -1164,7 +1165,7 @@ export function WeeklyKPage() {
         },
       });
       if (map.size === 0) {
-        message.warning('未获取到营收/净利润数据');
+        message.warning('未获取到财务指标数据');
         return;
       }
       setFundamentals((prev) => {
@@ -1172,13 +1173,13 @@ export function WeeklyKPage() {
         map.forEach((metrics, code) => applyFinanceMetrics(next, code, metrics));
         return next;
       });
-      message.success(`营收/净利润数据已就绪，共 ${map.size} 只（命中本地缓存的不重复请求）`);
+      message.success(`财务指标数据已就绪，共 ${map.size} 只（命中本地缓存的不重复请求）`);
     } catch (error) {
       if (error instanceof DOMException && error.name === 'AbortError') {
-        message.info('已取消获取营收净利润');
+        message.info('已取消获取财务指标');
       } else {
-        logger.error('[WeeklyKPage] 获取营收净利润失败:', error);
-        message.error('获取营收净利润失败');
+        logger.error('[WeeklyKPage] 获取财务指标失败:', error);
+        message.error('获取财务指标失败');
       }
     } finally {
       financeAbortRef.current = null;
@@ -1187,15 +1188,15 @@ export function WeeklyKPage() {
     }
   };
 
-  /** 获取当前股票池（与「一键分析」同口径）的营收 / 净利润 */
+  /** 获取当前股票池（与「一键分析」同口径）的财务指标 */
   const handleFetchFinance = () =>
     fetchFinanceForStocks(stockPool, '当前市场暂无股票数据');
 
-  /** 仅获取「当前筛选后名单」的营收 / 净利润，避免全池请求触发新浪限流 */
+  /** 仅获取「当前筛选后名单」的财务指标，避免全池请求触发新浪限流 */
   const handleFetchFinanceForFiltered = () =>
     fetchFinanceForStocks(
       displayRows,
-      '当前名单为空，无法获取营收净利润（若由「总营收」等财务条件导致，请先清空该类条件）'
+      '当前名单为空，无法获取财务指标（若由「总营收」等财务条件导致，请先清空该类条件）'
     );
 
   const handleCancelFetchFinance = () => {
@@ -1578,7 +1579,7 @@ export function WeeklyKPage() {
               loading={financeLoading}
               disabled={loading || financeLoading || stockPool.length === 0}
             >
-              获取营收净利润
+              获取财务指标
             </Button>
           </Tooltip>
 
@@ -1586,12 +1587,12 @@ export function WeeklyKPage() {
             title={`仅获取当前筛选后名单（${displayRows.length} 只）的营业总收入、归母净利润及其增长率，避免全池请求触发新浪限流`}
           >
             <Button
-              icon={<FilterOutlined />}
+              icon={<AimOutlined />}
               onClick={() => void handleFetchFinanceForFiltered()}
               loading={financeLoading}
               disabled={loading || financeLoading || displayRows.length === 0}
             >
-              获取筛选后营收净利润
+              获取筛选后财务指标
             </Button>
           </Tooltip>
 
@@ -1799,7 +1800,7 @@ export function WeeklyKPage() {
               format={(percent) => `${percent}%`}
             />
             <div className={styles.progressText}>
-              获取营收净利润进度：{financeProgress.completed} / {financeProgress.total}（失败：
+              获取财务指标进度：{financeProgress.completed} / {financeProgress.total}（失败：
               {financeProgress.failed}）
             </div>
           </Card>

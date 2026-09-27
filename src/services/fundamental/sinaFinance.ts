@@ -188,7 +188,7 @@ function extractGrowthMetrics(report: SinaFinanceRawReport): Omit<
 }
 
 /**
- * 仅走网络获取单只股票最新报告期的营收 / 净利润及增长率（不做任何缓存读写）
+ * 仅走网络获取单只股票最新报告期的财务指标（不做任何缓存读写）
  */
 async function fetchSinaFinanceMetricsFromNetwork(
   code: string,
@@ -251,7 +251,7 @@ async function fetchSinaFinanceMetricsFromNetwork(
 }
 
 /**
- * 获取单只股票最新报告期的营收 / 净利润及增长率。
+ * 获取单只股票最新报告期的财务指标。
  * 查找顺序：内存 cache → IndexedDB → 网络。
  *
  * @param code 统一格式代码（SH600000 / SZ000001）
@@ -285,7 +285,7 @@ export async function getSinaFinanceMetrics(
         return hit.metrics;
       }
     } catch (error) {
-      logger.warn('[SinaFinance] 读取本地营收净利润缓存失败，忽略:', error);
+      logger.warn('[SinaFinance] 读取本地财务指标缓存失败，忽略:', error);
     }
   }
 
@@ -293,7 +293,7 @@ export async function getSinaFinanceMetrics(
   if (metrics) {
     apiCache.set(cacheKey, metrics, SINA_FINANCE_CACHE_TTL);
     void saveStockFinanceMetrics([{ code, metrics, updatedAt: Date.now() }]).catch((error) => {
-      logger.warn('[SinaFinance] 写入本地营收净利润缓存失败:', error);
+      logger.warn('[SinaFinance] 写入本地财务指标缓存失败:', error);
     });
   }
   return metrics;
@@ -315,7 +315,7 @@ export interface SinaFinanceBatchOptions {
 }
 
 /**
- * 批量获取营收 / 净利润数据。
+ * 批量获取财务指标数据。
  *
  * - 优先命中内存缓存与 IndexedDB（TTL 6 小时），命中者不发请求
  * - 单只失败不影响整体；已成功结果统一回写 IndexedDB
@@ -349,7 +349,7 @@ export async function getSinaFinanceMetricsBatch(
         }
       });
     } catch (error) {
-      logger.warn('[SinaFinance] 读取本地营收净利润缓存失败，忽略:', error);
+      logger.warn('[SinaFinance] 读取本地财务指标缓存失败，忽略:', error);
     }
   }
 
@@ -431,7 +431,7 @@ export async function getSinaFinanceMetricsBatch(
       try {
         await saveStockFinanceMetrics(freshRecords);
       } catch (error) {
-        logger.warn('[SinaFinance] 写入本地营收净利润缓存失败:', error);
+        logger.warn('[SinaFinance] 写入本地财务指标缓存失败:', error);
       }
     }
 

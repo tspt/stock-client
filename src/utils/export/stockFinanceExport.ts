@@ -1,5 +1,5 @@
 /**
- * 营收/净利润财务指标导出导入工具
+ * 财务指标导出导入工具
  * 支持将 IndexedDB (StockOpportunityDB.stockFinanceMetrics) 中的数据导出为 JSON 文件，以及从 JSON 文件导入
  */
 
@@ -36,12 +36,12 @@ export interface ImportResult {
 }
 
 /**
- * 导出营收/净利润指标为 JSON 文件
- * Electron 环境静默落盘到 docs/回测优化/营收净利润数据.json，否则回退浏览器 Blob 下载
+ * 导出财务指标为 JSON 文件
+ * Electron 环境静默落盘到 docs/回测优化/财务指标数据.json，否则回退浏览器 Blob 下载
  */
 export async function exportStockFinanceToJSON(): Promise<void> {
   try {
-    logger.info('[StockFinanceExport] 开始导出营收净利润数据');
+    logger.info('[StockFinanceExport] 开始导出财务指标数据');
 
     const records = await getAllStockFinanceMetrics();
 
@@ -54,17 +54,17 @@ export async function exportStockFinanceToJSON(): Promise<void> {
 
     const jsonStr = JSON.stringify(exportData, null, 2);
 
-    // 如果处于 Electron 环境，优先静默落盘到 docs/回测优化/营收净利润数据.json
+    // 如果处于 Electron 环境，优先静默落盘到 docs/回测优化/财务指标数据.json
     if (window.electronAPI?.writeBacktestOptimizeFile) {
       const res = await window.electronAPI.writeBacktestOptimizeFile({
-        fileName: '营收净利润数据.json',
+        fileName: '财务指标数据.json',
         content: jsonStr,
       });
       if (!res.success) {
-        throw new Error(res.error || '写入营收净利润数据.json失败');
+        throw new Error(res.error || '写入财务指标数据.json失败');
       }
       logger.info(
-        `[StockFinanceExport] 静默导出成功至 docs/回测优化/营收净利润数据.json - 共 ${records.length} 条`
+        `[StockFinanceExport] 静默导出成功至 docs/回测优化/财务指标数据.json - 共 ${records.length} 条`
       );
       return;
     }
@@ -75,7 +75,7 @@ export async function exportStockFinanceToJSON(): Promise<void> {
     const link = document.createElement('a');
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
     link.href = url;
-    link.download = `营收净利润数据_${timestamp}.json`;
+    link.download = `财务指标数据_${timestamp}.json`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -84,12 +84,12 @@ export async function exportStockFinanceToJSON(): Promise<void> {
     logger.info(`[StockFinanceExport] 导出成功 - 共 ${records.length} 条`);
   } catch (error) {
     logger.error('[StockFinanceExport] 导出失败:', error);
-    throw new Error('导出营收净利润数据失败');
+    throw new Error('导出财务指标数据失败');
   }
 }
 
 /**
- * 从 JSON 文件导入营收/净利润指标
+ * 从 JSON 文件导入财务指标
  * @param file JSON 文件
  * @param mode 导入模式：'overwrite' 覆盖现有数据，'merge' 合并到现有数据
  */
@@ -98,7 +98,7 @@ export async function importStockFinanceFromJSON(
   mode: ImportMode = 'overwrite'
 ): Promise<ImportResult> {
   try {
-    logger.info(`[StockFinanceExport] 开始导入营收净利润数据 (模式: ${mode})`);
+    logger.info(`[StockFinanceExport] 开始导入财务指标数据 (模式: ${mode})`);
 
     // 读取文件内容
     const text = await readFileAsText(file);
@@ -127,7 +127,7 @@ export async function importStockFinanceFromJSON(
 
     return {
       success: true,
-      message: `导入成功！共 ${records.length} 条营收净利润数据`,
+      message: `导入成功！共 ${records.length} 条财务指标数据`,
       count: records.length,
     };
   } catch (error: any) {

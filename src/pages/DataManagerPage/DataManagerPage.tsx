@@ -67,7 +67,7 @@ export function DataManagerPage() {
   const [clearingSectorStocks, setClearingSectorStocks] = useState(false);
   const [importingSectorStocks, setImportingSectorStocks] = useState(false);
 
-  // 营收/净利润财务指标状态
+  // 财务指标状态
   const [financeStatus, setFinanceStatus] = useState<CacheStatus | null>(null);
   const [importingFinance, setImportingFinance] = useState(false);
   const [clearingFinance, setClearingFinance] = useState(false);
@@ -190,7 +190,7 @@ export function DataManagerPage() {
     }
   };
 
-  // 加载营收/净利润财务指标状态
+  // 加载财务指标状态
   const loadStockFinanceStatus = async () => {
     try {
       const records = await getAllStockFinanceMetrics();
@@ -207,7 +207,7 @@ export function DataManagerPage() {
         setFinanceStatus({ count: 0, isExpired: true });
       }
     } catch (error) {
-      logger.error('加载营收净利润数据状态失败:', error);
+      logger.error('加载财务指标状态失败:', error);
     }
   };
 
@@ -376,18 +376,18 @@ export function DataManagerPage() {
     });
   };
 
-  // 导出营收/净利润财务指标
+  // 导出财务指标
   const handleExportFinance = async () => {
     try {
       await exportStockFinanceToJSON();
       antMessage.success('导出成功');
     } catch (error) {
       antMessage.error('导出失败');
-      logger.error('导出营收净利润数据失败:', error);
+      logger.error('导出财务指标数据失败:', error);
     }
   };
 
-  // 导入营收/净利润财务指标
+  // 导入财务指标
   const handleImportFinance = async (file: File) => {
     setImportingFinance(true);
     try {
@@ -400,18 +400,18 @@ export function DataManagerPage() {
       }
     } catch (error) {
       antMessage.error('导入失败');
-      logger.error('导入营收净利润数据失败:', error);
+      logger.error('导入财务指标数据失败:', error);
     } finally {
       setImportingFinance(false);
     }
     return false; // 阻止默认上传行为
   };
 
-  // 清空营收/净利润财务指标
+  // 清空财务指标
   const handleClearFinance = () => {
     Modal.confirm({
       title: '确认清空',
-      content: '清空后将删除所有营收/净利润财务指标数据，此操作不可恢复，是否继续？',
+      content: '清空后将删除所有已缓存的财务指标数据，此操作不可恢复，是否继续？',
       okText: '确认清空',
       okType: 'danger',
       onOk: async () => {
@@ -422,7 +422,7 @@ export function DataManagerPage() {
           await loadStockFinanceStatus();
         } catch (error) {
           antMessage.error('清空失败');
-          logger.error('清空营收净利润数据失败:', error);
+          logger.error('清空财务指标数据失败:', error);
         } finally {
           setClearingFinance(false);
         }
@@ -619,11 +619,11 @@ export function DataManagerPage() {
           </Space>
         </Card>
 
-        {/* 营收/净利润财务指标管理 */}
+        {/* 财务指标管理 */}
         <Card className={styles.card} title={
           <Space>
             <FundOutlined />
-            <span>营收/净利润财务指标 (IndexedDB)</span>
+            <span>财务指标 (IndexedDB)</span>
           </Space>
         }>
           <Row gutter={16}>
@@ -634,14 +634,9 @@ export function DataManagerPage() {
                   value={financeStatus?.count || 0}
                   suffix="只"
                 />
-              </Card>
-            </Col>
-            <Col span={12}>
-              <Card size="small" className={styles.subCard}>
-                <Statistic
-                  title="最后更新"
-                  value={formatTime(financeStatus?.lastUpdate)}
-                />
+                <Text type="secondary" className={styles.updateTime}>
+                  最后更新: {formatTime(financeStatus?.lastUpdate)}
+                </Text>
               </Card>
             </Col>
           </Row>

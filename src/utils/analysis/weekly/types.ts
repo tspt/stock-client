@@ -229,7 +229,7 @@ export interface WeeklyFactors {
   /** 总股数（亿股）：由机会分析结果的 totalShares(股) 折算，缺省时用「总市值/最新价」兜底 */
   totalShares?: number;
   /**
-   * 总营收（亿元）：来自机会分析「获取营收净利润」写入 IndexedDB 的财务指标，
+   * 总营收（亿元）：来自机会分析「获取财务指标」写入 IndexedDB 的财务指标数据，
    * 原始单位为元，这里统一折算成亿元。未拉取过该数据时为 undefined。
    */
   financeRevenue?: number;
