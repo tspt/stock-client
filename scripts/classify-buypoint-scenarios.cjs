@@ -82,7 +82,6 @@ function processStock(stockPath, signalPath, rng) {
   const lines = data.dailyLines || [];
   const code = data.code || '';
   const name = data.name || path.basename(stockPath, '.json');
-  const industry = stockRaw.industry || data.industry || null;
 
   if (!fs.existsSync(signalPath) || lines.length < 5) {
     return null;
@@ -141,7 +140,6 @@ function processStock(stockPath, signalPath, rng) {
   return {
     code,
     name,
-    industry,
     classified,
     controlClassified,
   };
@@ -206,7 +204,6 @@ function main() {
       stockBuckets.set(result.name, {
         code: result.code,
         name: result.name,
-        industry: result.industry,
         byScenario: {},
       });
     }
@@ -227,7 +224,6 @@ function main() {
       const payload = {
         code: stock.code,
         name: stock.name,
-        industry: stock.industry,
         scenario: s.id,
         scenarioName: s.name,
         criteria: '精选：近1/2/3/5/10日累计收益全部 >5%',

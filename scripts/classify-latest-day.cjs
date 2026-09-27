@@ -70,7 +70,6 @@ function main() {
     const lines = data.dailyLines || [];
     const code = data.code || '';
     const name = data.name || path.basename(file, '.json');
-    const industry = raw.industry || data.industry || null;
 
     if (lines.length < 5) {
       skippedShort++;
@@ -91,7 +90,6 @@ function main() {
     const item = {
       code,
       name,
-      industry,
       date,
       close: lines[i].close,
       scenario: cls.scenario,

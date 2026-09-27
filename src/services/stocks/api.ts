@@ -387,7 +387,6 @@ export async function getStockDetail(code: string): Promise<StockDetail | null> 
       dailyLines: [], // 详情接口不返回K线，留空
       latestQuote: null,
       latestDetail: detail,
-      updatedAt: Date.now(),
     }).catch((err) => logger.warn(`[IndexDB] 同步股票 ${code} 详情数据失败:`, err));
 
     return detail;
@@ -426,7 +425,6 @@ function syncDailyHistoryToIndexedDB(code: string, klineData: KLineData[], stock
     name: stockName,
     dailyLines: klineData,
     latestQuote,
-    updatedAt: Date.now(),
   }).catch((err) => logger.warn(`[IndexDB] 同步股票 ${code} 历史数据失败:`, err));
 }
 

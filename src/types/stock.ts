@@ -1044,8 +1044,6 @@ export interface FundamentalAnalysis {
   industryComparison?: IndustryComparison;
   /** 机构研报摘要列表 */
   researchReports?: ResearchReportSummary[];
-  /** 数据更新时间 */
-  updatedAt: number;
 }
 
 /**

@@ -698,8 +698,6 @@ function setupIpcHandlers() {
         name: string;
         klineData: any[];
         latestQuote?: any;
-        updatedAt?: number;
-        industry?: { code: string; name: string } | null;
       }>
     ) => {
       try {
@@ -747,9 +745,7 @@ function setupIpcHandlers() {
                 name: stockData.name,
                 dailyLines: stockData.klineData,
                 latestQuote: stockData.latestQuote || null,
-                updatedAt: stockData.updatedAt || Date.now(),
               },
-              industry: stockData.industry || null,
               buypointDate: [] as string[],
             };
 

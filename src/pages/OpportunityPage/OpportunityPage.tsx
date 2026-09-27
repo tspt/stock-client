@@ -47,7 +47,6 @@ import { useAllStocks } from '@/hooks/useAllStocks';
 import { sortOpportunityData } from '@/utils/sort/tableSort';
 import { logger } from '@/utils/business/logger';
 import { useOpportunityFilterEngine } from '@/hooks/useOpportunityFilterEngine';
-import { getPureCode } from '@/utils/format/format';
 import {
   DEFAULT_FILTER_PANEL_ACTIVE_KEYS,
   applyOpportunityFilterPrefsToState,
@@ -1437,23 +1436,7 @@ export function OpportunityPage() {
 
       setExportKlineProgress({ current: 0, total: allHistories.length });
 
-      const industryByCode = new Map<string, { code: string; name: string }>();
-      allStocks.forEach((stock) => {
-        const industry =
-          stock.industry || getMappedIndustry(stock.code, industryMapping) || null;
-        if (industry) {
-          industryByCode.set(stock.code, { code: industry.code, name: industry.name });
-          industryByCode.set(getPureCode(stock.code), { code: industry.code, name: industry.name });
-        }
-      });
-
       const stocksData = allHistories.map((history, index) => {
-        const industry =
-          history.industry ||
-          industryByCode.get(history.code) ||
-          industryByCode.get(getPureCode(history.code)) ||
-          getMappedIndustry(history.code, industryMapping) ||
-          null;
         if ((index + 1) % 50 === 0 || index + 1 === allHistories.length) {
           setExportKlineProgress({ current: index + 1, total: allHistories.length });
         }
@@ -1462,8 +1445,6 @@ export function OpportunityPage() {
           name: history.name,
           klineData: history.dailyLines,
           latestQuote: history.latestQuote,
-          updatedAt: history.updatedAt,
-          industry,
         };
       });
 

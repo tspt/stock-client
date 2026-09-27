@@ -7,7 +7,6 @@ import type {
   KLineData,
   StockQuote,
   StockDetail,
-  IndustryInfo,
   StockFinanceMetrics,
 } from '@/types/stock';
 import {
@@ -181,14 +180,18 @@ export async function clearStockHistory(): Promise<void> {
 
 // ==================== 股票历史数据管理 ====================
 
+/**
+ * 股票历史记录。
+ *
+ * 只保留 K 线口径的真正数据来源：行业/概念由股票池与板块映射在展示时解析，
+ * 写入时间戳对业务无意义（各写入方各自持有部分字段、按需合并），故均不落盘。
+ */
 export interface StockHistoryRecord {
   code: string;
   name: string;
   dailyLines: KLineData[];
   latestQuote: StockQuote | null;
-  latestDetail?: StockDetail | null; // 新增：最新详情数据
-  industry?: IndustryInfo; // 新增：所属行业信息
-  updatedAt: number;
+  latestDetail?: StockDetail | null; // 最新详情数据
 }
 
 /**

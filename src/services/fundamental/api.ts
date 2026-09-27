@@ -52,9 +52,7 @@ export async function getFundamentalAnalysis(code: string): Promise<FundamentalA
       getResearchReports(pureCode, market),
     ]);
 
-    const result: FundamentalAnalysis = {
-      updatedAt: Date.now(),
-    };
+    const result: FundamentalAnalysis = {};
 
     if (financials.status === 'fulfilled' && financials.value) {
       result.financialHistory = financials.value;

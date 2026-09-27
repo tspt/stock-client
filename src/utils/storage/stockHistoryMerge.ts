@@ -56,7 +56,5 @@ export function mergeStockHistoryRecord(
     dailyLines: mergeDailyLines(previous?.dailyLines, incoming.dailyLines),
     latestQuote: incoming.latestQuote ?? previous?.latestQuote ?? null,
     latestDetail: incoming.latestDetail ?? previous?.latestDetail ?? null,
-    industry: incoming.industry ?? previous?.industry,
-    updatedAt: incoming.updatedAt,
   };
 }

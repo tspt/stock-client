@@ -3,6 +3,9 @@
  *
  * 与机会分析共用同一个数据库，避免新增 DB 带来的连接成本；
  * 周线数据单独建表，保证周线选股不会污染日线历史。
+ *
+ * 时间戳不逐条存储：同表另存一条保留主键的元数据记录（见 WEEKLY_KLINE_META_KEY），
+ * 与数据在同一个事务里写入，读取时过滤掉；页面「数据时间」直接取自它。
  */
 
 import type { KLineData } from '@/types/stock';
@@ -16,8 +19,6 @@ export interface WeeklyKlineRecord {
   name: string;
   /** 周K数据（时间从旧到新） */
   kline: KLineData[];
-  /** 写入时间戳 */
-  updatedAt: number;
   /** 缓存结构版本，与 WEEKLY_KLINE_SCHEMA_VERSION 不一致时视为过期 */
   version?: number;
   /** 复权方式（qfq / hfq / ''），用于校验缓存数据可用性 */
@@ -30,6 +31,22 @@ export interface WeeklyKlineRecord {
   requestedCount?: number;
 }
 
+/** 元数据记录的保留主键（股票代码不可能等于该值） */
+const WEEKLY_KLINE_META_KEY = '__meta__';
+
+/**
+ * 周K缓存元数据记录。与股票记录同表存放，用保留主键区分，
+ * 只记录「最近一次写入时间」，避免为每只股票各存一个时间戳。
+ */
+interface WeeklyKlineMetaRecord {
+  code: string;
+  timestamp: number;
+}
+
+function isMetaRecord(record: { code: string }): boolean {
+  return record.code === WEEKLY_KLINE_META_KEY;
+}
+
 function txDone(tx: IDBTransaction, rejectMessage: string): Promise<void> {
   return new Promise((resolve, reject) => {
     tx.oncomplete = () => resolve();
@@ -39,7 +56,9 @@ function txDone(tx: IDBTransaction, rejectMessage: string): Promise<void> {
 }
 
 /**
- * 批量保存周K数据（同一事务写入，失败整体回滚）
+ * 批量保存周K数据（同一事务写入，失败整体回滚）。
+ *
+ * 同时刷新元数据时间戳：两者同事务，保证「数据已更新」与「数据时间」不会脱节。
  */
 export async function saveWeeklyKlines(records: WeeklyKlineRecord[]): Promise<void> {
   if (records.length === 0) {
@@ -51,26 +70,17 @@ export async function saveWeeklyKlines(records: WeeklyKlineRecord[]): Promise<vo
   const store = transaction.objectStore(WEEKLY_KLINE_STORE_NAME);
   records.forEach((record) => store.put(record));
 
+  const meta: WeeklyKlineMetaRecord = {
+    code: WEEKLY_KLINE_META_KEY,
+    timestamp: Date.now(),
+  };
+  store.put(meta);
+
   await txDone(transaction, '写入周K数据失败');
 }
 
 /**
- * 读取单只股票的周K数据
- */
-export async function getWeeklyKline(code: string): Promise<WeeklyKlineRecord | null> {
-  const db = await initOpportunityDB();
-  const transaction = db.transaction([WEEKLY_KLINE_STORE_NAME], 'readonly');
-  const store = transaction.objectStore(WEEKLY_KLINE_STORE_NAME);
-
-  return new Promise((resolve, reject) => {
-    const request = store.get(code);
-    request.onsuccess = () => resolve((request.result as WeeklyKlineRecord) || null);
-    request.onerror = () => reject(new Error(`读取周K数据失败：${code}`));
-  });
-}
-
-/**
- * 读取全部周K数据
+ * 读取全部周K数据（已滤除元数据记录，调用方只会拿到真实股票记录）
  */
 export async function getAllWeeklyKlines(): Promise<WeeklyKlineRecord[]> {
   const db = await initOpportunityDB();
@@ -79,40 +89,28 @@ export async function getAllWeeklyKlines(): Promise<WeeklyKlineRecord[]> {
 
   return new Promise((resolve, reject) => {
     const request = store.getAll();
-    request.onsuccess = () => resolve((request.result as WeeklyKlineRecord[]) || []);
+    request.onsuccess = () => {
+      const all = (request.result as Array<WeeklyKlineRecord | WeeklyKlineMetaRecord>) || [];
+      resolve(all.filter((record): record is WeeklyKlineRecord => !isMetaRecord(record)));
+    };
     request.onerror = () => reject(new Error('读取全部周K数据失败'));
   });
 }
 
 /**
- * 周K缓存概况（数量 + 最近更新时间）
+ * 读取周K缓存最近一次写入时间；表中还没有元数据记录时返回 null。
  */
-export async function getWeeklyKlineStats(): Promise<{
-  count: number;
-  latestUpdatedAt: number | null;
-}> {
-  const records = await getAllWeeklyKlines();
-  if (records.length === 0) {
-    return { count: 0, latestUpdatedAt: null };
-  }
-
-  let latest = 0;
-  records.forEach((record) => {
-    if (record.updatedAt > latest) {
-      latest = record.updatedAt;
-    }
-  });
-
-  return { count: records.length, latestUpdatedAt: latest || null };
-}
-
-/**
- * 清空周K缓存
- */
-export async function clearWeeklyKlines(): Promise<void> {
+export async function getWeeklyKlineTimestamp(): Promise<number | null> {
   const db = await initOpportunityDB();
-  const transaction = db.transaction([WEEKLY_KLINE_STORE_NAME], 'readwrite');
-  transaction.objectStore(WEEKLY_KLINE_STORE_NAME).clear();
+  const transaction = db.transaction([WEEKLY_KLINE_STORE_NAME], 'readonly');
+  const store = transaction.objectStore(WEEKLY_KLINE_STORE_NAME);
 
-  await txDone(transaction, '清空周K数据失败');
+  return new Promise((resolve, reject) => {
+    const request = store.get(WEEKLY_KLINE_META_KEY);
+    request.onsuccess = () => {
+      const record = request.result as WeeklyKlineMetaRecord | undefined;
+      resolve(typeof record?.timestamp === 'number' ? record.timestamp : null);
+    };
+    request.onerror = () => reject(new Error('读取周K缓存时间戳失败'));
+  });
 }

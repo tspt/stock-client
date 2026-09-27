@@ -8,8 +8,8 @@
 import type { KLineData, StockInfo } from '@/types/stock';
 import { getKLineData } from './api';
 import {
-  clearWeeklyKlines,
   getAllWeeklyKlines,
+  getWeeklyKlineTimestamp,
   saveWeeklyKlines,
   type WeeklyKlineRecord,
 } from '@/utils/storage/weeklyKlineDB';
@@ -29,6 +29,17 @@ import { logger } from '@/utils/business/logger';
  * 避免旧参数拉到的短历史被长期复用。
  */
 const MIN_WEEKLY_CACHE_BARS = 120;
+
+/**
+ * 旧版本记录里残留的逐条 `updatedAt`。
+ *
+ * 时间戳已改由同表的元数据记录统一提供（见 weeklyKlineDB 的 WEEKLY_KLINE_META_KEY），
+ * 这里只在元数据缺失时（升级后尚未写入过）做展示兜底，因此不写进 WeeklyKlineRecord 类型。
+ */
+function legacyUpdatedAtOf(record: WeeklyKlineRecord): number {
+  const value = (record as unknown as Record<string, unknown>).updatedAt;
+  return typeof value === 'number' ? value : 0;
+}
 
 export interface WeeklyFetchProgress {
   completed: number;
@@ -126,7 +137,7 @@ export async function loadCachedWeeklyKlines(
   const records = await getAllWeeklyKlines();
   const klines = new Map<string, KLineData[]>();
   const names = new Map<string, string>();
-  let updatedAt: number | null = null;
+  let updatedAt = await getWeeklyKlineTimestamp();
   let stale = 0;
   let shortHistory = 0;
 
@@ -143,17 +154,17 @@ export async function loadCachedWeeklyKlines(
     }
     klines.set(record.code, record.kline);
     names.set(record.code, record.name || '');
-    if (updatedAt === null || record.updatedAt > updatedAt) {
-      updatedAt = record.updatedAt;
-    }
   });
 
-  return { klines, names, updatedAt, stale, shortHistory };
-}
+  // 元数据时间戳缺失（刚升级、还没写入过）：退回旧记录的逐条 updatedAt 取最大值兜底展示，只读不写库
+  if (updatedAt === null) {
+    records.forEach((record) => {
+      const legacy = legacyUpdatedAtOf(record);
+      if (legacy > (updatedAt ?? 0)) updatedAt = legacy;
+    });
+  }
 
-/** 清空周K缓存 */
-export async function clearWeeklyKlineCache(): Promise<void> {
-  await clearWeeklyKlines();
+  return { klines, names, updatedAt, stale, shortHistory };
 }
 
 /**
@@ -200,7 +211,6 @@ export async function fetchWeeklyKlines(
 
     const batch = pending.slice(i, i + concurrency);
     const batchRecords: WeeklyKlineRecord[] = [];
-    const now = Date.now();
 
     await Promise.all(
       batch.map(async (stock) => {
@@ -215,7 +225,6 @@ export async function fetchWeeklyKlines(
               code: stock.code,
               name: stock.name,
               kline,
-              updatedAt: now,
               version: WEEKLY_KLINE_SCHEMA_VERSION,
               adjust: WEEKLY_KLINE_ADJUST,
               requestedCount: count,

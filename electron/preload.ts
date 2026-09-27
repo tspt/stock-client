@@ -55,8 +55,6 @@ try {
         name: string;
         klineData: any[];
         latestQuote?: any;
-        updatedAt?: number;
-        industry?: { code: string; name: string } | null;
       }>
     ) => {
       return ipcRenderer.invoke('batch-export-kline-data', stocksData);

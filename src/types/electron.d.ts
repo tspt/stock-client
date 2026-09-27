@@ -44,8 +44,6 @@ export interface ElectronAPI {
       name: string;
       klineData: any[];
       latestQuote?: any;
-      updatedAt?: number;
-      industry?: { code: string; name: string } | null;
     }>
   ) => Promise<{
     success: boolean;
