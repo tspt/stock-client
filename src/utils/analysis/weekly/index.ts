@@ -3,7 +3,7 @@
  *
  * 使用方式：
  *   const rows = analyzeWeeklyKlines(klines, names);
- *   const picked = applyWeeklyFilters(rows, { ...DEFAULT_WEEKLY_FILTERS });
+ *   const { rows: picked, missingData } = applyWeeklyFilters(rows, { ...DEFAULT_WEEKLY_FILTERS });
  *
  * 评分是「三段式绝对分」（趋势健康度 + 战法 + 多周期共振 − 风险），不再依赖横截面分位；
  * 但 scoreRank 仍按池内分位计算，用于展示，因此需要整批处理。
@@ -56,6 +56,7 @@ export type {
 } from './backtest';
 export { isDailyAboveMa, resonanceLayers, DAILY_MA_PERIOD } from './resonance';
 export { pickByIndustryCap, industryKeyOf, applyWeeklyFilters } from './select';
+export type { WeeklyFilterResult, WeeklyMissingDataStats } from './select';
 export type { WeeklyPanel } from './panel';
 
 /** 1 亿元（成交额单位：元） */
@@ -67,6 +68,11 @@ export const YI = 1e8;
  * 流动性（近 8 周成交额中位数）与 13 周动量 / 26 周涨幅 / 52 周位置 / 量能趋势
  * 这几项门槛已移除：它们是旧版「横截面动量排序」的遗留门槛，与战法逻辑直接冲突——
  * 平台突破发生在「低位横盘」（52 周位置偏低），回踩低吸要求「缩量」（量能趋势偏低）。
+ *
+ * 关于「数据筛选」的取值口径：市值/股数取自日线缓存（stockHistory.latestDetail）、
+ * 财务指标取自财务缓存（stockFinanceMetrics），覆盖率取决于这些缓存是否已写入。
+ * 因此区间判定采用「缺值不参与该项筛选」（见 select.ts passRange）：
+ * 数据缺失的个股不会被默认区间静默剔除，而是照常进入名单并在页面提示未参与的只数。
  */
 export const DEFAULT_WEEKLY_FILTERS: WeeklyFilterOptions = {
   minScore: 0,

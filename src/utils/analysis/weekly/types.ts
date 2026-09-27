@@ -467,15 +467,20 @@ export interface WeeklyFilterOptions {
   excludeDowntrend?: boolean;
   /** 是否要求日线站上 20 日均线（无日线数据时自动跳过） */
   requireDailyAboveMa20?: boolean;
-  /** 数据筛选：价格范围（元），基于最新周收盘价；range 已设置但缺值即排除 */
+  /**
+   * 数据筛选：价格范围（元），基于最新周收盘价。
+   *
+   * 以下各 *Range 统一口径：未设置边界 → 该项不参与筛选；已设置但个股缺值 →
+   * 该项对这只股票不参与判定（缺值 ≠ 不达标），避免默认区间把缺数据个股静默剔除。
+   */
   priceRange?: NumberRange;
-  /** 数据筛选：总市值范围（亿元） */
+  /** 数据筛选：总市值范围（亿元），数据来自日线缓存 */
   marketCapRange?: NumberRange;
-  /** 数据筛选：总股数范围（亿股） */
+  /** 数据筛选：总股数范围（亿股），数据来自日线缓存 */
   totalSharesRange?: NumberRange;
-  /** 数据筛选：总营收范围（亿元） */
+  /** 数据筛选：总营收范围（亿元），数据来自财务缓存 */
   financeRevenueRange?: NumberRange;
-  /** 数据筛选：归母净利润范围（亿元） */
+  /** 数据筛选：归母净利润范围（亿元），数据来自财务缓存 */
   financeNetProfitRange?: NumberRange;
   /** 数据筛选：总营收增长率范围（%） */
   financeRevenueGrowthRange?: NumberRange;

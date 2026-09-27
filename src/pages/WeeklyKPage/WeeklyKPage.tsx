@@ -56,7 +56,6 @@ import {
   DEFAULT_WEEKLY_FILTERS,
   WEEKLY_SETUP_GRADE_LABELS,
   WEEKLY_SETUP_LABELS,
-  YI,
   analyzeWeeklyKlines,
   applyWeeklyFilters,
   isRunningWeek,
@@ -73,7 +72,8 @@ import {
 } from '@/utils/storage/opportunityIndexedDB';
 import {
   applyFinanceMetrics,
-  mergeFundamentalsFromHistories,
+  applyMarketCapFromHistories,
+  fillMarketCapFromOpportunity,
   type FundamentalsMap,
 } from '@/utils/analysis/weekly/fundamentals';
 import {
@@ -565,9 +565,9 @@ export function WeeklyKPage() {
    * 价格 3~100 元、总市值 30~1000 亿、总股数 1~50 亿股、总营收 ≥0 亿、归母净利润 ≥0 亿；
    * ROE、资产负债率与两个增长率默认不限。
    *
-   * 注意：营收/净利润（以及 ROE、资产负债率）只有点过「获取财务指标」的股票才有值，
-   * 一旦设置了区间，未取到值的个股会被该硬门槛排除（withinRange 对「已设区间但缺值」
-   * 判定为不通过）。
+   * 注意：市值/股数取自日线缓存、营收/净利润等取自财务指标缓存，覆盖率取决于是否已写入这些缓存。
+   * 已设置区间但个股缺值时，该项对这只股票「不参与判定」（缺值 ≠ 不达标），
+   * 不会静默剔除个股；未参与判定的只数在筛选摘要里提示（applyWeeklyFilters 的 missingData）。
    */
   const [filters, setFilters] = useState<WeeklyFilterOptions>({ ...DEFAULT_WEEKLY_FILTERS });
   /** 名称筛选：与机会分析页「名称筛选」面板同一套字段与默认值 */
@@ -744,43 +744,33 @@ export function WeeklyKPage() {
 
   /**
    * 载入基本面（总市值/总股数/营收/净利润及其增长率/ROE/资产负债率）用于「数据筛选」：
-   * - 市值/股本：优先复用机会分析结果（IndexedDB），保证与机会分析页口径一致；
-   * - 兜底：机会分析的 `latest` 只覆盖最近一次分析过的股票，其余用日K缓存
-   *   `stockHistory.latestDetail` 里的市值补齐（见 utils/analysis/weekly/fundamentals.ts）；
-   * - 财务指标：读取机会分析「获取财务指标」写入的独立缓存。
+   * - 市值/股数：以日线缓存 `stockHistory.latestDetail` 为主来源（按 code 长期保留，
+   *   覆盖面比「只覆盖最近一次分析」的机会分析结果更广），机会分析 `latest` 只兜底补齐；
+   * - 营收/净利润及增长率/ROE/资产负债率：读取财务指标缓存 `stockFinanceMetrics`。
    * 均不额外发起网络请求；totalShares 折算成「亿股」，营收/净利润折算成「亿元」。
+   * 取不到数据的个股对应字段为 undefined，筛选侧按「缺值不参与该项筛选」处理。
    */
   const loadFundamentals = useCallback(async (): Promise<FundamentalsMap> => {
     const map: FundamentalsMap = new Map();
+    /** 市值/股数：日线 IndexedDB（首选来源） */
+    try {
+      applyMarketCapFromHistories(map, await getStocksHistory([]));
+    } catch (error) {
+      logger.error('[WeeklyKPage] 读取日线缓存基本面失败:', error);
+    }
+    /** 市值/股数：机会分析结果兜底补齐日线缓存没覆盖到的个股 */
     try {
       const result = await getOpportunityData();
-      result?.data?.forEach((item) => {
-        const marketCap = item.marketCap;
-        const totalShares =
-          item.totalShares !== undefined
-            ? item.totalShares / YI
-            : marketCap !== undefined && item.price > 0
-              ? marketCap / item.price
-              : undefined;
-        map.set(item.code, { marketCap, totalShares });
-      });
+      fillMarketCapFromOpportunity(map, result?.data ?? []);
     } catch (error) {
-      logger.error('[WeeklyKPage] 读取总市值/总股数失败:', error);
+      logger.error('[WeeklyKPage] 读取机会分析市值/总股数失败:', error);
     }
+    /** 财务指标：财务指标 IndexedDB */
     try {
       const financeRecords = await getAllStockFinanceMetrics();
       financeRecords.forEach(({ code, metrics }) => applyFinanceMetrics(map, code, metrics));
     } catch (error) {
       logger.error('[WeeklyKPage] 读取财务指标失败:', error);
-    }
-    /**
-     * 日K缓存兜底：否则未被最近一次机会分析覆盖的股票取不到市值/股数，
-     * 会被 applyWeeklyFilters 的 withinRange 直接判定不通过，表现为筛选不生效。
-     */
-    try {
-      mergeFundamentalsFromHistories(map, await getStocksHistory([]));
-    } catch (error) {
-      logger.error('[WeeklyKPage] 读取日K缓存基本面失败:', error);
     }
     setFundamentals(map);
     return map;
@@ -964,7 +954,8 @@ export function WeeklyKPage() {
     ]
   );
 
-  const filteredRows = useMemo(
+  /** 硬门槛结果：`rows` 为通过名单，`missingData` 为其中因缺数据未参与区间判定的只数 */
+  const { rows: filteredRows, missingData } = useMemo(
     () => applyWeeklyFilters(rows, effectiveFilters),
     [rows, effectiveFilters]
   );
@@ -1770,6 +1761,16 @@ export function WeeklyKPage() {
           {filters.requireSetup ? ' + 至少命中1个战法' : ''}
           {activeSetupGrade ? ` + 仅${WEEKLY_SETUP_GRADE_LABELS[activeSetupGrade]}战法` : ''}
         </span>
+
+        {missingData.total > 0 && (
+          <span
+            className={styles.timeText}
+            title="名单中这些个股在已设置的总市值/总股数、财务指标区间上取不到数据（数据来自日线缓存与财务指标缓存），因此该项对它们不参与判定；补全缓存后重新筛选即可生效"
+          >
+            ⚠️ 缺数据未参与筛选：市值/股数 {missingData.marketCap} 只、财务指标{' '}
+            {missingData.finance} 只
+          </span>
+        )}
 
         {updatedAt && (
           <span className={styles.timeText}>
