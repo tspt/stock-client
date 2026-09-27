@@ -501,7 +501,9 @@ export function SectorConstituentsPage() {
                 icon={<ArrowRightOutlined />}
                 onClick={handleUpdateSectorMapping}
                 loading={updatingSectorInfo}
-              />
+              >
+                同步到股票列表
+              </Button>
             </Tooltip>
             <Button
               icon={<FilterOutlined />}
