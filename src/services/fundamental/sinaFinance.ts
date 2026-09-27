@@ -7,8 +7,9 @@
  *
  * 接口支持 JSONP，使用 {@link loadJsonp} 直连，避免跨域与代理改造。
  *
- * 缓存策略（三级）：内存 cache → StockOpportunityDB.stockFinanceMetrics → 网络。
- * 持久化层可跨重启复用，且不会被「一键分析」的 apiCache.clear() 清掉。
+ * 缓存策略（三级）：内存 cache（TTL 6 小时）→ StockOpportunityDB.stockFinanceMetrics → 网络。
+ * 持久化层可跨重启复用，且不会被「一键分析」的 apiCache.clear() 清掉；
+ * 财务数据按季度更新，持久化命中即复用（默认不过期），故记录中不保存写入时间戳。
  */
 
 import { logger } from '@/utils/business/logger';
@@ -27,7 +28,7 @@ import type { StockFinanceMetrics } from '@/types/stock';
 const SINA_FINANCE_BASE =
   'https://quotes.sina.cn/cn/api/openapi.php/CompanyFinanceService.getFinanceReport2022';
 
-/** 财务数据按季度更新，内存与 IndexedDB 缓存统一 6 小时 */
+/** 财务数据按季度更新；该 TTL 仅作用于内存缓存，IndexedDB 持久化默认不过期 */
 const SINA_FINANCE_CACHE_TTL = 6 * 60 * 60 * 1000;
 
 /** JSONP 单次请求超时时间（毫秒） */
@@ -106,11 +107,6 @@ function buildPaperCode(code: string): string | null {
 /** 内存缓存 key */
 function buildCacheKey(paperCode: string): string {
   return `sina:finance:${paperCode}`;
-}
-
-/** 持久化记录是否仍在有效期内 */
-function isPersistFresh(updatedAt: number): boolean {
-  return Date.now() - updatedAt <= SINA_FINANCE_CACHE_TTL;
 }
 
 /** 归一化 report_list（对象或数组）为「日期 + 报告」列表 */
@@ -279,7 +275,8 @@ export async function getSinaFinanceMetrics(
 
     try {
       const records = await getStockFinanceMetrics([code]);
-      const hit = records.find((record) => record.code === code && isPersistFresh(record.updatedAt));
+      // 持久化记录默认不过期：存在即命中，避免为 TTL 额外保存写入时间
+      const hit = records.find((record) => record.code === code);
       if (hit) {
         apiCache.set(cacheKey, hit.metrics, SINA_FINANCE_CACHE_TTL);
         return hit.metrics;
@@ -292,7 +289,7 @@ export async function getSinaFinanceMetrics(
   const metrics = await fetchSinaFinanceMetricsFromNetwork(code, { num, signal });
   if (metrics) {
     apiCache.set(cacheKey, metrics, SINA_FINANCE_CACHE_TTL);
-    void saveStockFinanceMetrics([{ code, metrics, updatedAt: Date.now() }]).catch((error) => {
+    void saveStockFinanceMetrics([{ code, metrics }]).catch((error) => {
       logger.warn('[SinaFinance] 写入本地财务指标缓存失败:', error);
     });
   }
@@ -317,7 +314,7 @@ export interface SinaFinanceBatchOptions {
 /**
  * 批量获取财务指标数据。
  *
- * - 优先命中内存缓存与 IndexedDB（TTL 6 小时），命中者不发请求
+ * - 优先命中内存缓存（TTL 6 小时）与 IndexedDB（默认不过期），命中者不发请求
  * - 单只失败不影响整体；已成功结果统一回写 IndexedDB
  *
  * @returns Map<原始 code, 财务指标>
@@ -344,9 +341,7 @@ export async function getSinaFinanceMetricsBatch(
     try {
       const records = await getAllStockFinanceMetrics();
       records.forEach((record) => {
-        if (isPersistFresh(record.updatedAt)) {
-          persistedMap.set(record.code, record.metrics);
-        }
+        persistedMap.set(record.code, record.metrics);
       });
     } catch (error) {
       logger.warn('[SinaFinance] 读取本地财务指标缓存失败，忽略:', error);
@@ -424,7 +419,7 @@ export async function getSinaFinanceMetricsBatch(
       if (paperCode) {
         apiCache.set(buildCacheKey(paperCode), metrics, SINA_FINANCE_CACHE_TTL);
       }
-      freshRecords.push({ code: task.code, metrics, updatedAt: Date.now() });
+      freshRecords.push({ code: task.code, metrics });
     });
 
     if (freshRecords.length > 0) {

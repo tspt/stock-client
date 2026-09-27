@@ -315,11 +315,15 @@ export async function getStocksHistory(codes: string[]): Promise<StockHistoryRec
 
 // ==================== 财务指标管理 ====================
 
-/** 财务指标记录（带写入时间，供上层做 TTL 判断） */
+/**
+ * 财务指标记录。
+ *
+ * 不保留写入时间戳：财务数据按季度更新，持久化命中即直接复用（默认不过期），
+ * 过期与否由使用侧按报告期（reportDate / publishDate）自行判定。
+ */
 export interface StockFinanceRecord {
   code: string;
   metrics: StockFinanceMetrics;
-  updatedAt: number;
 }
 
 /**

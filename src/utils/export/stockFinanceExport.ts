@@ -12,7 +12,10 @@ import {
 import { logger } from '../business/logger';
 
 /**
- * 导出数据文件格式
+ * 导出数据文件格式。
+ *
+ * records 与 StockFinanceRecord 同构；导出 / 导入前都会显式重建对象，
+ * 以免旧版本 IndexedDB 或旧 JSON 中残留的 updatedAt 被再次写出。
  */
 export interface StockFinanceExportData {
   version: string;
@@ -43,7 +46,9 @@ export async function exportStockFinanceToJSON(): Promise<void> {
   try {
     logger.info('[StockFinanceExport] 开始导出财务指标数据');
 
-    const records = await getAllStockFinanceMetrics();
+    const stored = await getAllStockFinanceMetrics();
+    // 显式重建记录结构，剔除旧版本遗留的 updatedAt 等非业务字段
+    const records: StockFinanceRecord[] = stored.map(({ code, metrics }) => ({ code, metrics }));
 
     const exportData: StockFinanceExportData = {
       version: '1.0',
@@ -109,9 +114,10 @@ export async function importStockFinanceFromJSON(
       throw new Error('数据格式不正确');
     }
 
-    const records = importData.records.filter(
-      (record) => record && typeof record.code === 'string' && record.metrics
-    );
+    // 显式重建记录结构，兼容旧文件中携带的 updatedAt（导入时一并丢弃）
+    const records: StockFinanceRecord[] = importData.records
+      .filter((record) => record && typeof record.code === 'string' && record.metrics)
+      .map((record) => ({ code: record.code, metrics: record.metrics }));
 
     if (records.length === 0) {
       throw new Error('文件中没有有效的财务指标数据');

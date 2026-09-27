@@ -35,6 +35,7 @@ import {
   importStockFinanceFromJSON,
 } from '@/utils/export/stockFinanceExport';
 import { CACHE_TTL, CACHE_KEYS } from '@/utils/config/constants';
+import { getLatestFinanceReportTime } from '@/utils/analysis/financeReportTime';
 import { getStorage } from '@/utils/storage/storage';
 import type { StockInfo } from '@/types/stock';
 import { logger } from '@/utils/business/logger';
@@ -196,8 +197,8 @@ export function DataManagerPage() {
       const records = await getAllStockFinanceMetrics();
 
       if (records.length > 0) {
-        const lastUpdate = Math.max(...records.map((r) => r.updatedAt || 0));
-        // 财务指标默认不过期
+        // 记录不再保存写入时间，改用最新一期财报的披露日期作为时间参考
+        const lastUpdate = getLatestFinanceReportTime(records);
         setFinanceStatus({
           count: records.length,
           lastUpdate,
@@ -610,7 +611,7 @@ export function DataManagerPage() {
                   suffix="只"
                 />
                 <Text type="secondary" className={styles.updateTime}>
-                  最后更新: {formatTime(financeStatus?.lastUpdate)}
+                  最新财报: {formatTime(financeStatus?.lastUpdate)}
                 </Text>
               </Card>
             </Col>
