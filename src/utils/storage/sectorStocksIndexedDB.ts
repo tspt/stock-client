@@ -14,7 +14,6 @@ import { logger } from '../business/logger';
 export interface SectorWithStocks {
   code: string;
   name: string;
-  mainNetInflow?: number;
   children: Array<{
     name: string;
     code: string;

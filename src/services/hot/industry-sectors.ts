@@ -265,11 +265,10 @@ export async function getAllIndustrySectors(): Promise<IndustrySectorBasicInfo[]
         throw new Error('获取行业分类数据失败');
       }
 
-      // 转换为基本行业信息
+      // 转换为基本行业信息（只保留 code / name，行情字段由实时接口提供）
       const sectors: IndustrySectorBasicInfo[] = data.data.diff.map((item: any) => ({
         code: item.f12,
         name: item.f14,
-        mainNetInflow: item.f62, // 主力净流入（元）
       }));
 
       // 保存到缓存（逻辑已迁移至 unified-sectors.ts）

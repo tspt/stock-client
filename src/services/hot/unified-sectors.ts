@@ -14,7 +14,7 @@ import type {
   ConceptSectorRankData,
 } from '@/types/stock';
 import { logger } from '@/utils/business/logger';
-import { getStorage, setStorage } from '@/utils/storage/storage';
+import { getStorage, removeStorage, setStorage } from '@/utils/storage/storage';
 import { CACHE_KEYS, CACHE_TTL } from '@/utils/config/constants';
 import { getAllIndustrySectors as fetchAllIndustrySectors } from './industry-sectors';
 import { getAllConceptSectors as fetchAllConceptSectors } from './concept-sectors';
@@ -369,7 +369,7 @@ export async function getUnifiedSectorBasics(): Promise<{
 export async function refreshIndustrySectorsBasic(): Promise<IndustrySectorBasicInfo[]> {
   logger.info('[UnifiedSectors] 强制刷新行业板块基础信息');
   // 清除缓存
-  setStorage(CACHE_KEYS.INDUSTRY_BASIC, null);
+  removeStorage(CACHE_KEYS.INDUSTRY_BASIC);
   // 重置并发控制Promise
   industryBasicFetchPromise = null;
   // 重新获取
@@ -382,7 +382,7 @@ export async function refreshIndustrySectorsBasic(): Promise<IndustrySectorBasic
 export async function refreshConceptSectorsBasic(): Promise<ConceptSectorBasicInfo[]> {
   logger.info('[UnifiedSectors] 强制刷新概念板块基础信息');
   // 清除缓存
-  setStorage(CACHE_KEYS.CONCEPT_BASIC, null);
+  removeStorage(CACHE_KEYS.CONCEPT_BASIC);
   // 重置并发控制Promise
   conceptBasicFetchPromise = null;
   // 重新获取

@@ -34,6 +34,12 @@ export {
   refreshConceptSectorsBasic,
 } from './unified-sectors';
 export {
+  refreshAndExportSectorBasic,
+  pickSectorBasicFields,
+  SECTOR_BASIC_EXPORT_FILE_NAME,
+} from './sector-basic-export';
+export type { SectorBasicType, SectorBasicSnapshotItem } from './sector-basic-export';
+export {
   getEastMoneyRisingSectors,
   getEastMoneyFallingSectors,
   getEastMoneySectorRanks,

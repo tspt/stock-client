@@ -17,9 +17,9 @@ import {
 } from '@ant-design/icons';
 import { refreshStockList } from '@/services/stocks/api';
 import {
-  refreshIndustrySectorsBasic,
-  refreshConceptSectorsBasic,
-} from '@/services/hot/unified-sectors';
+  refreshAndExportSectorBasic,
+  type SectorBasicType,
+} from '@/services/hot/sector-basic-export';
 import {
   getIndustrySectors,
   getConceptSectors,
@@ -262,45 +262,20 @@ export function DataManagerPage() {
     });
   };
 
-  // 刷新行业板块基础信息
-  const handleRefreshIndustryBasic = async () => {
-    setRefreshingIndustryBasic(true);
+  // 刷新板块基础信息（仅 code/name）并同步快照文件
+  const handleRefreshSectorBasic = async (type: SectorBasicType) => {
+    const setLoading = type === 'industry' ? setRefreshingIndustryBasic : setRefreshingConceptBasic;
+    const label = type === 'industry' ? '行业' : '概念';
+    setLoading(true);
     try {
-      const industryBasics = await refreshIndustrySectorsBasic();
-      if (window.electronAPI?.writeBacktestOptimizeFile) {
-        await window.electronAPI.writeBacktestOptimizeFile({
-          fileName: '行业板块.json',
-          content: JSON.stringify(industryBasics, null, 4),
-        });
-      }
-      antMessage.success('行业板块基础信息刷新成功并已同步到文件');
+      await refreshAndExportSectorBasic(type);
+      antMessage.success(`${label}板块基础信息刷新成功并已同步到文件`);
       await loadSectorBasicStatus();
     } catch (error) {
       antMessage.error('刷新失败');
-      logger.error('刷新行业板块基础信息失败:', error);
+      logger.error(`刷新${label}板块基础信息失败:`, error);
     } finally {
-      setRefreshingIndustryBasic(false);
-    }
-  };
-
-  // 刷新概念板块基础信息
-  const handleRefreshConceptBasic = async () => {
-    setRefreshingConceptBasic(true);
-    try {
-      const conceptBasics = await refreshConceptSectorsBasic();
-      if (window.electronAPI?.writeBacktestOptimizeFile) {
-        await window.electronAPI.writeBacktestOptimizeFile({
-          fileName: '概念板块.json',
-          content: JSON.stringify(conceptBasics, null, 4),
-        });
-      }
-      antMessage.success('概念板块基础信息刷新成功并已同步到文件');
-      await loadSectorBasicStatus();
-    } catch (error) {
-      antMessage.error('刷新失败');
-      logger.error('刷新概念板块基础信息失败:', error);
-    } finally {
-      setRefreshingConceptBasic(false);
+      setLoading(false);
     }
   };
 
@@ -505,7 +480,7 @@ export function DataManagerPage() {
                   <Button
                     size="small"
                     icon={<ReloadOutlined />}
-                    onClick={handleRefreshIndustryBasic}
+                    onClick={() => handleRefreshSectorBasic('industry')}
                     loading={refreshingIndustryBasic}
                   >
                     刷新
@@ -535,7 +510,7 @@ export function DataManagerPage() {
                   <Button
                     size="small"
                     icon={<ReloadOutlined />}
-                    onClick={handleRefreshConceptBasic}
+                    onClick={() => handleRefreshSectorBasic('concept')}
                     loading={refreshingConceptBasic}
                   >
                     刷新

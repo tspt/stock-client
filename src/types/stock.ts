@@ -830,27 +830,25 @@ export interface IndustrySectorRankData {
 }
 
 /**
- * 概念板块基础信息（用于搜索和缓存）
+ * 概念板块基础信息（用于搜索、缓存与回测快照导出）
+ * 只保留 code / name：行情字段（主力净流入等）一律走实时接口，不进入缓存与快照
  */
 export interface ConceptSectorBasicInfo {
   /** 板块代码 */
   code: string;
   /** 板块名称 */
   name: string;
-  /** 主力净流入（元） */
-  mainNetInflow?: number;
 }
 
 /**
- * 行业板块基础信息（用于搜索和缓存）
+ * 行业板块基础信息（用于搜索、缓存与回测快照导出）
+ * 只保留 code / name：行情字段（主力净流入等）一律走实时接口，不进入缓存与快照
  */
 export interface IndustrySectorBasicInfo {
   /** 板块代码 */
   code: string;
   /** 板块名称 */
   name: string;
-  /** 主力净流入（元） */
-  mainNetInflow?: number;
 }
 
 /**

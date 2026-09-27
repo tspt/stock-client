@@ -32,9 +32,9 @@ export const DEFAULT_CACHE_TTL = 5 * 60 * 1000; // 5分钟
 export const CACHE_KEYS = {
   /** 全量股票列表 (biyingapi) */
   BIYING_STOCK_LIST: 'biying_hslt_stock_list_v1',
-  /** 行业板块基础信息 */
+  /** 行业板块基础信息（仅 code/name） */
   INDUSTRY_BASIC: 'unified_industry_basic_v1',
-  /** 概念板块基础信息 */
+  /** 概念板块基础信息（仅 code/name） */
   CONCEPT_BASIC: 'unified_concept_basic_v1',
 } as const;
 
