@@ -1,20 +1,16 @@
 /**
  * 机会分析 K 线的唯一数据源解析入口（读取侧）。
  *
- * 与写入侧共用同一套归属策略（utils/analysis/opportunityKlinePolicy）：
- * - 普通日线分析：K 线复用 `stockHistory`——机会分析取日线时经 `getKLineData`
- *   已经旁路写入了该表，不必再把同一份日线额外落一张表；
- * - 周/月/年 与「截止日（回测）」：读 `opportunityKlineCache` 独立表
- *   （stockHistory 只存真实日线历史，这两类数据放进去会污染它）。
+ * 数据源只有 `stockHistory` 一处：机会分析取日线时经 `getKLineData` 已旁路写入该表，
+ * 不必再额外落一份缓存（历史上的 opportunityKlineCache 独立表已废弃删除）。
+ *
+ * 因此只有「日线 + 无截止日」才有可复用数据；非日线周期或回测（带截止日）的截断视角
+ * 在本地没有数据源，直接返回空，避免拿完整日线冒充历史视角而引入未来信息。
  */
 
 import type { KLineData, KLinePeriod } from '@/types/stock';
 import { getKLineData } from '@/services/stocks/api';
-import {
-  getOpportunityKlineSnapshot,
-  getStocksHistory,
-} from '@/utils/storage/opportunityIndexedDB';
-import { needsDedicatedKlineStore } from '@/utils/analysis/opportunityKlinePolicy';
+import { getStocksHistory } from '@/utils/storage/opportunityIndexedDB';
 import { INITIAL_OPPORTUNITY_QUERY } from '@/utils/config/opportunityAnalysisDefaults';
 import { logger } from '@/utils/business/logger';
 
@@ -43,36 +39,27 @@ export async function loadOpportunityKlines(
   if (query.codes && query.codes.length === 0) {
     return map;
   }
-  const wanted = query.codes ? new Set(query.codes) : null;
 
-  if (!needsDedicatedKlineStore(query.period, query.asOfDate)) {
-    const histories = await getStocksHistory(query.codes ?? []);
-    histories.forEach((history) => {
-      const bars = history.dailyLines;
-      if (!bars || bars.length === 0) return;
-      if (wanted && !wanted.has(history.code)) return;
-      // stockHistory 存的是完整历史，按本次分析的条数截断，与分析结果口径一致、也省内存
-      const truncated =
-        query.count && bars.length > query.count ? bars.slice(-query.count) : bars;
-      map.set(history.code, truncated);
-    });
-    return map;
-  }
-
-  const snapshot = await getOpportunityKlineSnapshot();
-  // 表内周期与当前分析不一致说明是脏数据（如上次跑的是周线），整体忽略，
-  // 否则会把周线当成日线去算指标
-  if (snapshot.period && snapshot.period !== query.period) {
+  // stockHistory 只收真实日线历史：非日线周期、回测（带截止日）的截断视角在本地均无数据源
+  if (query.period !== 'day' || query.asOfDate) {
     logger.warn(
-      `[机会分析K线] 独立缓存周期(${snapshot.period})与当前分析周期(${query.period})不一致，已忽略该缓存`
+      `[机会分析K线] 周期(${query.period})${
+        query.asOfDate ? ` / 截止日(${query.asOfDate})` : ''
+      } 无可用本地数据源，返回空`
     );
     return map;
   }
 
-  snapshot.entries.forEach(([code, bars]) => {
+  const wanted = query.codes ? new Set(query.codes) : null;
+  const histories = await getStocksHistory(query.codes ?? []);
+  histories.forEach((history) => {
+    const bars = history.dailyLines;
     if (!bars || bars.length === 0) return;
-    if (wanted && !wanted.has(code)) return;
-    map.set(code, bars);
+    if (wanted && !wanted.has(history.code)) return;
+    // stockHistory 存的是完整历史，按本次分析的条数截断，与分析结果口径一致、也省内存
+    const truncated =
+      query.count && bars.length > query.count ? bars.slice(-query.count) : bars;
+    map.set(history.code, truncated);
   });
   return map;
 }

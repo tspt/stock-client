@@ -695,13 +695,6 @@ export interface OpportunityAnalysisResult {
   success: number;
   /** 失败数量 */
   failed: number;
-  /**
-   * K线数据缓存（序列化后的数组格式：Array<[code, klineData]>）。
-   *
-   * 日线普通分析不再落盘（复用 stockHistory，见 utils/analysis/opportunityKlinePolicy）；
-   * 该字段现主要用于「内存态传递」与老版本记录的兜底读取。
-   */
-  klineDataCache?: Array<[string, KLineData[]]>;
 }
 
 /**

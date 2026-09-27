@@ -56,7 +56,7 @@ function computeTrendScore(f: WeeklyFactors, max: number): number {
  *   日线站在 20 日均线上方（定主力控盘）   → 14
  * 文档称两条同时满足时「成功率大幅提升」，因此日线权重更重。
  *
- * 日线数据来自机会分析写入 IndexedDB 的 opportunityKlineCache；
+ * 日线数据来自机会分析写入 IndexedDB 的 stockHistory；
  * 缺失时按满分的一半计，避免「没跑机会分析」被当成「日线走坏」而系统性扣分。
  */
 function computeResonanceScore(f: WeeklyFactors, max: number): number {

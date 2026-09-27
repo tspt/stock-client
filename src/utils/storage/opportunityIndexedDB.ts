@@ -5,7 +5,6 @@
 import type {
   OpportunityAnalysisResult,
   KLineData,
-  KLinePeriod,
   StockQuote,
   StockDetail,
   IndustryInfo,
@@ -15,12 +14,10 @@ import {
   OPPORTUNITY_DB_NAME,
   OPPORTUNITY_DB_VERSION,
   OPPORTUNITY_STORE_NAME,
-  OPPORTUNITY_KLINE_STORE_NAME,
   WEEKLY_KLINE_STORE_NAME,
   STOCK_HISTORY_STORE_NAME,
   STOCK_FINANCE_STORE_NAME,
 } from '../config/constants';
-import { needsDedicatedKlineStore } from '../analysis/opportunityKlinePolicy';
 import { mergeStockHistoryRecord } from './stockHistoryMerge';
 
 let dbInstance: IDBDatabase | null = null;
@@ -86,11 +83,6 @@ export async function initOpportunityDB(): Promise<IDBDatabase> {
         db.deleteObjectStore('stockRecords');
       }
 
-      // v7: K 线缓存从主记录拆分为独立存储，避免单条记录过大导致读取缓慢
-      if (!db.objectStoreNames.contains(OPPORTUNITY_KLINE_STORE_NAME)) {
-        db.createObjectStore(OPPORTUNITY_KLINE_STORE_NAME, { keyPath: 'code' });
-      }
-
       // v8: 周K 数据独立存储（周线选股页面专用，不与日线历史互相覆盖）
       if (!db.objectStoreNames.contains(WEEKLY_KLINE_STORE_NAME)) {
         db.createObjectStore(WEEKLY_KLINE_STORE_NAME, { keyPath: 'code' });
@@ -104,88 +96,13 @@ export async function initOpportunityDB(): Promise<IDBDatabase> {
   });
 }
 
-/** K 线缓存写入分批大小，避免单个事务过大 */
-const KLINE_WRITE_BATCH = 500;
-
 /**
- * 保存 K 线缓存（独立存储）：先清空旧数据，再分批写入。
+ * 保存分析结果（仅主记录）。
  *
- * 只承载「日线以外的周期」与「带截止日的日线（回测）」——普通日线分析复用 stockHistory，
- * 传空数组即表示本次不落盘（仅清空，避免上一次其它周期的数据被误读）。
- * 每条记录带上 period，供读取侧校验周期是否与当前分析一致。
- */
-export async function saveOpportunityKlines(
-  entries: Array<[string, KLineData[]]>,
-  period?: KLinePeriod
-): Promise<void> {
-  const db = await initOpportunityDB();
-
-  await new Promise<void>((resolve, reject) => {
-    const transaction = db.transaction([OPPORTUNITY_KLINE_STORE_NAME], 'readwrite');
-    transaction.oncomplete = () => resolve();
-    transaction.onerror = () => reject(new Error('清空K线缓存失败'));
-    transaction.objectStore(OPPORTUNITY_KLINE_STORE_NAME).clear();
-  });
-
-  for (let index = 0; index < entries.length; index += KLINE_WRITE_BATCH) {
-    const batch = entries.slice(index, index + KLINE_WRITE_BATCH);
-    await new Promise<void>((resolve, reject) => {
-      const transaction = db.transaction([OPPORTUNITY_KLINE_STORE_NAME], 'readwrite');
-      transaction.oncomplete = () => resolve();
-      transaction.onerror = () =>
-        reject(new Error(`写入K线缓存失败：第 ${Math.floor(index / KLINE_WRITE_BATCH) + 1} 批`));
-      const store = transaction.objectStore(OPPORTUNITY_KLINE_STORE_NAME);
-      batch.forEach(([code, kline]) => {
-        store.put({ code, kline, period });
-      });
-    });
-  }
-}
-
-/** 独立 K 线表快照：条目 + 写入时的周期（旧数据无 period） */
-export interface OpportunityKlineSnapshot {
-  /** 写入该批数据时的分析周期；改造前写入的旧数据没有该字段 */
-  period?: KLinePeriod;
-  entries: Array<[string, KLineData[]]>;
-}
-
-/**
- * 读取独立表全部 K 线（一次性读回，保证与拆分前的数据集合完全一致）
- */
-export async function getOpportunityKlineSnapshot(): Promise<OpportunityKlineSnapshot> {
-  const db = await initOpportunityDB();
-
-  return new Promise((resolve, reject) => {
-    const transaction = db.transaction([OPPORTUNITY_KLINE_STORE_NAME], 'readonly');
-    const request = transaction.objectStore(OPPORTUNITY_KLINE_STORE_NAME).getAll();
-
-    request.onsuccess = () => {
-      const rows = (request.result || []) as Array<{
-        code: string;
-        kline: KLineData[];
-        period?: KLinePeriod;
-      }>;
-      resolve({
-        period: rows.find((row) => row.period)?.period,
-        entries: rows.map((row) => [row.code, row.kline]),
-      });
-    };
-    request.onerror = () => reject(new Error('获取K线缓存失败'));
-  });
-}
-
-/**
- * 保存分析结果。
- * - K 线优先落盘：先写 K 线再写主记录，避免主记录已更新而 K 线缺失导致读到不完整数据；
- * - 但只有「非日线周期」或「带截止日的日线（回测）」才落独立表，
- *   普通日线分析复用 getKLineData 旁路写入的 stockHistory（见 needsDedicatedKlineStore）。
+ * K 线不落盘：机会分析固定日线口径，日线由 `getKLineData` 旁路写入 stockHistory，
+ * 读取统一由 `services/opportunity/klineSource` 从该表解析。
  */
 export async function saveOpportunityData(data: OpportunityAnalysisResult): Promise<void> {
-  const { klineDataCache, ...rest } = data;
-  const dedicated = needsDedicatedKlineStore(data.period, data.asOfDate);
-
-  await saveOpportunityKlines(dedicated ? klineDataCache ?? [] : [], data.period);
-
   const db = await initOpportunityDB();
   const transaction = db.transaction([OPPORTUNITY_STORE_NAME], 'readwrite');
   const store = transaction.objectStore(OPPORTUNITY_STORE_NAME);
@@ -193,7 +110,7 @@ export async function saveOpportunityData(data: OpportunityAnalysisResult): Prom
   return new Promise((resolve, reject) => {
     const request = store.put({
       id: 'latest',
-      ...rest,
+      ...data,
     });
 
     request.onsuccess = () => resolve();
@@ -204,9 +121,8 @@ export async function saveOpportunityData(data: OpportunityAnalysisResult): Prom
 /**
  * 获取最新的分析结果（仅主记录）。
  *
- * 这里不拼装 K 线：日线复用 stockHistory、周/月/年与回测读独立表，
- * 统一由 `services/opportunity/klineSource` 按周期策略解析；
- * 主记录里自带的 klineDataCache 仅作为老版本数据的兜底（由调用方决定是否采用）。
+ * 这里不拼装 K 线：K 线统一由 `services/opportunity/klineSource`
+ * 从 stockHistory 解析，主记录只存分析结果本身。
  */
 export async function getOpportunityData(): Promise<OpportunityAnalysisResult | null> {
   const db = await initOpportunityDB();
@@ -227,14 +143,11 @@ export async function getOpportunityData(): Promise<OpportunityAnalysisResult | 
 }
 
 /**
- * 清空所有数据（含独立存储的 K 线缓存）
+ * 清空机会分析主记录（不影响 stockHistory 等其它存储）
  */
 export async function clearOpportunityData(): Promise<void> {
   const db = await initOpportunityDB();
-  const transaction = db.transaction(
-    [OPPORTUNITY_STORE_NAME, OPPORTUNITY_KLINE_STORE_NAME],
-    'readwrite'
-  );
+  const transaction = db.transaction([OPPORTUNITY_STORE_NAME], 'readwrite');
 
   return new Promise((resolve, reject) => {
     transaction.onerror = () => reject(new Error('清空数据失败'));
@@ -243,10 +156,6 @@ export async function clearOpportunityData(): Promise<void> {
     const mainStore = transaction.objectStore(OPPORTUNITY_STORE_NAME);
     const mainRequest = mainStore.clear();
     mainRequest.onerror = () => reject(new Error('清空主数据失败'));
-
-    const klineStore = transaction.objectStore(OPPORTUNITY_KLINE_STORE_NAME);
-    const klineRequest = klineStore.clear();
-    klineRequest.onerror = () => reject(new Error('清空K线缓存失败'));
   });
 }
 

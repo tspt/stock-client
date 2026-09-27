@@ -241,13 +241,7 @@ export const OPPORTUNITY_DB_NAME = 'StockOpportunityDB';
 export const OPPORTUNITY_DB_VERSION = 9;
 /** 对象存储名称 */
 export const OPPORTUNITY_STORE_NAME = 'opportunityData';
-/**
- * 分析结果 K 线缓存存储名称（v7 起从主记录拆分出来，避免单条记录过大）。
- * 只承载「周/月/年周期」与「带截止日的回测数据」；
- * 普通日线分析复用 stockHistory，判定见 utils/analysis/opportunityKlinePolicy。
- */
-export const OPPORTUNITY_KLINE_STORE_NAME = 'opportunityKlineCache';
-/** 股票历史数据存储名称 */
+/** 股票历史数据存储名称（机会分析 K 线的唯一来源，日线经此表旁路写入） */
 export const STOCK_HISTORY_STORE_NAME = 'stockHistory';
 /** 周K数据缓存存储名称（v8 起，独立于日线历史，避免周线覆盖日线数据） */
 export const WEEKLY_KLINE_STORE_NAME = 'weeklyKlineCache';

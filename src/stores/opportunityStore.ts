@@ -228,9 +228,6 @@ export const useOpportunityStore = create<OpportunityState>((set, get) => ({
       });
       trimKlineDataCache(newCache);
 
-      // 将 Map 序列化为数组格式以便保存到 IndexedDB
-      const klineDataCacheArray: Array<[string, KLineData[]]> = Array.from(newCache.entries());
-
       const result: OpportunityAnalysisResult = {
         data: results,
         timestamp: Date.now(),
@@ -241,7 +238,6 @@ export const useOpportunityStore = create<OpportunityState>((set, get) => ({
         total: stocks.length,
         success: results.filter((r) => !r.error).length,
         failed: results.filter((r) => r.error).length,
-        klineDataCache: klineDataCacheArray,
       };
 
       await saveOpportunityData(result);
@@ -383,7 +379,6 @@ export const useOpportunityStore = create<OpportunityState>((set, get) => ({
       const mergedErrors = Array.from(errorMap.values());
 
       // 保存更新后的数据到 IndexedDB
-      const klineDataCacheArray: Array<[string, KLineData[]]> = Array.from(newCache.entries());
       const result: OpportunityAnalysisResult = {
         data: mergedData,
         timestamp: Date.now(),
@@ -394,7 +389,6 @@ export const useOpportunityStore = create<OpportunityState>((set, get) => ({
         total: failedStocks.length,
         success: results.filter((r) => !r.error).length,
         failed: mergedErrors.length,
-        klineDataCache: klineDataCacheArray,
       };
 
       await saveOpportunityData(result);
@@ -428,12 +422,6 @@ export const useOpportunityStore = create<OpportunityState>((set, get) => ({
           codes: cached.data?.map((item) => item.code),
         });
 
-        // 老版本记录（v7 之前）把 K 线直接塞在 latest 里，作为兜底补上
-        (cached.klineDataCache ?? []).forEach(([code, klineData]) => {
-          if (klineData?.length && !klineDataCache.has(code)) {
-            klineDataCache.set(code, klineData);
-          }
-        });
         trimKlineDataCache(klineDataCache);
 
         set({
