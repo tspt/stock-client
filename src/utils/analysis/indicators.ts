@@ -123,6 +123,35 @@ export function calculateKDJ(data: KLineData[]) {
 }
 
 /**
+ * K 线抽屉用到的三套指标（MA5/10/20/30/60 + MACD + KDJ）
+ */
+export interface KlineIndicatorSeries {
+  ma: { ma5: number[]; ma10: number[]; ma20: number[]; ma30: number[]; ma60: number[] };
+  macd: { dif: number[]; dea: number[]; macd: number[] };
+  kdj: { k: number[]; d: number[]; j: number[] };
+}
+
+/**
+ * 一次算齐 K 线抽屉需要的全部指标。
+ *
+ * 统一入口的意义：主图、MACD 副图、KDJ 副图、以及价格区间推导必须共用同一批序列，
+ * 分开调用会让 MA 被算两遍，且价格区间与主图有可能取到不同批次的数据。
+ */
+export function calculateKlineIndicators(data: KLineData[]): KlineIndicatorSeries {
+  return {
+    ma: {
+      ma5: calculateMA(data, 5),
+      ma10: calculateMA(data, 10),
+      ma20: calculateMA(data, 20),
+      ma30: calculateMA(data, 30),
+      ma60: calculateMA(data, 60),
+    },
+    macd: calculateMACD(data),
+    kdj: calculateKDJ(data),
+  };
+}
+
+/**
  * 计算RSI指标
  */
 export function calculateRSI(data: KLineData[], period: number): number[] {

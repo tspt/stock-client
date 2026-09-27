@@ -1,0 +1,23 @@
+/* K 线抽屉外壳：标题行（股票名 + 标签 + 换股位置）与右上角临时列表操作区 */
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.navigationText {
+  font-size: 12px;
+  font-weight: normal;
+}
+
+.extraRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.extraHint {
+  font-size: 12px;
+  white-space: nowrap;
+}

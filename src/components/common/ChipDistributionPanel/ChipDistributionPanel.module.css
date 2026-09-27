@@ -1,0 +1,15 @@
+/* 筹码分布画布容器：宽度与画布高度由共享布局常量注入，保证与左侧主图逐像素对齐 */
+.panel {
+  flex: 0 0 auto;
+  height: 100%;
+}
+
+.placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.empty {
+  font-size: 12px;
+}

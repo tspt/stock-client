@@ -1,0 +1,33 @@
+/* 筹码统计面板：与左侧主图绘图区顶部对齐（顶部留白由组件按共享布局常量注入） */
+.panel {
+  flex: 0 0 auto;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* 单个统计项：上标签、下数值 */
+.item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.label {
+  font-size: 14px;
+}
+
+.value {
+  font-size: 14px;
+}
+
+/* 集中度说明：紧贴上一项的数值 */
+.concentration {
+  font-size: 11px;
+  margin-top: -8px;
+}
+
+.empty {
+  font-size: 12px;
+}
