@@ -1,12 +1,14 @@
 /**
- * 筹码统计面板：获利比例 / 平均成本 / 90%成本 + 集中度 / 70%成本。
+ * 筹码统计面板：获利比例 / 平均成本 / 90%成本 + 集中度 / 70%成本 + 集中度。
  *
+ * 集中度以百分比展示（concentration 是比率，如 0.0523 → 5.23%），越小说明筹码越集中。
  * 与左侧 K 线主图绘图区顶部对齐（顶部留白取自共享布局常量），
  * 日K抽屉与周K抽屉共用；组件只负责展示，不持有任何状态。
  */
 
 import { Typography } from 'antd';
 import type { ChipDistribution } from '@/types/chipDistribution';
+import { formatChipConcentration } from '@/utils/format/format';
 import { CHIP_STATS_WIDTH, MAIN_GRID_TOP_PX } from '@/utils/config/stockDrawerLayout';
 import styles from './ChipStatsPanel.module.css';
 
@@ -16,9 +18,11 @@ interface ChipStatItemProps {
   label: string;
   value: string;
   valueColor?: string;
+  /** 数值下方的次要说明（如集中度） */
+  hint?: string;
 }
 
-function ChipStatItem({ label, value, valueColor }: ChipStatItemProps) {
+function ChipStatItem({ label, value, valueColor, hint }: ChipStatItemProps) {
   return (
     <div className={styles.item}>
       <Text type="secondary" className={styles.label}>
@@ -27,6 +31,11 @@ function ChipStatItem({ label, value, valueColor }: ChipStatItemProps) {
       <Text strong className={styles.value} style={{ color: valueColor }}>
         {value}
       </Text>
+      {hint ? (
+        <Text type="secondary" className={styles.hint}>
+          {hint}
+        </Text>
+      ) : null}
     </div>
   );
 }
@@ -55,13 +64,12 @@ export function ChipStatsPanel({ chip, loading }: ChipStatsPanelProps) {
           <ChipStatItem
             label="90%成本"
             value={`${chip.range90.low.toFixed(2)} ~ ${chip.range90.high.toFixed(2)}`}
+            hint={`集中度 ${formatChipConcentration(chip.range90.concentration)}`}
           />
-          <Text type="secondary" className={styles.concentration}>
-            集中度 {chip.range90.concentration.toFixed(3)}
-          </Text>
           <ChipStatItem
             label="70%成本"
             value={`${chip.range70.low.toFixed(2)} ~ ${chip.range70.high.toFixed(2)}`}
+            hint={`集中度 ${formatChipConcentration(chip.range70.concentration)}`}
           />
         </>
       ) : (

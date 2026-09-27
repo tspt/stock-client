@@ -22,10 +22,9 @@
   font-size: 14px;
 }
 
-/* 集中度说明：紧贴上一项的数值 */
-.concentration {
+/* 数值下方的次要说明（集中度）：与数值同组，靠 .item 的 2px gap 贴近 */
+.hint {
   font-size: 11px;
-  margin-top: -8px;
 }
 
 .empty {

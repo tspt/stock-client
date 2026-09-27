@@ -204,3 +204,16 @@ export function formatGrowthPercent(percent?: number | null): string {
   const sign = percent >= 0 ? '+' : '';
   return `${sign}${percent.toFixed(2)}%`;
 }
+
+/**
+ * 格式化筹码集中度（输入为比率，如 0.0523 表示 5.23%）
+ *
+ * 口径：ChipPercentRange.concentration = (上沿 - 下沿) / (上沿 + 下沿)，越小说明筹码越集中。
+ * 与 formatTurnoverRate 的区别：集中度 0 是合法值（极度集中），不能返回 '-'。
+ */
+export function formatChipConcentration(ratio: number): string {
+  if (!isFinite(ratio)) {
+    return '-';
+  }
+  return `${(ratio * 100).toFixed(2)}%`;
+}
