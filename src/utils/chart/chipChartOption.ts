@@ -98,9 +98,11 @@ export function buildChipChartOption(
     return {
       title,
       grid: {
-        // 图形贴左侧、右侧留出价格数字的位置
+        // 图形贴左侧，右侧留出价格刻度（3~4 位数价格）与平均成本线标签的位置。
+        // 平均成本标签是 14px 加粗（约 60px 宽），且从坐标轴向右绘制，
+        // 间隙留窄了会与刻度数字挤在一起甚至被画布右缘截断。
         left: grid?.left ?? 0,
-        right: grid?.right ?? 46,
+        right: grid?.right ?? 80,
         top: grid?.top ?? '10%',
         height: grid?.height ?? '50%',
       },

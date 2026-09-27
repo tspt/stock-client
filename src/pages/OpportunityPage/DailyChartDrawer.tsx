@@ -7,12 +7,14 @@
  * 对齐策略（不依赖任何 ECharts 内部 API）：
  * 1. 由当前 dataZoom 可见窗口 + 均线，在本地推导出价格上下限并取整；
  * 2. 把同一个价格区间同时赋给左侧K线主图与右侧筹码面板的纵轴；
- * 3. 两侧网格的 top/height 保持一致（容器等高，故像素范围相同）。
- * 于是「同一价格落在同一水平线」，且缩放K线时筹码面板同步重算、实时跟随。
+ * 3. 两侧绘图区的像素范围一致——筹码画布只覆盖「标题留白 + 主图」这一段高度，
+ *    主图网格用同样的像素定位，故同一价格落在同一水平线。
+ * 于是缩放K线时筹码面板同步重算、实时跟随。
  *
- * 采用 Drawer 形态：抽屉高度占满视口，图表区用 flex 自适应拉伸到底部，
+ * 采用 Drawer 形态：抽屉高度占满视口，
  * 为后续在图表下方追加「股东户数 / 机构持仓 / 十大流通股东」等纵向内容预留空间。
- * 注意：左右两侧（K线 / 筹码）必须始终等高，否则纵轴无法逐像素对齐。
+ * 注意：筹码画布刻意不与左侧整列（主图 + 成交量 + 副图 + 缩放条）等高，
+ * 只与主图等高，否则筹码条会一直画到副图区间。
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -59,19 +61,49 @@ function ChipStatItem({
 /** 抽屉宽度：尽量铺满窗口，同时两侧各留 24px 遮罩，便于点击遮罩关闭 */
 const DRAWER_WIDTH = 'min(1540px, calc(100vw - 48px))';
 /**
- * 图表区域高度（px）：左右两侧容器必须等高，纵轴才能逐像素对齐。
+ * 图表区域高度（px），即左侧 K 线画布（主图 + 成交量 + KDJ + 缩放条）的高度。
  * 刻意用固定高度而非 flex 拉伸——抽屉高度占满视口，
  * 若让图表撑满剩余空间，主图会被拉得过高，底部缩放条还会顶到抽屉页脚。
+ * 右侧筹码画布与之不等高，只取「主图上方留白 + 主图高度」这一段（见 CHIP_CANVAS_HEIGHT）。
  */
 const CHART_HEIGHT = 520;
-/** 筹码分布面板宽度（px），与K线图并排展示 */
-const CHIP_PANEL_WIDTH = 260;
+/**
+ * 筹码分布面板宽度（px）：除筹码条本身，还要容纳右侧价格刻度（3~4 位数价格）
+ * 与平均成本线标签，因此比早期版本更宽。
+ */
+const CHIP_PANEL_WIDTH = 300;
 /** 筹码统计面板宽度（px），位于筹码图右侧 */
-const CHIP_STATS_WIDTH = 180;
+const CHIP_STATS_WIDTH = 140;
 /** 默认展示最近多少根 */
 const DEFAULT_VISIBLE_BARS = 120;
 /** K线主图价格网格的位置，筹码面板必须与其完全一致 */
 const MAIN_GRID = { top: '10%', height: '50%' };
+/**
+ * K线各网格（主图 / 成交量 / KDJ）共用的左右留白（px）：三个网格必须一致，
+ * 否则十字星竖线与缩放条会横向错位。
+ * - 左侧要放下主图价格刻度（3~4 位数价格）与成交量刻度；
+ * - 右侧要放下缩放条两端自动显示的日期标签——ECharts 把左侧滑块的日期画在滑块左边、
+ *   右侧滑块的日期画在滑块右边，留窄了会被画布右缘截断（表现为日期只剩半截）。
+ */
+const GRID_LEFT = 72;
+const GRID_RIGHT = 88;
+/** 主图绘图区的上沿（px），与 grid[0] 的百分比同源，供筹码画布与统计列对齐用 */
+const MAIN_GRID_TOP_PX = (Number.parseFloat(MAIN_GRID.top) / 100) * CHART_HEIGHT;
+/** 主图绘图区的像素高度（px）*/
+const MAIN_GRID_HEIGHT_PX = (Number.parseFloat(MAIN_GRID.height) / 100) * CHART_HEIGHT;
+/**
+ * 筹码画布底部留白（px）：绘图区下沿仍与主图底部逐像素对齐（保证同一价格同一水平线），
+ * 但画布必须再向下延伸一段——y 轴最低一档价格刻度是垂直居中在绘图区最低点的，
+ * 画布若正好止于绘图区下沿，该刻度会被画布边缘截掉一半。
+ */
+const CHIP_CANVAS_BOTTOM_PX = 16;
+/**
+ * 筹码画布高度（px）= 主图上方留白 + 主图高度 + 底部留白：
+ * 标题画在留白区、绘图区与左侧主图逐像素等高；
+ * 画布本身刻意不与左侧整列（主图 + 成交量 + 副图 + 缩放条）等高，
+ * 只在主图区间基础上多出一段底部留白。
+ */
+const CHIP_CANVAS_HEIGHT = MAIN_GRID_TOP_PX + MAIN_GRID_HEIGHT_PX + CHIP_CANVAS_BOTTOM_PX;
 /** 纵轴分段数，两侧保持一致以便刻度文字相同 */
 const Y_SPLIT_COUNT = 5;
 /** 缩放条高度（px）：ECharts 默认 30 会压住 KDJ 底部刻度，收窄后把空间让给副图 */
@@ -292,9 +324,9 @@ function buildKlineChartOption(input: KlineChartBuildInput): EChartsOption {
       },
     },
     grid: [
-      { left: '8%', right: '4%', top: MAIN_GRID.top, height: MAIN_GRID.height },
-      { left: '8%', right: '4%', top: '64%', height: '13%' },
-      { left: '8%', right: '4%', top: SUB_GRID.top, height: SUB_GRID.height },
+      { left: GRID_LEFT, right: GRID_RIGHT, top: MAIN_GRID.top, height: MAIN_GRID.height },
+      { left: GRID_LEFT, right: GRID_RIGHT, top: '64%', height: '13%' },
+      { left: GRID_LEFT, right: GRID_RIGHT, top: SUB_GRID.top, height: SUB_GRID.height },
     ],
     xAxis: [timeAxis(), timeAxis(1), timeAxis(2)],
     yAxis: [
@@ -767,8 +799,10 @@ export function DailyChartDrawer({
       chip
         ? buildChipChartOption(chip, {
             priceRange: priceRange ?? undefined,
-            // 只对齐纵向（top/height）；横向留白由筹码面板按「图形靠左、数字靠右」自行决定
-            grid: { top: MAIN_GRID.top, height: MAIN_GRID.height },
+            // 画布已裁剪到「标题留白 + 主图」区间，故网格改用固定像素：
+            // 绘图区上沿与高度都与左侧主图完全一致；
+            // 横向留白由筹码面板按「图形靠左、数字靠右」自行决定
+            grid: { top: MAIN_GRID_TOP_PX, height: MAIN_GRID_HEIGHT_PX },
           })
         : null,
     [chip, priceRange]
@@ -859,7 +893,6 @@ export function DailyChartDrawer({
       <div
         style={{
           display: 'flex',
-          gap: 8,
           height: CHART_HEIGHT,
           // 极窄窗口下允许收缩，避免内容溢出抽屉
           flexShrink: 1,
@@ -886,13 +919,13 @@ export function DailyChartDrawer({
               ref={chipChartRef}
               option={chipOption}
               lazyUpdate
-              style={{ height: '100%', width: '100%' }}
+              style={{ height: CHIP_CANVAS_HEIGHT, width: '100%' }}
               opts={{ renderer: 'canvas' }}
             />
           ) : (
             <div
               style={{
-                height: '100%',
+                height: CHIP_CANVAS_HEIGHT,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -916,7 +949,8 @@ export function DailyChartDrawer({
             display: 'flex',
             flexDirection: 'column',
             gap: 12,
-            paddingTop: 2,
+            // 与左侧主图绘图区顶部对齐（而不是与整列顶部对齐）
+            paddingTop: MAIN_GRID_TOP_PX,
           }}
         >
           {chip ? (
