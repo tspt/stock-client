@@ -1,7 +1,11 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import type { KLineData, StockOpportunityData, TradingSignal } from '@/types/stock';
 import type { FilterSkippedItem, OpportunityFilterSnapshot } from '@/types/opportunityFilter';
-import { matchOptionalRange, matchOptionalRangeWithScale } from '@/utils/analysis/rangeFilter';
+import {
+  PASS_WHEN_MISSING,
+  matchOptionalRange,
+  matchOptionalRangeWithScale,
+} from '@/utils/analysis/rangeFilter';
 import type { OpportunityFilterWorkerOutboundMessage } from '@/workers/opportunityFilterWorkerTypes';
 
 /** 对外暴露 signalMap 时用于替代 null 的空映射（保持引用稳定） */
@@ -27,31 +31,38 @@ function passLightFilters(item: StockOpportunityData, filters: OpportunityFilter
     if (nameType === 'non_st' && isST) return false;
   }
 
-  if (!matchOptionalRange(item.price, filters.priceRange)) return false;
-  if (!matchOptionalRange(item.marketCap, filters.marketCapRange)) return false;
+  if (!matchOptionalRange(item.price, filters.priceRange, PASS_WHEN_MISSING)) return false;
+  if (!matchOptionalRange(item.marketCap, filters.marketCapRange, PASS_WHEN_MISSING)) return false;
   // totalShares 单位是股，筛选条件单位是亿，需要转换
-  if (!matchOptionalRangeWithScale(item.totalShares, filters.totalSharesRange, 1e8)) return false;
-  if (!matchOptionalRange(item.turnoverRate, filters.turnoverRateRange)) return false;
-  if (!matchOptionalRange(item.peRatio, filters.peRatioRange)) return false;
-  if (!matchOptionalRange(item.kdjJ, filters.kdjJRange)) return false;
-
-  // 总营收 / 归母净利润（筛选单位：亿元；数据需先点「获取财务指标」才有）
-  if (!matchOptionalRangeWithScale(item.finance?.revenue, filters.financeRevenueRange, 1e8)) {
+  if (!matchOptionalRangeWithScale(item.totalShares, filters.totalSharesRange, 1e8, PASS_WHEN_MISSING)) {
     return false;
   }
-  if (!matchOptionalRangeWithScale(item.finance?.netProfit, filters.financeNetProfitRange, 1e8)) {
+  if (!matchOptionalRange(item.turnoverRate, filters.turnoverRateRange, PASS_WHEN_MISSING)) return false;
+  if (!matchOptionalRange(item.peRatio, filters.peRatioRange, PASS_WHEN_MISSING)) return false;
+  if (!matchOptionalRange(item.kdjJ, filters.kdjJRange, PASS_WHEN_MISSING)) return false;
+
+  // 总营收 / 归母净利润（筛选单位：亿元；数据需先点「获取财务指标」才有）
+  // 缺少财务数据的股票不做该项过滤、照常展示，避免默认「总营收≥0」把未取到数据的股票全部剔除
+  if (!matchOptionalRangeWithScale(item.finance?.revenue, filters.financeRevenueRange, 1e8, PASS_WHEN_MISSING)) {
+    return false;
+  }
+  if (!matchOptionalRangeWithScale(item.finance?.netProfit, filters.financeNetProfitRange, 1e8, PASS_WHEN_MISSING)) {
     return false;
   }
 
   // 总营收增长率 / 归母净利润增长率（筛选单位：%；数据需先点「获取财务指标」才有）
-  if (!matchOptionalRange(item.finance?.revenueYoy, filters.financeRevenueGrowthRange)) return false;
-  if (!matchOptionalRange(item.finance?.netProfitYoy, filters.financeNetProfitGrowthRange)) {
+  if (!matchOptionalRange(item.finance?.revenueYoy, filters.financeRevenueGrowthRange, PASS_WHEN_MISSING)) {
+    return false;
+  }
+  if (!matchOptionalRange(item.finance?.netProfitYoy, filters.financeNetProfitGrowthRange, PASS_WHEN_MISSING)) {
     return false;
   }
 
   // 净资产收益率（ROE）/ 资产负债率（筛选单位：%；数据需先点「获取财务指标」才有）
-  if (!matchOptionalRange(item.finance?.roe, filters.financeRoeRange)) return false;
-  if (!matchOptionalRange(item.finance?.debtRatio, filters.financeDebtRatioRange)) return false;
+  if (!matchOptionalRange(item.finance?.roe, filters.financeRoeRange, PASS_WHEN_MISSING)) return false;
+  if (!matchOptionalRange(item.finance?.debtRatio, filters.financeDebtRatioRange, PASS_WHEN_MISSING)) {
+    return false;
+  }
 
   return true;
 }
