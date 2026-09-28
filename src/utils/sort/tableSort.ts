@@ -117,6 +117,34 @@ function columnKeyOf(column: SortableTableColumn): string {
   return String(column.key ?? column.dataIndex);
 }
 
+/** antd Table onChange 回调中 sorter 结果的最小结构（只取归一化需要的字段） */
+export interface AntdSorterInfo {
+  /** antd 只在列显式声明 key 时回填；仅用 dataIndex 声明的列为 undefined */
+  columnKey?: Key | null;
+  /** 即列的 dataIndex（嵌套 dataIndex 时为数组） */
+  field?: Key | readonly Key[] | null;
+  order?: SortOrder | null;
+}
+
+/**
+ * 把 antd Table onChange 的 sorter 归一化为 `ActiveTableSorter`。
+ *
+ * 注意：antd 的 `stateToInfo` 只把 `column.key` 回填到 `columnKey`
+ * （见 antd/es/table/hooks/useSorter 的 stateToInfo），
+ * 因此「仅用 dataIndex 声明」的列（周线页「所属行业」「最新价」等）点表头后 columnKey 为 undefined。
+ * 若直接读 columnKey 会退化成「未排序」，弹窗 ← / → 就会回到默认综合分顺序。
+ * 这里在 columnKey 缺失时回退到 field（= dataIndex），与 `columnKeyOf` 的取值口径保持一致。
+ */
+export function toActiveTableSorter(
+  sorter?: AntdSorterInfo | readonly AntdSorterInfo[] | null
+): ActiveTableSorter {
+  const current = Array.isArray(sorter) ? sorter[0] : sorter;
+  if (!current) return { columnKey: null, order: null };
+  const rawKey = current.columnKey ?? current.field;
+  const columnKey = rawKey == null ? null : Array.isArray(rawKey) ? rawKey.join('.') : String(rawKey);
+  return { columnKey, order: current.order ?? null };
+}
+
 /**
  * 取列上声明的默认排序（antd `defaultSortOrder`）。
  * 仅用于「用户还没点过表头排序」时的兜底，保证首屏导航顺序与表格一致。

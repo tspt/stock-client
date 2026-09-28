@@ -43,6 +43,7 @@ import { useTempStockListStore } from '@/stores/tempStockListStore';
 import {
   findDefaultTableSorter,
   sortRowsByTableSorter,
+  toActiveTableSorter,
   type ActiveTableSorter,
 } from '@/utils/sort/tableSort';
 import {
@@ -2050,11 +2051,8 @@ export function BacktestPage() {
                 })}
                 onChange={(_pagination, _filters, sorter) => {
                   // 记录当前排序：弹窗里的 ← / → 要按排序后的顺序切换
-                  const current = Array.isArray(sorter) ? sorter[0] : sorter;
-                  setTableSorter({
-                    columnKey: current?.columnKey != null ? String(current.columnKey) : null,
-                    order: current?.order ?? null,
-                  });
+                  // 回测页多数列只用 dataIndex 声明，antd 不回填 columnKey，须由工具函数回退到 field
+                  setTableSorter(toActiveTableSorter(sorter));
                 }}
                 pagination={{
                   current: tablePage,

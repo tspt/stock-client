@@ -1,5 +1,5 @@
 {
-  "exportedAt": "2026-09-25T07:38:20.492Z",
+  "exportedAt": "2026-09-28T00:01:11.043Z",
   "kind": "latest",
   "kindLabel": "最新交易日命中",
   "count": 211,
@@ -40,10 +40,6 @@
       "oddsReason": "收盘靠近日内高位 / 短线连板龙头主升 / 龙头主升动能强劲",
       "code": "SZ001317",
       "name": "三羊马",
-      "industry": {
-        "code": "BK0421",
-        "name": "铁路公路"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 65.3,
@@ -55,6 +51,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0421",
+        "name": "铁路公路"
       },
       "concepts": [
         {
@@ -96,10 +96,6 @@
       "oddsReason": "收盘靠近日内高位 / 2板加速确立主升 / 龙头主升动能强劲",
       "code": "SH600843",
       "name": "上工申贝",
-      "industry": {
-        "code": "BK0910",
-        "name": "专用设备"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 8.37,
@@ -111,6 +107,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0910",
+        "name": "专用设备"
       },
       "concepts": [
         {
@@ -152,10 +152,6 @@
       "oddsReason": "收盘靠近日内高位 / 2板加速确立主升 / 龙头主升动能强劲",
       "code": "SZ002819",
       "name": "东方中科",
-      "industry": {
-        "code": "BK0545",
-        "name": "通用设备"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 26.66,
@@ -167,6 +163,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0545",
+        "name": "通用设备"
       },
       "concepts": [
         {
@@ -236,10 +236,6 @@
       "oddsReason": "仍站在10日线之上 / 处于相对强势位置 / 收盘靠近日内高位",
       "code": "SH600641",
       "name": "先导基电",
-      "industry": {
-        "code": "BK1036",
-        "name": "半导体"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 51.56,
@@ -251,6 +247,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1036",
+        "name": "半导体"
       },
       "concepts": [
         {
@@ -308,10 +308,6 @@
       "oddsReason": "收盘靠近日内高位 / 短线连板龙头主升 / 龙头主升动能强劲",
       "code": "SH603230",
       "name": "内蒙新华",
-      "industry": {
-        "code": "BK1218",
-        "name": "出版"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 18.47,
@@ -323,6 +319,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1218",
+        "name": "出版"
       },
       "concepts": []
     },
@@ -351,10 +351,6 @@
       "oddsReason": "收盘偏弱 / 2板加速确立主升 / 龙头主升动能强劲",
       "code": "SZ000850",
       "name": "华茂股份",
-      "industry": {
-        "code": "BK1224",
-        "name": "纺织制造"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 5.12,
@@ -366,6 +362,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1224",
+        "name": "纺织制造"
       },
       "concepts": [
         {
@@ -411,10 +411,6 @@
       "oddsReason": "收盘靠近日内高位 / 短线连板龙头主升 / 龙头主升动能强劲",
       "code": "SZ000504",
       "name": "南华生物",
-      "industry": {
-        "code": "BK0727",
-        "name": "医疗服务"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 13.73,
@@ -426,6 +422,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0727",
+        "name": "医疗服务"
       },
       "concepts": [
         {
@@ -467,10 +467,6 @@
       "oddsReason": "收盘靠近日内高位 / 2板加速确立主升 / 龙头主升动能强劲",
       "code": "SH600815",
       "name": "厦工股份",
-      "industry": {
-        "code": "BK0739",
-        "name": "工程机械"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 4.65,
@@ -482,6 +478,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0739",
+        "name": "工程机械"
       },
       "concepts": [
         {
@@ -515,10 +515,6 @@
       "oddsReason": "收盘靠近日内高位 / 短线连板龙头主升 / 龙头主升动能强劲",
       "code": "SZ002238",
       "name": "天威视讯",
-      "industry": {
-        "code": "BK1219",
-        "name": "电视广播Ⅱ"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 8.43,
@@ -530,6 +526,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1219",
+        "name": "电视广播Ⅱ"
       },
       "concepts": [
         {
@@ -583,10 +583,6 @@
       "oddsReason": "收盘靠近日内高位 / 短线连板龙头主升 / 龙头主升动能强劲",
       "code": "SZ002614",
       "name": "奥佳华",
-      "industry": {
-        "code": "BK1243",
-        "name": "其他家电Ⅱ"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 8.33,
@@ -598,6 +594,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1243",
+        "name": "其他家电Ⅱ"
       },
       "concepts": [
         {
@@ -655,10 +655,6 @@
       "oddsReason": "收盘靠近日内高位 / 2板加速确立主升 / 龙头主升动能强劲",
       "code": "SZ002849",
       "name": "威星智能",
-      "industry": {
-        "code": "BK0545",
-        "name": "通用设备"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 24.75,
@@ -670,6 +666,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0545",
+        "name": "通用设备"
       },
       "concepts": [
         {
@@ -711,10 +711,6 @@
       "oddsReason": "收盘靠近日内高位 / 2板加速确立主升 / 龙头主升动能强劲",
       "code": "SZ002119",
       "name": "康强电子",
-      "industry": {
-        "code": "BK1036",
-        "name": "半导体"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 29.61,
@@ -726,6 +722,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1036",
+        "name": "半导体"
       },
       "concepts": [
         {
@@ -767,10 +767,6 @@
       "oddsReason": "收盘偏弱 / 短线连板龙头主升 / 龙头主升动能强劲",
       "code": "SH600825",
       "name": "新华传媒",
-      "industry": {
-        "code": "BK1218",
-        "name": "出版"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 7.77,
@@ -782,6 +778,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1218",
+        "name": "出版"
       },
       "concepts": [
         {
@@ -823,10 +823,6 @@
       "oddsReason": "收盘靠近日内高位 / 短线连板龙头主升 / 龙头主升动能强劲",
       "code": "SH601811",
       "name": "新华文轩",
-      "industry": {
-        "code": "BK1218",
-        "name": "出版"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 20.35,
@@ -838,6 +834,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1218",
+        "name": "出版"
       },
       "concepts": [
         {
@@ -875,10 +875,6 @@
       "oddsReason": "收盘偏弱 / 短线连板龙头主升 / 龙头主升动能强劲",
       "code": "SZ001234",
       "name": "泰慕士",
-      "industry": {
-        "code": "BK1225",
-        "name": "服装家纺"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 35.4,
@@ -890,6 +886,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1225",
+        "name": "服装家纺"
       },
       "concepts": [
         {
@@ -923,10 +923,6 @@
       "oddsReason": "收盘靠近日内高位 / 2板加速确立主升 / 龙头主升动能强劲",
       "code": "SH600802",
       "name": "福建水泥",
-      "industry": {
-        "code": "BK0424",
-        "name": "水泥"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 6.62,
@@ -938,6 +934,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0424",
+        "name": "水泥"
       },
       "concepts": []
     },
@@ -966,10 +966,6 @@
       "oddsReason": "收盘靠近日内高位 / 2板加速确立主升 / 龙头主升动能强劲",
       "code": "SH603396",
       "name": "金辰股份",
-      "industry": {
-        "code": "BK1031",
-        "name": "光伏设备"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 35.64,
@@ -981,6 +977,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1031",
+        "name": "光伏设备"
       },
       "concepts": [
         {
@@ -1030,10 +1030,6 @@
       "oddsReason": "收盘靠近日内高位 / 2板加速确立主升 / 龙头主升动能强劲",
       "code": "SZ002909",
       "name": "集泰股份",
-      "industry": {
-        "code": "BK0538",
-        "name": "化学制品"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 8.29,
@@ -1045,6 +1041,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0538",
+        "name": "化学制品"
       },
       "concepts": [
         {
@@ -1134,10 +1134,6 @@
       "oddsReason": "收盘靠近日内高位 / 2板加速确立主升 / 龙头主升动能强劲",
       "code": "SH603949",
       "name": "雪龙集团",
-      "industry": {
-        "code": "BK0481",
-        "name": "汽车零部件"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 16.9,
@@ -1149,6 +1145,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0481",
+        "name": "汽车零部件"
       },
       "concepts": [
         {
@@ -1182,10 +1182,6 @@
       "oddsReason": "收盘靠近日内高位 / 首板突破第一买点 / 龙头主升动能强劲",
       "code": "SH603767",
       "name": "中马传动",
-      "industry": {
-        "code": "BK0481",
-        "name": "汽车零部件"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 14.74,
@@ -1197,6 +1193,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0481",
+        "name": "汽车零部件"
       },
       "concepts": [
         {
@@ -1230,10 +1230,6 @@
       "oddsReason": "收盘靠近日内高位 / 首板突破第一买点 / 龙头主升动能强劲",
       "code": "SH603065",
       "name": "宿迁联盛",
-      "industry": {
-        "code": "BK0538",
-        "name": "化学制品"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 16.27,
@@ -1245,6 +1241,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0538",
+        "name": "化学制品"
       },
       "concepts": []
     },
@@ -1273,10 +1273,6 @@
       "oddsReason": "收盘靠近日内高位 / 首板突破第一买点 / 龙头主升动能强劲",
       "code": "SZ002860",
       "name": "星帅尔",
-      "industry": {
-        "code": "BK1242",
-        "name": "家电零部件Ⅱ"
-      },
       "date": "2026/09/21",
       "timestamp": 1789920000000,
       "close": 18.39,
@@ -1288,6 +1284,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1242",
+        "name": "家电零部件Ⅱ"
       },
       "concepts": [
         {
@@ -1349,10 +1349,6 @@
       "oddsReason": "首板突破第一买点 / 3日趋势斜率适中健康 / 龙头主升动能强劲",
       "code": "SH601567",
       "name": "三星电气",
-      "industry": {
-        "code": "BK0457",
-        "name": "电网设备"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 16.25,
@@ -1364,6 +1360,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0457",
+        "name": "电网设备"
       },
       "concepts": [
         {
@@ -1429,10 +1429,6 @@
       "oddsReason": "收盘靠近日内高位 / 首板突破第一买点 / 龙头主升动能强劲",
       "code": "SZ000790",
       "name": "华神科技",
-      "industry": {
-        "code": "BK1040",
-        "name": "中药Ⅱ"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 4.68,
@@ -1444,6 +1440,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1040",
+        "name": "中药Ⅱ"
       },
       "concepts": [
         {
@@ -1509,10 +1509,6 @@
       "oddsReason": "收盘靠近日内高位 / 3日趋势斜率适中健康 / 龙头主升动能强劲",
       "code": "SZ000710",
       "name": "贝瑞基因",
-      "industry": {
-        "code": "BK0727",
-        "name": "医疗服务"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 11.01,
@@ -1524,6 +1520,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0727",
+        "name": "医疗服务"
       },
       "concepts": [
         {
@@ -1585,10 +1585,6 @@
       "oddsReason": "缩量延续更利于赔率 / 收盘靠近日内高位 / 前期涨幅过大短线滞涨",
       "code": "SH605058",
       "name": "澳弘电子",
-      "industry": {
-        "code": "BK0459",
-        "name": "元件"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 60.2,
@@ -1600,6 +1596,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0459",
+        "name": "元件"
       },
       "concepts": [
         {
@@ -1649,10 +1649,6 @@
       "oddsReason": "中部放量启动较健康 / 上影较重 / 低位首阳放量起爆",
       "code": "SH600506",
       "name": "统一股份",
-      "industry": {
-        "code": "BK1274",
-        "name": "炼化及贸易"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 18.18,
@@ -1664,6 +1660,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1274",
+        "name": "炼化及贸易"
       },
       "concepts": [
         {
@@ -1725,10 +1725,6 @@
       "oddsReason": "上影较重 / 短线连板龙头主升 / 逼近前高但受阻明显",
       "code": "SH603068",
       "name": "博通集成",
-      "industry": {
-        "code": "BK1036",
-        "name": "半导体"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 48.51,
@@ -1740,6 +1736,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1036",
+        "name": "半导体"
       },
       "concepts": [
         {
@@ -1821,10 +1821,6 @@
       "oddsReason": "中部放量启动较健康 / 上影较重 / 低位首阳放量起爆",
       "code": "SH603215",
       "name": "比依股份",
-      "industry": {
-        "code": "BK1244",
-        "name": "小家电"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 15.53,
@@ -1836,6 +1832,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1244",
+        "name": "小家电"
       },
       "concepts": [
         {
@@ -1881,10 +1881,6 @@
       "oddsReason": "2板加速确立主升 / 龙头主升动能强劲 / 动能不足降级",
       "code": "SZ002029",
       "name": "七 匹 狼",
-      "industry": {
-        "code": "BK1225",
-        "name": "服装家纺"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 9.26,
@@ -1896,6 +1892,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1225",
+        "name": "服装家纺"
       },
       "concepts": [
         {
@@ -1929,10 +1929,6 @@
       "oddsReason": "仍站在10日线之上 / 不贴前高，仍有上攻空间 / 动能不足降级",
       "code": "SZ002285",
       "name": "世联行",
-      "industry": {
-        "code": "BK1045",
-        "name": "房地产服务"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 3.26,
@@ -1944,6 +1940,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1045",
+        "name": "房地产服务"
       },
       "concepts": [
         {
@@ -1997,10 +1997,6 @@
       "oddsReason": "收盘偏弱 / 上影较重 / 动能不足降级",
       "code": "SH601579",
       "name": "会稽山",
-      "industry": {
-        "code": "BK1279",
-        "name": "非白酒"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 38.04,
@@ -2012,6 +2008,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1279",
+        "name": "非白酒"
       },
       "concepts": [
         {
@@ -2053,10 +2053,6 @@
       "oddsReason": "缩量延续更利于赔率 / 收盘靠近日内高位 / 连板后转弱分歧",
       "code": "SZ002259",
       "name": "升达林业",
-      "industry": {
-        "code": "BK1028",
-        "name": "燃气Ⅱ"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 4.74,
@@ -2068,6 +2064,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1028",
+        "name": "燃气Ⅱ"
       },
       "concepts": [
         {
@@ -2113,10 +2113,6 @@
       "oddsReason": "缩量延续更利于赔率 / 收盘偏弱 / 上影较重",
       "code": "SH600448",
       "name": "华纺股份",
-      "industry": {
-        "code": "BK1224",
-        "name": "纺织制造"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 3.27,
@@ -2128,6 +2124,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1224",
+        "name": "纺织制造"
       },
       "concepts": [
         {
@@ -2173,10 +2173,6 @@
       "oddsReason": "2板加速确立主升 / 龙头主升动能强劲 / 动能不足降级",
       "code": "SH603042",
       "name": "华脉科技",
-      "industry": {
-        "code": "BK0448",
-        "name": "通信设备"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 18.73,
@@ -2188,6 +2184,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0448",
+        "name": "通信设备"
       },
       "concepts": [
         {
@@ -2241,10 +2241,6 @@
       "oddsReason": "2板加速确立主升 / 龙头主升动能强劲 / 动能不足降级",
       "code": "SZ002321",
       "name": "华英农业",
-      "industry": {
-        "code": "BK1259",
-        "name": "养殖业"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 2.27,
@@ -2256,6 +2252,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1259",
+        "name": "养殖业"
       },
       "concepts": [
         {
@@ -2313,10 +2313,6 @@
       "oddsReason": "2板加速确立主升 / 龙头主升动能强劲 / 动能不足降级",
       "code": "SH603122",
       "name": "合富中国",
-      "industry": {
-        "code": "BK0727",
-        "name": "医疗服务"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 14.93,
@@ -2328,6 +2324,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0727",
+        "name": "医疗服务"
       },
       "concepts": [
         {
@@ -2377,10 +2377,6 @@
       "oddsReason": "2板加速确立主升 / 龙头主升动能强劲 / 动能不足降级",
       "code": "SZ002836",
       "name": "新宏泽",
-      "industry": {
-        "code": "BK1265",
-        "name": "包装印刷"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 12.27,
@@ -2392,6 +2388,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1265",
+        "name": "包装印刷"
       },
       "concepts": [
         {
@@ -2425,10 +2425,6 @@
       "oddsReason": "收盘靠近日内高位 / 2板加速确立主升 / 动能不足降级",
       "code": "SZ001376",
       "name": "百通能源",
-      "industry": {
-        "code": "BK0428",
-        "name": "电力"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 13.12,
@@ -2440,6 +2436,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0428",
+        "name": "电力"
       },
       "concepts": []
     },
@@ -2468,10 +2468,6 @@
       "oddsReason": "2板加速确立主升 / 龙头主升动能强劲 / 动能不足降级",
       "code": "SZ002622",
       "name": "皓宸医疗",
-      "industry": {
-        "code": "BK0727",
-        "name": "医疗服务"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 2.72,
@@ -2483,6 +2479,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0727",
+        "name": "医疗服务"
       },
       "concepts": [
         {
@@ -2520,10 +2520,6 @@
       "oddsReason": "2板加速确立主升 / 龙头主升动能强劲 / 动能不足降级",
       "code": "SH603375",
       "name": "盛景微",
-      "industry": {
-        "code": "BK1036",
-        "name": "半导体"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 49.25,
@@ -2535,6 +2531,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1036",
+        "name": "半导体"
       },
       "concepts": [
         {
@@ -2580,10 +2580,6 @@
       "oddsReason": "仍站在10日线之上 / 不贴前高，仍有上攻空间 / 动能不足降级",
       "code": "SH603580",
       "name": "艾艾精工",
-      "industry": {
-        "code": "BK0454",
-        "name": "塑料"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 78.74,
@@ -2595,6 +2591,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0454",
+        "name": "塑料"
       },
       "concepts": [
         {
@@ -2628,10 +2628,6 @@
       "oddsReason": "仍站在10日线之上 / 不贴前高，仍有上攻空间 / 上影较重",
       "code": "SH600630",
       "name": "龙头股份",
-      "industry": {
-        "code": "BK1225",
-        "name": "服装家纺"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 8.62,
@@ -2643,6 +2639,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1225",
+        "name": "服装家纺"
       },
       "concepts": [
         {
@@ -2688,10 +2688,6 @@
       "oddsReason": "中部放量启动较健康 / 收盘靠近日内高位 / 动能不足降级",
       "code": "SH601598",
       "name": "中国外运",
-      "industry": {
-        "code": "BK0422",
-        "name": "物流"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 6.68,
@@ -2703,6 +2699,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0422",
+        "name": "物流"
       },
       "concepts": [
         {
@@ -2748,10 +2748,6 @@
       "oddsReason": "收盘靠近日内高位 / 低位首阳放量起爆 / 动能不足降级",
       "code": "SH601566",
       "name": "九牧王",
-      "industry": {
-        "code": "BK1225",
-        "name": "服装家纺"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 9.67,
@@ -2763,6 +2759,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1225",
+        "name": "服装家纺"
       },
       "concepts": [
         {
@@ -2796,10 +2796,6 @@
       "oddsReason": "收盘靠近日内高位 / 低位首阳放量起爆 / 动能不足降级",
       "code": "SZ002200",
       "name": "交投生态",
-      "industry": {
-        "code": "BK1247",
-        "name": "基础建设"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 6.83,
@@ -2811,6 +2807,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1247",
+        "name": "基础建设"
       },
       "concepts": [
         {
@@ -2848,10 +2848,6 @@
       "oddsReason": "中部放量启动较健康 / 收盘靠近日内高位 / 动能不足降级",
       "code": "SZ002003",
       "name": "伟星股份",
-      "industry": {
-        "code": "BK1224",
-        "name": "纺织制造"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 11.58,
@@ -2863,6 +2859,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1224",
+        "name": "纺织制造"
       },
       "concepts": []
     },
@@ -2891,10 +2891,6 @@
       "oddsReason": "上影较重 / 低位首阳放量起爆 / 动能不足降级",
       "code": "SH603601",
       "name": "再升科技",
-      "industry": {
-        "code": "BK1248",
-        "name": "专业工程"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 10.59,
@@ -2906,6 +2902,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1248",
+        "name": "专业工程"
       },
       "concepts": [
         {
@@ -2947,10 +2947,6 @@
       "oddsReason": "上影较重 / 低位首阳放量起爆 / 动能不足降级",
       "code": "SZ001230",
       "name": "劲旅环境",
-      "industry": {
-        "code": "BK1235",
-        "name": "环境治理"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 20.31,
@@ -2962,6 +2958,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1235",
+        "name": "环境治理"
       },
       "concepts": [
         {
@@ -3011,10 +3011,6 @@
       "oddsReason": "收盘靠近日内高位 / 低位首阳放量起爆 / 动能不足降级",
       "code": "SH601777",
       "name": "千里科技",
-      "industry": {
-        "code": "BK1263",
-        "name": "摩托车及其他"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 8.28,
@@ -3026,6 +3022,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1263",
+        "name": "摩托车及其他"
       },
       "concepts": [
         {
@@ -3087,10 +3087,6 @@
       "oddsReason": "收盘靠近日内高位 / 低位首阳放量起爆 / 动能不足降级",
       "code": "SH600156",
       "name": "华升股份",
-      "industry": {
-        "code": "BK1224",
-        "name": "纺织制造"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 9.17,
@@ -3102,6 +3098,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1224",
+        "name": "纺织制造"
       },
       "concepts": [
         {
@@ -3151,10 +3151,6 @@
       "oddsReason": "上影较重 / 低位首阳放量起爆 / 动能不足降级",
       "code": "SH605180",
       "name": "华生科技",
-      "industry": {
-        "code": "BK1224",
-        "name": "纺织制造"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 14.28,
@@ -3166,6 +3162,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1224",
+        "name": "纺织制造"
       },
       "concepts": [
         {
@@ -3199,10 +3199,6 @@
       "oddsReason": "上影较重 / 低位首阳放量起爆 / 动能不足降级",
       "code": "SZ002553",
       "name": "南方精工",
-      "industry": {
-        "code": "BK0481",
-        "name": "汽车零部件"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 16.27,
@@ -3214,6 +3210,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0481",
+        "name": "汽车零部件"
       },
       "concepts": [
         {
@@ -3255,10 +3255,6 @@
       "oddsReason": "中部放量启动较健康 / 低位首阳放量起爆 / 动能不足降级",
       "code": "SZ002297",
       "name": "博云新材",
-      "industry": {
-        "code": "BK1231",
-        "name": "航空装备Ⅱ"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 22.47,
@@ -3270,6 +3266,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1231",
+        "name": "航空装备Ⅱ"
       },
       "concepts": [
         {
@@ -3323,10 +3323,6 @@
       "oddsReason": "放量过猛需防分歧 / 收盘靠近日内高位 / 动能不足降级",
       "code": "SZ002718",
       "name": "友邦吊顶",
-      "industry": {
-        "code": "BK0476",
-        "name": "装修建材"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 85.96,
@@ -3338,6 +3334,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0476",
+        "name": "装修建材"
       },
       "concepts": [
         {
@@ -3371,10 +3371,6 @@
       "oddsReason": "上影较重 / 低位首阳放量起爆 / 动能不足降级",
       "code": "SH600207",
       "name": "安彩高科",
-      "industry": {
-        "code": "BK1031",
-        "name": "光伏设备"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 5.16,
@@ -3386,6 +3382,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1031",
+        "name": "光伏设备"
       },
       "concepts": [
         {
@@ -3431,10 +3431,6 @@
       "oddsReason": "中部放量启动较健康 / 收盘靠近日内高位 / 动能不足降级",
       "code": "SH603170",
       "name": "宝立食品",
-      "industry": {
-        "code": "BK1278",
-        "name": "调味发酵品Ⅱ"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 12.32,
@@ -3446,6 +3442,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1278",
+        "name": "调味发酵品Ⅱ"
       },
       "concepts": []
     },
@@ -3474,10 +3474,6 @@
       "oddsReason": "上影较重 / 低位首阳放量起爆 / 动能不足降级",
       "code": "SH600831",
       "name": "广电网络",
-      "industry": {
-        "code": "BK1219",
-        "name": "电视广播Ⅱ"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 3.51,
@@ -3489,6 +3485,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1219",
+        "name": "电视广播Ⅱ"
       },
       "concepts": [
         {
@@ -3554,10 +3554,6 @@
       "oddsReason": "放量过猛需防分歧 / 收盘靠近日内高位 / 动能不足降级",
       "code": "SZ002520",
       "name": "日发精机",
-      "industry": {
-        "code": "BK0545",
-        "name": "通用设备"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 6.46,
@@ -3569,6 +3565,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0545",
+        "name": "通用设备"
       },
       "concepts": [
         {
@@ -3614,10 +3614,6 @@
       "oddsReason": "中部放量启动较健康 / 收盘靠近日内高位 / 动能不足降级",
       "code": "SH603808",
       "name": "歌力思",
-      "industry": {
-        "code": "BK1225",
-        "name": "服装家纺"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 8.95,
@@ -3629,6 +3625,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1225",
+        "name": "服装家纺"
       },
       "concepts": [
         {
@@ -3674,10 +3674,6 @@
       "oddsReason": "中部放量启动较健康 / 收盘靠近日内高位 / 动能不足降级",
       "code": "SZ000663",
       "name": "永安林业",
-      "industry": {
-        "code": "BK1255",
-        "name": "林业Ⅱ"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 6.08,
@@ -3689,6 +3685,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1255",
+        "name": "林业Ⅱ"
       },
       "concepts": [
         {
@@ -3730,10 +3730,6 @@
       "oddsReason": "中部放量启动较健康 / 低位首阳放量起爆 / 动能不足降级",
       "code": "SZ002320",
       "name": "海峡股份",
-      "industry": {
-        "code": "BK0450",
-        "name": "航运港口"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 6.76,
@@ -3745,6 +3741,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0450",
+        "name": "航运港口"
       },
       "concepts": [
         {
@@ -3786,10 +3786,6 @@
       "oddsReason": "中部放量启动较健康 / 收盘靠近日内高位 / 动能不足降级",
       "code": "SH603511",
       "name": "爱慕股份",
-      "industry": {
-        "code": "BK1225",
-        "name": "服装家纺"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 12.77,
@@ -3801,6 +3797,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1225",
+        "name": "服装家纺"
       },
       "concepts": [
         {
@@ -3846,10 +3846,6 @@
       "oddsReason": "放量过猛需防分歧 / 收盘靠近日内高位 / 动能不足降级",
       "code": "SH601339",
       "name": "百隆东方",
-      "industry": {
-        "code": "BK1224",
-        "name": "纺织制造"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 7.47,
@@ -3861,6 +3857,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1224",
+        "name": "纺织制造"
       },
       "concepts": [
         {
@@ -3894,10 +3894,6 @@
       "oddsReason": "中部放量启动较健康 / 收盘靠近日内高位 / 动能不足降级",
       "code": "SZ000034",
       "name": "神州数码",
-      "industry": {
-        "code": "BK1238",
-        "name": "IT服务Ⅱ"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 24.15,
@@ -3909,6 +3905,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1238",
+        "name": "IT服务Ⅱ"
       },
       "concepts": [
         {
@@ -4010,10 +4010,6 @@
       "oddsReason": "首板突破第一买点 / 龙头主升动能强劲 / 动能不足降级",
       "code": "SZ002679",
       "name": "福建金森",
-      "industry": {
-        "code": "BK1255",
-        "name": "林业Ⅱ"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 11.58,
@@ -4025,6 +4021,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1255",
+        "name": "林业Ⅱ"
       },
       "concepts": [
         {
@@ -4062,10 +4062,6 @@
       "oddsReason": "上影较重 / 低位首阳放量起爆 / 动能不足降级",
       "code": "SZ002181",
       "name": "粤 传 媒",
-      "industry": {
-        "code": "BK1218",
-        "name": "出版"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 9.58,
@@ -4077,6 +4073,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1218",
+        "name": "出版"
       },
       "concepts": [
         {
@@ -4138,10 +4138,6 @@
       "oddsReason": "收盘靠近日内高位 / 低位首阳放量起爆 / 动能不足降级",
       "code": "SH600212",
       "name": "绿能慧充",
-      "industry": {
-        "code": "BK1034",
-        "name": "其他电源设备Ⅱ"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 6.07,
@@ -4153,6 +4149,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1034",
+        "name": "其他电源设备Ⅱ"
       },
       "concepts": [
         {
@@ -4202,10 +4202,6 @@
       "oddsReason": "仍站在10日线之上 / 中部放量启动较健康 / 动能不足降级",
       "code": "SH603638",
       "name": "艾迪精密",
-      "industry": {
-        "code": "BK0739",
-        "name": "工程机械"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 19.34,
@@ -4217,6 +4213,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0739",
+        "name": "工程机械"
       },
       "concepts": [
         {
@@ -4258,10 +4258,6 @@
       "oddsReason": "收盘靠近日内高位 / 低位首阳放量起爆 / 动能不足降级",
       "code": "SH603105",
       "name": "芯能科技",
-      "industry": {
-        "code": "BK0428",
-        "name": "电力"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 8.68,
@@ -4273,6 +4269,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0428",
+        "name": "电力"
       },
       "concepts": [
         {
@@ -4318,10 +4318,6 @@
       "oddsReason": "收盘靠近日内高位 / 低位首阳放量起爆 / 动能不足降级",
       "code": "SZ002682",
       "name": "龙洲股份",
-      "industry": {
-        "code": "BK0422",
-        "name": "物流"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 5.05,
@@ -4333,6 +4329,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0422",
+        "name": "物流"
       },
       "concepts": [
         {
@@ -4398,10 +4398,6 @@
       "oddsReason": "不贴前高，仍有上攻空间 / 3日趋势斜率适中健康 / 动能不足降级",
       "code": "SZ002937",
       "name": "兴瑞科技",
-      "industry": {
-        "code": "BK0481",
-        "name": "汽车零部件"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 30.25,
@@ -4413,6 +4409,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0481",
+        "name": "汽车零部件"
       },
       "concepts": [
         {
@@ -4482,10 +4482,6 @@
       "oddsReason": "收盘靠近日内高位 / 3日趋势动能偏弱 / 动能不足降级",
       "code": "SZ002264",
       "name": "新 华 都",
-      "industry": {
-        "code": "BK1220",
-        "name": "广告营销"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 8.13,
@@ -4497,6 +4493,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1220",
+        "name": "广告营销"
       },
       "concepts": [
         {
@@ -4578,10 +4578,6 @@
       "oddsReason": "不贴前高，仍有上攻空间 / 缩量延续更利于赔率 / 3日趋势动能偏弱",
       "code": "SH603978",
       "name": "深圳新星",
-      "industry": {
-        "code": "BK1288",
-        "name": "金属新材料"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 26.01,
@@ -4593,6 +4589,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1288",
+        "name": "金属新材料"
       },
       "concepts": [
         {
@@ -4638,10 +4638,6 @@
       "oddsReason": "放量过猛需防分歧 / 上影较重 / 低位首阳放量起爆",
       "code": "SZ002342",
       "name": "巨力索具",
-      "industry": {
-        "code": "BK0545",
-        "name": "通用设备"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 7.89,
@@ -4653,6 +4649,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0545",
+        "name": "通用设备"
       },
       "concepts": [
         {
@@ -4710,10 +4710,6 @@
       "oddsReason": "放量过猛需防分歧 / 上影较重 / 低位首阳放量起爆",
       "code": "SH603755",
       "name": "日辰股份",
-      "industry": {
-        "code": "BK1278",
-        "name": "调味发酵品Ⅱ"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 25.22,
@@ -4725,6 +4721,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1278",
+        "name": "调味发酵品Ⅱ"
       },
       "concepts": [
         {
@@ -4762,10 +4762,6 @@
       "oddsReason": "仍站在10日线之上 / 处于相对强势位置 / 收盘靠近日内高位",
       "code": "SH603776",
       "name": "永安行",
-      "industry": {
-        "code": "BK1263",
-        "name": "摩托车及其他"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 21.15,
@@ -4777,6 +4773,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1263",
+        "name": "摩托车及其他"
       },
       "concepts": [
         {
@@ -4842,10 +4842,6 @@
       "oddsReason": "仍站在10日线之上 / 中部放量启动较健康 / 上影较重",
       "code": "SH603121",
       "name": "华培动力",
-      "industry": {
-        "code": "BK0481",
-        "name": "汽车零部件"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 13.14,
@@ -4857,6 +4853,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0481",
+        "name": "汽车零部件"
       },
       "concepts": [
         {
@@ -4902,10 +4902,6 @@
       "oddsReason": "仍站在10日线之上 / 中部放量启动较健康 / 上影较重",
       "code": "SZ000417",
       "name": "合百集团",
-      "industry": {
-        "code": "BK0482",
-        "name": "一般零售"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 5.85,
@@ -4917,6 +4913,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0482",
+        "name": "一般零售"
       },
       "concepts": [
         {
@@ -5002,10 +5002,6 @@
       "oddsReason": "仍站在10日线之上 / 中部放量启动较健康 / 上影较重",
       "code": "SH605089",
       "name": "味知香",
-      "industry": {
-        "code": "BK1280",
-        "name": "食品加工"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 21.26,
@@ -5017,6 +5013,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1280",
+        "name": "食品加工"
       },
       "concepts": [
         {
@@ -5058,10 +5058,6 @@
       "oddsReason": "仍站在10日线之上 / 中部放量启动较健康 / 上影较重",
       "code": "SH603700",
       "name": "宁水集团",
-      "industry": {
-        "code": "BK0545",
-        "name": "通用设备"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 11.87,
@@ -5073,6 +5069,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0545",
+        "name": "通用设备"
       },
       "concepts": []
     },
@@ -5101,10 +5101,6 @@
       "oddsReason": "仍站在10日线之上 / 中部放量启动较健康 / 上影较重",
       "code": "SH603730",
       "name": "岱美股份",
-      "industry": {
-        "code": "BK0481",
-        "name": "汽车零部件"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 10.03,
@@ -5116,6 +5112,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0481",
+        "name": "汽车零部件"
       },
       "concepts": [
         {
@@ -5161,10 +5161,6 @@
       "oddsReason": "仍站在10日线之上 / 中部放量启动较健康 / 上影较重",
       "code": "SH600539",
       "name": "狮头股份",
-      "industry": {
-        "code": "BK1268",
-        "name": "互联网电商"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 15,
@@ -5176,6 +5172,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1268",
+        "name": "互联网电商"
       },
       "concepts": [
         {
@@ -5221,10 +5221,6 @@
       "oddsReason": "仍站在10日线之上 / 中部放量启动较健康 / 上影较重",
       "code": "SZ002568",
       "name": "百润股份",
-      "industry": {
-        "code": "BK1279",
-        "name": "非白酒"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 19.25,
@@ -5236,6 +5232,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1279",
+        "name": "非白酒"
       },
       "concepts": [
         {
@@ -5273,10 +5273,6 @@
       "oddsReason": "仍站在10日线之上 / 中部放量启动较健康 / 上影较重",
       "code": "SH600343",
       "name": "航天动力",
-      "industry": {
-        "code": "BK0545",
-        "name": "通用设备"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 20.3,
@@ -5288,6 +5284,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0545",
+        "name": "通用设备"
       },
       "concepts": [
         {
@@ -5329,10 +5329,6 @@
       "oddsReason": "仍站在10日线之上 / 中部放量启动较健康 / 上影较重",
       "code": "SZ000795",
       "name": "英洛华",
-      "industry": {
-        "code": "BK1288",
-        "name": "金属新材料"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 8.52,
@@ -5344,6 +5340,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1288",
+        "name": "金属新材料"
       },
       "concepts": [
         {
@@ -5389,10 +5389,6 @@
       "oddsReason": "爆量后次日分歧风险偏高 / 收盘偏弱 / 短线连板龙头主升",
       "code": "SH600743",
       "name": "华远控股",
-      "industry": {
-        "code": "BK0482",
-        "name": "一般零售"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 2.56,
@@ -5404,6 +5400,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0482",
+        "name": "一般零售"
       },
       "concepts": [
         {
@@ -5437,10 +5437,6 @@
       "oddsReason": "不贴前高，仍有上攻空间 / 缩量延续更利于赔率 / 连板后转弱分歧",
       "code": "SH603316",
       "name": "诚邦股份",
-      "industry": {
-        "code": "BK1247",
-        "name": "基础建设"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 17.09,
@@ -5452,6 +5448,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1247",
+        "name": "基础建设"
       },
       "concepts": [
         {
@@ -5517,10 +5517,6 @@
       "oddsReason": "缩量延续更利于赔率 / 上影较重 / 3日趋势动能偏弱",
       "code": "SH603048",
       "name": "浙江黎明",
-      "industry": {
-        "code": "BK0481",
-        "name": "汽车零部件"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 25.76,
@@ -5532,6 +5528,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0481",
+        "name": "汽车零部件"
       },
       "concepts": []
     },
@@ -5560,10 +5560,6 @@
       "oddsReason": "收盘偏弱 / 上影较重 / 短线连板龙头主升",
       "code": "SH600503",
       "name": "华丽家族",
-      "industry": {
-        "code": "BK0451",
-        "name": "房地产开发"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 2.65,
@@ -5575,6 +5571,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0451",
+        "name": "房地产开发"
       },
       "concepts": [
         {
@@ -5612,10 +5612,6 @@
       "oddsReason": "收盘偏弱 / 上影较重 / 短线连板龙头主升",
       "code": "SZ000560",
       "name": "我爱我家",
-      "industry": {
-        "code": "BK1045",
-        "name": "房地产服务"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 3.66,
@@ -5627,6 +5623,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1045",
+        "name": "房地产服务"
       },
       "concepts": [
         {
@@ -5676,10 +5676,6 @@
       "oddsReason": "当日动能一般 / 仍站在10日线之上 / 收盘靠近日内高位",
       "code": "SZ000831",
       "name": "中国稀土",
-      "industry": {
-        "code": "BK1027",
-        "name": "小金属"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 53.9,
@@ -5691,6 +5687,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1027",
+        "name": "小金属"
       },
       "concepts": [
         {
@@ -5724,10 +5724,6 @@
       "oddsReason": "当日动能一般 / 仍站在10日线之上 / 收盘靠近日内高位",
       "code": "SH605158",
       "name": "华达新材",
-      "industry": {
-        "code": "BK1288",
-        "name": "金属新材料"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 7.88,
@@ -5739,6 +5735,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1288",
+        "name": "金属新材料"
       },
       "concepts": []
     },
@@ -5767,10 +5767,6 @@
       "oddsReason": "当日动能一般 / 仍站在10日线之上 / 收盘靠近日内高位",
       "code": "SH603717",
       "name": "天域生物",
-      "industry": {
-        "code": "BK1247",
-        "name": "基础建设"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 5.93,
@@ -5782,6 +5778,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1247",
+        "name": "基础建设"
       },
       "concepts": [
         {
@@ -5823,10 +5823,6 @@
       "oddsReason": "当日动能一般 / 仍站在10日线之上 / 收盘靠近日内高位",
       "code": "SH605001",
       "name": "威奥股份",
-      "industry": {
-        "code": "BK1236",
-        "name": "轨交设备Ⅱ"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 5.84,
@@ -5838,6 +5834,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1236",
+        "name": "轨交设备Ⅱ"
       },
       "concepts": [
         {
@@ -5879,10 +5879,6 @@
       "oddsReason": "当日动能一般 / 仍站在10日线之上 / 收盘靠近日内高位",
       "code": "SH600303",
       "name": "曙光股份",
-      "industry": {
-        "code": "BK1264",
-        "name": "商用车"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 3.05,
@@ -5894,6 +5890,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1264",
+        "name": "商用车"
       },
       "concepts": [
         {
@@ -5935,10 +5935,6 @@
       "oddsReason": "当日动能一般 / 仍站在10日线之上 / 收盘靠近日内高位",
       "code": "SH603818",
       "name": "曲美家居",
-      "industry": {
-        "code": "BK0440",
-        "name": "家居用品"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 3.88,
@@ -5950,6 +5946,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0440",
+        "name": "家居用品"
       },
       "concepts": []
     },
@@ -5978,10 +5978,6 @@
       "oddsReason": "当日动能一般 / 仍站在10日线之上 / 收盘靠近日内高位",
       "code": "SZ002535",
       "name": "林州重机",
-      "industry": {
-        "code": "BK0910",
-        "name": "专用设备"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 2.42,
@@ -5993,6 +5989,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0910",
+        "name": "专用设备"
       },
       "concepts": [
         {
@@ -6030,10 +6030,6 @@
       "oddsReason": "中部放量启动较健康 / 收盘偏弱 / 上影较重",
       "code": "SZ001358",
       "name": "兴欣新材",
-      "industry": {
-        "code": "BK0538",
-        "name": "化学制品"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 25.48,
@@ -6045,6 +6041,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0538",
+        "name": "化学制品"
       },
       "concepts": [
         {
@@ -6102,10 +6102,6 @@
       "oddsReason": "中部放量启动较健康 / 收盘偏弱 / 上影较重",
       "code": "SH603716",
       "name": "塞力医疗",
-      "industry": {
-        "code": "BK1042",
-        "name": "医药商业"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 17.27,
@@ -6117,6 +6113,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1042",
+        "name": "医药商业"
       },
       "concepts": [
         {
@@ -6218,10 +6218,6 @@
       "oddsReason": "中部放量启动较健康 / 收盘偏弱 / 上影较重",
       "code": "SH600558",
       "name": "大西洋",
-      "industry": {
-        "code": "BK0545",
-        "name": "通用设备"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 4.86,
@@ -6233,6 +6229,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0545",
+        "name": "通用设备"
       },
       "concepts": [
         {
@@ -6278,10 +6278,6 @@
       "oddsReason": "中部放量启动较健康 / 收盘偏弱 / 上影较重",
       "code": "SH600715",
       "name": "文投控股",
-      "industry": {
-        "code": "BK1046",
-        "name": "游戏Ⅱ"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 1.69,
@@ -6293,6 +6289,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1046",
+        "name": "游戏Ⅱ"
       },
       "concepts": [
         {
@@ -6334,10 +6334,6 @@
       "oddsReason": "中部放量启动较健康 / 收盘偏弱 / 上影较重",
       "code": "SZ001400",
       "name": "江顺科技",
-      "industry": {
-        "code": "BK0910",
-        "name": "专用设备"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 80.21,
@@ -6349,6 +6345,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0910",
+        "name": "专用设备"
       },
       "concepts": [
         {
@@ -6406,10 +6406,6 @@
       "oddsReason": "当日延续上涨 / 跌回10日线下 / 中部放量启动较健康",
       "code": "SH601963",
       "name": "重庆银行",
-      "industry": {
-        "code": "BK0475",
-        "name": "银行Ⅱ"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 11.03,
@@ -6421,6 +6417,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0475",
+        "name": "银行Ⅱ"
       },
       "concepts": [
         {
@@ -6458,10 +6458,6 @@
       "oddsReason": "仍站在10日线之上 / 放量过猛需防分歧 / 上影较重",
       "code": "SZ002035",
       "name": "华帝股份",
-      "industry": {
-        "code": "BK1240",
-        "name": "厨卫电器"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 4.83,
@@ -6473,6 +6469,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1240",
+        "name": "厨卫电器"
       },
       "concepts": [
         {
@@ -6546,10 +6546,6 @@
       "oddsReason": "仍站在10日线之上 / 放量过猛需防分歧 / 上影较重",
       "code": "SH603055",
       "name": "台华新材",
-      "industry": {
-        "code": "BK1224",
-        "name": "纺织制造"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 9.51,
@@ -6561,6 +6557,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1224",
+        "name": "纺织制造"
       },
       "concepts": [
         {
@@ -6594,10 +6594,6 @@
       "oddsReason": "仍站在10日线之上 / 放量过猛需防分歧 / 上影较重",
       "code": "SZ002478",
       "name": "常宝股份",
-      "industry": {
-        "code": "BK1227",
-        "name": "特钢Ⅱ"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 6.72,
@@ -6609,6 +6605,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1227",
+        "name": "特钢Ⅱ"
       },
       "concepts": [
         {
@@ -6670,10 +6670,6 @@
       "oddsReason": "仍站在10日线之上 / 放量过猛需防分歧 / 上影较重",
       "code": "SZ002826",
       "name": "易明医药",
-      "industry": {
-        "code": "BK0465",
-        "name": "化学制药"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 17.68,
@@ -6685,6 +6681,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0465",
+        "name": "化学制药"
       },
       "concepts": [
         {
@@ -6718,10 +6718,6 @@
       "oddsReason": "仍站在10日线之上 / 放量过猛需防分歧 / 上影较重",
       "code": "SH600232",
       "name": "金鹰股份",
-      "industry": {
-        "code": "BK0910",
-        "name": "专用设备"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 6.78,
@@ -6733,6 +6729,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0910",
+        "name": "专用设备"
       },
       "concepts": [
         {
@@ -6766,10 +6766,6 @@
       "oddsReason": "仍站在10日线之上 / 放量过猛需防分歧 / 上影较重",
       "code": "SH600592",
       "name": "龙溪股份",
-      "industry": {
-        "code": "BK0545",
-        "name": "通用设备"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 14.84,
@@ -6781,6 +6777,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0545",
+        "name": "通用设备"
       },
       "concepts": [
         {
@@ -6830,10 +6830,6 @@
       "oddsReason": "缩量延续更利于赔率 / 上影较重 / 连板后转弱分歧",
       "code": "SZ002453",
       "name": "华软科技",
-      "industry": {
-        "code": "BK0538",
-        "name": "化学制品"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 5.02,
@@ -6845,6 +6841,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0538",
+        "name": "化学制品"
       },
       "concepts": [
         {
@@ -6882,10 +6882,6 @@
       "oddsReason": "收盘偏弱 / 上影较重 / 短线连板龙头主升",
       "code": "SH603636",
       "name": "南威软件",
-      "industry": {
-        "code": "BK1238",
-        "name": "IT服务Ⅱ"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 7.94,
@@ -6897,6 +6893,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1238",
+        "name": "IT服务Ⅱ"
       },
       "concepts": [
         {
@@ -7006,10 +7006,6 @@
       "oddsReason": "缩量延续更利于赔率 / 收盘偏弱 / 连板后转弱分歧",
       "code": "SZ002589",
       "name": "瑞康医药",
-      "industry": {
-        "code": "BK1042",
-        "name": "医药商业"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 3.32,
@@ -7021,6 +7017,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1042",
+        "name": "医药商业"
       },
       "concepts": [
         {
@@ -7082,10 +7082,6 @@
       "oddsReason": "缩量延续更利于赔率 / 收盘偏弱 / 连板后转弱分歧",
       "code": "SH600606",
       "name": "绿地控股",
-      "industry": {
-        "code": "BK0451",
-        "name": "房地产开发"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 1.43,
@@ -7097,6 +7093,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0451",
+        "name": "房地产开发"
       },
       "concepts": [
         {
@@ -7162,10 +7162,6 @@
       "oddsReason": "仍站在10日线之上 / 不贴前高，仍有上攻空间 / 连板后转弱分歧",
       "code": "SH600127",
       "name": "金健米业",
-      "industry": {
-        "code": "BK1256",
-        "name": "农产品加工"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 16.49,
@@ -7177,6 +7173,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1256",
+        "name": "农产品加工"
       },
       "concepts": [
         {
@@ -7226,10 +7226,6 @@
       "oddsReason": "当日延续上涨 / 跌回10日线下 / 收盘靠近日内高位",
       "code": "SH600163",
       "name": "中闽能源",
-      "industry": {
-        "code": "BK0428",
-        "name": "电力"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 5.53,
@@ -7241,6 +7237,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0428",
+        "name": "电力"
       },
       "concepts": [
         {
@@ -7294,10 +7294,6 @@
       "oddsReason": "上影较重 / 短线连板龙头主升 / 前期涨幅过大短线滞涨",
       "code": "SZ001216",
       "name": "华瓷股份",
-      "industry": {
-        "code": "BK0440",
-        "name": "家居用品"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 28.4,
@@ -7309,6 +7305,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0440",
+        "name": "家居用品"
       },
       "concepts": [
         {
@@ -7354,10 +7354,6 @@
       "oddsReason": "不贴前高，仍有上攻空间 / 上影较重 / 3日趋势动能偏弱",
       "code": "SZ002301",
       "name": "齐心集团",
-      "industry": {
-        "code": "BK1266",
-        "name": "文娱用品"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 8.91,
@@ -7369,6 +7365,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1266",
+        "name": "文娱用品"
       },
       "concepts": [
         {
@@ -7414,10 +7414,6 @@
       "oddsReason": "当日动能一般 / 仍站在10日线之上",
       "code": "SZ001278",
       "name": "一彬科技",
-      "industry": {
-        "code": "BK0481",
-        "name": "汽车零部件"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 16.76,
@@ -7429,6 +7425,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0481",
+        "name": "汽车零部件"
       },
       "concepts": []
     },
@@ -7457,10 +7457,6 @@
       "oddsReason": "当日动能一般 / 仍站在10日线之上",
       "code": "SZ002775",
       "name": "文科股份",
-      "industry": {
-        "code": "BK1247",
-        "name": "基础建设"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 3.33,
@@ -7472,6 +7468,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1247",
+        "name": "基础建设"
       },
       "concepts": [
         {
@@ -7513,10 +7513,6 @@
       "oddsReason": "当日动能一般 / 仍站在10日线之上",
       "code": "SZ002278",
       "name": "神开股份",
-      "industry": {
-        "code": "BK0910",
-        "name": "专用设备"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 7.96,
@@ -7528,6 +7524,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0910",
+        "name": "专用设备"
       },
       "concepts": [
         {
@@ -7601,10 +7601,6 @@
       "oddsReason": "当日动能一般 / 仍站在10日线之上",
       "code": "SZ002513",
       "name": "蓝丰生化",
-      "industry": {
-        "code": "BK0731",
-        "name": "农化制品"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 5.31,
@@ -7616,6 +7612,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0731",
+        "name": "农化制品"
       },
       "concepts": [
         {
@@ -7657,10 +7657,6 @@
       "oddsReason": "收盘偏弱 / 短线连板龙头主升 / 前期涨幅过大短线滞涨",
       "code": "SZ000910",
       "name": "大亚圣象",
-      "industry": {
-        "code": "BK0440",
-        "name": "家居用品"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 7.6,
@@ -7672,6 +7668,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0440",
+        "name": "家居用品"
       },
       "concepts": [
         {
@@ -7705,10 +7705,6 @@
       "oddsReason": "仍站在10日线之上 / 收盘偏弱 / 上影较重",
       "code": "SZ002095",
       "name": "生 意 宝",
-      "industry": {
-        "code": "BK1221",
-        "name": "数字媒体"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 16.03,
@@ -7720,6 +7716,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1221",
+        "name": "数字媒体"
       },
       "concepts": [
         {
@@ -7773,10 +7773,6 @@
       "oddsReason": "放量过猛需防分歧 / 收盘偏弱 / 上影较重",
       "code": "SH603912",
       "name": "佳力图",
-      "industry": {
-        "code": "BK0545",
-        "name": "通用设备"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 9.39,
@@ -7788,6 +7784,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0545",
+        "name": "通用设备"
       },
       "concepts": [
         {
@@ -7829,10 +7829,6 @@
       "oddsReason": "不贴前高，仍有上攻空间 / 收盘偏弱 / 连板后转弱分歧",
       "code": "SZ000002",
       "name": "万  科Ａ",
-      "industry": {
-        "code": "BK0451",
-        "name": "房地产开发"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 3.76,
@@ -7844,6 +7840,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0451",
+        "name": "房地产开发"
       },
       "concepts": [
         {
@@ -7893,10 +7893,6 @@
       "oddsReason": "收盘偏弱 / 上影较重 / 连板后转弱分歧",
       "code": "SZ000532",
       "name": "华金资本",
-      "industry": {
-        "code": "BK0738",
-        "name": "多元金融"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 12.87,
@@ -7908,6 +7904,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0738",
+        "name": "多元金融"
       },
       "concepts": [
         {
@@ -7949,10 +7949,6 @@
       "oddsReason": "收盘偏弱 / 上影较重 / 连板后转弱分歧",
       "code": "SH603001",
       "name": "奥康国际",
-      "industry": {
-        "code": "BK1225",
-        "name": "服装家纺"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 11.74,
@@ -7964,6 +7960,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1225",
+        "name": "服装家纺"
       },
       "concepts": [
         {
@@ -8005,10 +8005,6 @@
       "oddsReason": "收盘偏弱 / 上影较重 / 连板后转弱分歧",
       "code": "SH603020",
       "name": "爱普股份",
-      "industry": {
-        "code": "BK0538",
-        "name": "化学制品"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 12.88,
@@ -8020,6 +8016,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0538",
+        "name": "化学制品"
       },
       "concepts": [
         {
@@ -8061,10 +8061,6 @@
       "oddsReason": "不贴前高，仍有上攻空间 / 收盘偏弱 / 连板后转弱分歧",
       "code": "SZ002303",
       "name": "美盈森",
-      "industry": {
-        "code": "BK1265",
-        "name": "包装印刷"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 6.35,
@@ -8076,6 +8072,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1265",
+        "name": "包装印刷"
       },
       "concepts": [
         {
@@ -8141,7 +8141,6 @@
       "oddsReason": "收盘偏弱 / 上影较重 / 连板后转弱分歧",
       "code": "SH601123",
       "name": "马矿股份",
-      "industry": null,
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 17.82,
@@ -8154,6 +8153,7 @@
         "d5": null,
         "d6": null
       },
+      "industry": null,
       "concepts": []
     },
     {
@@ -8181,10 +8181,6 @@
       "oddsReason": "收盘偏弱 / 上影较重 / 3日趋势动能偏弱",
       "code": "SZ002677",
       "name": "浙江美大",
-      "industry": {
-        "code": "BK1240",
-        "name": "厨卫电器"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 6.4,
@@ -8196,6 +8192,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1240",
+        "name": "厨卫电器"
       },
       "concepts": [
         {
@@ -8233,10 +8233,6 @@
       "oddsReason": "上影较重 / 逼近前高但受阻明显 / 3日趋势斜率适中健康",
       "code": "SZ001368",
       "name": "通达创智",
-      "industry": {
-        "code": "BK1266",
-        "name": "文娱用品"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 38,
@@ -8248,6 +8244,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1266",
+        "name": "文娱用品"
       },
       "concepts": [
         {
@@ -8297,10 +8297,6 @@
       "oddsReason": "当日动能一般 / 仍站在10日线之上 / 上影较重",
       "code": "SZ002778",
       "name": "中晟高科",
-      "industry": {
-        "code": "BK1235",
-        "name": "环境治理"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 15.83,
@@ -8312,6 +8308,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1235",
+        "name": "环境治理"
       },
       "concepts": [
         {
@@ -8349,10 +8349,6 @@
       "oddsReason": "当日动能一般 / 仍站在10日线之上 / 上影较重",
       "code": "SH603983",
       "name": "丸美生物",
-      "industry": {
-        "code": "BK1252",
-        "name": "化妆品"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 31.59,
@@ -8364,6 +8360,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1252",
+        "name": "化妆品"
       },
       "concepts": [
         {
@@ -8409,10 +8409,6 @@
       "oddsReason": "当日动能一般 / 仍站在10日线之上 / 上影较重",
       "code": "SZ000007",
       "name": "全新好",
-      "industry": {
-        "code": "BK0482",
-        "name": "一般零售"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 11.64,
@@ -8424,6 +8420,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0482",
+        "name": "一般零售"
       },
       "concepts": []
     },
@@ -8452,10 +8452,6 @@
       "oddsReason": "当日动能一般 / 仍站在10日线之上 / 上影较重",
       "code": "SZ000530",
       "name": "冰山冷热",
-      "industry": {
-        "code": "BK0545",
-        "name": "通用设备"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 5.2,
@@ -8467,6 +8463,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0545",
+        "name": "通用设备"
       },
       "concepts": [
         {
@@ -8540,10 +8540,6 @@
       "oddsReason": "当日动能一般 / 仍站在10日线之上 / 上影较重",
       "code": "SZ002949",
       "name": "华阳国际",
-      "industry": {
-        "code": "BK0726",
-        "name": "工程咨询服务Ⅱ"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 13.08,
@@ -8555,6 +8551,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0726",
+        "name": "工程咨询服务Ⅱ"
       },
       "concepts": [
         {
@@ -8600,10 +8600,6 @@
       "oddsReason": "当日动能一般 / 仍站在10日线之上 / 上影较重",
       "code": "SH600250",
       "name": "南京商旅",
-      "industry": {
-        "code": "BK0484",
-        "name": "贸易Ⅱ"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 9.07,
@@ -8615,6 +8611,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0484",
+        "name": "贸易Ⅱ"
       },
       "concepts": [
         {
@@ -8664,10 +8664,6 @@
       "oddsReason": "当日动能一般 / 仍站在10日线之上 / 上影较重",
       "code": "SH603385",
       "name": "惠达卫浴",
-      "industry": {
-        "code": "BK0440",
-        "name": "家居用品"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 5.69,
@@ -8679,6 +8675,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0440",
+        "name": "家居用品"
       },
       "concepts": [
         {
@@ -8716,10 +8716,6 @@
       "oddsReason": "当日动能一般 / 仍站在10日线之上 / 上影较重",
       "code": "SH603577",
       "name": "汇金通",
-      "industry": {
-        "code": "BK0457",
-        "name": "电网设备"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 9.7,
@@ -8731,6 +8727,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0457",
+        "name": "电网设备"
       },
       "concepts": [
         {
@@ -8776,10 +8776,6 @@
       "oddsReason": "当日动能一般 / 仍站在10日线之上 / 上影较重",
       "code": "SH605151",
       "name": "西上海",
-      "industry": {
-        "code": "BK0481",
-        "name": "汽车零部件"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 18.7,
@@ -8791,6 +8787,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0481",
+        "name": "汽车零部件"
       },
       "concepts": [
         {
@@ -8824,10 +8824,6 @@
       "oddsReason": "当日动能一般 / 仍站在10日线之上 / 上影较重",
       "code": "SH603066",
       "name": "音飞储存",
-      "industry": {
-        "code": "BK0422",
-        "name": "物流"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 9.35,
@@ -8839,6 +8835,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0422",
+        "name": "物流"
       },
       "concepts": [
         {
@@ -8888,10 +8888,6 @@
       "oddsReason": "当日动能一般 / 仍站在10日线之上 / 上影较重",
       "code": "SH600784",
       "name": "鲁银投资",
-      "industry": {
-        "code": "BK1019",
-        "name": "化学原料"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 7.14,
@@ -8903,6 +8899,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1019",
+        "name": "化学原料"
       },
       "concepts": []
     },
@@ -8931,10 +8931,6 @@
       "oddsReason": "当日动能一般 / 跌回10日线下 / 收盘靠近日内高位",
       "code": "SZ002309",
       "name": "中利集团",
-      "industry": {
-        "code": "BK1031",
-        "name": "光伏设备"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 2.85,
@@ -8946,6 +8942,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1031",
+        "name": "光伏设备"
       },
       "concepts": [
         {
@@ -9011,10 +9011,6 @@
       "oddsReason": "当日动能一般 / 跌回10日线下 / 收盘靠近日内高位",
       "code": "SZ003013",
       "name": "地铁设计",
-      "industry": {
-        "code": "BK0726",
-        "name": "工程咨询服务Ⅱ"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 16.3,
@@ -9026,6 +9022,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0726",
+        "name": "工程咨询服务Ⅱ"
       },
       "concepts": [
         {
@@ -9103,10 +9103,6 @@
       "oddsReason": "当日动能一般 / 跌回10日线下 / 收盘靠近日内高位",
       "code": "SH600798",
       "name": "宁波海运",
-      "industry": {
-        "code": "BK0450",
-        "name": "航运港口"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 3.39,
@@ -9118,6 +9114,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0450",
+        "name": "航运港口"
       },
       "concepts": [
         {
@@ -9151,10 +9151,6 @@
       "oddsReason": "当日动能一般 / 跌回10日线下 / 收盘靠近日内高位",
       "code": "SH600982",
       "name": "宁波能源",
-      "industry": {
-        "code": "BK0428",
-        "name": "电力"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 4.86,
@@ -9166,6 +9162,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0428",
+        "name": "电力"
       },
       "concepts": [
         {
@@ -9219,10 +9219,6 @@
       "oddsReason": "当日动能一般 / 跌回10日线下 / 收盘靠近日内高位",
       "code": "SH600502",
       "name": "安徽建工",
-      "industry": {
-        "code": "BK1247",
-        "name": "基础建设"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 4.16,
@@ -9234,6 +9230,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1247",
+        "name": "基础建设"
       },
       "concepts": [
         {
@@ -9287,10 +9287,6 @@
       "oddsReason": "当日动能一般 / 跌回10日线下 / 收盘靠近日内高位",
       "code": "SH600310",
       "name": "广西能源",
-      "industry": {
-        "code": "BK0428",
-        "name": "电力"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 4.45,
@@ -9302,6 +9298,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0428",
+        "name": "电力"
       },
       "concepts": [
         {
@@ -9355,10 +9355,6 @@
       "oddsReason": "当日动能一般 / 跌回10日线下 / 收盘靠近日内高位",
       "code": "SZ002498",
       "name": "汉缆股份",
-      "industry": {
-        "code": "BK0457",
-        "name": "电网设备"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 6.3,
@@ -9370,6 +9366,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0457",
+        "name": "电网设备"
       },
       "concepts": [
         {
@@ -9439,10 +9439,6 @@
       "oddsReason": "当日动能一般 / 跌回10日线下 / 收盘靠近日内高位",
       "code": "SZ000554",
       "name": "泰山石油",
-      "industry": {
-        "code": "BK1274",
-        "name": "炼化及贸易"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 6.26,
@@ -9454,6 +9450,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1274",
+        "name": "炼化及贸易"
       },
       "concepts": [
         {
@@ -9495,10 +9495,6 @@
       "oddsReason": "当日动能一般 / 跌回10日线下 / 收盘靠近日内高位",
       "code": "SZ002339",
       "name": "积成电子",
-      "industry": {
-        "code": "BK0457",
-        "name": "电网设备"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 7.55,
@@ -9510,6 +9506,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0457",
+        "name": "电网设备"
       },
       "concepts": [
         {
@@ -9575,10 +9575,6 @@
       "oddsReason": "当日动能一般 / 跌回10日线下 / 收盘靠近日内高位",
       "code": "SZ002692",
       "name": "远程股份",
-      "industry": {
-        "code": "BK0457",
-        "name": "电网设备"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 4.29,
@@ -9590,6 +9586,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0457",
+        "name": "电网设备"
       },
       "concepts": [
         {
@@ -9635,10 +9635,6 @@
       "oddsReason": "当日动能一般 / 跌回10日线下 / 收盘靠近日内高位",
       "code": "SH601008",
       "name": "连云港",
-      "industry": {
-        "code": "BK0450",
-        "name": "航运港口"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 4.4,
@@ -9650,6 +9646,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0450",
+        "name": "航运港口"
       },
       "concepts": []
     },
@@ -9678,10 +9678,6 @@
       "oddsReason": "中部放量启动较健康 / 收盘偏弱 / 上影较重",
       "code": "SZ000809",
       "name": "和展能源",
-      "industry": {
-        "code": "BK1032",
-        "name": "风电设备"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 3.46,
@@ -9693,6 +9689,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1032",
+        "name": "风电设备"
       },
       "concepts": [
         {
@@ -9726,10 +9726,6 @@
       "oddsReason": "中部放量启动较健康 / 收盘偏弱 / 上影较重",
       "code": "SH600758",
       "name": "辽宁能源",
-      "industry": {
-        "code": "BK1250",
-        "name": "煤炭开采"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 3.64,
@@ -9741,6 +9737,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1250",
+        "name": "煤炭开采"
       },
       "concepts": [
         {
@@ -9778,10 +9778,6 @@
       "oddsReason": "收盘偏弱 / 上影较重 / 3日趋势动能偏弱",
       "code": "SH603898",
       "name": "好莱客",
-      "industry": {
-        "code": "BK0440",
-        "name": "家居用品"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 11.8,
@@ -9793,6 +9789,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0440",
+        "name": "家居用品"
       },
       "concepts": [
         {
@@ -9830,10 +9830,6 @@
       "oddsReason": "收盘偏弱 / 上影较重 / 3日趋势动能偏弱",
       "code": "SZ002951",
       "name": "金时科技",
-      "industry": {
-        "code": "BK1034",
-        "name": "其他电源设备Ⅱ"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 16.98,
@@ -9845,6 +9841,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1034",
+        "name": "其他电源设备Ⅱ"
       },
       "concepts": [
         {
@@ -9882,10 +9882,6 @@
       "oddsReason": "收盘偏弱 / 上影较重 / 连板后转弱分歧",
       "code": "SH600664",
       "name": "哈药股份",
-      "industry": {
-        "code": "BK0465",
-        "name": "化学制药"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 8.14,
@@ -9897,6 +9893,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0465",
+        "name": "化学制药"
       },
       "concepts": [
         {
@@ -9954,10 +9954,6 @@
       "oddsReason": "缩量延续更利于赔率 / 收盘偏弱 / 连板后转弱分歧",
       "code": "SH601086",
       "name": "国芳集团",
-      "industry": {
-        "code": "BK0482",
-        "name": "一般零售"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 15.32,
@@ -9969,6 +9965,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0482",
+        "name": "一般零售"
       },
       "concepts": [
         {
@@ -10010,10 +10010,6 @@
       "oddsReason": "收盘偏弱 / 上影较重 / 连板后转弱分歧",
       "code": "SZ002178",
       "name": "延华智能",
-      "industry": {
-        "code": "BK0737",
-        "name": "软件开发"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 5.07,
@@ -10025,6 +10021,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0737",
+        "name": "软件开发"
       },
       "concepts": [
         {
@@ -10086,10 +10086,6 @@
       "oddsReason": "收盘偏弱 / 上影较重 / 连板后转弱分歧",
       "code": "SZ000756",
       "name": "新华制药",
-      "industry": {
-        "code": "BK0465",
-        "name": "化学制药"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 13.92,
@@ -10101,6 +10097,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0465",
+        "name": "化学制药"
       },
       "concepts": [
         {
@@ -10166,10 +10166,6 @@
       "oddsReason": "收盘偏弱 / 上影较重 / 连板后转弱分歧",
       "code": "SH600721",
       "name": "百花医药",
-      "industry": {
-        "code": "BK0727",
-        "name": "医疗服务"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 12.92,
@@ -10181,6 +10177,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0727",
+        "name": "医疗服务"
       },
       "concepts": [
         {
@@ -10234,10 +10234,6 @@
       "oddsReason": "仍站在10日线之上 / 收盘偏弱 / 上影较重",
       "code": "SH600847",
       "name": "万里股份",
-      "industry": {
-        "code": "BK1033",
-        "name": "电池"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 13.03,
@@ -10249,6 +10245,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1033",
+        "name": "电池"
       },
       "concepts": [
         {
@@ -10286,10 +10286,6 @@
       "oddsReason": "仍站在10日线之上 / 收盘偏弱 / 上影较重",
       "code": "SZ002221",
       "name": "东华能源",
-      "industry": {
-        "code": "BK1274",
-        "name": "炼化及贸易"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 5.71,
@@ -10301,6 +10297,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1274",
+        "name": "炼化及贸易"
       },
       "concepts": [
         {
@@ -10354,10 +10354,6 @@
       "oddsReason": "当日动能一般 / 跌回10日线下",
       "code": "SZ002316",
       "name": "亚联发展",
-      "industry": {
-        "code": "BK0736",
-        "name": "通信服务"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 4.3,
@@ -10369,6 +10365,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0736",
+        "name": "通信服务"
       },
       "concepts": [
         {
@@ -10442,10 +10442,6 @@
       "oddsReason": "当日动能一般 / 跌回10日线下",
       "code": "SH603086",
       "name": "先达股份",
-      "industry": {
-        "code": "BK0731",
-        "name": "农化制品"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 5.83,
@@ -10457,6 +10453,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0731",
+        "name": "农化制品"
       },
       "concepts": [
         {
@@ -10494,10 +10494,6 @@
       "oddsReason": "当日动能一般 / 跌回10日线下",
       "code": "SZ002204",
       "name": "大连重工",
-      "industry": {
-        "code": "BK0910",
-        "name": "专用设备"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 5.41,
@@ -10509,6 +10505,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0910",
+        "name": "专用设备"
       },
       "concepts": [
         {
@@ -10562,10 +10562,6 @@
       "oddsReason": "当日动能一般 / 跌回10日线下",
       "code": "SH600165",
       "name": "宁科生物",
-      "industry": {
-        "code": "BK0538",
-        "name": "化学制品"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 3.21,
@@ -10577,6 +10573,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0538",
+        "name": "化学制品"
       },
       "concepts": []
     },
@@ -10605,10 +10605,6 @@
       "oddsReason": "当日动能一般 / 跌回10日线下",
       "code": "SH603866",
       "name": "桃李面包",
-      "industry": {
-        "code": "BK1281",
-        "name": "休闲食品"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 4.15,
@@ -10620,6 +10616,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1281",
+        "name": "休闲食品"
       },
       "concepts": [
         {
@@ -10653,10 +10653,6 @@
       "oddsReason": "当日动能一般 / 跌回10日线下",
       "code": "SZ002529",
       "name": "海源复材",
-      "industry": {
-        "code": "BK0910",
-        "name": "专用设备"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 6.59,
@@ -10668,6 +10664,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0910",
+        "name": "专用设备"
       },
       "concepts": [
         {
@@ -10705,10 +10705,6 @@
       "oddsReason": "当日动能一般 / 跌回10日线下",
       "code": "SH600012",
       "name": "皖通高速",
-      "industry": {
-        "code": "BK0421",
-        "name": "铁路公路"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 15.54,
@@ -10720,6 +10716,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0421",
+        "name": "铁路公路"
       },
       "concepts": []
     },
@@ -10748,10 +10748,6 @@
       "oddsReason": "仍站在10日线之上 / 收盘偏弱 / 上影较重",
       "code": "SZ002828",
       "name": "贝肯能源",
-      "industry": {
-        "code": "BK1275",
-        "name": "油服工程"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 10.85,
@@ -10763,6 +10759,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1275",
+        "name": "油服工程"
       },
       "concepts": [
         {
@@ -10808,10 +10808,6 @@
       "oddsReason": "仍站在10日线之上 / 收盘偏弱 / 上影较重",
       "code": "SH605055",
       "name": "迎丰股份",
-      "industry": {
-        "code": "BK1224",
-        "name": "纺织制造"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 8.83,
@@ -10823,6 +10819,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1224",
+        "name": "纺织制造"
       },
       "concepts": []
     },
@@ -10851,10 +10851,6 @@
       "oddsReason": "仍站在10日线之上 / 收盘偏弱 / 上影较重",
       "code": "SZ002955",
       "name": "鸿合科技",
-      "industry": {
-        "code": "BK1038",
-        "name": "光学光电子"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 37.46,
@@ -10866,6 +10862,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1038",
+        "name": "光学光电子"
       },
       "concepts": [
         {
@@ -10931,10 +10931,6 @@
       "oddsReason": "收盘偏弱 / 上影较重 / 逼近前高但受阻明显",
       "code": "SZ001228",
       "name": "永泰运",
-      "industry": {
-        "code": "BK0422",
-        "name": "物流"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 37.42,
@@ -10946,6 +10942,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0422",
+        "name": "物流"
       },
       "concepts": []
     },
@@ -10974,10 +10974,6 @@
       "oddsReason": "当日动能一般 / 跌回10日线下 / 上影较重",
       "code": "SH600052",
       "name": "东望时代",
-      "industry": {
-        "code": "BK0428",
-        "name": "电力"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 3.64,
@@ -10989,6 +10985,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0428",
+        "name": "电力"
       },
       "concepts": [
         {
@@ -11030,10 +11030,6 @@
       "oddsReason": "当日动能一般 / 跌回10日线下 / 上影较重",
       "code": "SH601898",
       "name": "中煤能源",
-      "industry": {
-        "code": "BK1250",
-        "name": "煤炭开采"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 14.01,
@@ -11045,6 +11041,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1250",
+        "name": "煤炭开采"
       },
       "concepts": [
         {
@@ -11078,10 +11078,6 @@
       "oddsReason": "当日动能一般 / 跌回10日线下 / 上影较重",
       "code": "SH600738",
       "name": "丽尚国潮",
-      "industry": {
-        "code": "BK0482",
-        "name": "一般零售"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 4.2,
@@ -11093,6 +11089,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0482",
+        "name": "一般零售"
       },
       "concepts": [
         {
@@ -11134,10 +11134,6 @@
       "oddsReason": "当日动能一般 / 跌回10日线下 / 上影较重",
       "code": "SZ002053",
       "name": "云南能投",
-      "industry": {
-        "code": "BK0428",
-        "name": "电力"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 9.44,
@@ -11149,6 +11145,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0428",
+        "name": "电力"
       },
       "concepts": [
         {
@@ -11206,10 +11206,6 @@
       "oddsReason": "当日动能一般 / 跌回10日线下 / 上影较重",
       "code": "SH601890",
       "name": "亚星锚链",
-      "industry": {
-        "code": "BK1230",
-        "name": "航海装备Ⅱ"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 9.39,
@@ -11221,6 +11217,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1230",
+        "name": "航海装备Ⅱ"
       },
       "concepts": [
         {
@@ -11262,10 +11262,6 @@
       "oddsReason": "当日动能一般 / 跌回10日线下 / 上影较重",
       "code": "SH600480",
       "name": "凌云股份",
-      "industry": {
-        "code": "BK0481",
-        "name": "汽车零部件"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 7.81,
@@ -11277,6 +11273,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0481",
+        "name": "汽车零部件"
       },
       "concepts": [
         {
@@ -11346,10 +11346,6 @@
       "oddsReason": "当日动能一般 / 跌回10日线下 / 上影较重",
       "code": "SZ000520",
       "name": "凤凰航运",
-      "industry": {
-        "code": "BK0450",
-        "name": "航运港口"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 4.07,
@@ -11361,6 +11357,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0450",
+        "name": "航运港口"
       },
       "concepts": []
     },
@@ -11389,10 +11389,6 @@
       "oddsReason": "当日动能一般 / 跌回10日线下 / 上影较重",
       "code": "SH603128",
       "name": "华贸物流",
-      "industry": {
-        "code": "BK0422",
-        "name": "物流"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 5.3,
@@ -11404,6 +11400,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0422",
+        "name": "物流"
       },
       "concepts": [
         {
@@ -11441,10 +11441,6 @@
       "oddsReason": "当日动能一般 / 跌回10日线下 / 上影较重",
       "code": "SZ002486",
       "name": "嘉麟杰",
-      "industry": {
-        "code": "BK1225",
-        "name": "服装家纺"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 2.73,
@@ -11456,6 +11452,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1225",
+        "name": "服装家纺"
       },
       "concepts": [
         {
@@ -11497,10 +11497,6 @@
       "oddsReason": "当日动能一般 / 跌回10日线下 / 上影较重",
       "code": "SZ000839",
       "name": "国安股份",
-      "industry": {
-        "code": "BK0736",
-        "name": "通信服务"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 2.83,
@@ -11512,6 +11508,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0736",
+        "name": "通信服务"
       },
       "concepts": [
         {
@@ -11557,10 +11557,6 @@
       "oddsReason": "当日动能一般 / 跌回10日线下 / 上影较重",
       "code": "SH600327",
       "name": "大东方",
-      "industry": {
-        "code": "BK0482",
-        "name": "一般零售"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 3.8,
@@ -11572,6 +11568,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0482",
+        "name": "一般零售"
       },
       "concepts": [
         {
@@ -11613,10 +11613,6 @@
       "oddsReason": "当日动能一般 / 跌回10日线下 / 上影较重",
       "code": "SH603877",
       "name": "太平鸟",
-      "industry": {
-        "code": "BK1225",
-        "name": "服装家纺"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 11.85,
@@ -11628,6 +11624,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1225",
+        "name": "服装家纺"
       },
       "concepts": [
         {
@@ -11665,10 +11665,6 @@
       "oddsReason": "当日动能一般 / 跌回10日线下 / 上影较重",
       "code": "SH601011",
       "name": "宝泰隆",
-      "industry": {
-        "code": "BK1249",
-        "name": "焦炭Ⅱ"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 2.91,
@@ -11680,6 +11676,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1249",
+        "name": "焦炭Ⅱ"
       },
       "concepts": [
         {
@@ -11725,10 +11725,6 @@
       "oddsReason": "当日动能一般 / 跌回10日线下 / 上影较重",
       "code": "SZ000822",
       "name": "山东海化",
-      "industry": {
-        "code": "BK1019",
-        "name": "化学原料"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 4.22,
@@ -11740,6 +11736,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1019",
+        "name": "化学原料"
       },
       "concepts": [
         {
@@ -11785,10 +11785,6 @@
       "oddsReason": "当日动能一般 / 跌回10日线下 / 上影较重",
       "code": "SH600312",
       "name": "平高电气",
-      "industry": {
-        "code": "BK0457",
-        "name": "电网设备"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 18.94,
@@ -11800,6 +11796,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0457",
+        "name": "电网设备"
       },
       "concepts": [
         {
@@ -11857,10 +11857,6 @@
       "oddsReason": "当日动能一般 / 跌回10日线下 / 上影较重",
       "code": "SH601975",
       "name": "招商南油",
-      "industry": {
-        "code": "BK0450",
-        "name": "航运港口"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 4.47,
@@ -11872,6 +11868,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0450",
+        "name": "航运港口"
       },
       "concepts": []
     },
@@ -11900,10 +11900,6 @@
       "oddsReason": "当日动能一般 / 跌回10日线下 / 上影较重",
       "code": "SZ002397",
       "name": "梦洁股份",
-      "industry": {
-        "code": "BK1225",
-        "name": "服装家纺"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 3.62,
@@ -11915,6 +11911,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1225",
+        "name": "服装家纺"
       },
       "concepts": [
         {
@@ -11960,10 +11960,6 @@
       "oddsReason": "当日动能一般 / 跌回10日线下 / 上影较重",
       "code": "SH600697",
       "name": "欧亚集团",
-      "industry": {
-        "code": "BK0482",
-        "name": "一般零售"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 11.38,
@@ -11975,6 +11971,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0482",
+        "name": "一般零售"
       },
       "concepts": [
         {
@@ -12032,10 +12032,6 @@
       "oddsReason": "当日动能一般 / 跌回10日线下 / 上影较重",
       "code": "SH600336",
       "name": "澳柯玛",
-      "industry": {
-        "code": "BK1239",
-        "name": "白色家电"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 6.35,
@@ -12047,6 +12043,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1239",
+        "name": "白色家电"
       },
       "concepts": [
         {
@@ -12104,10 +12104,6 @@
       "oddsReason": "当日动能一般 / 跌回10日线下 / 上影较重",
       "code": "SZ002416",
       "name": "爱施德",
-      "industry": {
-        "code": "BK1270",
-        "name": "专业连锁Ⅱ"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 9.06,
@@ -12119,6 +12115,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1270",
+        "name": "专业连锁Ⅱ"
       },
       "concepts": [
         {
@@ -12184,10 +12184,6 @@
       "oddsReason": "当日动能一般 / 跌回10日线下 / 上影较重",
       "code": "SZ000552",
       "name": "甘肃能化",
-      "industry": {
-        "code": "BK1250",
-        "name": "煤炭开采"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 2.47,
@@ -12199,6 +12195,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1250",
+        "name": "煤炭开采"
       },
       "concepts": [
         {
@@ -12232,10 +12232,6 @@
       "oddsReason": "当日动能一般 / 跌回10日线下 / 上影较重",
       "code": "SH600681",
       "name": "百川能源",
-      "industry": {
-        "code": "BK1028",
-        "name": "燃气Ⅱ"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 3.41,
@@ -12247,6 +12243,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1028",
+        "name": "燃气Ⅱ"
       },
       "concepts": [
         {
@@ -12288,10 +12288,6 @@
       "oddsReason": "当日动能一般 / 跌回10日线下 / 上影较重",
       "code": "SH600192",
       "name": "长城电工",
-      "industry": {
-        "code": "BK0457",
-        "name": "电网设备"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 7.2,
@@ -12303,6 +12299,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0457",
+        "name": "电网设备"
       },
       "concepts": [
         {
@@ -12352,10 +12352,6 @@
       "oddsReason": "收盘偏弱 / 上影较重 / 连板后转弱分歧",
       "code": "SZ000607",
       "name": "华媒控股",
-      "industry": {
-        "code": "BK1220",
-        "name": "广告营销"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 4.03,
@@ -12367,6 +12363,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1220",
+        "name": "广告营销"
       },
       "concepts": [
         {
@@ -12424,10 +12424,6 @@
       "oddsReason": "上影较重 / 连板后转弱分歧 / 前期涨幅过大短线滞涨",
       "code": "SH600418",
       "name": "江淮汽车",
-      "industry": {
-        "code": "BK1264",
-        "name": "商用车"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 22.93,
@@ -12439,6 +12435,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1264",
+        "name": "商用车"
       },
       "concepts": [
         {
@@ -12496,10 +12496,6 @@
       "oddsReason": "跌回10日线下 / 收盘偏弱 / 上影较重",
       "code": "SZ002355",
       "name": "兴民智通",
-      "industry": {
-        "code": "BK0481",
-        "name": "汽车零部件"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 4.64,
@@ -12511,6 +12507,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0481",
+        "name": "汽车零部件"
       },
       "concepts": [
         {
@@ -12580,10 +12580,6 @@
       "oddsReason": "跌回10日线下 / 收盘偏弱 / 上影较重",
       "code": "SH601366",
       "name": "利群股份",
-      "industry": {
-        "code": "BK0482",
-        "name": "一般零售"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 3.58,
@@ -12595,6 +12591,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0482",
+        "name": "一般零售"
       },
       "concepts": [
         {
@@ -12636,10 +12636,6 @@
       "oddsReason": "跌回10日线下 / 收盘偏弱 / 上影较重",
       "code": "SZ001208",
       "name": "华菱线缆",
-      "industry": {
-        "code": "BK0457",
-        "name": "电网设备"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 13.62,
@@ -12651,6 +12647,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0457",
+        "name": "电网设备"
       },
       "concepts": [
         {
@@ -12728,10 +12728,6 @@
       "oddsReason": "跌回10日线下 / 收盘偏弱 / 上影较重",
       "code": "SZ002040",
       "name": "南 京 港",
-      "industry": {
-        "code": "BK0450",
-        "name": "航运港口"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 9.08,
@@ -12743,6 +12739,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0450",
+        "name": "航运港口"
       },
       "concepts": []
     },
@@ -12771,10 +12771,6 @@
       "oddsReason": "跌回10日线下 / 收盘偏弱 / 上影较重",
       "code": "SH600617",
       "name": "国新能源",
-      "industry": {
-        "code": "BK1028",
-        "name": "燃气Ⅱ"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 3.24,
@@ -12786,6 +12782,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1028",
+        "name": "燃气Ⅱ"
       },
       "concepts": [
         {
@@ -12823,10 +12823,6 @@
       "oddsReason": "跌回10日线下 / 收盘偏弱 / 上影较重",
       "code": "SH601872",
       "name": "招商轮船",
-      "industry": {
-        "code": "BK0450",
-        "name": "航运港口"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 20.93,
@@ -12838,6 +12834,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK0450",
+        "name": "航运港口"
       },
       "concepts": [
         {
@@ -12883,10 +12883,6 @@
       "oddsReason": "跌回10日线下 / 收盘偏弱 / 上影较重",
       "code": "SH603697",
       "name": "有友食品",
-      "industry": {
-        "code": "BK1281",
-        "name": "休闲食品"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 9.07,
@@ -12898,6 +12894,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1281",
+        "name": "休闲食品"
       },
       "concepts": [
         {
@@ -12931,10 +12931,6 @@
       "oddsReason": "跌回10日线下 / 收盘偏弱 / 上影较重",
       "code": "SZ002696",
       "name": "百洋股份",
-      "industry": {
-        "code": "BK1258",
-        "name": "饲料"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 6.65,
@@ -12946,6 +12942,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1258",
+        "name": "饲料"
       },
       "concepts": [
         {
@@ -13007,10 +13007,6 @@
       "oddsReason": "跌回10日线下 / 收盘偏弱 / 上影较重",
       "code": "SZ000812",
       "name": "陕西金叶",
-      "industry": {
-        "code": "BK1265",
-        "name": "包装印刷"
-      },
       "date": "2026/09/24",
       "timestamp": 1790179200000,
       "close": 3.73,
@@ -13022,6 +13018,10 @@
         "d4": null,
         "d5": null,
         "d6": null
+      },
+      "industry": {
+        "code": "BK1265",
+        "name": "包装印刷"
       },
       "concepts": [
         {
