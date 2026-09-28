@@ -303,7 +303,7 @@ export function isSectorDataComplete(sector: SectorWithStocks): boolean {
 export async function getIncompleteSectors(
   allSectors: Array<{ code: string; name: string }>,
   cachedSectors: SectorWithStocks[],
-  sectorType: 'industry' | 'concept'
+  _sectorType: 'industry' | 'concept'
 ): Promise<Array<{ code: string; name: string }>> {
   const cachedMap = new Map(cachedSectors.map((s) => [s.code, s]));
 

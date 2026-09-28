@@ -211,7 +211,7 @@ async function getValuationAnalysis(
 /**
  * 获取估值历史分位数
  */
-async function getValuationPercentiles(secid: string): Promise<{
+async function getValuationPercentiles(_secid: string): Promise<{
   pePercentile?: number;
   pbPercentile?: number;
   psPercentile?: number;
@@ -276,7 +276,7 @@ async function getIndustryComparison(
 /**
  * 获取行业估值中位数
  */
-async function getIndustryValuationMedian(industryName: string): Promise<{
+async function getIndustryValuationMedian(_industryName: string): Promise<{
   industryPeMedian?: number;
   industryPbMedian?: number;
   industryPsMedian?: number;

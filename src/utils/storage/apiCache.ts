@@ -21,7 +21,7 @@ export const apiCache = {
 
 // 导出类以便需要时创建自定义实例（已废弃）
 export class ApiCacheManager {
-  constructor(private defaultTTL: number = DEFAULT_CACHE_TTL) {
+  constructor(_defaultTTL: number = DEFAULT_CACHE_TTL) {
     logger.warn('[ApiCacheManager] 已废弃，请使用 cacheManager');
   }
 

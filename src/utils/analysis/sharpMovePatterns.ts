@@ -52,13 +52,6 @@ function firstDropAfter(
   return undefined;
 }
 
-function middleAllNormal(klineData: KLineData[], i: number, j: number, m: number): boolean {
-  for (let k = i + 1; k < j; k++) {
-    if (classifyDay(klineData, k, m) !== 'normal') return false;
-  }
-  return true;
-}
-
 /** 检查中间是否全部是横盘日（使用独立的横盘幅度阈值） */
 function middleAllFlat(
   klineData: KLineData[],

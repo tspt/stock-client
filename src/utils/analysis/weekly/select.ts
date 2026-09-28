@@ -14,11 +14,6 @@ export function industryKeyOf(row: { industryCode?: string }): string {
   return code ? code : UNKNOWN_INDUSTRY;
 }
 
-/** 区间是否已设置边界：起止都为空 = 该项不参与筛选 */
-function isRangeActive(range?: NumberRange): boolean {
-  return !!range && (range.min !== undefined || range.max !== undefined);
-}
-
 /** 取值是否缺失（未取到数据；缺失与「不达标」是两回事） */
 function isMissingValue(value: number | undefined | null): boolean {
   return value === undefined || value === null || !Number.isFinite(value);

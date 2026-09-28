@@ -8,7 +8,7 @@ import { getIndustrySectorStocks } from './industry-sectors';
 import { getConceptSectorStocks } from './concept-sectors';
 import type { IndustrySectorBasicInfo, ConceptSectorBasicInfo } from '@/types/stock';
 import { logger } from '@/utils/business/logger';
-import { CACHE_TTL, CONCEPT_SECTOR_NAME_SKIP_KEYWORDS } from '@/utils/config/constants';
+import { CONCEPT_SECTOR_NAME_SKIP_KEYWORDS } from '@/utils/config/constants';
 import {
   saveIndustrySectors,
   saveConceptSectors,
@@ -87,11 +87,6 @@ async function throttleRequest(signal?: AbortSignal) {
 
   lastRequestTime = Date.now();
 }
-
-/**
- * 延迟函数
- */
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const CONCEPT_NAME_MULTI_DIGIT_RE = /\d{2,}/;
 const CONCEPT_SKIP_KEYWORDS_LOWER = CONCEPT_SECTOR_NAME_SKIP_KEYWORDS.map((k) => k.toLowerCase());

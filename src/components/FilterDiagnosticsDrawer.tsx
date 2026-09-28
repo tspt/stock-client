@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useMemo } from 'react';
-import { Drawer, Tabs, Table, Tag, Progress, Row, Col, Statistic, Button, Space } from 'antd';
+import { Drawer, Tabs, Table, Tag, Progress, Statistic, Button } from 'antd';
 import type { FilterSkippedItem } from '@/types/opportunityFilter';
 import styles from './FilterDiagnosticsDrawer.module.css';
 

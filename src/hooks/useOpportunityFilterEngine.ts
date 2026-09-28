@@ -88,10 +88,6 @@ export function useOpportunityFilterEngine({
   analysisData,
   klineDataCache,
   filters,
-  industrySectors,
-  conceptSectors,
-  industrySectorInvert = false,
-  conceptSectorInvert = false,
   signalCodes,
 }: UseOpportunityFilterEngineArgs): UseOpportunityFilterEngineResult {
   // Worker 返回的原始筛选结果；最终对外暴露的 filteredData 会再合并交易信号

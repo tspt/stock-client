@@ -2,9 +2,9 @@
  * 股票筛选抽屉组件 - 用于成分股全局筛选
  */
 
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { Drawer, Form, Input, Select, Button, Space, Checkbox } from 'antd';
-import { SearchOutlined, ReloadOutlined, ClearOutlined } from '@ant-design/icons';
+import { SearchOutlined, ClearOutlined } from '@ant-design/icons';
 import type { StockSimpleInfo } from '@/services/hot/sector-stocks-service';
 import type { SectorFilterPrefs } from '@/utils/config/sectorFilterPrefs';
 import styles from './StockFilterDrawer.module.css';
@@ -114,7 +114,7 @@ export function StockFilterDrawer({
   };
 
   // 处理表单值变化
-  const handleValuesChange = (changedValues: any, allValues: any) => {
+  const handleValuesChange = (_changedValues: any, allValues: any) => {
     onFilterChange(allValues);
   };
 

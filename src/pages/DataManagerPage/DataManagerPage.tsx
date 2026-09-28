@@ -41,7 +41,7 @@ import type { StockInfo } from '@/types/stock';
 import { logger } from '@/utils/business/logger';
 import styles from './DataManagerPage.module.css';
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
 
 interface CacheStatus {
   count: number;
@@ -160,8 +160,6 @@ export function DataManagerPage() {
         getIndustrySectors(),
         getConceptSectors(),
       ]);
-
-      const now = Date.now();
 
       if (industrySectors.length > 0) {
         const lastUpdate = Math.max(...industrySectors.map((s) => s.savedAt || 0));

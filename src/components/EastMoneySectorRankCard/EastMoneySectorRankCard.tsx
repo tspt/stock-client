@@ -12,13 +12,11 @@ const { Text } = Typography;
 interface EastMoneySectorRankCardProps {
   title: string;
   data: EastMoneySectorData[];
-  type: 'rising' | 'falling';
 }
 
 export const EastMoneySectorRankCard = memo(function EastMoneySectorRankCard({
   title,
   data,
-  type,
 }: EastMoneySectorRankCardProps) {
   // 使用 useMemo 缓存列表项，避免不必要的重新渲染
   const listItems = useMemo(() => {

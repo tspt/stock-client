@@ -15,7 +15,7 @@ import type {
 } from '@/types/stock';
 import { logger } from '@/utils/business/logger';
 import { getStorage, removeStorage, setStorage } from '@/utils/storage/storage';
-import { CACHE_KEYS, CACHE_TTL } from '@/utils/config/constants';
+import { CACHE_KEYS } from '@/utils/config/constants';
 import { getAllIndustrySectors as fetchAllIndustrySectors } from './industry-sectors';
 import { getAllConceptSectors as fetchAllConceptSectors } from './concept-sectors';
 import {

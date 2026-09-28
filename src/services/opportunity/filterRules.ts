@@ -4,9 +4,6 @@
  * 这解决了可维护性问题，并支持AI按需计算
  */
 
-import type { ConsolidationType } from '@/types/stock';
-import type { NumberRange } from '@/types/opportunityFilter';
-
 export interface FilterRule {
   id: string;
   category: 'basic' | 'consolidation' | 'trend' | 'sharpMove' | 'technical' | 'ai';

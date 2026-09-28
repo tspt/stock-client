@@ -69,48 +69,6 @@ export const PATTERN_COLORS: Record<CandlestickPatternType, { bullish: string; b
 /** SVG 尺寸配置 */
 const SVG_WIDTH = 60;
 const SVG_HEIGHT = 40;
-const CANDLE_WIDTH = 10;
-const CANDLE_GAP = 2;
-
-/**
- * 绘制单根K线的SVG
- */
-function drawCandle(
-  x: number,
-  open: number,
-  close: number,
-  low: number,
-  high: number,
-  minPrice: number,
-  maxPrice: number,
-  color: string
-): string {
-  const range = maxPrice - minPrice || 1;
-  const chartHeight = SVG_HEIGHT - 8; // 留出上下边距
-  const chartWidth = SVG_WIDTH - 16;
-
-  const yHigh = 4 + ((maxPrice - high) / range) * chartHeight;
-  const yLow = 4 + ((maxPrice - low) / range) * chartHeight;
-  const yOpen = 4 + ((maxPrice - open) / range) * chartHeight;
-  const yClose = 4 + ((maxPrice - close) / range) * chartHeight;
-
-  const yTop = Math.min(yOpen, yClose);
-  const yBottom = Math.max(yOpen, yClose);
-  const bodyHeight = Math.max(yBottom - yTop, 1);
-
-  const isBullish = close >= open;
-  const bodyColor = isBullish ? '#26a69a' : '#ef5350';
-  const borderColor = bodyColor;
-
-  return `
-    <!-- 上下影线 -->
-    <line x1="${x + CANDLE_WIDTH / 2}" y1="${yHigh}" x2="${
-    x + CANDLE_WIDTH / 2
-  }" y2="${yLow}" stroke="${borderColor}" stroke-width="1"/>
-    <!-- 实体 -->
-    <rect x="${x}" y="${yTop}" width="${CANDLE_WIDTH}" height="${bodyHeight}" fill="${bodyColor}" stroke="${borderColor}" stroke-width="1"/>
-  `;
-}
 
 /**
  * 锤头线 SVG
@@ -530,8 +488,6 @@ export function getMultiplePatternsSVG(patterns: CandlestickPatternType[]): stri
   if (patterns.length === 0) return '';
 
   const svgWidth = SVG_WIDTH + 4;
-  const totalWidth = patterns.length * svgWidth;
-  const svgHeight = SVG_HEIGHT + 8;
 
   let svgs = '';
   patterns.forEach((pattern, index) => {

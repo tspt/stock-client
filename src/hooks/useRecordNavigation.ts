@@ -27,7 +27,7 @@ export interface UseRecordNavigationOptions<T extends NavigableRecord> {
   onNavigate?: (record: T) => void;
 }
 
-export interface UseRecordNavigationResult<T extends NavigableRecord> {
+export interface UseRecordNavigationResult {
   /** 当前股票在列表中的下标；-1 表示不在列表中（如筛选变化后已被过滤掉） */
   currentIndex: number;
   total: number;
@@ -54,7 +54,7 @@ export function useRecordNavigation<T extends NavigableRecord>({
   records,
   currentCode,
   onNavigate,
-}: UseRecordNavigationOptions<T>): UseRecordNavigationResult<T> {
+}: UseRecordNavigationOptions<T>): UseRecordNavigationResult {
   const currentIndex = useMemo(
     () => records.findIndex((record) => record.code === currentCode),
     [records, currentCode]

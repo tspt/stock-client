@@ -29,7 +29,6 @@ import {
   calculateBollingerBands,
 } from '@/utils/analysis/technicalIndicators';
 import { detectTrendPatterns } from '@/utils/analysis/trendPatterns';
-import { detectCandlestickPatternsInWindow } from '@/utils/analysis/candlestickPatterns';
 
 /**
  * 简单的移动平均计算（用于number数组）
@@ -525,7 +524,7 @@ function calculateSupportResistance(klineData: KLineData[]): {
  * 计算目标价
  */
 function calculateTargetPrice(
-  currentPrice: number,
+  _currentPrice: number,
   direction: 'up' | 'down' | 'sideways',
   supportLevel?: number,
   resistanceLevel?: number
@@ -918,7 +917,7 @@ function calculateTechnicalScore(
  * 形态评分
  */
 function calculatePatternScore(
-  klineData: KLineData[],
+  _klineData: KLineData[],
   data: StockOpportunityData,
   reasons: string[],
   warnings: string[]
@@ -953,7 +952,7 @@ function calculatePatternScore(
  * 趋势评分
  */
 function calculateTrendScore(
-  klineData: KLineData[],
+  _klineData: KLineData[],
   data: StockOpportunityData,
   reasons: string[],
   warnings: string[]

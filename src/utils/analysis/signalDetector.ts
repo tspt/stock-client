@@ -18,11 +18,9 @@ export function detectTradingSignal(klineData: KLineData[]): TradingSignal | nul
 
   const len = klineData.length;
   const today = klineData[len - 1];
-  const yesterday = klineData[len - 2];
 
   // 1. 计算均线
   const ma5 = calculateMA(klineData, 5);
-  const ma10 = calculateMA(klineData, 10);
   const ma20 = calculateMA(klineData, 20);
   const ma60 = calculateMA(klineData, 60);
 
@@ -36,8 +34,6 @@ export function detectTradingSignal(klineData: KLineData[]): TradingSignal | nul
   const kdj = calculateKDJ(klineData);
   const todayJ = kdj.j[len - 1];
   const yesterdayJ = kdj.j[len - 2];
-  const todayK = kdj.k[len - 1];
-  const todayD = kdj.d[len - 1];
 
   // 3. 基础状态判断
   const isUptrend = todayMa20 > ma20[len - 5] && todayMa60 > ma60[len - 5]; // 中长期趋势向上

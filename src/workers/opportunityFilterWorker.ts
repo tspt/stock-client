@@ -170,7 +170,7 @@ function passesAIFilter(
     return { passed: false, reason: '缺少AI分析数据' };
   }
 
-  const { trendPrediction, recommendation, similarPatterns } = item.aiAnalysis;
+  const { trendPrediction, recommendation } = item.aiAnalysis;
 
   // 1. 趋势预测筛选（勾选多项时为OR关系）
   if (filters.aiTrendUp || filters.aiTrendDown || filters.aiTrendSideways) {

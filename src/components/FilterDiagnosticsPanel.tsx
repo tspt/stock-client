@@ -8,17 +8,14 @@
 import React from 'react';
 import { Card, Collapse, Table, Tag, Progress, Row, Col, Statistic } from 'antd';
 import type { FilterSkippedItem } from '@/types/opportunityFilter';
-import type { OpportunityFilterSnapshot } from '@/types/opportunityFilter';
 
 interface FilterDiagnosticsPanelProps {
   skipped: FilterSkippedItem[];
-  filters: OpportunityFilterSnapshot;
   visible?: boolean;
 }
 
 export const FilterDiagnosticsPanel: React.FC<FilterDiagnosticsPanelProps> = ({
   skipped,
-  filters,
   visible = true,
 }) => {
   if (!visible || skipped.length === 0) {

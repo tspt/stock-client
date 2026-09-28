@@ -268,7 +268,7 @@ function getAllStockHistories(): Promise<StockHistoryRecord[]> {
 function getStockHistoriesByCodes(codes: string[]): Promise<StockHistoryRecord[]> {
   return initOpportunityDB().then(
     (db) =>
-      new Promise<StockHistoryRecord[]>((resolve, reject) => {
+      new Promise<StockHistoryRecord[]>((resolve, _reject) => {
         const transaction = db.transaction([STOCK_HISTORY_STORE_NAME], 'readonly');
         const store = transaction.objectStore(STOCK_HISTORY_STORE_NAME);
         const results: StockHistoryRecord[] = [];
@@ -353,7 +353,7 @@ export async function getStockFinanceMetrics(codes: string[]): Promise<StockFina
   if (codes.length === 0) return [];
   const db = await initOpportunityDB();
 
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve, _reject) => {
     const transaction = db.transaction([STOCK_FINANCE_STORE_NAME], 'readonly');
     const store = transaction.objectStore(STOCK_FINANCE_STORE_NAME);
     const results: StockFinanceRecord[] = [];

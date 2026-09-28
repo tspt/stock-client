@@ -8,7 +8,7 @@
 import type { KLineData, StockOpportunityData, AIAnalysisResult } from '@/types/stock';
 import type { OpportunityFilterSnapshot } from '@/types/opportunityFilter';
 import { performAIAnalysis } from './ai';
-import { defaultFilterRules, getAIRules } from './filterRules';
+import { getAIRules } from './filterRules';
 import { logger } from '@/utils/business/logger';
 
 interface AICacheEntry {
@@ -36,7 +36,7 @@ function generateParamsHash(filters: OpportunityFilterSnapshot, code: string): s
 export function shouldComputeAI(filters: OpportunityFilterSnapshot): boolean {
   return (
     filters.aiAnalysisEnabled &&
-    getAIRules().some((rule) => {
+    getAIRules().some((_rule) => {
       // 检查是否有AI相关规则被激活
       return true; // 简化，实际根据规则dependencies判断
     })
@@ -112,9 +112,9 @@ function cleanupExpiredCache(): void {
 
 /** 基于当前批次数据计算相似形态（避免全市场依赖） */
 export function computeSimilarPatternsFromCurrentBatch(
-  currentStock: StockOpportunityData,
+  _currentStock: StockOpportunityData,
   batchData: StockOpportunityData[],
-  minSimilarity = 0.7
+  _minSimilarity = 0.7
 ): any[] {
   // 简化版实现，实际使用ai.ts中的findSimilarPatterns逻辑但限制为当前batch
   // 如果batch太小则返回空（用于UI隐藏逻辑）
@@ -126,12 +126,12 @@ export function computeSimilarPatternsFromCurrentBatch(
 }
 
 /** 获取AI相关诊断信息（用于可视化面板） */
-export function getAIDiagnostics(skippedItems: any[], filters: OpportunityFilterSnapshot) {
+export function getAIDiagnostics(skippedItems: any[], _filters: OpportunityFilterSnapshot) {
   // 返回结构化数据支持原因+股票交叉统计
   const byReason = new Map();
   const byStock = new Map();
 
-  skippedItems.forEach((item) => {
+  skippedItems.forEach((_item) => {
     // 按原因和股票聚合
     // ...
   });

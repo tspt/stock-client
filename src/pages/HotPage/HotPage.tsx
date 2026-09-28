@@ -16,8 +16,6 @@ import { IndexCard } from './components/IndexCard';
 import { EastMoneySectorRankCard } from '@/components/EastMoneySectorRankCard';
 import styles from './HotPage.module.css';
 
-const { Header } = Layout;
-
 export function HotPage() {
   // 使用选择器函数，避免不必要的重渲染
   const indices = useIndices();
@@ -68,14 +66,12 @@ export function HotPage() {
           <EastMoneySectorRankCard
             title="领涨概念"
             data={eastMoneyRisingSectors}
-            type="rising"
           />
         </div>
         <div className={styles.sectorColumn}>
           <EastMoneySectorRankCard
             title="领跌概念"
             data={eastMoneyFallingSectors}
-            type="falling"
           />
         </div>
       </div>

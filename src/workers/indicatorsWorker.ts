@@ -32,7 +32,7 @@ self.onmessage = (event: MessageEvent<WorkerMessage>) => {
 
   if (type === 'CALCULATE_INDICATORS') {
     try {
-      const { klineData, period, patternWindow = 20 } = data;
+      const { klineData, patternWindow = 20 } = data;
 
       // 并行计算所有指标
       const maData = calculateAllMA(klineData);

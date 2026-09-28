@@ -23,7 +23,6 @@ import {
   calculatePivotPoints,
 } from '@/utils/analysis/technicalIndicators';
 import { detectTrendPatterns } from '@/utils/analysis/trendPatterns';
-import { detectCandlestickPatternsInWindow } from '@/utils/analysis/candlestickPatterns';
 
 /**
  * AI 计算上下文，用于共享已计算的指标，避免重复计算
@@ -630,7 +629,7 @@ function calculateSupportResistanceV6(klineData: KLineData[]): {
  * 计算目标价
  */
 function calculateTargetPrice(
-  currentPrice: number,
+  _currentPrice: number,
   direction: 'up' | 'down' | 'sideways',
   supportLevel?: number,
   resistanceLevel?: number
@@ -814,7 +813,7 @@ function calculateTechnicalScore(klineData: KLineData[], data: StockOpportunityD
   return Math.min(Math.max(score, 0), 100);
 }
 
-function calculatePatternScore(klineData: KLineData[], data: StockOpportunityData, reasons: string[], warnings: string[]) {
+function calculatePatternScore(_klineData: KLineData[], data: StockOpportunityData, reasons: string[], warnings: string[]) {
   let score = 50;
   if (data.sharpMovePatterns) {
     if (data.sharpMovePatterns.dropThenFlatThenRise) { score += 20; reasons.push('出现急跌-横盘-急涨形态'); }
@@ -827,7 +826,7 @@ function calculatePatternScore(klineData: KLineData[], data: StockOpportunityDat
   return Math.min(Math.max(score, 0), 100);
 }
 
-function calculateTrendScore(klineData: KLineData[], data: StockOpportunityData, reasons: string[], warnings: string[]) {
+function calculateTrendScore(_klineData: KLineData[], data: StockOpportunityData, reasons: string[], warnings: string[]) {
   let score = 50;
   if (data.trendLine?.isHit) { score += 20; reasons.push('沿趋势线运行，走势稳健'); }
   if (data.changePercent !== undefined) {
@@ -838,7 +837,7 @@ function calculateTrendScore(klineData: KLineData[], data: StockOpportunityData,
   return Math.min(Math.max(score, 0), 100);
 }
 
-function calculateRiskScore(klineData: KLineData[], data: StockOpportunityData, reasons: string[], warnings: string[]) {
+function calculateRiskScore(_klineData: KLineData[], data: StockOpportunityData, reasons: string[], warnings: string[]) {
   let score = 50;
   if (data.name.includes('ST')) { score -= 20; warnings.push('ST股票，风险较高'); }
   if (data.peRatio !== undefined) {
@@ -876,7 +875,6 @@ function v4ApplyStructuralAdjust(klineData: KLineData[], base: AIAnalysisResult)
   if (len < 10) return base;
 
   const closes = klineData.map(k => k.close);
-  const lastClose = closes[len - 1];
   let trailingDown = 0;
   for (let i = len - 1; i >= 1; i--) { if (closes[i] < closes[i - 1]) trailingDown++; else break; }
 

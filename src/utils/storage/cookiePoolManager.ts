@@ -6,12 +6,10 @@
 import type { CookieEntry, CookiePoolStats, CookieOperationLog } from '../../types/cookie.js';
 import {
   addCookie,
-  getActiveCookies,
   getAllCookies,
   updateCookieHealth,
   removeCookie,
   clearAllCookies,
-  getCookieCount,
 } from './cookiePoolDB.js';
 import { logger } from '../business/logger.js';
 

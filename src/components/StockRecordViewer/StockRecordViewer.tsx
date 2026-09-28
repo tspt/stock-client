@@ -4,7 +4,7 @@
  */
 
 import { useEffect, useState } from 'react';
-import { Modal, Table, Button, Space, Tag, Spin, Empty, Tabs, App } from 'antd';
+import { Modal, Table, Button, Tag, Spin, Empty, Tabs, App } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { DeleteOutlined, ReloadOutlined, BarChartOutlined, TableOutlined } from '@ant-design/icons';
 import type { StockStatistics } from '@/types/stock';

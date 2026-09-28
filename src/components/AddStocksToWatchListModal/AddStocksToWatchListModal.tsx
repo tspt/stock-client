@@ -4,8 +4,8 @@
  */
 
 import { useState, useMemo } from 'react';
-import { Modal, Checkbox, Space, Button, message } from 'antd';
-import type { StockInfo, Group, StockOpportunityData } from '@/types/stock';
+import { Modal, Checkbox, Button, message } from 'antd';
+import type { StockInfo, Group } from '@/types/stock';
 import { StockGroupSelector } from '../StockGroupSelector/StockGroupSelector';
 import { useStockStore } from '@/stores/stockStore';
 import {

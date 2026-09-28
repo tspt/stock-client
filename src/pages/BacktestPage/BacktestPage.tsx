@@ -230,8 +230,6 @@ const scenarioOptions = [
   ...SCENARIOS.map((s) => ({ label: s.name, value: s.id })),
 ];
 
-const highLiftIds = new Set(HIGH_LIFT_SCENARIOS.map((s) => s.id));
-
 export function BacktestPage() {
   const { message } = App.useApp();
   /** 全量股票历史（含 dailyLines）：页面内只从 IndexedDB 读一次，所有消费者共用 */
@@ -1367,6 +1365,13 @@ export function BacktestPage() {
     },
     {
       title: '所属行业',
+      /**
+       * 显式 key 必须保留：antd 的 onChange 只回填 column.key / column.dataIndex
+       * （见 antd/es/table/hooks/useSorter 的 stateToInfo），
+       * 该列只有 sorter 没有 dataIndex，缺 key 会让排序状态丢失列身份，
+       * 导致「表格排好了、K线/筹码弹窗 ← / → 仍按原顺序切股」。
+       */
+      key: 'industry',
       width: 120,
       sorter: compareIndustry,
       showSorterTooltip: { title: '按所属行业排序' },
@@ -1389,12 +1394,13 @@ export function BacktestPage() {
     },
     { title: '买入价', dataIndex: 'entryPrice', width: 90 },
     { title: '命中项', dataIndex: 'hitCount', width: 80 },
-    { title: '1日', width: 80, sorter: (a, b) => compareReturn(a.returns, b.returns, 'd1'), render: (_, record) => renderReturn(record.returns, 'd1') },
-    { title: '2日', width: 80, sorter: (a, b) => compareReturn(a.returns, b.returns, 'd2'), render: (_, record) => renderReturn(record.returns, 'd2') },
-    { title: '3日', width: 80, sorter: (a, b) => compareReturn(a.returns, b.returns, 'd3'), render: (_, record) => renderReturn(record.returns, 'd3') },
-    { title: '4日', width: 80, sorter: (a, b) => compareReturn(a.returns, b.returns, 'd4'), render: (_, record) => renderReturn(record.returns, 'd4') },
-    { title: '5日', width: 80, sorter: (a, b) => compareReturn(a.returns, b.returns, 'd5'), render: (_, record) => renderReturn(record.returns, 'd5') },
-    { title: '6日', width: 80, sorter: (a, b) => compareReturn(a.returns, b.returns, 'd6'), render: (_, record) => renderReturn(record.returns, 'd6') },
+    // 收益列同样只有 sorter 没有 dataIndex，必须显式声明 key（口径同 ReturnSnapshot 字段名）
+    { title: '1日', key: 'd1', width: 80, sorter: (a, b) => compareReturn(a.returns, b.returns, 'd1'), render: (_, record) => renderReturn(record.returns, 'd1') },
+    { title: '2日', key: 'd2', width: 80, sorter: (a, b) => compareReturn(a.returns, b.returns, 'd2'), render: (_, record) => renderReturn(record.returns, 'd2') },
+    { title: '3日', key: 'd3', width: 80, sorter: (a, b) => compareReturn(a.returns, b.returns, 'd3'), render: (_, record) => renderReturn(record.returns, 'd3') },
+    { title: '4日', key: 'd4', width: 80, sorter: (a, b) => compareReturn(a.returns, b.returns, 'd4'), render: (_, record) => renderReturn(record.returns, 'd4') },
+    { title: '5日', key: 'd5', width: 80, sorter: (a, b) => compareReturn(a.returns, b.returns, 'd5'), render: (_, record) => renderReturn(record.returns, 'd5') },
+    { title: '6日', key: 'd6', width: 80, sorter: (a, b) => compareReturn(a.returns, b.returns, 'd6'), render: (_, record) => renderReturn(record.returns, 'd6') },
     {
       title: '命中规则',
       dataIndex: 'matchedRule',
@@ -1413,6 +1419,8 @@ export function BacktestPage() {
     },
     {
       title: '所属行业',
+      // 显式 key 理由同历史列：antd 的 onChange 只回填 column.key / column.dataIndex
+      key: 'industry',
       width: 120,
       sorter: compareIndustry,
       showSorterTooltip: { title: '按所属行业排序' },
@@ -1454,12 +1462,13 @@ export function BacktestPage() {
       sorter: (a, b) => Number(Boolean(a.hotRankHit)) - Number(Boolean(b.hotRankHit)),
       render: (hit) => <StockStatusTag status={Boolean(hit)} />,
     },
-    { title: '1日', width: 80, sorter: (a, b) => compareReturn(a.trackedReturns, b.trackedReturns, 'd1'), render: (_, record) => renderReturn(record.trackedReturns, 'd1') },
-    { title: '2日', width: 80, sorter: (a, b) => compareReturn(a.trackedReturns, b.trackedReturns, 'd2'), render: (_, record) => renderReturn(record.trackedReturns, 'd2') },
-    { title: '3日', width: 80, sorter: (a, b) => compareReturn(a.trackedReturns, b.trackedReturns, 'd3'), render: (_, record) => renderReturn(record.trackedReturns, 'd3') },
-    { title: '4日', width: 80, sorter: (a, b) => compareReturn(a.trackedReturns, b.trackedReturns, 'd4'), render: (_, record) => renderReturn(record.trackedReturns, 'd4') },
-    { title: '5日', width: 80, sorter: (a, b) => compareReturn(a.trackedReturns, b.trackedReturns, 'd5'), render: (_, record) => renderReturn(record.trackedReturns, 'd5') },
-    { title: '6日', width: 80, sorter: (a, b) => compareReturn(a.trackedReturns, b.trackedReturns, 'd6'), render: (_, record) => renderReturn(record.trackedReturns, 'd6') },
+    // 收益列同样只有 sorter 没有 dataIndex，必须显式声明 key（口径同 ReturnSnapshot 字段名）
+    { title: '1日', key: 'd1', width: 80, sorter: (a, b) => compareReturn(a.trackedReturns, b.trackedReturns, 'd1'), render: (_, record) => renderReturn(record.trackedReturns, 'd1') },
+    { title: '2日', key: 'd2', width: 80, sorter: (a, b) => compareReturn(a.trackedReturns, b.trackedReturns, 'd2'), render: (_, record) => renderReturn(record.trackedReturns, 'd2') },
+    { title: '3日', key: 'd3', width: 80, sorter: (a, b) => compareReturn(a.trackedReturns, b.trackedReturns, 'd3'), render: (_, record) => renderReturn(record.trackedReturns, 'd3') },
+    { title: '4日', key: 'd4', width: 80, sorter: (a, b) => compareReturn(a.trackedReturns, b.trackedReturns, 'd4'), render: (_, record) => renderReturn(record.trackedReturns, 'd4') },
+    { title: '5日', key: 'd5', width: 80, sorter: (a, b) => compareReturn(a.trackedReturns, b.trackedReturns, 'd5'), render: (_, record) => renderReturn(record.trackedReturns, 'd5') },
+    { title: '6日', key: 'd6', width: 80, sorter: (a, b) => compareReturn(a.trackedReturns, b.trackedReturns, 'd6'), render: (_, record) => renderReturn(record.trackedReturns, 'd6') },
     { title: '已发生', dataIndex: 'occurredCount', width: 80 },
     { title: '命中', dataIndex: 'hitCount', width: 80 },
     { title: '状态', dataIndex: 'status', width: 90, render: renderTrackingStatus },

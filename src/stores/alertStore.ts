@@ -165,7 +165,7 @@ function shouldTriggerSupportResistanceAlert(
  */
 function shouldTriggerVolumeAnomalyAlert(
   alert: PriceAlert,
-  currentPrice: number,
+  _currentPrice: number,
   klineData?: KLineData[]
 ): boolean {
   if (!klineData || klineData.length < 21) {
@@ -206,7 +206,7 @@ function shouldTriggerVolumeAnomalyAlert(
  */
 function shouldTriggerIndicatorCrossAlert(
   alert: PriceAlert,
-  currentPrice: number,
+  _currentPrice: number,
   klineData?: KLineData[]
 ): boolean {
   if (!klineData || !alert.indicatorType) {

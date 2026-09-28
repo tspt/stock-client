@@ -137,17 +137,6 @@ function precomputeWindow(windowData: KLineData[]): PrecomputedKLine[] {
 }
 
 /**
- * 计算窗口内平均成交量（用于成交量确认）
- */
-function calculateAvgVolume(precomputed: PrecomputedKLine[], lookback: number = 20): number {
-  const start = Math.max(0, precomputed.length - lookback);
-  const window = precomputed.slice(start);
-  if (window.length === 0) return 0;
-  const sum = window.reduce((acc, k) => acc + k.volume, 0);
-  return sum / window.length;
-}
-
-/**
  * 检查短期下降趋势（用于锤头线等看涨反转形态的背景验证）
  */
 function checkShortTermDowntrend(klineData: KLineData[], lookback: number = 10): boolean {
@@ -441,8 +430,7 @@ export function isHangingMan(
  * 判断是否为蜻蜓十字星（Dragonfly Doji）
  * 特征：开盘=收盘=最高价，只有下影线，强烈看涨信号
  */
-export function isDragonflyDoji(kline: KLineData, config: PatternDetectionConfig = {}): boolean {
-  const cfg = { ...DEFAULT_CONFIG, ...config };
+export function isDragonflyDoji(kline: KLineData, _config: PatternDetectionConfig = {}): boolean {
   const p = precomputeKLine(kline);
 
   if (p.range <= 0) return false;
@@ -464,8 +452,7 @@ export function isDragonflyDoji(kline: KLineData, config: PatternDetectionConfig
  * 判断是否为墓碑十字星（Gravestone Doji）
  * 特征：开盘=收盘=最低价，只有上影线，强烈看跌信号
  */
-export function isGravestoneDoji(kline: KLineData, config: PatternDetectionConfig = {}): boolean {
-  const cfg = { ...DEFAULT_CONFIG, ...config };
+export function isGravestoneDoji(kline: KLineData, _config: PatternDetectionConfig = {}): boolean {
   const p = precomputeKLine(kline);
 
   if (p.range <= 0) return false;
@@ -664,11 +651,10 @@ export function isEveningStar(
 export function isDarkCloudCover(
   precomputed: PrecomputedKLine[],
   index: number,
-  config: PatternDetectionConfig = {}
+  _config: PatternDetectionConfig = {}
 ): boolean {
   if (index < 1) return false;
 
-  const cfg = { ...DEFAULT_CONFIG, ...config };
   const prev = precomputed[index - 1];
   const curr = precomputed[index];
 
@@ -693,11 +679,10 @@ export function isDarkCloudCover(
 export function isPiercing(
   precomputed: PrecomputedKLine[],
   index: number,
-  config: PatternDetectionConfig = {}
+  _config: PatternDetectionConfig = {}
 ): boolean {
   if (index < 1) return false;
 
-  const cfg = { ...DEFAULT_CONFIG, ...config };
   const prev = precomputed[index - 1];
   const curr = precomputed[index];
 
@@ -756,11 +741,10 @@ export function isBearishHarami(prev: PrecomputedKLine, curr: PrecomputedKLine):
 export function isThreeBlackCrows(
   precomputed: PrecomputedKLine[],
   index: number,
-  config: PatternDetectionConfig = {}
+  _config: PatternDetectionConfig = {}
 ): boolean {
   if (index < 2) return false;
 
-  const cfg = { ...DEFAULT_CONFIG, ...config };
   const first = precomputed[index - 2];
   const second = precomputed[index - 1];
   const third = precomputed[index];
@@ -793,11 +777,10 @@ export function isThreeBlackCrows(
 export function isThreeWhiteSoldiers(
   precomputed: PrecomputedKLine[],
   index: number,
-  config: PatternDetectionConfig = {}
+  _config: PatternDetectionConfig = {}
 ): boolean {
   if (index < 2) return false;
 
-  const cfg = { ...DEFAULT_CONFIG, ...config };
   const first = precomputed[index - 2];
   const second = precomputed[index - 1];
   const third = precomputed[index];
@@ -931,9 +914,6 @@ export function detectCandlestickPatternsInWindow(
   const windowLen = windowData.length;
   const precomputed = precomputeWindow(windowData);
 
-  // 计算平均成交量（用于成交量确认）
-  const avgVolume = config.useVolumeConfirmation ? calculateAvgVolume(precomputed, lookback) : 0;
-
   // 检测单根K线形态（性能优化：找到即停止）
   for (let i = 0; i < windowLen; i++) {
     const kline = windowData[i];
@@ -1007,9 +987,6 @@ export function detectCandlestickPatternsInWindow(
 
   // 检测三根K线形态
   for (let i = 2; i < windowLen; i++) {
-    // 计算在完整数据中的实际索引
-    const actualIndex = windowStart + i;
-
     if (!result.morningStar) {
       result.morningStar = isMorningStar(precomputed, i, config, klineData);
     }

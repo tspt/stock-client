@@ -4,7 +4,6 @@
 
 import type { IndustrySectorRankData, IndustrySectorBasicInfo } from '@/types/stock';
 import { logger } from '@/utils/business/logger';
-import { getStorage, setStorage } from '@/utils/storage/storage';
 import { getEastMoneyClistJsonpData } from '@/utils/network/eastMoneyClistClient';
 
 /**
@@ -195,18 +194,6 @@ export async function getIndustrySectors(
     logger.error('获取行业板块数据失败:', error);
     throw error;
   }
-}
-
-/**
- * 所有行业分类缓存键（过期时间不限）
- * @deprecated 已迁移到 unified-sectors.ts 和 constants.ts，保留此注释仅为向后兼容
- */
-// const ALL_INDUSTRY_SECTORS_CACHE_KEY = 'unified_industry_basic_v1'; // 使用统一缓存键
-// const ALL_INDUSTRY_SECTORS_CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 过期时间不限（已废弃）
-
-interface AllIndustrySectorsCache {
-  savedAt: number;
-  sectors: IndustrySectorBasicInfo[];
 }
 
 /**

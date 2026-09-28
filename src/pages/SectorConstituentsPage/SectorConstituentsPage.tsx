@@ -5,11 +5,10 @@
 import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { Layout, Button, Progress, Input, Typography, Empty, App, Space, Tooltip, Dropdown } from 'antd';
 import type { MenuProps } from 'antd';
-import { RocketOutlined, LoadingOutlined, ExportOutlined, FilterOutlined, SyncOutlined, ArrowRightOutlined, DownOutlined } from '@ant-design/icons';
+import { LoadingOutlined, ExportOutlined, FilterOutlined, ArrowRightOutlined, DownOutlined } from '@ant-design/icons';
 import VirtualList from 'rc-virtual-list';
 import { fetchAllSectorsStocks, fetchRemainingSectorsStocks, type SectorFullData, type FetchProgress, type FailedSector, type StockSimpleInfo, type SectorFetchScope } from '@/services/hot/sector-stocks-service';
 import { getIndustrySectors, getConceptSectors, type SectorWithStocks } from '@/utils/storage/sectorStocksIndexedDB';
-import { CACHE_TTL } from '@/utils/config/constants';
 import { logger } from '@/utils/business/logger';
 import { StockFilterDrawer } from '@/components/StockFilterDrawer/StockFilterDrawer';
 import { clearSectorMappingCache } from '@/services/stocks/sectorEnhancer';
@@ -616,7 +615,7 @@ export function SectorConstituentsPage() {
                 itemHeight={LIST_ITEM_HEIGHT}
                 itemKey="sectorCode"
               >
-                {(item, index, { style }) => (
+                {(item, _index, { style }) => (
                   <SectorListItem
                     key={item.sectorCode}
                     sector={item}
@@ -656,7 +655,7 @@ export function SectorConstituentsPage() {
                 itemHeight={LIST_ITEM_HEIGHT}
                 itemKey="sectorCode"
               >
-                {(item, index, { style }) => (
+                {(item, _index, { style }) => (
                   <SectorListItem
                     key={item.sectorCode}
                     sector={item}

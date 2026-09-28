@@ -18,23 +18,6 @@ import {
   ensureSelectedGroupIdForWatchList,
 } from '@/utils/business/groupUtils';
 import { debounce } from '@/utils/format/helpers';
-import { logger } from '@/utils/business/logger';
-
-// 辅助函数：获取 Ant Design App 实例
-let appInstance: any = null;
-export const setAppInstance = (app: any) => {
-  appInstance = app;
-};
-const getApp = () => {
-  if (!appInstance) {
-    logger.warn('[stockStore] App instance not initialized');
-    return {
-      message: { error: logger.error, warning: logger.warn, success: logger.info },
-      modal: { confirm: () => {} },
-    };
-  }
-  return appInstance;
-};
 
 interface StockState {
   // 自选股列表

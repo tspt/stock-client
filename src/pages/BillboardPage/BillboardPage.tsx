@@ -3,8 +3,8 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { Layout, Select, Button, Table, Empty, Spin, App, Space, Typography } from 'antd';
-import { ReloadOutlined, TrophyOutlined } from '@ant-design/icons';
+import { Layout, Select, Button, Table, Empty, Spin, App, Typography } from 'antd';
+import { ReloadOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { fetchBillboardData, formatAmount, formatPercent, formatDate } from '@/services/hot/billboard-service';
 import type { BillboardSortBy } from '@/services/hot/billboard-service';

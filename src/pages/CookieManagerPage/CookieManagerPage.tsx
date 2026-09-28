@@ -21,12 +21,10 @@ import {
 } from 'antd';
 import {
   KeyOutlined,
-  PlusOutlined,
   DeleteOutlined,
   ReloadOutlined,
   ClearOutlined,
   CheckCircleOutlined,
-  CloseCircleOutlined,
   StopOutlined,
   SyncOutlined,
   ImportOutlined,
@@ -36,8 +34,6 @@ import type { ColumnsType } from 'antd/es/table';
 import CookiePoolManager from '@/utils/storage/cookiePoolManager';
 import type { CookieEntry, CookieOperationLog } from '@/types/cookie';
 import styles from './CookieManagerPage.module.css';
-
-const { TextArea } = Input;
 
 export function CookieManagerPage() {
   const { message } = App.useApp();

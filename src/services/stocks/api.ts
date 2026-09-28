@@ -6,14 +6,13 @@
 import axios from 'axios';
 import type { StockInfo, StockQuote, KLineData, StockDetail } from '@/types/stock';
 import { getPureCode, getMarketFromCode } from '@/utils/format/format';
-import { getStorage, setStorage } from '@/utils/storage/storage';
+import { setStorage } from '@/utils/storage/storage';
 import { apiCache } from '@/utils/storage/apiCache';
 import { API_BASE, useLocalProxy } from '@/config/environment';
-import { safeApiCall, handleApiError } from '../core/errors';
+import { handleApiError } from '../core/errors';
 import { saveStockHistory, getStockHistory } from '@/utils/storage/opportunityIndexedDB';
 import {
   MAX_SEARCH_RESULTS,
-  VOLUME_AMOUNT_UNIT_CONVERSION,
   API_TIMEOUT,
   DEFAULT_CACHE_TTL,
   CACHE_KEYS,
