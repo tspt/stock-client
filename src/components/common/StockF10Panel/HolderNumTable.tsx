@@ -13,7 +13,7 @@ import { buildHolderNumMatrix } from '@/utils/format/holderNumMatrix';
 import { F10MatrixTable } from './F10MatrixTable';
 
 /** 行首指标名较长（「十大流通股东持股合计(%)」），列宽要给足 */
-const LABEL_WIDTH = 170;
+const LABEL_WIDTH = 190;
 
 interface HolderNumTableProps {
   data: HolderNumItem[];

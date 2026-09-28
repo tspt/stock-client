@@ -12,7 +12,7 @@ import { buildOrgHoldingMatrix } from '@/utils/format/orgHoldingMatrix';
 import { F10MatrixTable } from './F10MatrixTable';
 
 /** 指标名较短（最宽的「占总股本比例(%)」） */
-const LABEL_WIDTH = 140;
+const LABEL_WIDTH = 120;
 
 interface OrgHoldingTableProps {
   data: OrgHoldingItem[];
