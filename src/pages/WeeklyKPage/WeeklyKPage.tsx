@@ -248,6 +248,11 @@ function WeeklyFiltersPanel({
   setNameFilterIndustryGroups,
   nameFilterIndustryInvert,
   setNameFilterIndustryInvert,
+  nameFilterConceptSectors,
+  setNameFilterConceptSectors,
+  nameFilterConceptInvert,
+  setNameFilterConceptInvert,
+  conceptSectorOptions,
   enableNameKeywordFilter,
   setEnableNameKeywordFilter,
   excludedNameKeywords,
@@ -287,6 +292,13 @@ function WeeklyFiltersPanel({
   setNameFilterIndustryGroups: (v: string[]) => void;
   nameFilterIndustryInvert: boolean;
   setNameFilterIndustryInvert: (v: boolean) => void;
+  /** 名称筛选：概念板块（不做分组，直接多选全部概念板块） */
+  nameFilterConceptSectors: string[];
+  setNameFilterConceptSectors: (v: string[]) => void;
+  nameFilterConceptInvert: boolean;
+  setNameFilterConceptInvert: (v: boolean) => void;
+  /** 概念板块下拉选项 */
+  conceptSectorOptions: { label: string; value: string }[];
   enableNameKeywordFilter: boolean;
   setEnableNameKeywordFilter: (v: boolean) => void;
   excludedNameKeywords: string[];
@@ -474,6 +486,53 @@ function WeeklyFiltersPanel({
                         className={styles.filterItem}
                         style={{ flex: '0 0 160px', justifyContent: 'flex-start' }}
                       >
+                        <span className={styles.filterLabel} style={{ whiteSpace: 'nowrap' }}>
+                          概念分组：
+                        </span>
+                      </div>
+                      <div
+                        style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 8 }}
+                      >
+                        <Select
+                          mode="multiple"
+                          allowClear
+                          placeholder="请选择概念板块（仅作用于筛选结果）"
+                          value={nameFilterConceptSectors}
+                          onChange={(codes: string[]) => setNameFilterConceptSectors(codes)}
+                          options={conceptSectorOptions}
+                          style={{ flex: 1, minWidth: 0 }}
+                          maxTagCount="responsive"
+                          showSearch
+                          optionFilterProp="label"
+                          disabled={disabled}
+                        />
+                        <Checkbox
+                          checked={nameFilterConceptInvert}
+                          onChange={(e) => setNameFilterConceptInvert(e.target.checked)}
+                          style={{ whiteSpace: 'nowrap' }}
+                          disabled={disabled || nameFilterConceptSectors.length === 0}
+                        >
+                          排除选中
+                        </Checkbox>
+                        <span
+                          style={{
+                            color: 'var(--ant-color-text-secondary)',
+                            fontSize: 12,
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          独立于顶部概念筛选
+                        </span>
+                      </div>
+                    </div>
+                    <div
+                      className={styles.filterRow}
+                      style={{ marginBottom: 16, alignItems: 'flex-start' }}
+                    >
+                      <div
+                        className={styles.filterItem}
+                        style={{ flex: '0 0 160px', justifyContent: 'flex-start' }}
+                      >
                         <Checkbox
                           checked={enableNameKeywordFilter}
                           onChange={(e) => setEnableNameKeywordFilter(e.target.checked)}
@@ -555,6 +614,10 @@ export function WeeklyKPage() {
   const [industrySectorOptions, setIndustrySectorOptions] = useState<
     { label: string; value: string }[]
   >([]);
+  /** 概念板块选项（名称筛选面板的「概念分组」多选用，不做分组直接列全部概念） */
+  const [conceptSectorOptions, setConceptSectorOptions] = useState<
+    { label: string; value: string }[]
+  >([]);
   /** 概念板块映射（股票池自带概念缺失时的兜底，与机会分析/回测页同源） */
   const [conceptMapping, setConceptMapping] = useState<Map<string, SectorInfo[]>>(new Map());
   const [klineCount, setKlineCount] = useState<number>(WEEKLY_KLINE_DEFAULT_COUNT);
@@ -578,6 +641,9 @@ export function WeeklyKPage() {
   const [nameFilterIndustryInvert, setNameFilterIndustryInvert] = useState<boolean>(
     OPPORTUNITY_DEFAULT_INDUSTRY_GROUP_FILTER.invertEnabled
   );
+  /** 名称筛选：概念板块（不做分组，直接多选全部概念板块；默认不选） */
+  const [nameFilterConceptSectors, setNameFilterConceptSectors] = useState<string[]>([]);
+  const [nameFilterConceptInvert, setNameFilterConceptInvert] = useState<boolean>(false);
   const [enableNameKeywordFilter, setEnableNameKeywordFilter] = useState<boolean>(true);
   const [excludedNameKeywords, setExcludedNameKeywords] = useState<string[]>([
     ...OPPORTUNITY_DEFAULT_NAME_FILTERS.excludedNameKeywords,
@@ -679,16 +745,17 @@ export function WeeklyKPage() {
     };
   }, []);
 
-  // 行业板块选项：与机会分析页面共用统一缓存服务
+  // 行业 / 概念板块选项：与机会分析页面共用统一缓存服务
   useEffect(() => {
     let cancelled = false;
     void (async () => {
       try {
-        const { industry } = await getUnifiedSectorBasics();
+        const { industry, concept } = await getUnifiedSectorBasics();
         if (cancelled) return;
         setIndustrySectorOptions(industry.map((s) => ({ label: s.name, value: s.code })));
+        setConceptSectorOptions(concept.map((s) => ({ label: s.name, value: s.code })));
       } catch (error) {
-        logger.error('[WeeklyKPage] 加载行业板块选项失败:', error);
+        logger.error('[WeeklyKPage] 加载板块选项失败:', error);
       }
     })();
     return () => {
@@ -942,6 +1009,8 @@ export function WeeklyKPage() {
       excludedShortTermNames,
       nameFilterIndustryCodes,
       nameFilterIndustryInvert,
+      nameFilterConceptSectors,
+      nameFilterConceptInvert,
     }),
     [
       filters,
@@ -952,6 +1021,8 @@ export function WeeklyKPage() {
       excludedShortTermNames,
       nameFilterIndustryCodes,
       nameFilterIndustryInvert,
+      nameFilterConceptSectors,
+      nameFilterConceptInvert,
     ]
   );
 
@@ -1031,6 +1102,9 @@ export function WeeklyKPage() {
     const nameFilterParts = [
       nameFilterIndustryGroups.length > 0
         ? `${nameFilterIndustryInvert ? '排除行业分组' : '仅保留行业分组'}${nameFilterIndustryGroups.join('、')}`
+        : '',
+      nameFilterConceptSectors.length > 0
+        ? `${nameFilterConceptInvert ? '排除概念组' : '仅保留概念板块'}[${nameFilterConceptSectors.length}个]`
         : '',
       enableNameKeywordFilter && excludedNameKeywords.length > 0
         ? `排除名称包含[${excludedNameKeywords.length}个]`
@@ -1695,6 +1769,11 @@ export function WeeklyKPage() {
             setNameFilterIndustryGroups={setNameFilterIndustryGroups}
             nameFilterIndustryInvert={nameFilterIndustryInvert}
             setNameFilterIndustryInvert={setNameFilterIndustryInvert}
+            nameFilterConceptSectors={nameFilterConceptSectors}
+            setNameFilterConceptSectors={setNameFilterConceptSectors}
+            nameFilterConceptInvert={nameFilterConceptInvert}
+            setNameFilterConceptInvert={setNameFilterConceptInvert}
+            conceptSectorOptions={conceptSectorOptions}
             enableNameKeywordFilter={enableNameKeywordFilter}
             setEnableNameKeywordFilter={setEnableNameKeywordFilter}
             excludedNameKeywords={excludedNameKeywords}
@@ -1727,6 +1806,9 @@ export function WeeklyKPage() {
             : ''}
           {nameFilterIndustryGroups.length > 0
             ? ` + ${nameFilterIndustryInvert ? '排除' : '仅保留'}行业分组${nameFilterIndustryGroups.length}个`
+            : ''}
+          {nameFilterConceptSectors.length > 0
+            ? ` + ${nameFilterConceptInvert ? '排除' : '仅保留'}概念板块${nameFilterConceptSectors.length}个`
             : ''}
           {enableNameKeywordFilter && excludedNameKeywords.length > 0
             ? ` + 排除名称包含${excludedNameKeywords.length}个`

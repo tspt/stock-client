@@ -117,6 +117,9 @@ export interface OpportunityFilterPrefsExtras {
   filterPanelActiveKey: string[];
   nameFilterIndustryGroups: string[];
   nameFilterIndustryInvert: boolean;
+  /** 名称筛选面板：选中的概念板块代码（不分组，直接多选） */
+  nameFilterConceptSectors: string[];
+  nameFilterConceptInvert: boolean;
 }
 
 /** 由筛选表单状态构造待写入 localStorage 的偏好（与原有字段一一对应） */
@@ -211,6 +214,8 @@ export function buildOpportunityFilterPrefs(
 
     nameFilterIndustryGroups: [...extras.nameFilterIndustryGroups],
     nameFilterIndustryInvert: extras.nameFilterIndustryInvert,
+    nameFilterConceptSectors: [...extras.nameFilterConceptSectors],
+    nameFilterConceptInvert: extras.nameFilterConceptInvert,
   };
 }
 
@@ -224,6 +229,9 @@ export interface OpportunityFilterSnapshotExtras {
   /** 名称筛选面板：行业分组对应的行业板块代码 */
   nameFilterIndustryCodes: string[];
   nameFilterIndustryInvert: boolean;
+  /** 名称筛选面板：选中的概念板块代码（多值，命中任一即通过） */
+  nameFilterConceptSectors: string[];
+  nameFilterConceptInvert: boolean;
   nameType: 'all' | 'st' | 'non_st';
 }
 

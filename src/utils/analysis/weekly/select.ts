@@ -108,6 +108,10 @@ export function applyWeeklyFilters(
     filters.nameFilterIndustryCodes && filters.nameFilterIndustryCodes.length > 0
       ? new Set(filters.nameFilterIndustryCodes)
       : null;
+  const nameFilterConceptSet =
+    filters.nameFilterConceptSectors && filters.nameFilterConceptSectors.length > 0
+      ? new Set(filters.nameFilterConceptSectors)
+      : null;
 
   const kept: WeeklyAnalysis[] = [];
   const missingData: WeeklyMissingDataStats = { marketCap: 0, finance: 0, total: 0 };
@@ -163,8 +167,13 @@ export function applyWeeklyFilters(
       if (hits.length === 0) return;
     }
 
-    // 名称筛选：排除名称包含关键词 / 短期排除名单 / 行业分组
-    if (excludedNameKeywords.length > 0 || excludedShortTermNameSet?.size || nameFilterIndustrySet) {
+    // 名称筛选：排除名称包含关键词 / 短期排除名单 / 行业分组 / 概念板块
+    if (
+      excludedNameKeywords.length > 0 ||
+      excludedShortTermNameSet?.size ||
+      nameFilterIndustrySet ||
+      nameFilterConceptSet
+    ) {
       const name = normalizeStockName(row.name ?? '');
       if (excludedNameKeywords.some((keyword) => name.includes(keyword))) return;
       if (excludedShortTermNameSet?.has(name)) return;
@@ -177,6 +186,19 @@ export function applyWeeklyFilters(
           if (hasGroupedIndustry) return;
         } else if (!hasGroupedIndustry) {
           // 正常模式：只保留选中分组内的个股
+          return;
+        }
+      }
+      if (nameFilterConceptSet) {
+        // 概念为多值，命中任一选中概念板块即视为命中
+        const hasGroupedConcept = (row.concepts ?? []).some(
+          (c) => !!c.code && nameFilterConceptSet.has(c.code)
+        );
+        if (filters.nameFilterConceptInvert) {
+          // 反选模式：排除命中选中概念板块的个股
+          if (hasGroupedConcept) return;
+        } else if (!hasGroupedConcept) {
+          // 正常模式：只保留命中选中概念板块的个股
           return;
         }
       }

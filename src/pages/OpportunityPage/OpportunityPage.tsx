@@ -519,6 +519,12 @@ export function OpportunityPage() {
   const [nameFilterIndustryInvert, setNameFilterIndustryInvert] = useState<boolean>(
     OPPORTUNITY_DEFAULT_INDUSTRY_GROUP_FILTER.invertEnabled
   );
+  /**
+   * 名称筛选面板的「概念分组」：与顶部工具栏「概念」完全独立，
+   * 不做分组，直接把全部概念板块作为可选值（选项来自 conceptSectorOptions）。
+   */
+  const [nameFilterConceptSectors, setNameFilterConceptSectors] = useState<string[]>([]);
+  const [nameFilterConceptInvert, setNameFilterConceptInvert] = useState<boolean>(false);
   // 行业板块选项
   const [industrySectorOptions, setIndustrySectorOptions] = useState<{ label: string; value: string }[]>([]);
   // 概念板块选项
@@ -651,6 +657,9 @@ export function OpportunityPage() {
           // 名称筛选面板：行业分组 actions（独立于顶部「行业」筛选）
           setNameFilterIndustryGroups,
           setNameFilterIndustryInvert,
+          // 名称筛选面板：概念板块 actions（独立于顶部「概念」筛选）
+          setNameFilterConceptSectors,
+          setNameFilterConceptInvert,
         });
       }
       // AI 版本使用系统默认值 v5
@@ -803,6 +812,8 @@ export function OpportunityPage() {
           filterPanelActiveKey,
           nameFilterIndustryGroups,
           nameFilterIndustryInvert,
+          nameFilterConceptSectors,
+          nameFilterConceptInvert,
         },
         { currentPeriod: 'day', currentCount }
       ),
@@ -814,6 +825,8 @@ export function OpportunityPage() {
       currentCount,
       nameFilterIndustryGroups,
       nameFilterIndustryInvert,
+      nameFilterConceptSectors,
+      nameFilterConceptInvert,
     ]
   );
 
@@ -924,6 +937,8 @@ export function OpportunityPage() {
         conceptSectorInvert,
         nameFilterIndustryCodes,
         nameFilterIndustryInvert,
+        nameFilterConceptSectors,
+        nameFilterConceptInvert,
         nameType: nameType as 'all' | 'st' | 'non_st',
       }),
     [
@@ -935,6 +950,8 @@ export function OpportunityPage() {
       conceptSectorInvert,
       nameFilterIndustryCodes,
       nameFilterIndustryInvert,
+      nameFilterConceptSectors,
+      nameFilterConceptInvert,
       nameType,
     ]
   );
@@ -952,6 +969,8 @@ export function OpportunityPage() {
         conceptSectorOptions,
         nameFilterIndustryGroups,
         nameFilterIndustryInvert,
+        nameFilterConceptSectors,
+        nameFilterConceptInvert,
       }),
     [
       filterFormState,
@@ -962,6 +981,8 @@ export function OpportunityPage() {
       conceptSectorOptions,
       nameFilterIndustryGroups,
       nameFilterIndustryInvert,
+      nameFilterConceptSectors,
+      nameFilterConceptInvert,
     ]
   );
 
@@ -1192,6 +1213,9 @@ export function OpportunityPage() {
     // 重置名称筛选面板的行业分组（与顶部「行业」筛选彼此独立）
     setNameFilterIndustryGroups([...OPPORTUNITY_DEFAULT_INDUSTRY_GROUP_FILTER.selectedGroups]);
     setNameFilterIndustryInvert(OPPORTUNITY_DEFAULT_INDUSTRY_GROUP_FILTER.invertEnabled);
+    // 重置名称筛选面板的概念板块（与顶部「概念」筛选彼此独立，默认不选）
+    setNameFilterConceptSectors([]);
+    setNameFilterConceptInvert(false);
     // 重置名称过滤
     // 名称筛选重置
     setEnableNameKeywordFilter(true);
@@ -1945,6 +1969,12 @@ export function OpportunityPage() {
             setNameFilterIndustryGroups={setNameFilterIndustryGroups}
             nameFilterIndustryInvert={nameFilterIndustryInvert}
             setNameFilterIndustryInvert={setNameFilterIndustryInvert}
+            // 名称筛选面板：概念板块（独立于顶部「概念」筛选，单独控制）
+            nameFilterConceptSectors={nameFilterConceptSectors}
+            setNameFilterConceptSectors={setNameFilterConceptSectors}
+            nameFilterConceptInvert={nameFilterConceptInvert}
+            setNameFilterConceptInvert={setNameFilterConceptInvert}
+            conceptSectorOptions={conceptSectorOptions}
             // 名称过滤
             // 名称筛选
             enableNameKeywordFilter={enableNameKeywordFilter}

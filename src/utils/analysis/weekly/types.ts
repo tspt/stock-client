@@ -509,4 +509,8 @@ export interface WeeklyFilterOptions {
   nameFilterIndustryCodes?: string[];
   /** 名称筛选：行业分组反选（排除选中分组内的个股） */
   nameFilterIndustryInvert?: boolean;
+  /** 名称筛选：选中的概念板块代码（不分组，直接多选；独立于顶部「概念」筛选） */
+  nameFilterConceptSectors?: string[];
+  /** 名称筛选：概念板块反选（排除选中概念板块内的个股） */
+  nameFilterConceptInvert?: boolean;
 }

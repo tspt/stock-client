@@ -954,6 +954,26 @@ async function runFilterTask(
         }
       }
 
+      // 名称筛选面板的概念板块筛选（独立于顶部「概念」筛选，两者互不影响）
+      // 概念为多值，命中任一选中概念板块即视为命中
+      if (filters.nameFilterConceptSectors && filters.nameFilterConceptSectors.length > 0) {
+        const hasGroupedConcept =
+          !!nextItem.concepts &&
+          nextItem.concepts.some((c: { code: string; name: string }) =>
+            filters.nameFilterConceptSectors!.includes(c.code)
+          );
+
+        if (filters.nameFilterConceptInvert) {
+          // 反选模式：排除命中选中概念板块的股票
+          if (hasGroupedConcept) {
+            continue;
+          }
+        } else if (!hasGroupedConcept) {
+          // 正常模式：只保留命中选中概念板块的股票
+          continue;
+        }
+      }
+
       // 概念板块筛选
       if (filters.conceptSectors && filters.conceptSectors.length > 0) {
         if (!nextItem.concepts || nextItem.concepts.length === 0) {

@@ -124,6 +124,9 @@ export function buildOpportunityFilterSummary(p: {
   // 名称筛选：行业分组（独立于顶部「行业」筛选）
   nameFilterIndustryGroups?: string[];
   nameFilterIndustryInvert?: boolean;
+  // 名称筛选：概念板块（独立于顶部「概念」筛选）
+  nameFilterConceptSectors?: string[];
+  nameFilterConceptInvert?: boolean;
   // 名称过滤
   excludedNameKeywords?: string[];
   excludedShortTermNames?: string[];
@@ -258,6 +261,13 @@ export function buildOpportunityFilterSummary(p: {
   if (p.nameFilterIndustryGroups && p.nameFilterIndustryGroups.length > 0) {
     parts.push(
       `${p.nameFilterIndustryInvert ? '排除分组' : '行业分组'}${p.nameFilterIndustryGroups.join('、')}`
+    );
+  }
+
+  // 名称筛选面板的概念板块汇总（独立于顶部「概念」筛选，仅显示数量避免文本过长）
+  if (p.nameFilterConceptSectors && p.nameFilterConceptSectors.length > 0) {
+    parts.push(
+      `${p.nameFilterConceptInvert ? '排除概念组' : '概念板块'}[${p.nameFilterConceptSectors.length}个]`
     );
   }
 
@@ -427,6 +437,13 @@ export interface OpportunityFiltersPanelProps {
   setNameFilterIndustryGroups?: (v: string[]) => void;
   nameFilterIndustryInvert?: boolean;
   setNameFilterIndustryInvert?: (v: boolean) => void;
+  // 名称筛选面板：概念板块（独立于顶部「概念」筛选，单独控制；不做分组，直接多选全部概念板块）
+  nameFilterConceptSectors?: string[];
+  setNameFilterConceptSectors?: (v: string[]) => void;
+  nameFilterConceptInvert?: boolean;
+  setNameFilterConceptInvert?: (v: boolean) => void;
+  /** 概念板块下拉选项（用于「概念分组」多选） */
+  conceptSectorOptions?: { label: string; value: string }[];
   // 名称筛选
   enableNameKeywordFilter?: boolean;
   setEnableNameKeywordFilter?: (v: boolean) => void;
@@ -597,6 +614,12 @@ function OpportunityFiltersPanelComponent({
   setNameFilterIndustryGroups = () => { },
   nameFilterIndustryInvert = false,
   setNameFilterIndustryInvert = () => { },
+  // 名称筛选面板：概念板块（独立于顶部「概念」筛选，单独控制）
+  nameFilterConceptSectors = [],
+  setNameFilterConceptSectors = () => { },
+  nameFilterConceptInvert = false,
+  setNameFilterConceptInvert = () => { },
+  conceptSectorOptions = [],
   // 名称筛选
   enableNameKeywordFilter = true,
   setEnableNameKeywordFilter = () => { },
@@ -686,6 +709,8 @@ function OpportunityFiltersPanelComponent({
         aiVersion,
         nameFilterIndustryGroups,
         nameFilterIndustryInvert,
+        nameFilterConceptSectors,
+        nameFilterConceptInvert,
         excludedNameKeywords,
         excludedShortTermNames,
       }),
@@ -754,6 +779,8 @@ function OpportunityFiltersPanelComponent({
       aiVersion,
       nameFilterIndustryGroups,
       nameFilterIndustryInvert,
+      nameFilterConceptSectors,
+      nameFilterConceptInvert,
       excludedNameKeywords,
       excludedShortTermNames,
     ]
@@ -1357,6 +1384,36 @@ function OpportunityFiltersPanelComponent({
                         </Checkbox>
                         <span style={{ color: 'var(--ant-color-text-secondary)', fontSize: 12, whiteSpace: 'nowrap' }}>
                           独立于顶部行业筛选
+                        </span>
+                      </div>
+                    </div>
+                    <div className={styles.filterRow} style={{ marginBottom: 16, alignItems: 'flex-start' }}>
+                      <div className={styles.filterItem} style={{ flex: '0 0 160px', justifyContent: 'flex-start' }}>
+                        <span className={styles.filterLabel} style={{ whiteSpace: 'nowrap' }}>概念分组：</span>
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <Select
+                          mode="multiple"
+                          allowClear
+                          placeholder="请选择概念板块（仅作用于筛选结果，与顶部「概念」互不影响）"
+                          value={nameFilterConceptSectors}
+                          onChange={(codes: string[]) => setNameFilterConceptSectors(codes)}
+                          options={conceptSectorOptions}
+                          style={{ flex: 1, minWidth: 0 }}
+                          maxTagCount="responsive"
+                          showSearch
+                          optionFilterProp="label"
+                        />
+                        <Checkbox
+                          checked={nameFilterConceptInvert}
+                          onChange={(e) => setNameFilterConceptInvert(e.target.checked)}
+                          style={{ whiteSpace: 'nowrap' }}
+                          disabled={nameFilterConceptSectors.length === 0}
+                        >
+                          排除选中
+                        </Checkbox>
+                        <span style={{ color: 'var(--ant-color-text-secondary)', fontSize: 12, whiteSpace: 'nowrap' }}>
+                          独立于顶部概念筛选
                         </span>
                       </div>
                     </div>
