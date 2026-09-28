@@ -284,7 +284,7 @@ export const OPPORTUNITY_DEFAULT_AI_ANALYSIS = {
   /** 技术指标评分最小值 */
   technicalScoreMin: 30,
   /** AI置信度最小值（%） */
-  confidenceMin: 65,
+  confidenceMin: 60,
   /** AI形态评分最小值 */
   patternScoreMin: 60,
   /** AI趋势评分最小值 */
