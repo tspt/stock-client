@@ -372,7 +372,7 @@ export function loadOpportunityFilterPrefs(): OpportunityFilterPrefs | null {
       sharpMoveFlatThreshold:
         isFiniteNumber(p.sharpMoveFlatThreshold) && p.sharpMoveFlatThreshold > 0
           ? p.sharpMoveFlatThreshold
-          : 3,
+          : OPPORTUNITY_DEFAULT_SHARP_MOVE.flatThreshold,
       sharpMoveOnlyDrop: p.sharpMoveOnlyDrop === true,
       sharpMoveOnlyRise: p.sharpMoveOnlyRise === true,
       sharpMoveDropThenRiseLoose: p.sharpMoveDropThenRiseLoose === true,
@@ -510,7 +510,7 @@ export function getDefaultFilterPrefsFields(): Omit<
     sharpMoveFilterVisible: true,
     sharpMoveWindowBars: OPPORTUNITY_DEFAULT_SHARP_MOVE.windowBars,
     sharpMoveMagnitude: OPPORTUNITY_DEFAULT_SHARP_MOVE.magnitude,
-    sharpMoveFlatThreshold: 3,
+    sharpMoveFlatThreshold: OPPORTUNITY_DEFAULT_SHARP_MOVE.flatThreshold,
     sharpMoveOnlyDrop: false,
     sharpMoveOnlyRise: false,
     sharpMoveDropThenRiseLoose: false,

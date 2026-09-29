@@ -215,10 +215,14 @@ async function analyzeOneStock(
 
   let sharpMovePatterns;
   try {
+    // 必须显式传入横盘幅度：analyzeSharpMovePatterns 的第三参缺省时等于 magnitude，
+    // 会得到 4% 口径，而筛选面板默认是 3%。口径不一致会导致同一只股票在
+    // 「未启用筛选 / 启用筛选」两种状态下异动标签跳变，故统一取配置常量。
     sharpMovePatterns = analyzeSharpMovePatterns(
       klineData,
       OPPORTUNITY_DEFAULT_SHARP_MOVE.windowBars,
-      OPPORTUNITY_DEFAULT_SHARP_MOVE.magnitude
+      OPPORTUNITY_DEFAULT_SHARP_MOVE.magnitude,
+      OPPORTUNITY_DEFAULT_SHARP_MOVE.flatThreshold
     );
   } catch (error) {
     logger.warn(`[${code}] 单日异动分析失败:`, error);

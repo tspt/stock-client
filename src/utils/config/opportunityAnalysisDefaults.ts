@@ -304,7 +304,7 @@ export const OPPORTUNITY_DEFAULT_AI_ANALYSIS = {
 export const OPPORTUNITY_DEFAULT_CONSOLIDATION = {
   lookback: 10,
   consecutive: 3,
-  threshold: 1.5,
+  threshold: 2.5,
   requireClosesAboveMa10: false,
 } as const;
 
@@ -317,14 +317,22 @@ export const OPPORTUNITY_DEFAULT_TREND_LINE = {
 
 // ==================== 5. 单日异动筛选 ====================
 
+/**
+ * 单日异动筛选默认配置（唯一数据源）。
+ *
+ * 分析期参数（services/opportunity/analyzer.ts）与筛选面板初始值
+ * （INITIAL_FILTER_STATE）、localStorage 偏好兜底共用这一份，
+ * 保证「未启用筛选」与「启用筛选」两种状态下的异动标签口径一致。
+ *
+ * ⚠️ 历史遗留：曾存在一个只有 windowBars / magnitude 的同名常量，谁 import 了
+ * 它就会静默丢掉 flatThreshold（analyzeSharpMovePatterns 第三参缺省时等于
+ * magnitude，即 4%），造成口径分叉。现已合并，新增字段一律加在这里。
+ */
 export const OPPORTUNITY_DEFAULT_SHARP_MOVE = {
+  /** 最近多少根 K 线（右对齐最后一根） */
   windowBars: 20,
+  /** 阈值 M（%），用于判断急涨 / 急跌 */
   magnitude: 4,
-} as const;
-
-/** 异动筛选完整配置 */
-export const OPPORTUNITY_DEFAULT_SHARP_MOVE_FULL = {
-  ...OPPORTUNITY_DEFAULT_SHARP_MOVE,
   /** 横盘幅度阈值（%） */
   flatThreshold: 3,
   /** 仅急跌 */
@@ -657,15 +665,15 @@ export const INITIAL_FILTER_STATE = {
 
   // 异动筛选
   sharpMoveFilterEnabled: false,
-  sharpMoveWindowBars: OPPORTUNITY_DEFAULT_SHARP_MOVE_FULL.windowBars,
-  sharpMoveMagnitude: OPPORTUNITY_DEFAULT_SHARP_MOVE_FULL.magnitude,
-  sharpMoveFlatThreshold: OPPORTUNITY_DEFAULT_SHARP_MOVE_FULL.flatThreshold,
-  sharpMoveOnlyDrop: OPPORTUNITY_DEFAULT_SHARP_MOVE_FULL.onlyDrop,
-  sharpMoveOnlyRise: OPPORTUNITY_DEFAULT_SHARP_MOVE_FULL.onlyRise,
-  sharpMoveDropThenRiseLoose: OPPORTUNITY_DEFAULT_SHARP_MOVE_FULL.dropThenRiseLoose,
-  sharpMoveRiseThenDropLoose: OPPORTUNITY_DEFAULT_SHARP_MOVE_FULL.riseThenDropLoose,
-  sharpMoveDropFlatRise: OPPORTUNITY_DEFAULT_SHARP_MOVE_FULL.dropFlatRise,
-  sharpMoveRiseFlatDrop: OPPORTUNITY_DEFAULT_SHARP_MOVE_FULL.riseFlatDrop,
+  sharpMoveWindowBars: OPPORTUNITY_DEFAULT_SHARP_MOVE.windowBars,
+  sharpMoveMagnitude: OPPORTUNITY_DEFAULT_SHARP_MOVE.magnitude,
+  sharpMoveFlatThreshold: OPPORTUNITY_DEFAULT_SHARP_MOVE.flatThreshold,
+  sharpMoveOnlyDrop: OPPORTUNITY_DEFAULT_SHARP_MOVE.onlyDrop,
+  sharpMoveOnlyRise: OPPORTUNITY_DEFAULT_SHARP_MOVE.onlyRise,
+  sharpMoveDropThenRiseLoose: OPPORTUNITY_DEFAULT_SHARP_MOVE.dropThenRiseLoose,
+  sharpMoveRiseThenDropLoose: OPPORTUNITY_DEFAULT_SHARP_MOVE.riseThenDropLoose,
+  sharpMoveDropFlatRise: OPPORTUNITY_DEFAULT_SHARP_MOVE.dropFlatRise,
+  sharpMoveRiseFlatDrop: OPPORTUNITY_DEFAULT_SHARP_MOVE.riseFlatDrop,
 
   // 量价回踩筛选（默认关闭）
   volumePullbackFilterEnabled: false,

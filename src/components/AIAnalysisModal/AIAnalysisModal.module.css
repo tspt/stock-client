@@ -220,3 +220,44 @@
   padding-top: 8px;
   border-top: 1px solid #e8e8e8;
 }
+
+/* ===== 深色主题适配 =====
+ * 弹窗被 antd portal 到 document.body，不在 .app 子树内；
+ * 但 themeStore 会把 data-theme 同步挂在 <html> 上，因此这里无需 .modal 前缀也能命中。
+ */
+[data-theme='dark'] .trendText,
+[data-theme='dark'] .sectionTitle,
+[data-theme='dark'] .stockName {
+  color: rgba(255, 255, 255, 0.88);
+}
+
+[data-theme='dark'] .reasoning {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+[data-theme='dark'] .reasoning .reasoningTitle,
+[data-theme='dark'] .reasoning ul li,
+[data-theme='dark'] .scoreItemLabel,
+[data-theme='dark'] .performance {
+  color: rgba(255, 255, 255, 0.65);
+}
+
+[data-theme='dark'] .stockCode,
+[data-theme='dark'] .period,
+[data-theme='dark'] .analysisTime {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+[data-theme='dark'] .analysisTime {
+  border-top-color: #303030;
+}
+
+[data-theme='dark'] .patternItem {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: #303030;
+}
+
+[data-theme='dark'] .patternItem:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: #434343;
+}

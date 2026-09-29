@@ -595,9 +595,15 @@ async function runFilterTask(
         // 仅在需要时重算横盘分析
         if (needConsolidationRecalc) {
           try {
-            // 检查是否有缓存的横盘分析结果且参数匹配
+            // 检查是否有缓存的横盘分析结果且参数匹配。
+            // ⚠️ requireClosesAboveMa10 必须参与判定：分析阶段写入的缓存是按
+            // 「不要求 MA10」算出来的（见 services/opportunity/analyzer.ts），
+            // 若此处漏判，勾选「连续根数段内每日收盘价均在 MA10 之上」后会直接
+            // 复用未约束的结果，导致该开关完全失效。故只要勾了它就必须重算。
             const cachedConsolidation = item.consolidation;
+            const ma10ConstraintUnchanged = filters.consolidationRequireAboveMa10 !== true;
             const paramsMatch =
+              ma10ConstraintUnchanged &&
               cachedConsolidation &&
               cachedConsolidation.lookback === filters.consolidationLookback &&
               cachedConsolidation.period === filters.consolidationConsecutive &&
@@ -678,12 +684,26 @@ async function runFilterTask(
       }
 
       if (consolidationTypesSet) {
-        if (!nextItem.consolidation || !nextItem.consolidation.isConsolidation) {
+        const consolidation = nextItem.consolidation;
+        if (!consolidation || !consolidation.isConsolidation) {
+          mergeSkippedReason(
+            skippedMap,
+            item.code,
+            item.name,
+            `横盘：${consolidation?.reasonText || '缺少K线数据'}`
+          );
           continue;
         }
-        const matchedTypes = nextItem.consolidation.matchedTypes ?? [];
+        const matchedTypes = consolidation.matchedTypes ?? [];
         const hasMatchedType = matchedTypes.some((type) => consolidationTypesSet.has(type));
         if (!hasMatchedType) {
+          const hitLabels = consolidation.matchedTypeLabels ?? [];
+          mergeSkippedReason(
+            skippedMap,
+            item.code,
+            item.name,
+            `横盘：类型不匹配（命中${hitLabels.length > 0 ? hitLabels.join('、') : '无'}）`
+          );
           continue;
         }
       }
@@ -723,7 +743,19 @@ async function runFilterTask(
         }
       }
 
+      // passesSharpMoveFilter 仅在「异动筛选已激活」时才可能返回 false，
+      // 因此未命中必定来自异动筛选，补写诊断原因，避免结果变少却查不到缘由。
       if (!passesSharpMoveFilter(nextItem.sharpMovePatterns, filters)) {
+        const patterns = nextItem.sharpMovePatterns;
+        const hitLabels = patterns?.labels ?? [];
+        mergeSkippedReason(
+          skippedMap,
+          item.code,
+          item.name,
+          patterns
+            ? `单日异动：未命中勾选形态（窗口内${hitLabels.length > 0 ? hitLabels.join('、') : '无急涨急跌'}）`
+            : '单日异动：缺少K线数据'
+        );
         continue;
       }
 
