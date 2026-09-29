@@ -8,6 +8,7 @@
 import React from 'react';
 import { Card, Collapse, Table, Tag, Progress, Row, Col, Statistic } from 'antd';
 import type { FilterSkippedItem } from '@/types/opportunityFilter';
+import { TEXT_RISE_COLOR } from '@/utils/config/chartColors';
 
 interface FilterDiagnosticsPanelProps {
   skipped: FilterSkippedItem[];
@@ -108,7 +109,7 @@ export const FilterDiagnosticsPanel: React.FC<FilterDiagnosticsPanelProps> = ({
                   <Progress
                     type="dashboard"
                     percent={Math.round((totalSkipped / 100) * 100) || 0}
-                    strokeColor="#ff4d4f"
+                    strokeColor={TEXT_RISE_COLOR}
                   />
                 </Col>
               </Row>

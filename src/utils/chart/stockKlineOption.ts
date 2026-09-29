@@ -14,6 +14,7 @@ import type { EChartsOption } from 'echarts';
 import type { KLineData } from '@/types/stock';
 import type { KlineIndicatorSeries } from '@/utils/analysis/indicators';
 import type { PriceRange } from '@/utils/chart/priceRange';
+import { CHART_FALL_COLOR, CHART_RISE_COLOR } from '@/utils/config/chartColors';
 import { formatVolume } from '@/utils/format/format';
 import { formatKlineDate } from '@/utils/format/klineDate';
 import {
@@ -28,9 +29,18 @@ import {
   ZOOM_SLIDER_HEIGHT,
 } from '@/utils/config/stockDrawerLayout';
 
-/** 阳线（红）空心 / 阴线（绿）实心：全项目 K 线统一口径 */
-const UP_COLOR = '#ef5350';
-const DOWN_COLOR = '#26a69a';
+/** 阳线（红）空心 / 阴线（绿）实心：色值取全项目统一色源，勿在此另写十六进制 */
+const UP_COLOR = CHART_RISE_COLOR;
+const DOWN_COLOR = CHART_FALL_COLOR;
+
+/** 涨跌配色：同时用于蜡烛（阳线描边 / 阴线实心）与成交量柱 */
+export interface UpDownColors {
+  up: string;
+  down: string;
+}
+
+/** 默认涨跌配色：红涨绿跌 */
+const DEFAULT_UP_DOWN_COLORS: UpDownColors = { up: UP_COLOR, down: DOWN_COLOR };
 
 /**
  * MACD 快慢线配色：快线（DIF）蓝、慢线（DEA）橙，与 KDJ 的蓝/橙口径保持一致；
@@ -65,6 +75,8 @@ export interface StockKlineOptionInput {
   periodLabel: string;
   /** 标题里的当前价 / 涨幅是否加粗（周线为 true） */
   titleChgBold?: boolean;
+  /** 蜡烛 / 成交量柱的涨跌配色；不传时使用默认红涨绿跌 */
+  upDownColors?: UpDownColors;
 }
 
 export function buildStockKlineOption(input: StockKlineOptionInput): EChartsOption {
@@ -77,6 +89,7 @@ export function buildStockKlineOption(input: StockKlineOptionInput): EChartsOpti
     hoverIndex = null,
     periodLabel,
     titleChgBold = false,
+    upDownColors = DEFAULT_UP_DOWN_COLORS,
   } = input;
   const { ma5, ma10, ma20, ma30, ma60 } = indicators.ma;
   const macd = indicators.macd;
@@ -268,13 +281,13 @@ export function buildStockKlineOption(input: StockKlineOptionInput): EChartsOpti
         type: 'candlestick',
         data: data.map((d) => [d.open, d.close, d.low, d.high]),
         itemStyle: {
-          // 阳线（红）空心：内部透明、仅红色描边
+          // 阳线空心：内部透明、仅描边
           color: 'transparent',
-          borderColor: UP_COLOR,
+          borderColor: upDownColors.up,
           borderWidth: 1,
-          // 阴线（绿）保持实心
-          color0: DOWN_COLOR,
-          borderColor0: DOWN_COLOR,
+          // 阴线保持实心
+          color0: upDownColors.down,
+          borderColor0: upDownColors.down,
         },
       },
       { name: 'MA5', type: 'line', data: ma5, smooth: false, showSymbol: false, lineStyle: { width: 1 }, animation: false },
@@ -299,7 +312,7 @@ export function buildStockKlineOption(input: StockKlineOptionInput): EChartsOpti
         itemStyle: {
           color: (params: { dataIndex: number }) => {
             const row = data[params.dataIndex];
-            return row && row.close >= row.open ? UP_COLOR : DOWN_COLOR;
+            return row && row.close >= row.open ? upDownColors.up : upDownColors.down;
           },
         },
       },
@@ -310,8 +323,9 @@ export function buildStockKlineOption(input: StockKlineOptionInput): EChartsOpti
         yAxisIndex: 2,
         data: macd.macd,
         itemStyle: {
+          // 与蜡烛 / 成交量柱共用涨跌配色，低调配色模式下一起变灰黑
           color: (params: { dataIndex: number }) =>
-            (macd.macd[params.dataIndex] ?? 0) >= 0 ? UP_COLOR : DOWN_COLOR,
+            (macd.macd[params.dataIndex] ?? 0) >= 0 ? upDownColors.up : upDownColors.down,
         },
       },
       {

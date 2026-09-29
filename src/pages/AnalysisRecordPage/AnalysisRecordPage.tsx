@@ -51,6 +51,7 @@ import {
 } from '@/utils/analysis/opportunityRecordTracking';
 import { logger } from '@/utils/business/logger';
 import styles from './AnalysisRecordPage.module.css';
+import { STRONG_RISE_COLOR, STRONG_FALL_COLOR } from '@/utils/config/chartColors';
 
 const { Header, Content } = Layout;
 const { Text } = Typography;
@@ -61,9 +62,9 @@ function returnText(value: number | null): string {
 
 function returnColor(value: number | null): string | undefined {
   if (value == null) return undefined;
-  if (value > 5) return '#cf1322';
+  if (value > 5) return STRONG_RISE_COLOR;
   if (value > 0) return '#d46b08';
-  return '#389e0d';
+  return STRONG_FALL_COLOR;
 }
 
 export function AnalysisRecordPage() {
@@ -556,7 +557,7 @@ export function AnalysisRecordPage() {
                             valueStyle={{
                               color:
                                 trackingStats.passRate != null && trackingStats.passRate >= 50
-                                  ? '#cf1322'
+                                  ? STRONG_RISE_COLOR
                                   : undefined,
                             }}
                           />

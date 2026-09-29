@@ -198,6 +198,8 @@ export const STORAGE_KEYS = {
   PRICE_ALERTS: 'stock_price_alerts',
   /** 排序类型 */
   SORT_TYPE: 'stock_sort_type',
+  /** K 线抽屉图表配色模式（彩色 / 低调灰黑） */
+  CHART_COLOR_MODE: 'stock_chart_color_mode',
 } as const;
 
 /** MA周期配置 */

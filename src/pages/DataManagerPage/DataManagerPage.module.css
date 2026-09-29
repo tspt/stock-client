@@ -129,7 +129,7 @@
   display: block;
   font-size: 12px;
   margin-top: 4px;
-  color: #52c41a;
+  color: var(--app-fall-color);
 }
 
 .actionButtons {

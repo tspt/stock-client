@@ -6,6 +6,7 @@
  */
 
 import type { WeeklyAnalysis } from '@/utils/analysis/weekly';
+import { STRONG_RISE_COLOR, STRONG_FALL_COLOR } from '@/utils/config/chartColors';
 
 const FONT_FAMILY = '"Microsoft YaHei", "PingFang SC", "Noto Sans SC", sans-serif';
 const FONT_SIZE = 13;
@@ -223,7 +224,7 @@ export function exportWeeklyResultToPng(
       if (col.title === '本周涨幅') {
         const value = row.weekChangePercent;
         if (typeof value === 'number') {
-          color = value > 0 ? '#cf1322' : value < 0 ? '#389e0d' : '#595959';
+          color = value > 0 ? STRONG_RISE_COLOR : value < 0 ? STRONG_FALL_COLOR : '#595959';
         }
       }
       ctx.fillStyle = color;

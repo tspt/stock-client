@@ -16,13 +16,27 @@
 import type { EChartsOption } from 'echarts';
 import type { ChipDistribution } from '@/types/chipDistribution';
 import { findNearestPriceIndex } from '@/utils/analysis/chipDistribution';
+import { CHART_FALL_COLOR, CHART_RISE_COLOR } from '@/utils/config/chartColors';
+import { withAlpha } from '@/utils/format/color';
+
+/** 获利筹码透明度：与涨色分开定义，改主色时半透明填充会自动跟随 */
+const PROFIT_FILL_ALPHA = 0.62;
 
 /** 获利筹码（现价以下） */
-const PROFIT_COLOR = 'rgba(239, 83, 80, 0.62)';
+const PROFIT_COLOR = withAlpha(CHART_RISE_COLOR, PROFIT_FILL_ALPHA);
 /** 套牢筹码（现价以上）：由原来的绿色改为蓝色 */
 const TRAPPED_COLOR = 'rgba(44, 111, 209, 0.5)';
 /** 平均成本参考线 */
 const AVG_COST_COLOR = '#ff8c00';
+
+/** 筹码条配色（现价以下 / 以上） */
+export interface ChipBarColors {
+  profit: string;
+  trapped: string;
+}
+
+/** 默认筹码条配色：获利红 / 套牢蓝 */
+const DEFAULT_BAR_COLORS: ChipBarColors = { profit: PROFIT_COLOR, trapped: TRAPPED_COLOR };
 
 /** 与左侧K线主图共享价格轴时的展示配置 */
 export interface ChipChartOptionConfig {
@@ -43,6 +57,8 @@ export interface ChipChartOptionConfig {
     top?: number | string;
     height?: number | string;
   };
+  /** 筹码条配色；不传时使用默认「获利红 / 套牢蓝」 */
+  barColors?: ChipBarColors;
 }
 
 /** 平均成本线：橙色虚线 + 右端圆圈 + 带白色描边的数字 */
@@ -73,7 +89,7 @@ export function buildChipChartOption(
   config: ChipChartOptionConfig = {}
 ): EChartsOption {
   const { prices, amounts, totalChips, avgCost, close, benefitRatio, range90 } = chip;
-  const { priceRange, grid } = config;
+  const { priceRange, grid, barColors = DEFAULT_BAR_COLORS } = config;
 
   const maxAmount = amounts.length > 0 ? Math.max(...amounts) : 0;
 
@@ -84,7 +100,11 @@ export function buildChipChartOption(
     top: 0,
     // 标题与获利副标题统一 14px（与右侧统计栏字号观感对齐）
     textStyle: { fontSize: 14 },
-    subtextStyle: { fontSize: 14, color: benefitRatio >= 0.5 ? '#ef5350' : '#26a69a' },
+    // 获利过半标红、未过半标绿：与 K 线涨跌同一色源
+    subtextStyle: {
+      fontSize: 14,
+      color: benefitRatio >= 0.5 ? CHART_RISE_COLOR : CHART_FALL_COLOR,
+    },
   };
 
   const shareOf = (amount: number) => (totalChips === 0 ? 0 : (amount / totalChips) * 100);
@@ -166,7 +186,7 @@ export function buildChipChartOption(
           },
           data: prices.map((price, index) => ({
             value: [price, amounts[index] ?? 0],
-            itemStyle: { color: price <= close ? PROFIT_COLOR : TRAPPED_COLOR },
+            itemStyle: { color: price <= close ? barColors.profit : barColors.trapped },
           })),
           // 90% 成本区间：中性灰带，避免与蓝色套牢筹码混淆
           markArea: {
@@ -229,7 +249,7 @@ export function buildChipChartOption(
         barCategoryGap: '0%',
         itemStyle: {
           color: (params: { dataIndex: number }) =>
-            params.dataIndex <= breakIndex ? PROFIT_COLOR : TRAPPED_COLOR,
+            params.dataIndex <= breakIndex ? barColors.profit : barColors.trapped,
         },
         // 90% 成本区间用横向色带标出
         markArea: {

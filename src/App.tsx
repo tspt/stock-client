@@ -9,6 +9,7 @@ import zhCN from 'antd/locale/zh_CN';
 import { useTheme } from '@/hooks/useTheme';
 import { useStockStore } from '@/stores/stockStore';
 import { initNotificationNavigation } from '@/services/alerts';
+import { ChartColorModeSwitch } from '@/components/common/ChartColorModeSwitch/ChartColorModeSwitch';
 import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { ErrorBoundary } from '@/components/ErrorBoundary/ErrorBoundary';
 import { logger } from '@/utils/business/logger';
@@ -165,7 +166,11 @@ function AppContent() {
               <Header className={styles.header}>
                 <div className={styles.headerContent}>
                   <h1 className={styles.title}>破忒头工具</h1>
-                  <ThemeToggle />
+                  {/* 右上角全局开关：K 线抽屉的低调配色 + 主题切换 */}
+                  <div className={styles.headerActions}>
+                    <ChartColorModeSwitch />
+                    <ThemeToggle />
+                  </div>
                 </div>
               </Header>
               <Content className={styles.content}>

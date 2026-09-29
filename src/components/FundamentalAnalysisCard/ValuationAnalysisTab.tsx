@@ -5,6 +5,7 @@
 import { Descriptions, Progress, Empty } from 'antd';
 import type { FundamentalAnalysis } from '@/types/stock';
 import styles from './FundamentalAnalysisCard.module.css';
+import { TEXT_RISE_COLOR, TEXT_FALL_COLOR } from '@/utils/config/chartColors';
 
 interface ValuationAnalysisTabProps {
   data: FundamentalAnalysis;
@@ -19,9 +20,9 @@ export function ValuationAnalysisTab({ data }: ValuationAnalysisTabProps) {
 
   const getPercentileColor = (percentile?: number) => {
     if (percentile === undefined) return '#d9d9d9';
-    if (percentile < 30) return '#52c41a'; // 低估 - 绿色
+    if (percentile < 30) return TEXT_FALL_COLOR; // 低估 - 绿色
     if (percentile < 70) return '#faad14'; // 合理 - 橙色
-    return '#ff4d4f'; // 高估 - 红色
+    return TEXT_RISE_COLOR; // 高估 - 红色
   };
 
   const getPercentileText = (percentile?: number) => {

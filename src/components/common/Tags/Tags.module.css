@@ -123,13 +123,13 @@
   font-weight: 400;
   white-space: nowrap;
   box-sizing: border-box;
-  background: #fff1f0 !important;
-  color: #cf1322 !important;
+  background: var(--app-rise-tint) !important;
+  color: var(--app-strong-rise-color) !important;
 }
 
 [data-theme='dark'] .tagRed {
-  background: #2a1215 !important;
-  color: #ff4d4f !important;
+  background: var(--app-rise-tint-dark) !important;
+  color: var(--app-rise-color) !important;
 }
 
 /* 3. 频次与热度标签 */
@@ -213,13 +213,13 @@
   line-height: 18px;
   font-size: 11px;
   padding: 0 5px;
-  background: #f6ffed !important;
-  color: #389e0d !important;
+  background: var(--app-fall-tint) !important;
+  color: var(--app-strong-fall-color) !important;
 }
 
 [data-theme='dark'] .statusPositive {
-  background: #162312 !important;
-  color: #73d13d !important;
+  background: var(--app-fall-tint-dark) !important;
+  color: var(--app-fall-soft-color) !important;
 }
 
 /* 否定 / 未达标 / 否 */

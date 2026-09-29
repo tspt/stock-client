@@ -7,6 +7,7 @@ import React, { useState, useMemo } from 'react';
 import { Drawer, Tabs, Table, Tag, Progress, Statistic, Button } from 'antd';
 import type { FilterSkippedItem } from '@/types/opportunityFilter';
 import styles from './FilterDiagnosticsDrawer.module.css';
+import { TEXT_RISE_COLOR } from '@/utils/config/chartColors';
 
 const { TabPane } = Tabs;
 
@@ -148,7 +149,7 @@ export const FilterDiagnosticsDrawer: React.FC<FilterDiagnosticsDrawerProps> = (
                 <Progress
                   type="dashboard"
                   percent={Math.min(100, Math.round((totalSkipped / 100) * 100))}
-                  strokeColor="#ff4d4f"
+                  strokeColor={TEXT_RISE_COLOR}
                   format={() => `${totalSkipped}`}
                   width={60}
                 />

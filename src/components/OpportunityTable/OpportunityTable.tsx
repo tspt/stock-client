@@ -22,6 +22,12 @@ import {
 import { StockConceptTags, StockFeatureTag, StockStatusTag } from '@/components/common/Tags';
 import { createOpportunityColumnSorter } from '@/utils/sort/tableSort';
 import styles from './OpportunityTable.module.css';
+import {
+  FALL_SOFT_COLOR,
+  RISE_SOFT_COLOR,
+  STRONG_RISE_COLOR,
+  TEXT_FALL_COLOR,
+} from '@/utils/config/chartColors';
 
 interface OpportunityTableProps {
   data: StockOpportunityData[];
@@ -237,10 +243,10 @@ export const OpportunityTable = memo(function OpportunityTable({
 
         let color = '#666';
         let text = '观望';
-        if (signal.type === 'STRONG_BUY') { color = '#52c41a'; text = '🟢 强烈买入'; }
-        else if (signal.type === 'BUY') { color = '#73d13d'; text = '🟢 建议买入'; }
-        else if (signal.type === 'SELL') { color = '#ff7875'; text = '🔴 建议卖出'; }
-        else if (signal.type === 'STRONG_SELL') { color = '#f5222d'; text = '🔴 强烈卖出'; }
+        if (signal.type === 'STRONG_BUY') { color = TEXT_FALL_COLOR; text = '🟢 强烈买入'; }
+        else if (signal.type === 'BUY') { color = FALL_SOFT_COLOR; text = '🟢 建议买入'; }
+        else if (signal.type === 'SELL') { color = RISE_SOFT_COLOR; text = '🔴 建议卖出'; }
+        else if (signal.type === 'STRONG_SELL') { color = STRONG_RISE_COLOR; text = '🔴 强烈卖出'; }
 
         return (
           <div className={styles.tradingSignal}>

@@ -155,13 +155,13 @@
 
 .reasonItem {
   margin-bottom: 6px;
-  color: #52c41a;
+  color: var(--app-fall-color);
   line-height: 1.6;
 }
 
 .warningItem {
   margin-bottom: 6px;
-  color: #ff4d4f;
+  color: var(--app-rise-color);
   line-height: 1.6;
 }
 

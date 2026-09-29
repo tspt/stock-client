@@ -25,6 +25,7 @@ import {
   type WeeklyBacktestStats,
   type WeeklySetupGrade,
 } from '@/utils/analysis/weekly';
+import { STRONG_RISE_COLOR, STRONG_FALL_COLOR } from '@/utils/config/chartColors';
 
 const { Text } = Typography;
 
@@ -101,7 +102,7 @@ function pct(value: number, digits = 2): string {
 
 function returnColor(value: number): string {
   if (!Number.isFinite(value)) return '#595959';
-  return value > 0 ? '#cf1322' : value < 0 ? '#389e0d' : '#595959';
+  return value > 0 ? STRONG_RISE_COLOR : value < 0 ? STRONG_FALL_COLOR : '#595959';
 }
 
 function signedPct(value: number, digits = 2) {
@@ -159,7 +160,7 @@ function buildColumns(
         row.trades === 0 ? (
           <Text type="secondary">-</Text>
         ) : (
-          <strong style={{ color: v >= 50 ? '#cf1322' : '#595959' }}>{pct(v, 1)}</strong>
+          <strong style={{ color: v >= 50 ? STRONG_RISE_COLOR : '#595959' }}>{pct(v, 1)}</strong>
         ),
     },
     {

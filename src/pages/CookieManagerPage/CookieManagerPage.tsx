@@ -34,6 +34,7 @@ import type { ColumnsType } from 'antd/es/table';
 import CookiePoolManager from '@/utils/storage/cookiePoolManager';
 import type { CookieEntry, CookieOperationLog } from '@/types/cookie';
 import styles from './CookieManagerPage.module.css';
+import { TEXT_RISE_COLOR, TEXT_FALL_COLOR } from '@/utils/config/chartColors';
 
 export function CookieManagerPage() {
   const { message } = App.useApp();
@@ -384,9 +385,9 @@ export function CookieManagerPage() {
       width: 120,
       render: (_, record) => (
         <span>
-          <span style={{ color: '#52c41a' }}>{record.successCount}</span>
+          <span style={{ color: TEXT_FALL_COLOR }}>{record.successCount}</span>
           {' / '}
-          <span style={{ color: '#ff4d4f' }}>{record.failureCount}</span>
+          <span style={{ color: TEXT_RISE_COLOR }}>{record.failureCount}</span>
         </span>
       ),
     },
@@ -463,7 +464,7 @@ export function CookieManagerPage() {
               <Statistic
                 title="活跃数量"
                 value={stats.activeCount}
-                valueStyle={{ color: '#52c41a' }}
+                valueStyle={{ color: TEXT_FALL_COLOR }}
                 prefix={<CheckCircleOutlined />}
               />
             </Card>
@@ -474,7 +475,7 @@ export function CookieManagerPage() {
                 title="平均健康评分"
                 value={stats.avgHealthScore.toFixed(1)}
                 suffix="/ 100"
-                valueStyle={{ color: stats.avgHealthScore >= 80 ? '#52c41a' : '#faad14' }}
+                valueStyle={{ color: stats.avgHealthScore >= 80 ? TEXT_FALL_COLOR : '#faad14' }}
               />
             </Card>
           </Col>
@@ -484,7 +485,7 @@ export function CookieManagerPage() {
                 title="成功率"
                 value={(stats.successRate * 100).toFixed(1)}
                 suffix="%"
-                valueStyle={{ color: stats.successRate >= 0.8 ? '#52c41a' : '#ff4d4f' }}
+                valueStyle={{ color: stats.successRate >= 0.8 ? TEXT_FALL_COLOR : TEXT_RISE_COLOR }}
               />
             </Card>
           </Col>

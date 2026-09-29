@@ -48,6 +48,7 @@ import { getStorage } from '@/utils/storage/storage';
 import type { StockInfo } from '@/types/stock';
 import { logger } from '@/utils/business/logger';
 import styles from './DataManagerPage.module.css';
+import { TEXT_RISE_COLOR, TEXT_FALL_COLOR } from '@/utils/config/chartColors';
 
 const { Text } = Typography;
 
@@ -520,7 +521,7 @@ export function DataManagerPage() {
                 title="缓存状态"
                 value={stockListStatus?.isExpired ? '已过期' : '有效'}
                 valueStyle={{
-                  color: stockListStatus?.isExpired ? '#ff4d4f' : '#52c41a',
+                  color: stockListStatus?.isExpired ? TEXT_RISE_COLOR : TEXT_FALL_COLOR,
                 }}
               />
             </Col>

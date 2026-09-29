@@ -6,6 +6,7 @@ import { memo, useMemo } from 'react';
 import { Card, Divider, Typography } from 'antd';
 import type { EastMoneyIndexData } from '@/services/hot';
 import styles from './IndexCard.module.css';
+import { TEXT_RISE_COLOR, TEXT_FALL_COLOR } from '@/utils/config/chartColors';
 
 const { Text } = Typography;
 
@@ -15,7 +16,7 @@ interface IndexCardProps {
 
 export const IndexCard = memo(function IndexCard({ index }: IndexCardProps) {
   const isRise = useMemo(() => index.change >= 0, [index.change]);
-  const color = useMemo(() => (isRise ? '#ff4d4f' : '#52c41a'), [isRise]);
+  const color = useMemo(() => (isRise ? TEXT_RISE_COLOR : TEXT_FALL_COLOR), [isRise]);
   const riseClass = useMemo(() => (isRise ? styles.riseCard : styles.fallCard), [isRise]);
 
   // 格式化数据，避免重复计算

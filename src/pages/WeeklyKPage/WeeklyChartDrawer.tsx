@@ -34,6 +34,7 @@ import { ChipDistributionPanel } from '@/components/common/ChipDistributionPanel
 import { ChipStatsPanel } from '@/components/common/ChipStatsPanel/ChipStatsPanel';
 import { KlineDrawerShell } from '@/components/common/KlineDrawerShell/KlineDrawerShell';
 import { StockF10Panel } from '@/components/common/StockF10Panel/StockF10Panel';
+import { useDrawerChartColors } from '@/hooks/useDrawerChartColors';
 import { useKlineChipSync } from '@/hooks/useKlineChipSync';
 import { useRecordNavigation } from '@/hooks/useRecordNavigation';
 import { useTempListToggle } from '@/hooks/useTempListToggle';
@@ -77,6 +78,9 @@ export function WeeklyChartDrawer({
   /** 周线分析弹窗固定使用周线口径筹码 */
   const chipPeriod: ChipPeriod = 'week';
 
+  /** K 线 / 成交量柱 / 筹码图配色：与日K抽屉共用同一开关（抽屉右上角「低调配色」） */
+  const chartColors = useDrawerChartColors(isDark);
+
   /** ← / →（或底部按钮）在表格行之间切换：切换后 code / kline 变化会自动复位缩放、十字星与筹码 */
   const navigation = useRecordNavigation({
     enabled: open,
@@ -116,8 +120,9 @@ export function WeeklyChartDrawer({
       // 周线口径：tooltip 首行与 K 线 series 名都用「周」，标题涨幅加粗
       periodLabel: '周',
       titleChgBold: true,
+      upDownColors: chartColors.upDown,
     });
-  }, [kline, indicators, priceRange, zoom, isDark, hoverIndex]);
+  }, [kline, indicators, priceRange, zoom, isDark, chartColors, hoverIndex]);
 
   const chipOption = useMemo(
     () =>
@@ -128,9 +133,10 @@ export function WeeklyChartDrawer({
             // 绘图区上沿与高度都与左侧主图完全一致；
             // 横向留白由筹码面板按「图形靠左、数字靠右」自行决定
             grid: { top: MAIN_GRID_TOP_PX, height: MAIN_GRID_HEIGHT_PX },
+            barColors: chartColors.chip,
           })
         : null,
-    [chip, priceRange]
+    [chip, priceRange, chartColors]
   );
 
   return (

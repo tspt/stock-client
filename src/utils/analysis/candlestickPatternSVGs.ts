@@ -3,6 +3,8 @@
  * 用于在 tooltip 和标记中展示形态示意图
  */
 
+import { CHART_FALL_COLOR, CHART_RISE_COLOR } from '@/utils/config/chartColors';
+
 /** 形态类型 */
 export type CandlestickPatternType =
   | 'hammer'
@@ -44,26 +46,29 @@ export const PATTERN_NAMES: Record<CandlestickPatternType, string> = {
   gravestoneDoji: '墓碑十字星',
 };
 
-/** 形态颜色 */
+/**
+ * 形态颜色：色值统一取自全项目色源，改红绿只需改 `config/chartColors.ts`。
+ * 注意语义——看涨形态用阴线绿、看跌形态用阳线红，是「信号颜色」而非涨跌颜色，勿想当然对调。
+ */
 export const PATTERN_COLORS: Record<CandlestickPatternType, { bullish: string; bearish: string }> =
   {
-    hammer: { bullish: '#26a69a', bearish: '#26a69a' }, // 底部信号用阳线颜色
-    shootingStar: { bullish: '#ef5350', bearish: '#ef5350' }, // 顶部信号用阴线颜色
+    hammer: { bullish: CHART_FALL_COLOR, bearish: CHART_FALL_COLOR }, // 底部信号用阳线颜色
+    shootingStar: { bullish: CHART_RISE_COLOR, bearish: CHART_RISE_COLOR }, // 顶部信号用阴线颜色
     doji: { bullish: '#888', bearish: '#888' },
-    engulfingBullish: { bullish: '#26a69a', bearish: '#26a69a' },
-    engulfingBearish: { bullish: '#ef5350', bearish: '#ef5350' },
-    haramiBullish: { bullish: '#26a69a', bearish: '#26a69a' },
-    haramiBearish: { bullish: '#ef5350', bearish: '#ef5350' },
-    morningStar: { bullish: '#26a69a', bearish: '#26a69a' },
-    eveningStar: { bullish: '#ef5350', bearish: '#ef5350' },
-    darkCloudCover: { bullish: '#ef5350', bearish: '#ef5350' },
-    piercing: { bullish: '#26a69a', bearish: '#26a69a' },
-    threeBlackCrows: { bullish: '#ef5350', bearish: '#ef5350' },
-    threeWhiteSoldiers: { bullish: '#26a69a', bearish: '#26a69a' },
-    invertedHammer: { bullish: '#26a69a', bearish: '#26a69a' }, // 底部信号
-    hangingMan: { bullish: '#ef5350', bearish: '#ef5350' }, // 顶部信号
-    dragonflyDoji: { bullish: '#26a69a', bearish: '#26a69a' }, // 强烈看涨
-    gravestoneDoji: { bullish: '#ef5350', bearish: '#ef5350' }, // 强烈看跌
+    engulfingBullish: { bullish: CHART_FALL_COLOR, bearish: CHART_FALL_COLOR },
+    engulfingBearish: { bullish: CHART_RISE_COLOR, bearish: CHART_RISE_COLOR },
+    haramiBullish: { bullish: CHART_FALL_COLOR, bearish: CHART_FALL_COLOR },
+    haramiBearish: { bullish: CHART_RISE_COLOR, bearish: CHART_RISE_COLOR },
+    morningStar: { bullish: CHART_FALL_COLOR, bearish: CHART_FALL_COLOR },
+    eveningStar: { bullish: CHART_RISE_COLOR, bearish: CHART_RISE_COLOR },
+    darkCloudCover: { bullish: CHART_RISE_COLOR, bearish: CHART_RISE_COLOR },
+    piercing: { bullish: CHART_FALL_COLOR, bearish: CHART_FALL_COLOR },
+    threeBlackCrows: { bullish: CHART_RISE_COLOR, bearish: CHART_RISE_COLOR },
+    threeWhiteSoldiers: { bullish: CHART_FALL_COLOR, bearish: CHART_FALL_COLOR },
+    invertedHammer: { bullish: CHART_FALL_COLOR, bearish: CHART_FALL_COLOR }, // 底部信号
+    hangingMan: { bullish: CHART_RISE_COLOR, bearish: CHART_RISE_COLOR }, // 顶部信号
+    dragonflyDoji: { bullish: CHART_FALL_COLOR, bearish: CHART_FALL_COLOR }, // 强烈看涨
+    gravestoneDoji: { bullish: CHART_RISE_COLOR, bearish: CHART_RISE_COLOR }, // 强烈看跌
   };
 
 /** SVG 尺寸配置 */
@@ -81,11 +86,11 @@ export function getHammerSVG(): string {
         .pattern-label { font-size: 9px; fill: #666; text-anchor: middle; }
       </style>
       <!-- 下影线长 -->
-      <line x1="30" y1="6" x2="30" y2="34" stroke="#26a69a" stroke-width="1.5"/>
+      <line x1="30" y1="6" x2="30" y2="34" stroke="${CHART_FALL_COLOR}" stroke-width="1.5"/>
       <!-- 实体小 -->
-      <rect x="25" y="24" width="10" height="6" fill="#26a69a" stroke="#26a69a" stroke-width="1"/>
+      <rect x="25" y="24" width="10" height="6" fill="${CHART_FALL_COLOR}" stroke="${CHART_FALL_COLOR}" stroke-width="1"/>
       <!-- 上影线短 -->
-      <line x1="30" y1="20" x2="30" y2="24" stroke="#26a69a" stroke-width="1.5"/>
+      <line x1="30" y1="20" x2="30" y2="24" stroke="${CHART_FALL_COLOR}" stroke-width="1.5"/>
       <!-- 标签 -->
       <text x="30" y="${SVG_HEIGHT - 2}" class="pattern-label">锤头</text>
     </svg>
@@ -103,11 +108,11 @@ export function getShootingStarSVG(): string {
         .pattern-label { font-size: 9px; fill: #666; text-anchor: middle; }
       </style>
       <!-- 上影线长 -->
-      <line x1="30" y1="6" x2="30" y2="16" stroke="#ef5350" stroke-width="1.5"/>
+      <line x1="30" y1="6" x2="30" y2="16" stroke="${CHART_RISE_COLOR}" stroke-width="1.5"/>
       <!-- 实体小 -->
-      <rect x="25" y="16" width="10" height="6" fill="#ef5350" stroke="#ef5350" stroke-width="1"/>
+      <rect x="25" y="16" width="10" height="6" fill="${CHART_RISE_COLOR}" stroke="${CHART_RISE_COLOR}" stroke-width="1"/>
       <!-- 下影线短 -->
-      <line x1="30" y1="22" x2="30" y2="34" stroke="#ef5350" stroke-width="1.5"/>
+      <line x1="30" y1="22" x2="30" y2="34" stroke="${CHART_RISE_COLOR}" stroke-width="1.5"/>
       <!-- 标签 -->
       <text x="30" y="${SVG_HEIGHT - 2}" class="pattern-label">射击</text>
     </svg>
@@ -145,11 +150,11 @@ export function getEngulfingBullishSVG(): string {
         .pattern-label { font-size: 8px; fill: #666; text-anchor: middle; }
       </style>
       <!-- 第一根阴线 -->
-      <line x1="18" y1="12" x2="18" y2="28" stroke="#ef5350" stroke-width="1"/>
-      <rect x="14" y="14" width="8" height="10" fill="none" stroke="#ef5350" stroke-width="1"/>
+      <line x1="18" y1="12" x2="18" y2="28" stroke="${CHART_RISE_COLOR}" stroke-width="1"/>
+      <rect x="14" y="14" width="8" height="10" fill="none" stroke="${CHART_RISE_COLOR}" stroke-width="1"/>
       <!-- 第二根阳线 -->
-      <line x1="36" y1="10" x2="36" y2="30" stroke="#26a69a" stroke-width="1"/>
-      <rect x="28" y="16" width="16" height="10" fill="#26a69a" stroke="#26a69a" stroke-width="1"/>
+      <line x1="36" y1="10" x2="36" y2="30" stroke="${CHART_FALL_COLOR}" stroke-width="1"/>
+      <rect x="28" y="16" width="16" height="10" fill="${CHART_FALL_COLOR}" stroke="${CHART_FALL_COLOR}" stroke-width="1"/>
       <!-- 标签 -->
       <text x="26" y="${SVG_HEIGHT - 2}" class="pattern-label">阳包阴</text>
     </svg>
@@ -166,11 +171,11 @@ export function getEngulfingBearishSVG(): string {
         .pattern-label { font-size: 8px; fill: #666; text-anchor: middle; }
       </style>
       <!-- 第一根阳线 -->
-      <line x1="18" y1="12" x2="18" y2="28" stroke="#26a69a" stroke-width="1"/>
-      <rect x="14" y="14" width="8" height="10" fill="#26a69a" stroke="#26a69a" stroke-width="1"/>
+      <line x1="18" y1="12" x2="18" y2="28" stroke="${CHART_FALL_COLOR}" stroke-width="1"/>
+      <rect x="14" y="14" width="8" height="10" fill="${CHART_FALL_COLOR}" stroke="${CHART_FALL_COLOR}" stroke-width="1"/>
       <!-- 第二根阴线 -->
-      <line x1="36" y1="10" x2="36" y2="30" stroke="#ef5350" stroke-width="1"/>
-      <rect x="28" y="16" width="16" height="10" fill="#ef5350" stroke="#ef5350" stroke-width="1"/>
+      <line x1="36" y1="10" x2="36" y2="30" stroke="${CHART_RISE_COLOR}" stroke-width="1"/>
+      <rect x="28" y="16" width="16" height="10" fill="${CHART_RISE_COLOR}" stroke="${CHART_RISE_COLOR}" stroke-width="1"/>
       <!-- 标签 -->
       <text x="26" y="${SVG_HEIGHT - 2}" class="pattern-label">阴包阳</text>
     </svg>
@@ -187,11 +192,11 @@ export function getHaramiBullishSVG(): string {
         .pattern-label { font-size: 8px; fill: #666; text-anchor: middle; }
       </style>
       <!-- 第一根阳线 -->
-      <line x1="18" y1="10" x2="18" y2="30" stroke="#26a69a" stroke-width="1"/>
-      <rect x="12" y="14" width="12" height="12" fill="#26a69a" stroke="#26a69a" stroke-width="1"/>
+      <line x1="18" y1="10" x2="18" y2="30" stroke="${CHART_FALL_COLOR}" stroke-width="1"/>
+      <rect x="12" y="14" width="12" height="12" fill="${CHART_FALL_COLOR}" stroke="${CHART_FALL_COLOR}" stroke-width="1"/>
       <!-- 第二根阴线（小） -->
-      <line x1="36" y1="18" x2="36" y2="22" stroke="#ef5350" stroke-width="1"/>
-      <rect x="32" y="18" width="8" height="4" fill="#ef5350" stroke="#ef5350" stroke-width="1"/>
+      <line x1="36" y1="18" x2="36" y2="22" stroke="${CHART_RISE_COLOR}" stroke-width="1"/>
+      <rect x="32" y="18" width="8" height="4" fill="${CHART_RISE_COLOR}" stroke="${CHART_RISE_COLOR}" stroke-width="1"/>
       <!-- 标签 -->
       <text x="26" y="${SVG_HEIGHT - 2}" class="pattern-label">阳孕阴</text>
     </svg>
@@ -208,11 +213,11 @@ export function getHaramiBearishSVG(): string {
         .pattern-label { font-size: 8px; fill: #666; text-anchor: middle; }
       </style>
       <!-- 第一根阴线 -->
-      <line x1="18" y1="10" x2="18" y2="30" stroke="#ef5350" stroke-width="1"/>
-      <rect x="12" y="14" width="12" height="12" fill="#ef5350" stroke="#ef5350" stroke-width="1"/>
+      <line x1="18" y1="10" x2="18" y2="30" stroke="${CHART_RISE_COLOR}" stroke-width="1"/>
+      <rect x="12" y="14" width="12" height="12" fill="${CHART_RISE_COLOR}" stroke="${CHART_RISE_COLOR}" stroke-width="1"/>
       <!-- 第二根阳线（小） -->
-      <line x1="36" y1="18" x2="36" y2="22" stroke="#26a69a" stroke-width="1"/>
-      <rect x="32" y="18" width="8" height="4" fill="#26a69a" stroke="#26a69a" stroke-width="1"/>
+      <line x1="36" y1="18" x2="36" y2="22" stroke="${CHART_FALL_COLOR}" stroke-width="1"/>
+      <rect x="32" y="18" width="8" height="4" fill="${CHART_FALL_COLOR}" stroke="${CHART_FALL_COLOR}" stroke-width="1"/>
       <!-- 标签 -->
       <text x="26" y="${SVG_HEIGHT - 2}" class="pattern-label">阴孕阳</text>
     </svg>
@@ -230,14 +235,14 @@ export function getMorningStarSVG(): string {
         .pattern-label { font-size: 8px; fill: #666; text-anchor: middle; }
       </style>
       <!-- 第一根大阴 -->
-      <line x1="12" y1="8" x2="12" y2="32" stroke="#ef5350" stroke-width="1"/>
-      <rect x="8" y="10" width="8" height="18" fill="#ef5350" stroke="#ef5350" stroke-width="1"/>
+      <line x1="12" y1="8" x2="12" y2="32" stroke="${CHART_RISE_COLOR}" stroke-width="1"/>
+      <rect x="8" y="10" width="8" height="18" fill="${CHART_RISE_COLOR}" stroke="${CHART_RISE_COLOR}" stroke-width="1"/>
       <!-- 第二根小星 -->
       <line x1="28" y1="16" x2="28" y2="24" stroke="#888" stroke-width="1"/>
       <rect x="25" y="18" width="6" height="4" fill="#888" stroke="#888" stroke-width="1"/>
       <!-- 第三根大阳 -->
-      <line x1="44" y1="10" x2="44" y2="30" stroke="#26a69a" stroke-width="1"/>
-      <rect x="40" y="14" width="8" height="12" fill="#26a69a" stroke="#26a69a" stroke-width="1"/>
+      <line x1="44" y1="10" x2="44" y2="30" stroke="${CHART_FALL_COLOR}" stroke-width="1"/>
+      <rect x="40" y="14" width="8" height="12" fill="${CHART_FALL_COLOR}" stroke="${CHART_FALL_COLOR}" stroke-width="1"/>
       <!-- 标签 -->
       <text x="28" y="${SVG_HEIGHT - 2}" class="pattern-label">早晨</text>
     </svg>
@@ -254,14 +259,14 @@ export function getEveningStarSVG(): string {
         .pattern-label { font-size: 8px; fill: #666; text-anchor: middle; }
       </style>
       <!-- 第一根大阳 -->
-      <line x1="12" y1="8" x2="12" y2="32" stroke="#26a69a" stroke-width="1"/>
-      <rect x="8" y="10" width="8" height="18" fill="#26a69a" stroke="#26a69a" stroke-width="1"/>
+      <line x1="12" y1="8" x2="12" y2="32" stroke="${CHART_FALL_COLOR}" stroke-width="1"/>
+      <rect x="8" y="10" width="8" height="18" fill="${CHART_FALL_COLOR}" stroke="${CHART_FALL_COLOR}" stroke-width="1"/>
       <!-- 第二根小星 -->
       <line x1="28" y1="16" x2="28" y2="24" stroke="#888" stroke-width="1"/>
       <rect x="25" y="18" width="6" height="4" fill="#888" stroke="#888" stroke-width="1"/>
       <!-- 第三根大阴 -->
-      <line x1="44" y1="10" x2="44" y2="30" stroke="#ef5350" stroke-width="1"/>
-      <rect x="40" y="14" width="8" height="12" fill="#ef5350" stroke="#ef5350" stroke-width="1"/>
+      <line x1="44" y1="10" x2="44" y2="30" stroke="${CHART_RISE_COLOR}" stroke-width="1"/>
+      <rect x="40" y="14" width="8" height="12" fill="${CHART_RISE_COLOR}" stroke="${CHART_RISE_COLOR}" stroke-width="1"/>
       <!-- 标签 -->
       <text x="28" y="${SVG_HEIGHT - 2}" class="pattern-label">黄昏</text>
     </svg>
@@ -279,11 +284,11 @@ export function getDarkCloudCoverSVG(): string {
         .pattern-label { font-size: 8px; fill: #666; text-anchor: middle; }
       </style>
       <!-- 第一根大阳 -->
-      <line x1="14" y1="12" x2="14" y2="28" stroke="#26a69a" stroke-width="1"/>
-      <rect x="10" y="14" width="8" height="10" fill="#26a69a" stroke="#26a69a" stroke-width="1"/>
+      <line x1="14" y1="12" x2="14" y2="28" stroke="${CHART_FALL_COLOR}" stroke-width="1"/>
+      <rect x="10" y="14" width="8" height="10" fill="${CHART_FALL_COLOR}" stroke="${CHART_FALL_COLOR}" stroke-width="1"/>
       <!-- 第二根阴线（开在阳线上方） -->
-      <line x1="40" y1="8" x2="40" y2="32" stroke="#ef5350" stroke-width="1"/>
-      <rect x="36" y="14" width="8" height="14" fill="#ef5350" stroke="#ef5350" stroke-width="1"/>
+      <line x1="40" y1="8" x2="40" y2="32" stroke="${CHART_RISE_COLOR}" stroke-width="1"/>
+      <rect x="36" y="14" width="8" height="14" fill="${CHART_RISE_COLOR}" stroke="${CHART_RISE_COLOR}" stroke-width="1"/>
       <!-- 虚线表示乌云 -->
       <line x1="14" y1="14" x2="40" y2="14" stroke="#666" stroke-width="1" stroke-dasharray="2,2"/>
       <!-- 标签 -->
@@ -303,11 +308,11 @@ export function getPiercingSVG(): string {
         .pattern-label { font-size: 8px; fill: #666; text-anchor: middle; }
       </style>
       <!-- 第一根大阴 -->
-      <line x1="14" y1="12" x2="14" y2="28" stroke="#ef5350" stroke-width="1"/>
-      <rect x="10" y="14" width="8" height="10" fill="#ef5350" stroke="#ef5350" stroke-width="1"/>
+      <line x1="14" y1="12" x2="14" y2="28" stroke="${CHART_RISE_COLOR}" stroke-width="1"/>
+      <rect x="10" y="14" width="8" height="10" fill="${CHART_RISE_COLOR}" stroke="${CHART_RISE_COLOR}" stroke-width="1"/>
       <!-- 第二根阳线（开在阴线下方） -->
-      <line x1="40" y1="16" x2="40" y2="26" stroke="#26a69a" stroke-width="1"/>
-      <rect x="36" y="16" width="8" height="8" fill="#26a69a" stroke="#26a69a" stroke-width="1"/>
+      <line x1="40" y1="16" x2="40" y2="26" stroke="${CHART_FALL_COLOR}" stroke-width="1"/>
+      <rect x="36" y="16" width="8" height="8" fill="${CHART_FALL_COLOR}" stroke="${CHART_FALL_COLOR}" stroke-width="1"/>
       <!-- 虚线表示中点 -->
       <line x1="14" y1="19" x2="40" y2="19" stroke="#666" stroke-width="1" stroke-dasharray="2,2"/>
       <!-- 标签 -->
@@ -327,14 +332,14 @@ export function getThreeBlackCrowsSVG(): string {
         .pattern-label { font-size: 8px; fill: #666; text-anchor: middle; }
       </style>
       <!-- 第一根阴 -->
-      <line x1="12" y1="10" x2="12" y2="24" stroke="#ef5350" stroke-width="1"/>
-      <rect x="8" y="12" width="8" height="8" fill="#ef5350" stroke="#ef5350" stroke-width="1"/>
+      <line x1="12" y1="10" x2="12" y2="24" stroke="${CHART_RISE_COLOR}" stroke-width="1"/>
+      <rect x="8" y="12" width="8" height="8" fill="${CHART_RISE_COLOR}" stroke="${CHART_RISE_COLOR}" stroke-width="1"/>
       <!-- 第二根阴 -->
-      <line x1="28" y1="14" x2="28" y2="28" stroke="#ef5350" stroke-width="1"/>
-      <rect x="24" y="16" width="8" height="8" fill="#ef5350" stroke="#ef5350" stroke-width="1"/>
+      <line x1="28" y1="14" x2="28" y2="28" stroke="${CHART_RISE_COLOR}" stroke-width="1"/>
+      <rect x="24" y="16" width="8" height="8" fill="${CHART_RISE_COLOR}" stroke="${CHART_RISE_COLOR}" stroke-width="1"/>
       <!-- 第三根阴 -->
-      <line x1="44" y1="18" x2="44" y2="32" stroke="#ef5350" stroke-width="1"/>
-      <rect x="40" y="20" width="8" height="8" fill="#ef5350" stroke="#ef5350" stroke-width="1"/>
+      <line x1="44" y1="18" x2="44" y2="32" stroke="${CHART_RISE_COLOR}" stroke-width="1"/>
+      <rect x="40" y="20" width="8" height="8" fill="${CHART_RISE_COLOR}" stroke="${CHART_RISE_COLOR}" stroke-width="1"/>
       <!-- 下降趋势线 -->
       <line x1="8" y1="12" x2="44" y2="20" stroke="#666" stroke-width="1" stroke-dasharray="2,2"/>
       <!-- 标签 -->
@@ -354,14 +359,14 @@ export function getThreeWhiteSoldiersSVG(): string {
         .pattern-label { font-size: 8px; fill: #666; text-anchor: middle; }
       </style>
       <!-- 第一根阳 -->
-      <line x1="12" y1="14" x2="12" y2="30" stroke="#26a69a" stroke-width="1"/>
-      <rect x="8" y="16" width="8" height="10" fill="#26a69a" stroke="#26a69a" stroke-width="1"/>
+      <line x1="12" y1="14" x2="12" y2="30" stroke="${CHART_FALL_COLOR}" stroke-width="1"/>
+      <rect x="8" y="16" width="8" height="10" fill="${CHART_FALL_COLOR}" stroke="${CHART_FALL_COLOR}" stroke-width="1"/>
       <!-- 第二根阳 -->
-      <line x1="28" y1="10" x2="28" y2="26" stroke="#26a69a" stroke-width="1"/>
-      <rect x="24" y="12" width="8" height="10" fill="#26a69a" stroke="#26a69a" stroke-width="1"/>
+      <line x1="28" y1="10" x2="28" y2="26" stroke="${CHART_FALL_COLOR}" stroke-width="1"/>
+      <rect x="24" y="12" width="8" height="10" fill="${CHART_FALL_COLOR}" stroke="${CHART_FALL_COLOR}" stroke-width="1"/>
       <!-- 第三根阳 -->
-      <line x1="44" y1="6" x2="44" y2="22" stroke="#26a69a" stroke-width="1"/>
-      <rect x="40" y="8" width="8" height="10" fill="#26a69a" stroke="#26a69a" stroke-width="1"/>
+      <line x1="44" y1="6" x2="44" y2="22" stroke="${CHART_FALL_COLOR}" stroke-width="1"/>
+      <rect x="40" y="8" width="8" height="10" fill="${CHART_FALL_COLOR}" stroke="${CHART_FALL_COLOR}" stroke-width="1"/>
       <!-- 上升趋势线 -->
       <line x1="8" y1="16" x2="44" y2="8" stroke="#666" stroke-width="1" stroke-dasharray="2,2"/>
       <!-- 标签 -->
@@ -381,11 +386,11 @@ export function getInvertedHammerSVG(): string {
         .pattern-label { font-size: 9px; fill: #666; text-anchor: middle; }
       </style>
       <!-- 上影线长 -->
-      <line x1="30" y1="6" x2="30" y2="16" stroke="#26a69a" stroke-width="1.5"/>
+      <line x1="30" y1="6" x2="30" y2="16" stroke="${CHART_FALL_COLOR}" stroke-width="1.5"/>
       <!-- 实体小 -->
-      <rect x="25" y="16" width="10" height="6" fill="#26a69a" stroke="#26a69a" stroke-width="1"/>
+      <rect x="25" y="16" width="10" height="6" fill="${CHART_FALL_COLOR}" stroke="${CHART_FALL_COLOR}" stroke-width="1"/>
       <!-- 下影线短 -->
-      <line x1="30" y1="22" x2="30" y2="34" stroke="#26a69a" stroke-width="1.5"/>
+      <line x1="30" y1="22" x2="30" y2="34" stroke="${CHART_FALL_COLOR}" stroke-width="1.5"/>
       <!-- 标签 -->
       <text x="30" y="${SVG_HEIGHT - 2}" class="pattern-label">倒锤</text>
     </svg>
@@ -403,11 +408,11 @@ export function getHangingManSVG(): string {
         .pattern-label { font-size: 9px; fill: #666; text-anchor: middle; }
       </style>
       <!-- 下影线长 -->
-      <line x1="30" y1="6" x2="30" y2="34" stroke="#ef5350" stroke-width="1.5"/>
+      <line x1="30" y1="6" x2="30" y2="34" stroke="${CHART_RISE_COLOR}" stroke-width="1.5"/>
       <!-- 实体小 -->
-      <rect x="25" y="24" width="10" height="6" fill="#ef5350" stroke="#ef5350" stroke-width="1"/>
+      <rect x="25" y="24" width="10" height="6" fill="${CHART_RISE_COLOR}" stroke="${CHART_RISE_COLOR}" stroke-width="1"/>
       <!-- 上影线短 -->
-      <line x1="30" y1="20" x2="30" y2="24" stroke="#ef5350" stroke-width="1.5"/>
+      <line x1="30" y1="20" x2="30" y2="24" stroke="${CHART_RISE_COLOR}" stroke-width="1.5"/>
       <!-- 标签 -->
       <text x="30" y="${SVG_HEIGHT - 2}" class="pattern-label">上吊</text>
     </svg>
@@ -425,9 +430,9 @@ export function getDragonflyDojiSVG(): string {
         .pattern-label { font-size: 9px; fill: #666; text-anchor: middle; }
       </style>
       <!-- 长下影线 -->
-      <line x1="30" y1="20" x2="30" y2="34" stroke="#26a69a" stroke-width="1.5"/>
+      <line x1="30" y1="20" x2="30" y2="34" stroke="${CHART_FALL_COLOR}" stroke-width="1.5"/>
       <!-- 十字（开=收=高） -->
-      <line x1="20" y1="20" x2="40" y2="20" stroke="#26a69a" stroke-width="2"/>
+      <line x1="20" y1="20" x2="40" y2="20" stroke="${CHART_FALL_COLOR}" stroke-width="2"/>
       <!-- 标签 -->
       <text x="30" y="${SVG_HEIGHT - 2}" class="pattern-label">蜻蜓</text>
     </svg>
@@ -445,9 +450,9 @@ export function getGravestoneDojiSVG(): string {
         .pattern-label { font-size: 9px; fill: #666; text-anchor: middle; }
       </style>
       <!-- 长上影线 -->
-      <line x1="30" y1="6" x2="30" y2="20" stroke="#ef5350" stroke-width="1.5"/>
+      <line x1="30" y1="6" x2="30" y2="20" stroke="${CHART_RISE_COLOR}" stroke-width="1.5"/>
       <!-- 十字（开=收=低） -->
-      <line x1="20" y1="20" x2="40" y2="20" stroke="#ef5350" stroke-width="2"/>
+      <line x1="20" y1="20" x2="40" y2="20" stroke="${CHART_RISE_COLOR}" stroke-width="2"/>
       <!-- 标签 -->
       <text x="30" y="${SVG_HEIGHT - 2}" class="pattern-label">墓碑</text>
     </svg>

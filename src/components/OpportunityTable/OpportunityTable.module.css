@@ -59,20 +59,20 @@
 }
 
 .positiveValue {
-  color: #ff4d4f;
+  color: var(--app-rise-color);
 }
 
 .negativeValue {
-  color: #52c41a;
+  color: var(--app-fall-color);
 }
 
 .errorText {
-  color: #ff4d4f;
+  color: var(--app-rise-color);
   font-size: 12px;
 }
 
 .consolidationYes {
-  color: #52c41a;
+  color: var(--app-fall-color);
   font-weight: 500;
 }
 

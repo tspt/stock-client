@@ -8,6 +8,7 @@
 
 import { Typography } from 'antd';
 import type { ChipDistribution } from '@/types/chipDistribution';
+import { CHART_FALL_COLOR, CHART_RISE_COLOR } from '@/utils/config/chartColors';
 import { formatChipConcentration } from '@/utils/format/format';
 import { CHIP_STATS_WIDTH, MAIN_GRID_TOP_PX } from '@/utils/config/stockDrawerLayout';
 import styles from './ChipStatsPanel.module.css';
@@ -58,7 +59,7 @@ export function ChipStatsPanel({ chip, loading }: ChipStatsPanelProps) {
           <ChipStatItem
             label="获利比例"
             value={`${(chip.benefitRatio * 100).toFixed(1)}%`}
-            valueColor={chip.benefitRatio >= 0.5 ? '#ef5350' : '#26a69a'}
+            valueColor={chip.benefitRatio >= 0.5 ? CHART_RISE_COLOR : CHART_FALL_COLOR}
           />
           <ChipStatItem label="平均成本" value={chip.avgCost.toFixed(2)} />
           <ChipStatItem

@@ -108,6 +108,7 @@ import type { NumberRange } from '@/types/opportunityFilter';
 import { WeeklyChartDrawer } from './WeeklyChartDrawer';
 import { WeeklyBacktestDrawer } from './WeeklyBacktestDrawer';
 import styles from './WeeklyKPage.module.css';
+import { STRONG_RISE_COLOR, STRONG_FALL_COLOR } from '@/utils/config/chartColors';
 
 const { Content } = Layout;
 const { Text } = Typography;
@@ -140,7 +141,7 @@ function fixed(value: number | undefined, digits = 2): string {
 
 function percentNode(value: number | undefined, digits = 2) {
   if (value === undefined || !Number.isFinite(value)) return <Text type="secondary">-</Text>;
-  const color = value > 0 ? '#cf1322' : value < 0 ? '#389e0d' : '#595959';
+  const color = value > 0 ? STRONG_RISE_COLOR : value < 0 ? STRONG_FALL_COLOR : '#595959';
   return <span style={{ color }}>{value.toFixed(digits)}%</span>;
 }
 
@@ -1325,7 +1326,7 @@ export function WeeklyKPage() {
         width: 84,
         defaultSortOrder: 'descend',
         sorter: (a, b) => a.score - b.score,
-        render: (v: number) => <strong style={{ color: v >= 60 ? '#cf1322' : '#595959' }}>{v}</strong>,
+        render: (v: number) => <strong style={{ color: v >= 60 ? STRONG_RISE_COLOR : '#595959' }}>{v}</strong>,
       },
       {
         title: (
@@ -1390,7 +1391,7 @@ export function WeeklyKPage() {
             dailyAboveMa20: row.dailyAboveMa20,
           });
           return (
-            <span style={{ color: passed === 2 ? '#cf1322' : '#595959' }}>
+            <span style={{ color: passed === 2 ? STRONG_RISE_COLOR : '#595959' }}>
               {passed}/{total}
               {row.dailyAboveMa20 === undefined ? '*' : ''}
             </span>

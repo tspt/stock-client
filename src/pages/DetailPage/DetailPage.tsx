@@ -24,6 +24,7 @@ import {
 import type { KLinePeriod } from '@/types/stock';
 import { DETAIL_KLINE_PERIOD_STORAGE_KEY } from '@/utils/config/constants';
 import styles from './DetailPage.module.css';
+import { TEXT_RISE_COLOR, TEXT_FALL_COLOR } from '@/utils/config/chartColors';
 
 const { Header, Content } = Layout;
 const { Option } = Select;
@@ -207,12 +208,12 @@ export function DetailPage() {
               <div className={styles.quoteInfo}>
                 <div className={styles.priceBlock}>
                   <span className={styles.currentPrice} style={{
-                    color: quote.changePercent >= 0 ? '#ff4d4f' : '#52c41a',
+                    color: quote.changePercent >= 0 ? TEXT_RISE_COLOR : TEXT_FALL_COLOR,
                   }}>
                     {formatPrice(quote.price)}
                   </span>
                   <span className={styles.changeInfo} style={{
-                    color: quote.changePercent >= 0 ? '#ff4d4f' : '#52c41a',
+                    color: quote.changePercent >= 0 ? TEXT_RISE_COLOR : TEXT_FALL_COLOR,
                   }}>
                     {quote.change >= 0 ? '+' : ''}{quote.change.toFixed(2)} ({quote.changePercent >= 0 ? '+' : ''}{quote.changePercent.toFixed(2)}%)
                   </span>

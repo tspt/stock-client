@@ -6,12 +6,13 @@
  * 本文件不依赖 React，只返回字符串与颜色值，便于组件与测试复用。
  */
 
+import { CHART_FALL_COLOR, CHART_RISE_COLOR } from '@/utils/config/chartColors';
 import { formatPrice } from './format';
 
-/** 上涨配色（与 A 股习惯一致：红涨绿跌） */
-export const F10_COLOR_UP = '#ef5350';
+/** 上涨配色（与 A 股习惯一致：红涨绿跌）：色值统一取自全项目色源 */
+export const F10_COLOR_UP = CHART_RISE_COLOR;
 /** 下跌配色 */
-export const F10_COLOR_DOWN = '#26a69a';
+export const F10_COLOR_DOWN = CHART_FALL_COLOR;
 
 /** 通用缺失值占位 */
 const EMPTY = '-';

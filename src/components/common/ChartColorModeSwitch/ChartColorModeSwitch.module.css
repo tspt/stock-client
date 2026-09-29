@@ -1,0 +1,11 @@
+/* 「低调配色」开关：标签 + 小号 Switch，用于抽屉标题栏右上角 */
+.wrapper {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.label {
+  font-size: 12px;
+  white-space: nowrap;
+}

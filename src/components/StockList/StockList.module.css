@@ -124,11 +124,11 @@
 }
 
 .rise {
-  color: #ff4d4f;
+  color: var(--app-rise-color);
 }
 
 .fall {
-  color: #52c41a;
+  color: var(--app-fall-color);
 }
 
 .loading {

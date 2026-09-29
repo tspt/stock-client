@@ -49,9 +49,9 @@
 }
 
 .positiveValue {
-  color: #ff4d4f;
+  color: var(--app-rise-color);
 }
 
 .negativeValue {
-  color: #52c41a;
+  color: var(--app-fall-color);
 }

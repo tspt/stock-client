@@ -14,6 +14,7 @@ import {
 } from '@ant-design/icons';
 import type { AIAnalysisResult } from '@/types/stock';
 import styles from './AIAnalysisModal.module.css';
+import { TEXT_RISE_COLOR, TEXT_FALL_COLOR } from '@/utils/config/chartColors';
 
 interface AIAnalysisModalProps {
   visible: boolean;
@@ -38,9 +39,9 @@ export const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({
   const getTrendIcon = (direction: string) => {
     switch (direction) {
       case 'up':
-        return <RiseOutlined style={{ color: '#ff4d4f' }} />;
+        return <RiseOutlined style={{ color: TEXT_RISE_COLOR }} />;
       case 'down':
-        return <FallOutlined style={{ color: '#52c41a' }} />;
+        return <FallOutlined style={{ color: TEXT_FALL_COLOR }} />;
       default:
         return <MinusOutlined style={{ color: '#faad14' }} />;
     }
@@ -60,17 +61,17 @@ export const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({
 
   // 获取置信度颜色
   const getConfidenceColor = (confidence: number) => {
-    if (confidence >= 0.7) return '#52c41a';
+    if (confidence >= 0.7) return TEXT_FALL_COLOR;
     if (confidence >= 0.5) return '#faad14';
-    return '#ff4d4f';
+    return TEXT_RISE_COLOR;
   };
 
   // 获取评分颜色
   const getScoreColor = (score: number) => {
-    if (score >= 80) return '#52c41a';
+    if (score >= 80) return TEXT_FALL_COLOR;
     if (score >= 60) return '#1890ff';
     if (score >= 40) return '#faad14';
-    return '#ff4d4f';
+    return TEXT_RISE_COLOR;
   };
 
   return (
@@ -212,7 +213,7 @@ export const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({
               {analysis.recommendation.warnings.length > 0 && (
                 <div className={styles.warningsSection}>
                   <div className={styles.sectionTitle}>
-                    <WarningOutlined style={{ color: '#ff4d4f', marginRight: 4 }} />
+                    <WarningOutlined style={{ color: TEXT_RISE_COLOR, marginRight: 4 }} />
                     风险提示
                   </div>
                   <ul className={styles.warningList}>

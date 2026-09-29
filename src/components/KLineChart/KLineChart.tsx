@@ -7,6 +7,7 @@ import ReactECharts from 'echarts-for-react';
 import type { EChartsOption } from 'echarts';
 import type { KLineData, KLinePeriod } from '@/types/stock';
 import { calculateAllMA, calculateKDJ, calculateAllRSI } from '@/utils/analysis/indicators';
+import { CHART_FALL_COLOR, CHART_RISE_COLOR } from '@/utils/config/chartColors';
 import { formatVolume } from '@/utils/format/format';
 import { detectCandlestickPatternsInWindow, type CandlestickPatternResult } from '@/utils/analysis/candlestickPatterns';
 import { getMultiplePatternsSVG, type CandlestickPatternType } from '@/utils/analysis/candlestickPatternSVGs';
@@ -497,10 +498,10 @@ function buildKLineChartOption(data: KLineData[], period: KLinePeriod, patternsC
         type: 'candlestick',
         data: klineData,
         itemStyle: {
-          color: '#ef5350',
-          color0: '#26a69a',
-          borderColor: '#ef5350',
-          borderColor0: '#26a69a',
+          color: CHART_RISE_COLOR,
+          color0: CHART_FALL_COLOR,
+          borderColor: CHART_RISE_COLOR,
+          borderColor0: CHART_FALL_COLOR,
         },
       },
       ...Object.entries(maData).map(([key, values]) => ({
@@ -524,7 +525,7 @@ function buildKLineChartOption(data: KLineData[], period: KLinePeriod, patternsC
           color: (params: { dataIndex: number }) => {
             const dataIndex = params.dataIndex;
             const row = data[dataIndex];
-            return row && row.close >= row.open ? '#ef5350' : '#26a69a';
+            return row && row.close >= row.open ? CHART_RISE_COLOR : CHART_FALL_COLOR;
           },
         },
       },

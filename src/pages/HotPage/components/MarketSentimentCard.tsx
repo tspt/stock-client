@@ -6,6 +6,7 @@ import { Typography, Divider } from 'antd';
 import type { MarketOverview } from '@/services/hot';
 import { formatChangePercent } from '@/utils/format/format';
 import styles from '../HotPage.module.css';
+import { TEXT_RISE_COLOR, TEXT_FALL_COLOR } from '@/utils/config/chartColors';
 
 const { Text } = Typography;
 
@@ -29,10 +30,10 @@ export function MarketSentimentCard({ marketOverview }: MarketSentimentCardProps
       <div className={styles.marketColumn}>
         <div className={styles.indexInfo}>
           <Text strong className={styles.indexName}>上证指数</Text>
-          <div className={styles.indexPrice} style={{ color: shanghaiIndex.change >= 0 ? '#ff4d4f' : '#52c41a' }}>
+          <div className={styles.indexPrice} style={{ color: shanghaiIndex.change >= 0 ? TEXT_RISE_COLOR : TEXT_FALL_COLOR }}>
             {shanghaiIndex.currentPrice.toFixed(2)}
           </div>
-          <div className={styles.indexChange} style={{ color: shanghaiIndex.change >= 0 ? '#ff4d4f' : '#52c41a' }}>
+          <div className={styles.indexChange} style={{ color: shanghaiIndex.change >= 0 ? TEXT_RISE_COLOR : TEXT_FALL_COLOR }}>
             {shanghaiIndex.change >= 0 ? '+' : ''}{shanghaiIndex.change.toFixed(2)} {formatChangePercent(shanghaiIndex.changePercent)}
           </div>
           <Divider style={{ margin: '8px 0' }} />
@@ -54,10 +55,10 @@ export function MarketSentimentCard({ marketOverview }: MarketSentimentCardProps
       <div className={styles.marketColumn}>
         <div className={styles.indexInfo}>
           <Text strong className={styles.indexName}>深证成指</Text>
-          <div className={styles.indexPrice} style={{ color: shenzhenIndex.change >= 0 ? '#ff4d4f' : '#52c41a' }}>
+          <div className={styles.indexPrice} style={{ color: shenzhenIndex.change >= 0 ? TEXT_RISE_COLOR : TEXT_FALL_COLOR }}>
             {shenzhenIndex.currentPrice.toFixed(2)}
           </div>
-          <div className={styles.indexChange} style={{ color: shenzhenIndex.change >= 0 ? '#ff4d4f' : '#52c41a' }}>
+          <div className={styles.indexChange} style={{ color: shenzhenIndex.change >= 0 ? TEXT_RISE_COLOR : TEXT_FALL_COLOR }}>
             {shenzhenIndex.change >= 0 ? '+' : ''}{shenzhenIndex.change.toFixed(2)} {formatChangePercent(shenzhenIndex.changePercent)}
           </div>
           <Divider style={{ margin: '8px 0' }} />

@@ -33,6 +33,13 @@
   font-weight: 600;
 }
 
+/* 右上角全局开关区：低调配色 + 主题切换，成组排布避免 space-between 把它们拉开 */
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .content {
   flex: 1;
   display: flex;
@@ -189,5 +196,32 @@
   --ant-color-text-secondary: rgba(255, 255, 255, 0.45);
   --ant-color-fill-tertiary: rgba(255, 255, 255, 0.08);
   --ant-color-primary-bg: #111b26;
+}
+
+/* 涨跌配色变量（CSS 侧唯一出处）
+ *
+ * 与 src/utils/config/chartColors.ts 的 TEXT_* / STRONG_* 一一对应：
+ * CSS 无法 import TS 常量，故这些值在此处定义一次，`.module.css` 全部改用 var()；
+ * 改色时本块与 `chartColors.ts` 各改一处即可（红绿不随主题变化，故只写一份、不放进 light/dark 块）。
+ * 选择器同样不带 .app 前缀，理由见上方主题变量注释——portal 出去的抽屉也要能取到。
+ */
+[data-theme] {
+  /* TEXT_*：表格 / 卡片文字口径 */
+  --app-rise-color: #ff4d4f;
+  --app-fall-color: #52c41a;
+  /* STRONG_*：强化强调口径 */
+  --app-strong-rise-color: #cf1322;
+  --app-strong-fall-color: #389e0d;
+  /* 以下是「档位」，全部由上面两个主色派生，不再单独维护色值：
+   * 只改 --app-rise-color / --app-fall-color，浅档、浅底、深底自动跟随。
+   * 比例与旧值基本一致（浅档≈#ff7875、浅底≈#fff1f0、深底≈#2a1215），偏差肉眼不可辨。 */
+  --app-rise-soft-color: color-mix(in srgb, var(--app-rise-color) 72%, #ffffff);
+  --app-fall-soft-color: color-mix(in srgb, var(--app-fall-color) 78%, #ffffff);
+  --app-rise-tint: color-mix(in srgb, var(--app-rise-color) 6%, #ffffff);
+  --app-fall-tint: color-mix(in srgb, var(--app-fall-color) 6%, #ffffff);
+  --app-rise-tint-dark: color-mix(in srgb, var(--app-rise-color) 12%, #141414);
+  --app-fall-tint-dark: color-mix(in srgb, var(--app-fall-color) 12%, #141414);
+  --app-rise-card-tint-dark: color-mix(in srgb, var(--app-rise-color) 8%, #1f1f1f);
+  --app-fall-card-tint-dark: color-mix(in srgb, var(--app-fall-color) 8%, #1f1f1f);
 }
 

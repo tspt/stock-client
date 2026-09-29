@@ -21,6 +21,7 @@ import {
   DEFAULT_FILTER_PREFS,
 } from '@/utils/config/sectorFilterPrefs';
 import styles from './SectorConstituentsPage.module.css';
+import { TEXT_FALL_COLOR } from '@/utils/config/chartColors';
 
 const { Header, Content } = Layout;
 const { Text } = Typography;
@@ -576,7 +577,7 @@ export function SectorConstituentsPage() {
             showInfo={false}
             strokeColor={{
               '0%': '#1890ff',
-              '100%': '#52c41a',
+              '100%': TEXT_FALL_COLOR,
             }}
             trailColor="rgba(0, 0, 0, 0.06)"
             size="small"

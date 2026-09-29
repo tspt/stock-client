@@ -149,10 +149,11 @@
 
 /* 前3名高亮 - 渐变色 */
 .listItem:nth-child(1) .rankNumber {
-  background: linear-gradient(135deg, #ff4d4f 0%, #ff7875 100%);
+  background: linear-gradient(135deg, var(--app-rise-color) 0%, var(--app-rise-soft-color) 100%);
   color: #fff;
   font-weight: 700;
-  box-shadow: 0 2px 8px rgba(255, 77, 79, 0.3);
+  /* 由涨色派生的阴影：改主色即跟随（Chromium 120 支持 color-mix） */
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--app-rise-color) 30%, transparent);
 }
 
 .listItem:nth-child(2) .rankNumber {
@@ -171,11 +172,11 @@
 
 /* 涨跌颜色 - 红涨绿跌 */
 .positive {
-  color: #ff4d4f;
+  color: var(--app-rise-color);
 }
 
 .negative {
-  color: #52c41a;
+  color: var(--app-fall-color);
 }
 
 /* 涨跌幅加粗 */
@@ -187,11 +188,11 @@
 
 /* 涨跌家数颜色 */
 .riseCount {
-  color: #ff4d4f;
+  color: var(--app-rise-color);
 }
 
 .fallCount {
-  color: #52c41a;
+  color: var(--app-fall-color);
 }
 
 /* 板块名称 */

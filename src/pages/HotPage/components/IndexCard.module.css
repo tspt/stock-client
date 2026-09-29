@@ -20,22 +20,22 @@
 
 /* 上涨卡片背景 */
 .riseCard {
-  background: linear-gradient(135deg, #fff1f0 0%, #ffffff 100%);
+  background: linear-gradient(135deg, var(--app-rise-tint) 0%, #ffffff 100%);
 }
 
 /* 下跌卡片背景 */
 .fallCard {
-  background: linear-gradient(135deg, #f6ffed 0%, #ffffff 100%);
+  background: linear-gradient(135deg, var(--app-fall-tint) 0%, #ffffff 100%);
 }
 
 /* 深色主题 - 上涨卡片 */
 [data-theme='dark'] .riseCard {
-  background: linear-gradient(135deg, #2a1f1f 0%, #1f1f1f 100%);
+  background: linear-gradient(135deg, var(--app-rise-card-tint-dark) 0%, #1f1f1f 100%);
 }
 
 /* 深色主题 - 下跌卡片 */
 [data-theme='dark'] .fallCard {
-  background: linear-gradient(135deg, #1f2a1f 0%, #1f1f1f 100%);
+  background: linear-gradient(135deg, var(--app-fall-card-tint-dark) 0%, #1f1f1f 100%);
 }
 
 .indexHeader {
@@ -134,12 +134,13 @@
 }
 
 .rankUp {
-  color: #ff4d4f;
+  color: var(--app-rise-color);
   font-size: 14px;
   flex: 1;
   text-align: center;
   padding: 4px 8px;
-  background: rgba(255, 77, 79, 0.08);
+  /* 由涨色派生（与 rgba(255, 77, 79, 0.08) 等值） */
+  background: color-mix(in srgb, var(--app-rise-color) 8%, transparent);
   border-radius: 4px;
 }
 
@@ -155,11 +156,12 @@
 }
 
 .rankDown {
-  color: #52c41a;
+  color: var(--app-fall-color);
   font-size: 14px;
   flex: 1;
   text-align: center;
   padding: 4px 8px;
-  background: rgba(82, 196, 26, 0.08);
+  /* 由跌色派生（与 rgba(82, 196, 26, 0.08) 等值） */
+  background: color-mix(in srgb, var(--app-fall-color) 8%, transparent);
   border-radius: 4px;
 }

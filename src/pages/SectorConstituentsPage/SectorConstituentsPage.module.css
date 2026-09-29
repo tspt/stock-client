@@ -210,13 +210,13 @@
 }
 
 .industryColor {
-  background: #f6ffed;
-  color: #52c41a;
+  background: var(--app-fall-tint);
+  color: var(--app-fall-color);
 }
 
 [data-theme='dark'] .industryColor {
-  background: #162312;
-  color: #73d13d;
+  background: var(--app-fall-tint-dark);
+  color: var(--app-fall-soft-color);
 }
 
 .conceptColor {

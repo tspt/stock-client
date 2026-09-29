@@ -93,6 +93,11 @@ import {
 } from '@/services/stocks/sectorMapping';
 import { formatKLineDate } from '@/utils/analysis/asOfKline';
 import styles from './BacktestPage.module.css';
+import {
+  RISE_SOFT_COLOR,
+  STRONG_RISE_COLOR,
+  STRONG_FALL_COLOR,
+} from '@/utils/config/chartColors';
 
 const { Header, Content } = Layout;
 const { Text } = Typography;
@@ -156,9 +161,9 @@ function returnText(value: number | null): string {
 
 function returnColor(value: number | null): string | undefined {
   if (value == null) return undefined;
-  if (value > 5) return '#cf1322';
+  if (value > 5) return STRONG_RISE_COLOR;
   if (value > 0) return '#d46b08';
-  return '#389e0d';
+  return STRONG_FALL_COLOR;
 }
 
 function getLatestDateSummary(histories: StockHistoryRecord[]): {
@@ -1511,7 +1516,7 @@ export function BacktestPage() {
           <Statistic
             title="已验证达标率"
             value={trackingStats.passRate == null ? '-' : `${trackingStats.passRate}%`}
-            valueStyle={{ color: trackingStats.passRate != null && trackingStats.passRate >= 50 ? '#cf1322' : undefined }}
+            valueStyle={{ color: trackingStats.passRate != null && trackingStats.passRate >= 50 ? STRONG_RISE_COLOR : undefined }}
           />
         </Col>
         <Col>
@@ -1786,8 +1791,8 @@ export function BacktestPage() {
               <Button
                 icon={<BarChartOutlined />}
                 style={{
-                  borderColor: trackingStats.passRate != null && trackingStats.passRate >= 50 ? '#ff7875' : undefined,
-                  color: trackingStats.passRate != null && trackingStats.passRate >= 50 ? '#cf1322' : undefined,
+                  borderColor: trackingStats.passRate != null && trackingStats.passRate >= 50 ? RISE_SOFT_COLOR : undefined,
+                  color: trackingStats.passRate != null && trackingStats.passRate >= 50 ? STRONG_RISE_COLOR : undefined,
                 }}
               >
                 追踪统计 {trackingStats.passRate != null ? `(${trackingStats.passRate}%)` : ''}
