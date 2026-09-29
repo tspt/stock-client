@@ -131,6 +131,101 @@ export async function saveF10Section<K extends F10SectionKey>(
   }
 }
 
+/**
+ * 读取全部 F10 缓存记录（用于数据管理页的导出与统计）
+ *
+ * 与 `getF10Cache` 不同：这里不做结构版本过滤，原样返回库中所有记录，
+ * 结构版本的处理交给读取层 / 导入层（导入时会统一补当前版本戳）。
+ */
+export async function getAllF10Cache(): Promise<F10CacheRecord[]> {
+  try {
+    const db = await initDB();
+    const transaction = db.transaction([F10_CACHE_STORE_NAME], 'readonly');
+    const store = transaction.objectStore(F10_CACHE_STORE_NAME);
+
+    return await new Promise<F10CacheRecord[]>((resolve, reject) => {
+      const request = store.getAll();
+      request.onsuccess = () => resolve((request.result as F10CacheRecord[]) ?? []);
+      request.onerror = () => reject(new Error('获取全部 F10 缓存失败'));
+    });
+  } catch (error) {
+    logger.error('[F10Cache] 获取全部缓存异常:', error);
+    return [];
+  }
+}
+
+/**
+ * 批量写入 F10 缓存记录
+ *
+ * @param records 待写入记录（按 `code` 为主键）
+ * @param incremental 写入模式：
+ *   - `true`  合并：仅按 code 覆盖，库中已有的其它股票记录保持原样；
+ *   - `false` 覆盖：先清空整表再写入。
+ *
+ * 写入前统一补当前 `schemaVersion`，避免外部 JSON 中缺失 / 旧版本的记录
+ * 被 `getF10Cache` 当作过期缓存丢弃。
+ */
+export async function saveF10Records(
+  records: F10CacheRecord[],
+  incremental: boolean = false
+): Promise<void> {
+  const db = await initDB();
+  const transaction = db.transaction([F10_CACHE_STORE_NAME], 'readwrite');
+  const store = transaction.objectStore(F10_CACHE_STORE_NAME);
+
+  return new Promise((resolve, reject) => {
+    const writeAll = () => {
+      if (records.length === 0) {
+        resolve();
+        return;
+      }
+      let completed = 0;
+      records.forEach((record) => {
+        const normalized: F10CacheRecord = {
+          ...record,
+          schemaVersion: F10_CACHE_SCHEMA_VERSION,
+        };
+        const request = store.put(normalized);
+        request.onsuccess = () => {
+          completed++;
+          if (completed === records.length) {
+            resolve();
+          }
+        };
+        request.onerror = () => reject(new Error(`保存 F10 缓存失败: ${record.code}`));
+      });
+    };
+
+    if (incremental) {
+      writeAll();
+      return;
+    }
+
+    const clearRequest = store.clear();
+    clearRequest.onsuccess = writeAll;
+    clearRequest.onerror = () => reject(new Error('清空 F10 缓存失败'));
+  });
+}
+
+/** 清空全部 F10 缓存（供数据管理页「清空全部」使用） */
+export async function clearAllF10Cache(): Promise<void> {
+  try {
+    const db = await initDB();
+    const transaction = db.transaction([F10_CACHE_STORE_NAME], 'readwrite');
+    const store = transaction.objectStore(F10_CACHE_STORE_NAME);
+
+    await new Promise<void>((resolve, reject) => {
+      const request = store.clear();
+      request.onsuccess = () => resolve();
+      request.onerror = () => reject(new Error('清空 F10 缓存失败'));
+    });
+    logger.info('[F10Cache] 已清空全部缓存');
+  } catch (error) {
+    logger.error('[F10Cache] 清空全部缓存异常:', error);
+    throw error instanceof Error ? error : new Error('清空 F10 缓存失败');
+  }
+}
+
 /** 删除某只股票的整条 F10 缓存（三个区块一起删除） */
 export async function clearF10Cache(code: string): Promise<void> {
   if (!code) {

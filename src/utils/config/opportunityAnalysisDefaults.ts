@@ -282,15 +282,21 @@ export const OPPORTUNITY_DEFAULT_AI_ANALYSIS = {
   /** AI趋势判断 - 横盘 */
   trendSideways: false,
   /** 技术指标评分最小值 */
-  technicalScoreMin: 30,
+  technicalScoreMin: undefined,
   /** AI置信度最小值（%） */
-  confidenceMin: 60,
+  confidenceMin: 50,
   /** AI形态评分最小值 */
-  patternScoreMin: 60,
+  patternScoreMin: 50,
   /** AI趋势评分最小值 */
-  trendScoreMin: 55,
+  trendScoreMin: 50,
   /** AI安全评分最小值 */
   riskScoreMin: undefined,
+  consolidation: {
+    lookback: 10,
+    consecutive: 3,
+    threshold: 2.5,
+    requireClosesAboveMa10: false,
+  }
 } as const;
 
 // ==================== 3. 横盘筛选 ====================
@@ -693,14 +699,6 @@ export const INITIAL_FILTER_STATE = {
   aiPatternScoreRange: { min: OPPORTUNITY_DEFAULT_AI_ANALYSIS.patternScoreMin },
   aiTrendScoreRange: { min: OPPORTUNITY_DEFAULT_AI_ANALYSIS.trendScoreMin },
   aiRiskScoreRange: { min: OPPORTUNITY_DEFAULT_AI_ANALYSIS.riskScoreMin },
-
-  // v3.0 新增筛选条件
-  aiSignalConfluence: false,
-  aiMinSignalCount: 4,
-  aiMinSignalRatio: 0.6,
-  aiPatternWinRateRange: {} as { min?: number; max?: number },
-  aiMinSimilarPatterns: 3,
-  aiMinRiskRewardRatio: undefined as number | undefined,
 
   // 名称过滤
   excludedNameKeywords: [...OPPORTUNITY_DEFAULT_NAME_FILTERS.excludedNameKeywords],

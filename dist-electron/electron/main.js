@@ -982,6 +982,7 @@ function setupIpcHandlers() {
                 '概念板块.json',
                 '股票列表.json',
                 '财务指标数据.json',
+                'F10资料数据.json',
             ];
             if (!fileName || !ALLOWED_FILES.includes(fileName)) {
                 return { success: false, error: `非法文件名: ${fileName}` };

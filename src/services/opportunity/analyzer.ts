@@ -28,7 +28,7 @@ import {
   PROGRESS_BASE,
 } from '@/utils/config/constants';
 import {
-  OPPORTUNITY_DEFAULT_CONSOLIDATION,
+  OPPORTUNITY_DEFAULT_AI_ANALYSIS,
   OPPORTUNITY_DEFAULT_SHARP_MOVE,
   OPPORTUNITY_DEFAULT_TREND_LINE,
 } from '@/utils/config/opportunityAnalysisDefaults';
@@ -191,11 +191,13 @@ async function analyzeOneStock(
 
   let consolidation;
   try {
+    // 使用 AI 分析专用横盘参数（与侧栏「横盘筛选」参数相互独立）
+    const aiConsolidation = OPPORTUNITY_DEFAULT_AI_ANALYSIS.consolidation;
     consolidation = calculateConsolidationInLookback(klineData, {
-      lookback: OPPORTUNITY_DEFAULT_CONSOLIDATION.lookback,
-      consecutive: OPPORTUNITY_DEFAULT_CONSOLIDATION.consecutive,
-      threshold: OPPORTUNITY_DEFAULT_CONSOLIDATION.threshold,
-      requireClosesAboveMa10: OPPORTUNITY_DEFAULT_CONSOLIDATION.requireClosesAboveMa10,
+      lookback: aiConsolidation.lookback,
+      consecutive: aiConsolidation.consecutive,
+      threshold: aiConsolidation.threshold,
+      requireClosesAboveMa10: aiConsolidation.requireClosesAboveMa10,
     });
   } catch (error) {
     logger.warn(`[${code}] 横盘分析失败:`, error);

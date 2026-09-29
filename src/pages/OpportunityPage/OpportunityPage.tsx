@@ -469,18 +469,6 @@ export function OpportunityPage() {
     INITIAL_FILTER_STATE.aiRiskScoreRange
   );
 
-  // v3.0 新增筛选条件状态
-  const [aiSignalConfluence, setAiSignalConfluence] = useState<boolean>(INITIAL_FILTER_STATE.aiSignalConfluence);
-  const [aiMinSignalCount, setAiMinSignalCount] = useState<number>(INITIAL_FILTER_STATE.aiMinSignalCount);
-  const [aiMinSignalRatio, setAiMinSignalRatio] = useState<number>(INITIAL_FILTER_STATE.aiMinSignalRatio);
-  const [aiPatternWinRateRange, setAiPatternWinRateRange] = useState<{ min?: number; max?: number }>(
-    INITIAL_FILTER_STATE.aiPatternWinRateRange
-  );
-  const [aiMinSimilarPatterns, setAiMinSimilarPatterns] = useState<number>(INITIAL_FILTER_STATE.aiMinSimilarPatterns);
-  const [aiMinRiskRewardRatio, setAiMinRiskRewardRatio] = useState<number | undefined>(
-    INITIAL_FILTER_STATE.aiMinRiskRewardRatio
-  );
-
   // 名称筛选状态
   const [enableNameKeywordFilter, setEnableNameKeywordFilter] = useState<boolean>(true);
   const [excludedNameKeywords, setExcludedNameKeywords] = useState<string[]>(
@@ -1950,20 +1938,7 @@ export function OpportunityPage() {
             setAiTrendScoreRange={setAiTrendScoreRange}
             aiRiskScoreRange={aiRiskScoreRange}
             setAiRiskScoreRange={setAiRiskScoreRange}
-            // v3.0 新增筛选条件
             aiVersion={aiVersion}
-            aiSignalConfluence={aiSignalConfluence}
-            setAiSignalConfluence={setAiSignalConfluence}
-            aiMinSignalCount={aiMinSignalCount}
-            setAiMinSignalCount={setAiMinSignalCount}
-            aiMinSignalRatio={aiMinSignalRatio}
-            setAiMinSignalRatio={setAiMinSignalRatio}
-            aiPatternWinRateRange={aiPatternWinRateRange}
-            setAiPatternWinRateRange={setAiPatternWinRateRange}
-            aiMinSimilarPatterns={aiMinSimilarPatterns}
-            setAiMinSimilarPatterns={setAiMinSimilarPatterns}
-            aiMinRiskRewardRatio={aiMinRiskRewardRatio}
-            setAiMinRiskRewardRatio={setAiMinRiskRewardRatio}
             // 名称筛选面板：行业分组（独立于顶部「行业」筛选，单独控制）
             nameFilterIndustryGroups={nameFilterIndustryGroups}
             setNameFilterIndustryGroups={setNameFilterIndustryGroups}

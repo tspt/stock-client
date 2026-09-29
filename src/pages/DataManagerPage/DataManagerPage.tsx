@@ -14,6 +14,7 @@ import {
   StockOutlined,
   PartitionOutlined,
   FundOutlined,
+  MergeCellsOutlined,
 } from '@ant-design/icons';
 import { refreshStockList } from '@/services/stocks/api';
 import {
@@ -34,6 +35,13 @@ import {
   exportStockFinanceToJSON,
   importStockFinanceFromJSON,
 } from '@/utils/export/stockFinanceExport';
+import { getAllF10Cache, clearAllF10Cache } from '@/utils/storage/f10IndexedDB';
+import {
+  exportF10ToJSON,
+  importF10FromJSON,
+  getLatestF10UpdateTime,
+  type F10ImportMode,
+} from '@/utils/export/f10Export';
 import { CACHE_TTL, CACHE_KEYS } from '@/utils/config/constants';
 import { getLatestFinanceReportTime } from '@/utils/analysis/financeReportTime';
 import { getStorage } from '@/utils/storage/storage';
@@ -73,6 +81,11 @@ export function DataManagerPage() {
   const [importingFinance, setImportingFinance] = useState(false);
   const [clearingFinance, setClearingFinance] = useState(false);
 
+  // F10 资料状态
+  const [f10Status, setF10Status] = useState<CacheStatus | null>(null);
+  const [importingF10, setImportingF10] = useState(false);
+  const [clearingF10, setClearingF10] = useState(false);
+
   // 加载所有数据状态
   useEffect(() => {
     loadAllStatus();
@@ -84,6 +97,7 @@ export function DataManagerPage() {
       loadSectorBasicStatus(),
       loadSectorStocksStatus(),
       loadStockFinanceStatus(),
+      loadF10Status(),
     ]);
   };
 
@@ -207,6 +221,25 @@ export function DataManagerPage() {
       }
     } catch (error) {
       logger.error('加载财务指标状态失败:', error);
+    }
+  };
+
+  // 加载 F10 资料状态
+  const loadF10Status = async () => {
+    try {
+      const records = await getAllF10Cache();
+
+      if (records.length > 0) {
+        setF10Status({
+          count: records.length,
+          lastUpdate: getLatestF10UpdateTime(records),
+          isExpired: false,
+        });
+      } else {
+        setF10Status({ count: 0, isExpired: true });
+      }
+    } catch (error) {
+      logger.error('加载 F10 资料状态失败:', error);
     }
   };
 
@@ -399,6 +432,60 @@ export function DataManagerPage() {
           logger.error('清空财务指标数据失败:', error);
         } finally {
           setClearingFinance(false);
+        }
+      },
+    });
+  };
+
+  // 导出 F10 资料
+  const handleExportF10 = async () => {
+    try {
+      await exportF10ToJSON();
+      antMessage.success('导出成功');
+    } catch (error) {
+      antMessage.error('导出失败');
+      logger.error('导出 F10 资料数据失败:', error);
+    }
+  };
+
+  // 导入 F10 资料（overwrite 覆盖 / merge 合并）
+  const handleImportF10 = async (file: File, mode: F10ImportMode) => {
+    setImportingF10(true);
+    try {
+      const result = await importF10FromJSON(file, mode);
+      if (result.success) {
+        antMessage.success(result.message);
+        await loadF10Status();
+      } else {
+        antMessage.error(result.message);
+      }
+    } catch (error) {
+      antMessage.error('导入失败');
+      logger.error('导入 F10 资料数据失败:', error);
+    } finally {
+      setImportingF10(false);
+    }
+    return false; // 阻止默认上传行为
+  };
+
+  // 清空 F10 资料
+  const handleClearF10 = () => {
+    Modal.confirm({
+      title: '确认清空',
+      content: '清空后将删除所有已缓存的 F10 资料数据，此操作不可恢复，是否继续？',
+      okText: '确认清空',
+      okType: 'danger',
+      onOk: async () => {
+        setClearingF10(true);
+        try {
+          await clearAllF10Cache();
+          antMessage.success('数据已清空');
+          await loadF10Status();
+        } catch (error) {
+          antMessage.error('清空失败');
+          logger.error('清空 F10 资料数据失败:', error);
+        } finally {
+          setClearingF10(false);
         }
       },
     });
@@ -640,6 +727,72 @@ export function DataManagerPage() {
               onClick={handleClearFinance}
               danger
               loading={clearingFinance}
+            >
+              清空全部
+            </Button>
+          </Space>
+        </Card>
+
+        {/* F10 资料管理 */}
+        <Card className={styles.card} title={
+          <Space>
+            <DatabaseOutlined />
+            <span>F10 资料 (IndexedDB)</span>
+          </Space>
+        }>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Card size="small" className={styles.subCard}>
+                <Statistic
+                  title="已缓存股票数"
+                  value={f10Status?.count || 0}
+                  suffix="只"
+                />
+                <Text type="secondary" className={styles.updateTime}>
+                  最后更新: {formatTime(f10Status?.lastUpdate)}
+                </Text>
+              </Card>
+            </Col>
+          </Row>
+          <Space className={styles.actionButtons}>
+            <Button
+              icon={<ExportOutlined />}
+              onClick={handleExportF10}
+              type="primary"
+            >
+              导出数据
+            </Button>
+            <Upload
+              accept=".json"
+              showUploadList={false}
+              beforeUpload={(file) => handleImportF10(file, 'overwrite')}
+              disabled={importingF10}
+            >
+              <Button
+                icon={<ImportOutlined />}
+                loading={importingF10}
+              >
+                导入数据(覆盖)
+              </Button>
+            </Upload>
+            <Upload
+              accept=".json"
+              showUploadList={false}
+              beforeUpload={(file) => handleImportF10(file, 'merge')}
+              disabled={importingF10}
+            >
+              <Button
+                icon={<MergeCellsOutlined />}
+                loading={importingF10}
+              >
+                合并导入
+              </Button>
+            </Upload>
+            <Button
+              icon={<DeleteOutlined />}
+              onClick={handleClearF10}
+              danger
+              loading={clearingF10}
             >
               清空全部
             </Button>
