@@ -3,7 +3,8 @@
  */
 
 import type { KLineData, StockOpportunityData } from '@/types/stock';
-import { MA_PERIODS, MACD_PARAMS, KDJ_PARAMS, RSI_PERIODS } from '../config/constants';
+import { MA_PERIODS, MACD_PARAMS, KDJ_PARAMS, BOLL_PARAMS, RSI_PERIODS } from '../config/constants';
+import { calculateBollingerBands } from './technicalIndicators';
 
 /**
  * 计算移动平均线（MA）
@@ -123,21 +124,32 @@ export function calculateKDJ(data: KLineData[]) {
 }
 
 /**
- * K 线抽屉用到的三套指标（MA5/10/20/30/60 + MACD + KDJ）
+ * K 线抽屉用到的四套指标（MA5/10/20/30/60 + 布林带 + MACD + KDJ）
  */
 export interface KlineIndicatorSeries {
   ma: { ma5: number[]; ma10: number[]; ma20: number[]; ma30: number[]; ma60: number[] };
+  /** 布林带：缺失值（数据不足 period 根）一律归一成 NaN，与 MA 口径一致 */
+  boll: { upper: number[]; middle: number[]; lower: number[] };
   macd: { dif: number[]; dea: number[]; macd: number[] };
   kdj: { k: number[]; d: number[]; j: number[] };
 }
 
 /**
+ * 布林带返回 `number | null`，MA 返回 NaN：
+ * 统一转成 NaN，让「断线（ECharts）」「价格区间取值（Number.isFinite）」共用一套判断。
+ */
+function toFiniteSeries(series: (number | null)[]): number[] {
+  return series.map((value) => (value === null ? NaN : value));
+}
+
+/**
  * 一次算齐 K 线抽屉需要的全部指标。
  *
- * 统一入口的意义：主图、MACD 副图、KDJ 副图、以及价格区间推导必须共用同一批序列，
+ * 统一入口的意义：主图（含布林带）、MACD 副图、KDJ 副图、以及价格区间推导必须共用同一批序列，
  * 分开调用会让 MA 被算两遍，且价格区间与主图有可能取到不同批次的数据。
  */
 export function calculateKlineIndicators(data: KLineData[]): KlineIndicatorSeries {
+  const boll = calculateBollingerBands(data, BOLL_PARAMS.period, BOLL_PARAMS.stdDev);
   return {
     ma: {
       ma5: calculateMA(data, 5),
@@ -145,6 +157,11 @@ export function calculateKlineIndicators(data: KLineData[]): KlineIndicatorSerie
       ma20: calculateMA(data, 20),
       ma30: calculateMA(data, 30),
       ma60: calculateMA(data, 60),
+    },
+    boll: {
+      upper: toFiniteSeries(boll.upper),
+      middle: toFiniteSeries(boll.middle),
+      lower: toFiniteSeries(boll.lower),
     },
     macd: calculateMACD(data),
     kdj: calculateKDJ(data),

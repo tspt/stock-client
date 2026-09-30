@@ -121,6 +121,7 @@ export function WeeklyChartDrawer({
       periodLabel: '周',
       titleChgBold: true,
       upDownColors: chartColors.upDown,
+      bollColors: chartColors.boll,
     });
   }, [kline, indicators, priceRange, zoom, isDark, chartColors, hoverIndex]);
 

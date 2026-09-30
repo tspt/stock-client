@@ -20,7 +20,7 @@
 import { useMemo } from 'react';
 import { Typography } from 'antd';
 import ReactECharts from 'echarts-for-react';
-import type { KLineData, KLinePeriod } from '@/types/stock';
+import type { KLineData, KLinePeriod, TradingSignal } from '@/types/stock';
 import type { ChipPeriod } from '@/types/chipDistribution';
 import { buildChipChartOption } from '@/utils/chart/chipChartOption';
 import { buildStockKlineOption } from '@/utils/chart/stockKlineOption';
@@ -31,6 +31,7 @@ import {
 } from '@/utils/config/stockDrawerLayout';
 import { ChipDistributionPanel } from '@/components/common/ChipDistributionPanel/ChipDistributionPanel';
 import { ChipStatsPanel } from '@/components/common/ChipStatsPanel/ChipStatsPanel';
+import { TradingSignalLabel } from '@/components/common/TradingSignalLabel/TradingSignalLabel';
 import { KlineDrawerShell } from '@/components/common/KlineDrawerShell/KlineDrawerShell';
 import { StockF10Panel } from '@/components/common/StockF10Panel/StockF10Panel';
 import { useDrawerChartColors } from '@/hooks/useDrawerChartColors';
@@ -66,6 +67,8 @@ interface DailyChartDrawerProps {
   industry?: string;
   /** 所属概念板块列表，由页面传入（弹窗内不额外拉取股票列表） */
   concepts?: Array<{ code?: string; name: string }>;
+  /** 今日交易信号，由机会分析页传入；无信号数据时不展示该字段 */
+  tradingSignal?: TradingSignal;
   /** 表格当前展示顺序的股票列表，用于 ← / → 快速切换上一行 / 下一行 */
   records?: Array<{ code: string; name: string }>;
   /** 切换相邻行时回调，父级据此更新弹窗数据 */
@@ -81,6 +84,7 @@ export function DailyChartDrawer({
   period,
   industry,
   concepts,
+  tradingSignal,
   records = [],
   onNavigate,
   onClose,
@@ -141,6 +145,7 @@ export function DailyChartDrawer({
       hoverIndex,
       periodLabel,
       upDownColors: chartColors.upDown,
+      bollColors: chartColors.boll,
     });
   }, [kline, periodLabel, indicators, priceRange, zoom, isDark, chartColors, hoverIndex]);
 
@@ -192,6 +197,15 @@ export function DailyChartDrawer({
           <Text type="secondary" style={{ fontSize: 14, paddingLeft: 12 }}>
             筹码日期 <Text strong>{chipDate}</Text>
             {isFollowingCrosshair ? '（跟随十字星）' : '（最新）'}
+          </Text>
+        )}
+        {tradingSignal && (
+          <Text
+            type="secondary"
+            style={{ fontSize: 14, display: 'inline-flex', alignItems: 'center', gap: 4 }}
+          >
+            交易信号
+            <TradingSignalLabel signal={tradingSignal} fontSize={14} />
           </Text>
         )}
         {chipLoading && (

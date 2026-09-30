@@ -9,7 +9,7 @@
  * 3. 本模块只依赖两个 builder 的**类型**（不依赖其实现），因此不存在循环依赖。
  */
 
-import type { UpDownColors } from '@/utils/chart/stockKlineOption';
+import type { UpDownColors, BollColors } from '@/utils/chart/stockKlineOption';
 import type { ChipBarColors } from '@/utils/chart/chipChartOption';
 
 /**
@@ -31,12 +31,20 @@ const QUIET_CHIP_COLORS = {
   dark: { profit: 'rgba(176, 176, 176, 0.6)', trapped: 'rgba(232, 232, 232, 0.45)' },
 } as const;
 
+/** 灰黑布林带配色：线条与填充带同灰（深色主题下整体提亮） */
+const QUIET_BOLL_COLORS = {
+  light: { line: '#9e9e9e', fill: 'rgba(158, 158, 158, 0.12)' },
+  dark: { line: '#b0b0b0', fill: 'rgba(176, 176, 176, 0.14)' },
+} as const;
+
 /** 一次解析出两个 builder 所需的配色参数；字段为 undefined 表示沿用 builder 默认配色 */
 export interface DrawerChartColors {
   /** 蜡烛 + 成交量柱的涨跌配色 */
   upDown?: UpDownColors;
   /** 筹码条配色 */
   chip?: ChipBarColors;
+  /** 布林带配色 */
+  boll?: BollColors;
 }
 
 /**
@@ -50,5 +58,6 @@ export function resolveDrawerChartColors(mode: ChartColorMode, isDark: boolean):
   return {
     upDown: isDark ? QUIET_UP_DOWN_COLORS.dark : QUIET_UP_DOWN_COLORS.light,
     chip: isDark ? QUIET_CHIP_COLORS.dark : QUIET_CHIP_COLORS.light,
+    boll: isDark ? QUIET_BOLL_COLORS.dark : QUIET_BOLL_COLORS.light,
   };
 }

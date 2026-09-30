@@ -1,7 +1,7 @@
 /**
  * 股票 K 线 ECharts 配置构建器（日K抽屉 / 周K抽屉共用）
  *
- * 固定四段：主图（蜡烛 + 均线 + 价格轴）/ 成交量 / MACD / KDJ。
+ * 固定四段：主图（蜡烛 + 均线 + 布林带 + 价格轴）/ 成交量 / MACD / KDJ。
  * 与右侧筹码面板只共享两样东西——「主图网格像素位置」与「价格区间」，
  * 只要 grid[0] 的 top/height 与筹码面板一致，同一价格就落在同一水平线。
  *
@@ -60,6 +60,23 @@ const KDJ_COLOR = {
   dark: { k: '#4096ff', d: '#ffa940', j: '#f0f0f0' },
 } as const;
 
+/**
+ * 布林带配色：上 / 中 / 下三轨共用同一线条色，上下轨之间填充半透明同色带。
+ * 深色主题整体提亮，避免线条与填充带淹没在深色背景里。
+ */
+export interface BollColors {
+  /** 上 / 中 / 下轨线条颜色 */
+  line: string;
+  /** 上下轨之间的填充色（须自带透明度） */
+  fill: string;
+}
+
+/** 默认布林带配色：青色系，与 MA 的红绿蓝紫区分开 */
+const BOLL_COLOR = {
+  light: { line: '#13c2c2', fill: 'rgba(19, 194, 194, 0.10)' },
+  dark: { line: '#36cfc9', fill: 'rgba(54, 207, 201, 0.14)' },
+} as const;
+
 export interface StockKlineOptionInput {
   data: KLineData[];
   indicators: KlineIndicatorSeries;
@@ -77,6 +94,8 @@ export interface StockKlineOptionInput {
   titleChgBold?: boolean;
   /** 蜡烛 / 成交量柱的涨跌配色；不传时使用默认红涨绿跌 */
   upDownColors?: UpDownColors;
+  /** 布林带配色；不传时按主题使用默认青色 */
+  bollColors?: BollColors;
 }
 
 export function buildStockKlineOption(input: StockKlineOptionInput): EChartsOption {
@@ -90,12 +109,25 @@ export function buildStockKlineOption(input: StockKlineOptionInput): EChartsOpti
     periodLabel,
     titleChgBold = false,
     upDownColors = DEFAULT_UP_DOWN_COLORS,
+    bollColors,
   } = input;
   const { ma5, ma10, ma20, ma30, ma60 } = indicators.ma;
+  const boll = indicators.boll;
   const macd = indicators.macd;
   const kdj = indicators.kdj;
   const macdColor = isDark ? MACD_COLOR.dark : MACD_COLOR.light;
   const kdjColor = isDark ? KDJ_COLOR.dark : KDJ_COLOR.light;
+  const bollColor = bollColors ?? (isDark ? BOLL_COLOR.dark : BOLL_COLOR.light);
+
+  /**
+   * 布林带填充带：ECharts 没有原生「两线之间填充」，
+   * 用同一 stack 的两条线实现——下轨作堆叠底座（画下轨虚线），
+   * 上轨用「上轨 − 下轨」的差值堆叠在底座之上（线条正好落在上轨位置）并填充中间区域。
+   * 中轨不参与堆叠，单独一条实线。
+   */
+  const bollUpperDiff = boll.upper.map((value, i) =>
+    Number.isFinite(value) && Number.isFinite(boll.lower[i]) ? value - boll.lower[i] : NaN
+  );
 
   /**
    * KDJ 纵轴范围：固定以 -50 ~ 150 为基准（刻度 -50 / 0 / 50 / 100 / 150），
@@ -189,6 +221,15 @@ export function buildStockKlineOption(input: StockKlineOptionInput): EChartsOpti
         html += `<div>量: ${formatVolume(item.volume)}</div>`;
 
         [['MA5', ma5], ['MA10', ma10], ['MA20', ma20], ['MA30', ma30], ['MA60', ma60]].forEach(
+          ([label, arr]) => {
+            const value = (arr as number[])[dataIndex];
+            if (Number.isFinite(value)) {
+              html += `<div>${label}: ${value.toFixed(2)}</div>`;
+            }
+          }
+        );
+
+        [['BOLL上轨', boll.upper], ['BOLL中轨', boll.middle], ['BOLL下轨', boll.lower]].forEach(
           ([label, arr]) => {
             const value = (arr as number[])[dataIndex];
             if (Number.isFinite(value)) {
@@ -301,6 +342,44 @@ export function buildStockKlineOption(input: StockKlineOptionInput): EChartsOpti
         smooth: false,
         showSymbol: false,
         lineStyle: { width: 2, color: '#722ed1' },
+        animation: false,
+      },
+      // 布林带：下轨作堆叠底座，上轨（差值）堆叠其上并填充中间区域；
+      // z=1 把填充带压到蜡烛（默认 z=2）之下，不遮挡蜡烛与均线
+      {
+        name: 'BOLL下轨',
+        type: 'line',
+        data: boll.lower,
+        stack: 'bollBand',
+        smooth: false,
+        showSymbol: false,
+        lineStyle: { width: 1, type: 'dashed', color: bollColor.line },
+        itemStyle: { color: bollColor.line },
+        z: 1,
+        animation: false,
+      },
+      {
+        name: 'BOLL上轨',
+        type: 'line',
+        data: bollUpperDiff,
+        stack: 'bollBand',
+        smooth: false,
+        showSymbol: false,
+        lineStyle: { width: 1, type: 'dashed', color: bollColor.line },
+        itemStyle: { color: bollColor.line },
+        areaStyle: { color: bollColor.fill },
+        z: 1,
+        animation: false,
+      },
+      {
+        name: 'BOLL中轨',
+        type: 'line',
+        data: boll.middle,
+        smooth: false,
+        showSymbol: false,
+        lineStyle: { width: 1, color: bollColor.line, opacity: 0.85 },
+        itemStyle: { color: bollColor.line },
+        z: 1,
         animation: false,
       },
       {

@@ -240,7 +240,7 @@ export function useKlineChipSync({
     () =>
       computeVisiblePriceRange({
         kline,
-        // 均线可能冲出K线高低点（如下跌初期的MA60），一并纳入
+        // 均线 / 布林带上下轨都可能冲出K线高低点（如下跌初期的MA60、布林带 ±2σ），一并纳入
         maSeries: indicators
           ? [
               indicators.ma.ma5,
@@ -248,6 +248,8 @@ export function useKlineChipSync({
               indicators.ma.ma20,
               indicators.ma.ma30,
               indicators.ma.ma60,
+              indicators.boll.upper,
+              indicators.boll.lower,
             ]
           : [],
         zoom,

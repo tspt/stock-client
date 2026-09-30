@@ -1,0 +1,28 @@
+/* 交易信号标签：色点文案 + 可选原因，整体单行不换行、超出省略 */
+.label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  /**
+   * 内联元素一旦有 overflow: hidden，基线就退化为「底边」，
+   * 嵌在文本行里（如抽屉顶部的「交易信号 xxx」）会与相邻文字错位；
+   * 改为按中线对齐，保证两种使用场景都不跑偏。
+   */
+  vertical-align: middle;
+}
+
+.text {
+  font-weight: bold;
+}
+
+.reason {
+  font-size: 10px;
+  color: #999;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

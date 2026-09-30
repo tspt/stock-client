@@ -17,8 +17,12 @@ export const DRAWER_WIDTH = 'min(1540px, calc(100vw - 48px))';
  * 刻意用固定高度而非 flex 拉伸——抽屉高度占满视口，
  * 若让图表撑满剩余空间，主图会被拉得过高，底部缩放条还会顶到抽屉页脚。
  * 右侧筹码画布与之不等高，只取「主图上方留白 + 主图高度」这一段（见 CHIP_CANVAS_HEIGHT）。
+ *
+ * 与 `MAIN_GRID.height` 的联动：加高主图时必须把本值同步加上同一增量，
+ * 否则主图会挤占下方副图与缩放条之间的间距（副图位置由 MAIN_GRID 推导，会整体下移）。
+ * 增量 = MAIN_GRID.height 的变化量，筹码画布高度（CHIP_CANVAS_HEIGHT）自动跟随，无需手改。
  */
-export const CHART_HEIGHT = 600;
+export const CHART_HEIGHT = 680;
 
 /**
  * 筹码分布面板宽度（px）：除筹码条本身，还要容纳右侧价格刻度（3~4 位数价格）
@@ -33,13 +37,13 @@ export const CHIP_STATS_WIDTH = 140;
 export const DEFAULT_VISIBLE_BARS = 120;
 
 /**
- * 各网格自画布顶算起：主图 52~302、成交量 320~382、MACD 400~458、KDJ 476~534，
- * 缩放条落在 558~580，其下方 20px 留给两端日期标签。
+ * 各网格自画布顶算起：主图 52~382、成交量 400~462、MACD 480~538、KDJ 556~614，
+ * 缩放条落在 638~660，其下方 20px 留给两端日期标签。
  */
 export const GRID_GAP = 18;
 
-/** 主图（蜡烛 + 均线）：top 同时也是标题留白高度，筹码面板必须与其完全一致 */
-export const MAIN_GRID = { top: 52, height: 250 };
+/** 主图（蜡烛 + 均线 + 布林带）：top 同时也是标题留白高度，筹码面板必须与其完全一致 */
+export const MAIN_GRID = { top: 52, height: 330 };
 
 /** 成交量副图 */
 export const VOLUME_GRID = { top: MAIN_GRID.top + MAIN_GRID.height + GRID_GAP, height: 62 };

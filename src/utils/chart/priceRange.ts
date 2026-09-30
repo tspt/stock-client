@@ -40,9 +40,9 @@ export function nicePriceRange(min: number, max: number, splitCount: number): Pr
 export interface ComputeVisiblePriceRangeInput {
   kline: KLineData[];
   /**
-   * 均线序列（MA5/10/20/30/60…）。
-   * 均线可能冲出 K 线高低点（如下跌初期的 MA60），必须一并纳入，
-   * 否则主图上的均线会被裁掉。
+   * 均线 / 布林带上下轨等主图叠加序列（MA5/10/20/30/60、BOLL upper/lower…）。
+   * 这些线可能冲出 K 线高低点（如下跌初期的 MA60、布林带 ±2σ），必须一并纳入，
+   * 否则主图上的线条会被裁掉。
    */
   maSeries: number[][];
   /** 当前 dataZoom 可见窗口（百分比），是左右两张图的唯一真源 */

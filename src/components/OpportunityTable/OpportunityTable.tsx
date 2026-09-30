@@ -20,14 +20,9 @@ import {
   formatGrowthPercent,
 } from '@/utils/format/format';
 import { StockConceptTags, StockFeatureTag, StockStatusTag } from '@/components/common/Tags';
+import { TradingSignalLabel } from '@/components/common/TradingSignalLabel/TradingSignalLabel';
 import { createOpportunityColumnSorter } from '@/utils/sort/tableSort';
 import styles from './OpportunityTable.module.css';
-import {
-  FALL_SOFT_COLOR,
-  RISE_SOFT_COLOR,
-  STRONG_RISE_COLOR,
-  TEXT_FALL_COLOR,
-} from '@/utils/config/chartColors';
 
 interface OpportunityTableProps {
   data: StockOpportunityData[];
@@ -237,24 +232,8 @@ export const OpportunityTable = memo(function OpportunityTable({
         }
         return <StockConceptTags concepts={record.concepts} max={3} />;
       }
-      case 'tradingSignal': {
-        const signal = record?.tradingSignal;
-        if (!signal) return '';
-
-        let color = '#666';
-        let text = '观望';
-        if (signal.type === 'STRONG_BUY') { color = TEXT_FALL_COLOR; text = '🟢 强烈买入'; }
-        else if (signal.type === 'BUY') { color = FALL_SOFT_COLOR; text = '🟢 建议买入'; }
-        else if (signal.type === 'SELL') { color = RISE_SOFT_COLOR; text = '🔴 建议卖出'; }
-        else if (signal.type === 'STRONG_SELL') { color = STRONG_RISE_COLOR; text = '🔴 强烈卖出'; }
-
-        return (
-          <div className={styles.tradingSignal}>
-            <span style={{ fontWeight: 'bold', color, fontSize: '12px' }}>{text}</span>
-            {signal.reason ? <span className={styles.tradingSignalReason}>{signal.reason}</span> : null}
-          </div>
-        );
-      }
+      case 'tradingSignal':
+        return record?.tradingSignal ? <TradingSignalLabel signal={record.tradingSignal} /> : '';
       default:
         return String(value);
     }

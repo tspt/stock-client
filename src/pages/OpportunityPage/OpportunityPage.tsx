@@ -1030,6 +1030,12 @@ export function OpportunityPage() {
     [displayAnalysisDataWithFinance, chartState?.code]
   );
 
+  /** 弹窗顶部展示的今日交易信号：跟随当前弹窗个股 */
+  const chartTradingSignal = useMemo(
+    () => displayAnalysisDataWithFinance.find((item) => item.code === chartState?.code)?.tradingSignal,
+    [displayAnalysisDataWithFinance, chartState?.code]
+  );
+
   /** AI 分析弹窗的数据：按当前选中个股缓存，避免每次渲染都遍历分析结果 */
   const selectedStockAIAnalysis = useMemo(
     () =>
@@ -2130,6 +2136,7 @@ export function OpportunityPage() {
         period="day"
         industry={chartIndustry}
         concepts={chartConcepts}
+        tradingSignal={chartTradingSignal}
         records={chartNavRecords}
         onNavigate={handleChartNavigate}
         onClose={() => setChartState(null)}
