@@ -199,6 +199,13 @@ export const KDJ_PARAMS = {
     m1: 3,
     m2: 3,
 };
+/** 布林带默认参数（K 线抽屉主图） */
+export const BOLL_PARAMS = {
+    /** 中轨周期（简单移动平均，同时也是标准差窗口） */
+    period: 20,
+    /** 上下轨标准差倍数 */
+    stdDev: 2,
+};
 /** RSI周期配置 */
 export const RSI_PERIODS = [6, 12, 24];
 /** 分组相关常量 */

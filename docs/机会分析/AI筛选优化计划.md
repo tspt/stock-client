@@ -25,7 +25,7 @@
 - **相似形态**: 特征提取 (价格/量变化序列、波动率、线性回归斜率) + 加权余弦相似度
 - **支撑阻力**: 简单取最近20根K线极值
 - **默认配置**: `aiAnalysisEnabled: true`, `aiTrendUp: true`, `aiTrendScoreRange.min: 50`, `aiRiskScoreRange.max: 50`
-- **诊断支持**: `FilterDiagnosticsPanel` 显示按频率排序的skip原因
+- **诊断支持**: `FilterDiagnosticsDrawer` 显示按频率排序的skip原因
 - **局限性**: 固定人工权重、简单规则、批次限制影响相似形态、缺少真实历史胜率闭环验证
 
 **当前代码文件映射**:
@@ -88,7 +88,7 @@
 
 ### 3.3 UI与诊断增强
 - `OpportunityFiltersPanel.tsx`: AI面板新增“模型阈值”滑块、`显示SHAP解释`开关。
-- `FilterDiagnosticsPanel.tsx`: 支持显示模型得分、Top贡献特征、规则+模型混合reason。
+- `FilterDiagnosticsDrawer.tsx`: 支持显示模型得分、Top贡献特征、规则+模型混合reason。
 - `AIAnalysisModal`: 展示特征重要性图表和详细解释。
 
 ### 3.4 性能与缓存优化
