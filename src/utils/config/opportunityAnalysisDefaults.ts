@@ -254,17 +254,41 @@ export const OPPORTUNITY_DEFAULT_INDUSTRY_GROUP_FILTER = {
   selectedGroups: [
     '金属相关',
     '农业相关',
-    '食品相关',
+    // '食品相关',
     '港口交通',
     '金融行业',
     '房地产相关',
     '旅游餐饮',
     '石油石化',
-    '零售消费',
+    // '零售消费',
     '造纸相关',
     '环保相关',
     '综合贸易',
   ],
+  /** 默认启用「排除选中」模式 */
+  invertEnabled: true,
+} as const;
+
+/**
+ * 名称筛选顶部：「概念分组」里固定提供的常用概念板块。
+ *
+ * 概念下拉选项来自东方财富概念板块接口（动态），这里额外保证这几个常用板块
+ * 一定会出现在选项中（接口阶段性缺项时仍可选且能显示中文名）。
+ * 代码取自东方财富板块：啤酒概念 BK1073 / 酿酒概念 BK0477 / 白酒 BK0896。
+ */
+export const OPPORTUNITY_CONCEPT_GROUP_SECTORS: { label: string; code: string }[] = [
+  { label: '啤酒概念', code: 'BK1073' },
+  { label: '酿酒概念', code: 'BK0477' },
+  { label: '白酒', code: 'BK0896' },
+];
+
+/**
+ * 名称筛选顶部：「概念分组」默认选中项与「排除选中」模式。
+ * 默认排除啤酒概念 / 酿酒概念 / 白酒（与 OPPORTUNITY_CONCEPT_GROUP_SECTORS 同源）。
+ */
+export const OPPORTUNITY_DEFAULT_CONCEPT_GROUP_FILTER = {
+  /** 默认选中的概念板块代码 */
+  selectedSectorCodes: OPPORTUNITY_CONCEPT_GROUP_SECTORS.map((sector) => sector.code),
   /** 默认启用「排除选中」模式 */
   invertEnabled: true,
 } as const;
@@ -283,12 +307,24 @@ export const OPPORTUNITY_DEFAULT_AI_ANALYSIS = {
   trendSideways: false,
   /** 技术指标评分最小值 */
   technicalScoreMin: undefined,
-  /** AI置信度最小值（%） */
-  confidenceMin: 50,
-  /** AI形态评分最小值 */
-  patternScoreMin: 50,
-  /** AI趋势评分最小值 */
-  trendScoreMin: 50,
+  /**
+   * AI形态评分最小值。
+   *
+   * 原先默认为 50（即「形态评分 ≥ 50 才留下」）。AI 胜率回评实测后发现该默认值有害：
+   * 形态/趋势评分与 d1~d6 前向收益的 RankIC 为**负**（−0.015 / −0.019，两份独立数据一致），
+   * 分数越高后续反而越差，因此这两个维度已在 `ai-v5.0.ts` 的 `SCORE_DIMENSION_INVERT` 中反号。
+   * 若仍按原始分设 50 分门槛，等于「专挑回测里表现最差的那批」，比不筛更糟，故改为不限。
+   */
+  patternScoreMin: undefined,
+  /** AI趋势评分最小值（同上，反号后不再设门槛） */
+  trendScoreMin: undefined,
+  /**
+   * AI置信度最小值（%）。
+   *
+   * 回测显示置信度的 RankIC 在 3 个时间窗口上符号翻转（+0.014 / −0.005 / −0.015），
+   * 与未来收益无可辨别的稳定关系，设门槛缺乏依据，故改为不限。
+   */
+  confidenceMin: undefined,
   /** AI安全评分最小值 */
   riskScoreMin: undefined,
   consolidation: {
@@ -693,8 +729,10 @@ export const INITIAL_FILTER_STATE = {
   // 技术指标筛选
   rsiRange: {} as { min?: number; max?: number },
   rsiPeriod: OPPORTUNITY_DEFAULT_INDICATORS.rsiPeriod,
-  // 交易信号筛选（空数组＝不筛选）
-  tradingSignalTypes: [] as TradingSignalType[],
+  // 交易信号筛选：默认勾选 强烈买入 / 建议买入 / 观望，不含卖出类。
+  // 勾选「观望」不会把无信号股票放进来——筛选逻辑要求 item.tradingSignal 存在，
+  // 无信号个股（resolveTradingSignalMeta 兜底也显示为「观望」）会被排除。
+  tradingSignalTypes: ['STRONG_BUY', 'BUY', 'HOLD'] as TradingSignalType[],
 
   // AI分析筛选
   aiAnalysisEnabled: OPPORTUNITY_DEFAULT_AI_ANALYSIS.enabled,

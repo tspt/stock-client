@@ -86,6 +86,37 @@ export interface StockPoolFilterOptions {
   conceptMapping: Map<string, SectorInfo[]>;
 }
 
+/** 市场 / 名称类型筛选条件 */
+export interface MarketAndNameFilter {
+  /** 选中的市场标识（空数组＝不匹配任何股票） */
+  selectedMarket: string[];
+  /** 名称类型：all / st / non_st */
+  nameType: string;
+}
+
+/**
+ * 按市场 / 名称类型过滤任意「带 code + name」的记录。
+ *
+ * 与 `filterStocksByMarketAndSectors` 共用同一套匹配函数，保证口径一致；
+ * 单独提供是因为 AI 回评的股票池来自 `stockHistory`（StockHistoryRecord），
+ * 不必先转成 StockInfo 再过滤。
+ */
+export function filterRecordsByMarketAndName<T extends { code: string; name: string }>(
+  records: T[],
+  filter: MarketAndNameFilter
+): T[] {
+  const marketMatchFn = createMarketMatcher(filter.selectedMarket);
+  if (!marketMatchFn) {
+    return [];
+  }
+  const nameTypeMatchFn = createNameTypeMatcher(filter.nameType);
+
+  return records.filter((record) => {
+    if (!marketMatchFn(getPureCode(record.code))) return false;
+    return nameTypeMatchFn(record.name.includes('ST'));
+  });
+}
+
 /**
  * 按市场、名称类型、行业板块、概念板块一次性过滤股票池。
  * 单次遍历，匹配函数预先构建，避免在循环内重复判断。

@@ -1,11 +1,17 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
-import type { KLineData, StockOpportunityData, TradingSignal } from '@/types/stock';
+import type {
+  KLineData,
+  StockOpportunityData,
+  TradingSignal,
+  TradingSignalFilterValue,
+} from '@/types/stock';
 import type { FilterSkippedItem, OpportunityFilterSnapshot } from '@/types/opportunityFilter';
 import {
   PASS_WHEN_MISSING,
   matchOptionalRange,
   matchOptionalRangeWithScale,
 } from '@/utils/analysis/rangeFilter';
+import { isNoSignalTradingSignal } from '@/utils/config/tradingSignalMeta';
 import type { OpportunityFilterWorkerOutboundMessage } from '@/workers/opportunityFilterWorkerTypes';
 
 /** 对外暴露 signalMap 时用于替代 null 的空映射（保持引用稳定） */
@@ -520,9 +526,17 @@ export function useOpportunityFilterEngine({
       return merged;
     }
 
-    // 勾选多个类型为「或」关系；无信号的股票不命中
-    const allowed = new Set(tradingSignalTypes);
-    return merged.filter((item) => !!item.tradingSignal && allowed.has(item.tradingSignal.type));
+    // 勾选多个类型为「或」关系。
+    // 「无明显信号」与「观望」是两类：勾选观望不会把无明显信号的个股放进来，
+    // 反之勾选「无明显信号」也只会捞出那两类（无信号对象 / HOLD 且无命中理由）。
+    const allowed = new Set<TradingSignalFilterValue>(tradingSignalTypes);
+    return merged.filter((item) => {
+      const signal = item.tradingSignal;
+      if (isNoSignalTradingSignal(signal)) {
+        return allowed.has('NO_SIGNAL');
+      }
+      return !!signal && allowed.has(signal.type);
+    });
   }, [filteredRawData, signalMap, tradingSignalTypes]);
 
   return {

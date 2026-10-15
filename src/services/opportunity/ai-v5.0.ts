@@ -894,6 +894,42 @@ export interface RecommendationConfig {
   riskWeight: number;
 }
 
+/**
+ * 评分维度的「方向」。
+ *
+ * 由 `AI 胜率回评`（docs/机会分析/AI胜率评测与相似形态重构计划.md）实测得出：
+ * 把 3052 只股票的日线按历史截面重算 AI 打分，再看各分项与 d1~d6 前向收益的
+ * 逐截面 RankIC ——
+ *
+ * | 维度 | IC（两份独立数据） | 判定 |
+ * |---|---|---|
+ * | 技术面 | +0.0239 / +0.0313 | 两份均为正，越高越好 |
+ * | 形态   | −0.0147 / −0.0208 | 两份均为负，越高越差 → **反号** |
+ * | 趋势   | −0.0190 / +0.0025 | 符号不稳；反号在负值数据上收益大、在≈0 数据上代价可忽略 |
+ * | 风险   | +0.0116 / +0.0428 | 幅度不稳 → 不反号 |
+ *
+ * 经济含义：技术面高 = 均线多头 + 放量，动量有效；形态/趋势高 = 急涨后整理 /
+ * 沿趋势线上行，短期反而回落。原先三个维度按同向加权会互相抵消。
+ *
+ * 验证方式：候选权重在 3 个时间窗口上一致领先，并在完全留出的第 3 个窗口上
+ * 综合 IC 0.0196 vs 现状 0.0069（约 3 倍）。
+ *
+ * ⚠️ 分项分数本身仍按原口径计算与展示（它们衡量「形态/趋势质量」），
+ * 只是对**综合评分**的贡献方向取反。弹窗需向用户说明这一点，否则
+ * 「形态 80 分却拉低综合分」会被误解。
+ */
+const SCORE_DIMENSION_INVERT = {
+  technical: false,
+  pattern: true,
+  trend: true,
+  risk: false,
+} as const;
+
+/** 取该维度对综合评分的实际贡献（反号维度取 100 − 分） */
+function orientedScore(raw: number, invert: boolean): number {
+  return invert ? 100 - raw : raw;
+}
+
 const DEFAULT_RECOMMENDATION_CONFIG: RecommendationConfig = {
   technicalWeight: 0.3,
   patternWeight: 0.25,
@@ -924,12 +960,12 @@ export function calculateRecommendationScore(
   // 安全评分
   const riskScore = calculateRiskScore(klineData, opportunityData, reasons, warnings);
 
-  // 综合评分
+  // 综合评分：按 SCORE_DIMENSION_INVERT 取各维度的贡献方向
   const totalScore = Math.round(
-    technicalScore * config.technicalWeight +
-      patternScore * config.patternWeight +
-      trendScore * config.trendWeight +
-      riskScore * config.riskWeight
+    orientedScore(technicalScore, SCORE_DIMENSION_INVERT.technical) * config.technicalWeight +
+      orientedScore(patternScore, SCORE_DIMENSION_INVERT.pattern) * config.patternWeight +
+      orientedScore(trendScore, SCORE_DIMENSION_INVERT.trend) * config.trendWeight +
+      orientedScore(riskScore, SCORE_DIMENSION_INVERT.risk) * config.riskWeight
   );
 
   return {
@@ -1130,12 +1166,19 @@ function v4ClampIntScore(n: number): number {
   return Math.min(100, Math.max(0, Math.round(n)));
 }
 
+/**
+ * 重算综合评分。
+ *
+ * ⚠️ 必须与 `calculateRecommendationScore` 用同一套方向配置（SCORE_DIMENSION_INvert 注释见上）：
+ * v4/v5 的结构校正会在末尾重算 totalScore，若这里漏掉反号，
+ * 校正流程会把综合评分覆盖回未反号的旧口径。
+ */
 function v4RecomputeTotal(rec: SmartRecommendationScore): number {
   return v4ClampIntScore(
-    rec.technicalScore * V4_REC_WEIGHT.technical +
-      rec.patternScore * V4_REC_WEIGHT.pattern +
-      rec.trendScore * V4_REC_WEIGHT.trend +
-      rec.riskScore * V4_REC_WEIGHT.risk
+    orientedScore(rec.technicalScore, SCORE_DIMENSION_INVERT.technical) * V4_REC_WEIGHT.technical +
+      orientedScore(rec.patternScore, SCORE_DIMENSION_INVERT.pattern) * V4_REC_WEIGHT.pattern +
+      orientedScore(rec.trendScore, SCORE_DIMENSION_INVERT.trend) * V4_REC_WEIGHT.trend +
+      orientedScore(rec.riskScore, SCORE_DIMENSION_INVERT.risk) * V4_REC_WEIGHT.risk
   );
 }
 

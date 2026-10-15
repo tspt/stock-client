@@ -138,6 +138,22 @@
   margin-top: 8px;
 }
 
+/* 形态/趋势反号说明 */
+.invertNotice {
+  margin: 0;
+  font-size: 12px;
+
+  :global(.ant-alert-message) {
+    font-size: 12px;
+    margin-bottom: 2px;
+  }
+
+  :global(.ant-alert-description) {
+    font-size: 12px;
+    line-height: 1.6;
+  }
+}
+
 .sectionTitle {
   display: flex;
   align-items: center;

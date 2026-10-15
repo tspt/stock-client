@@ -38,6 +38,7 @@ const HotRankPage = lazy(() => import('@/pages/HotRankPage/HotRankPage').then((m
 const CookieManagerPage = lazy(() => import('@/pages/CookieManagerPage/CookieManagerPage').then((m) => ({ default: m.CookieManagerPage })));
 const DataManagerPage = lazy(() => import('@/pages/DataManagerPage/DataManagerPage').then((m) => ({ default: m.DataManagerPage })));
 const BacktestPage = lazy(() => import('@/pages/BacktestPage/BacktestPage').then((m) => ({ default: m.BacktestPage })));
+const AiBacktestPage = lazy(() => import('@/pages/AiBacktestPage/AiBacktestPage').then((m) => ({ default: m.AiBacktestPage })));
 
 const { Header, Content } = Layout;
 
@@ -397,6 +398,28 @@ function AppContent() {
                         >
                           <div className={styles.opportunityLayout}>
                             <BacktestPage />
+                          </div>
+                        </Suspense>
+                      ),
+                    },
+                    {
+                      key: 'ai-backtest',
+                      label: (
+                        <span>
+                          <TrophyOutlined className={styles.mgr6} />
+                          AI 胜率回评
+                        </span>
+                      ),
+                      children: (
+                        <Suspense
+                          fallback={
+                            <div className={styles.suspenseFallback}>
+                              <Spin size="large" />
+                            </div>
+                          }
+                        >
+                          <div className={styles.opportunityLayout}>
+                            <AiBacktestPage />
                           </div>
                         </Suspense>
                       ),

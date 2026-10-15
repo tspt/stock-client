@@ -1,4 +1,8 @@
-import type { ConsolidationType, StockOpportunityData, TradingSignalType } from '@/types/stock';
+import type {
+  ConsolidationType,
+  StockOpportunityData,
+  TradingSignalFilterValue,
+} from '@/types/stock';
 
 export interface NumberRange {
   min?: number;
@@ -84,9 +88,12 @@ export interface OpportunityFilterSnapshot {
   rsiPeriod: number;
   /**
    * 交易信号筛选：勾选任一信号类型即入选（OR）；
-   * 空数组 / 不传表示不按交易信号筛选。无信号（K 线不足 60 根）视为不命中。
+   * 空数组 / 不传表示不按交易信号筛选。
+   *
+   * 「NO_SIGNAL」与「HOLD」是两类：勾选 HOLD 不会把「无明显信号」的个股放进来，
+   * 勾选 NO_SIGNAL 也只会捞出无明显信号那批（无信号对象 / HOLD 且无命中理由）。
    */
-  tradingSignalTypes?: TradingSignalType[];
+  tradingSignalTypes?: TradingSignalFilterValue[];
   /** AI分析筛选开关 */
   aiAnalysisEnabled: boolean;
   /** AI趋势预测方向筛选 */

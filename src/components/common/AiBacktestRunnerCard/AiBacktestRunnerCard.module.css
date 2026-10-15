@@ -1,0 +1,47 @@
+.aiBacktestRunnerCard {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  border: 1px solid var(--ant-color-border-secondary);
+  background: var(--ant-color-bg-container);
+}
+
+[data-theme='dark'] .aiBacktestRunnerCard {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+}
+
+.control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.controlLabel {
+  font-size: 13px;
+  color: var(--ant-color-text-secondary);
+  white-space: nowrap;
+}
+
+.select {
+  min-width: 130px;
+}
+
+.selectWide {
+  min-width: 200px;
+}
+
+.availableTag {
+  margin: 0;
+}

@@ -11,10 +11,11 @@
 import type { Key } from 'react';
 import type { SortOrder } from 'antd/es/table/interface';
 import type { OverviewSortConfig, StockOpportunityData, TradingSignalType } from '@/types/stock';
+import { isNoSignalTradingSignal } from '@/utils/config/tradingSignalMeta';
 
 /**
  * 交易信号排序权重：买入类相邻、卖出类相邻，观望排在最后。
- * 升序顺序：建议买入 → 强烈买入 → 建议卖出 → 强烈卖出 → 观望（无信号始终最后）
+ * 升序顺序：建议买入 → 强烈买入 → 建议卖出 → 强烈卖出 → 观望（「无明显信号」始终最后）
  */
 export const TRADING_SIGNAL_SORT_WEIGHT: Record<TradingSignalType, number> = {
   BUY: 0,
@@ -44,14 +45,22 @@ export function getOpportunitySortValue(
       return record.sharpMovePatterns?.labels?.join('、') ?? '';
     case 'pullbackLabels':
       return record.pullbackPattern?.labels?.join('、') ?? '';
+    case 'aiRecommendScore':
+      // 嵌套在 aiAnalysis 下，无法靠默认的 record[key] 取到，需显式取值；
+      // 口径与表格列 sorter、K线/筹码弹窗 ← → 导航共用同一实现。
+      return record.aiAnalysis?.recommendation?.totalScore;
     case 'industry':
       return record.industry?.name ?? '';
     case 'concepts':
       return record.concepts?.map((c) => c.name).join('、') ?? '';
     case 'tradingSignal': {
-      const signalType = record.tradingSignal?.type;
+      const signal = record.tradingSignal;
+      // 「无明显信号」与「观望」分开排序：前者固定排在最后，
+      // 否则表格排序会把两类混在一起，与筛选口径不一致。
+      if (isNoSignalTradingSignal(signal)) return 5;
+      const signalType = signal?.type;
       // 用权重而非类型字符串排序：避免 HOLD 插在买入与卖出之间、且 STRONG_* 被字典序排到最后
-      return signalType ? TRADING_SIGNAL_SORT_WEIGHT[signalType] ?? 5 : undefined;
+      return signalType ? TRADING_SIGNAL_SORT_WEIGHT[signalType] ?? 5 : 5;
     }
     case 'financeRevenue':
       return record.finance?.revenue;

@@ -6,7 +6,7 @@ import { memo, useMemo, useState } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 import { Button, Drawer, Space, Collapse, InputNumber, Checkbox, Select } from 'antd';
 import { FilterOutlined } from '@ant-design/icons';
-import type { ConsolidationType, TradingSignalType } from '@/types/stock';
+import type { ConsolidationType, TradingSignalFilterValue } from '@/types/stock';
 import { normalizeStockNameList } from '@/utils/format/format';
 import {
   OPPORTUNITY_INDUSTRY_GROUPS,
@@ -22,11 +22,17 @@ const VOLUME_PULLBACK_TRIGGER_OPTIONS: { label: string; value: 'any' | 'limitUp'
   { label: '必须收盘涨停', value: 'limitUp' },
 ];
 
-/** 交易信号筛选选项（文案与机会表格「交易信号」列保持一致） */
-const TRADING_SIGNAL_FILTER_OPTIONS: { label: string; value: TradingSignalType }[] = [
+/**
+ * 交易信号筛选选项（文案与机会表格「交易信号」列保持一致）。
+ *
+ * 「无明显信号」单列一项，与「观望」分开：勾选观望只捞有命中理由的 HOLD，
+ * 勾选无明显信号则捞那两类（无信号对象 / HOLD 且无命中理由）。
+ */
+const TRADING_SIGNAL_FILTER_OPTIONS: { label: string; value: TradingSignalFilterValue }[] = [
   { label: '强烈买入', value: 'STRONG_BUY' },
   { label: '建议买入', value: 'BUY' },
   { label: '观望', value: 'HOLD' },
+  { label: '无明显信号', value: 'NO_SIGNAL' },
   { label: '建议卖出', value: 'SELL' },
   { label: '强烈卖出', value: 'STRONG_SELL' },
 ];
@@ -103,7 +109,7 @@ export function buildOpportunityFilterSummary(p: {
   // 新增技术指标筛选
   rsiRange: NumRange;
   // 交易信号筛选
-  tradingSignalTypes?: TradingSignalType[];
+  tradingSignalTypes?: TradingSignalFilterValue[];
   // AI分析筛选
   aiAnalysisEnabled: boolean;
   aiTrendUp: boolean;
@@ -394,8 +400,8 @@ export interface OpportunityFiltersPanelProps {
   rsiPeriod: number;
   setRsiPeriod: (v: number) => void;
   // 交易信号筛选 props
-  tradingSignalTypes?: TradingSignalType[];
-  setTradingSignalTypes?: (v: TradingSignalType[]) => void;
+  tradingSignalTypes?: TradingSignalFilterValue[];
+  setTradingSignalTypes?: (v: TradingSignalFilterValue[]) => void;
   // AI分析筛选 props
   aiAnalysisEnabled: boolean;
   setAiAnalysisEnabled: (v: boolean) => void;
@@ -1315,11 +1321,11 @@ function OpportunityFiltersPanelComponent({
                           style={{ width: 320 }}
                           placeholder="全部（不筛选）"
                           maxTagCount="responsive"
-                          onChange={(values) => setTradingSignalTypes(values as TradingSignalType[])}
+                          onChange={(values) => setTradingSignalTypes(values as TradingSignalFilterValue[])}
                           options={TRADING_SIGNAL_FILTER_OPTIONS}
                         />
                         <span className={styles.filterHint} style={{ marginLeft: 8 }}>
-                          可多选，满足任一即入选（无信号不命中）
+                          可多选，满足任一即入选；「无明显信号」与「观望」是两类，可单独勾选
                         </span>
                       </div>
                     </div>

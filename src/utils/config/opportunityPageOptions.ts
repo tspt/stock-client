@@ -21,6 +21,24 @@ export const NAME_TYPE_OPTIONS: { label: string; value: string }[] = [
   { label: '非ST', value: 'non_st' },
 ];
 
+/**
+ * 把市场 / 名称筛选值拼成可读文案（用于结果标注、日志）。
+ *
+ * 与上面的选项常量同源：选项文案改动后这里自动跟随，不会出现两处不一致。
+ */
+export function describeMarketAndNameFilter(
+  selectedMarket: string[],
+  nameType: string
+): string {
+  const markets = selectedMarket.length
+    ? selectedMarket
+        .map((value) => MARKET_OPTIONS.find((option) => option.value === value)?.label ?? value)
+        .join(' + ')
+    : '未选市场';
+  const name = NAME_TYPE_OPTIONS.find((option) => option.value === nameType)?.label ?? nameType;
+  return `${markets} · ${name}`;
+}
+
 /** 横盘结构类型选项 */
 export const CONSOLIDATION_TYPE_OPTIONS: { label: string; value: ConsolidationType }[] = [
   { label: CONSOLIDATION_TYPE_LABELS.low_stable, value: 'low_stable' },

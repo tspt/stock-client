@@ -6,7 +6,11 @@
  * 归一化规则收敛到一处，页面只负责把 useState 汇总成 OpportunityFilterFormState。
  */
 
-import type { ConsolidationType, KLinePeriod, TradingSignalType } from '@/types/stock';
+import type {
+  ConsolidationType,
+  KLinePeriod,
+  TradingSignalFilterValue,
+} from '@/types/stock';
 import type { NumberRange, OpportunityFilterSnapshot } from '@/types/opportunityFilter';
 import {
   visibilityFromActiveFilterPanelKey,
@@ -82,7 +86,7 @@ export interface OpportunityFilterFormState {
   // 技术指标 / 交易信号
   rsiRange: NumberRange;
   rsiPeriod: number;
-  tradingSignalTypes: TradingSignalType[];
+  tradingSignalTypes: TradingSignalFilterValue[];
 
   // AI 分析筛选
   aiAnalysisEnabled: boolean;

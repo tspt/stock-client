@@ -71,6 +71,7 @@ import {
   type AiVersion,
 } from '@/utils/config/opportunityPageOptions';
 import { filterStocksByMarketAndSectors } from '@/utils/analysis/stockFiltering';
+import { mergeConceptGroupSectorOptions } from '@/utils/analysis/conceptSectorOptionsMerge';
 import { mergeFinanceMetrics } from '@/utils/analysis/stockFinanceMerge';
 import { filterByStockKeyword } from '@/utils/format/textMatch';
 import { ProgressCard } from '@/components/common/ProgressCard/ProgressCard';
@@ -84,9 +85,11 @@ import {
   OPPORTUNITY_DEFAULT_NAME_FILTERS,
   OPPORTUNITY_INDUSTRY_GROUPS,
   OPPORTUNITY_DEFAULT_INDUSTRY_GROUP_FILTER,
+  OPPORTUNITY_CONCEPT_GROUP_SECTORS,
+  OPPORTUNITY_DEFAULT_CONCEPT_GROUP_FILTER,
 } from '@/utils/config/opportunityAnalysisDefaults';
 import { getUnifiedSectorBasics } from '@/services/hot/unified-sectors';
-import type { TradingSignalType } from '@/types/stock';
+import type { TradingSignalFilterValue } from '@/types/stock';
 import {
   getMappedConcepts,
   getMappedIndustry,
@@ -441,7 +444,7 @@ export function OpportunityPage() {
   const [rsiRange, setRsiRange] = useState<{ min?: number; max?: number }>(INITIAL_FILTER_STATE.rsiRange);
   const [rsiPeriod, setRsiPeriod] = useState<number>(INITIAL_FILTER_STATE.rsiPeriod);
   // 交易信号筛选状态（空数组＝不筛选）
-  const [tradingSignalTypes, setTradingSignalTypes] = useState<TradingSignalType[]>(
+  const [tradingSignalTypes, setTradingSignalTypes] = useState<TradingSignalFilterValue[]>(
     INITIAL_FILTER_STATE.tradingSignalTypes
   );
 
@@ -509,14 +512,28 @@ export function OpportunityPage() {
   );
   /**
    * 名称筛选面板的「概念分组」：与顶部工具栏「概念」完全独立，
-   * 不做分组，直接把全部概念板块作为可选值（选项来自 conceptSectorOptions）。
+   * 不做分组，直接把全部概念板块作为可选值（选项来自 conceptGroupSectorOptions）。
+   * 默认选中「排除啤酒概念 / 酿酒概念 / 白酒」，见 OPPORTUNITY_DEFAULT_CONCEPT_GROUP_FILTER。
    */
-  const [nameFilterConceptSectors, setNameFilterConceptSectors] = useState<string[]>([]);
-  const [nameFilterConceptInvert, setNameFilterConceptInvert] = useState<boolean>(false);
+  const [nameFilterConceptSectors, setNameFilterConceptSectors] = useState<string[]>([
+    ...OPPORTUNITY_DEFAULT_CONCEPT_GROUP_FILTER.selectedSectorCodes,
+  ]);
+  const [nameFilterConceptInvert, setNameFilterConceptInvert] = useState<boolean>(
+    OPPORTUNITY_DEFAULT_CONCEPT_GROUP_FILTER.invertEnabled
+  );
   // 行业板块选项
   const [industrySectorOptions, setIndustrySectorOptions] = useState<{ label: string; value: string }[]>([]);
-  // 概念板块选项
+  // 概念板块选项（接口原样，顶部「概念」筛选使用）
   const [conceptSectorOptions, setConceptSectorOptions] = useState<{ label: string; value: string }[]>([]);
+
+  /**
+   * 名称筛选面板「概念分组」的下拉选项：在接口选项基础上补充固定板块
+   * （啤酒概念 / 酿酒概念 / 白酒，见 OPPORTUNITY_CONCEPT_GROUP_SECTORS）。
+   */
+  const conceptGroupSectorOptions = useMemo(
+    () => mergeConceptGroupSectorOptions(conceptSectorOptions, OPPORTUNITY_CONCEPT_GROUP_SECTORS),
+    [conceptSectorOptions]
+  );
 
   /** 名称筛选面板选中的行业分组 → 行业板块代码集合（独立于顶部「行业」筛选） */
   const nameFilterIndustryCodes = useMemo(() => {
@@ -954,7 +971,7 @@ export function OpportunityPage() {
         industrySectors,
         conceptSectors,
         industrySectorOptions,
-        conceptSectorOptions,
+        conceptSectorOptions: conceptGroupSectorOptions,
         nameFilterIndustryGroups,
         nameFilterIndustryInvert,
         nameFilterConceptSectors,
@@ -966,7 +983,7 @@ export function OpportunityPage() {
       industrySectors,
       conceptSectors,
       industrySectorOptions,
-      conceptSectorOptions,
+      conceptGroupSectorOptions,
       nameFilterIndustryGroups,
       nameFilterIndustryInvert,
       nameFilterConceptSectors,
@@ -1207,9 +1224,9 @@ export function OpportunityPage() {
     // 重置名称筛选面板的行业分组（与顶部「行业」筛选彼此独立）
     setNameFilterIndustryGroups([...OPPORTUNITY_DEFAULT_INDUSTRY_GROUP_FILTER.selectedGroups]);
     setNameFilterIndustryInvert(OPPORTUNITY_DEFAULT_INDUSTRY_GROUP_FILTER.invertEnabled);
-    // 重置名称筛选面板的概念板块（与顶部「概念」筛选彼此独立，默认不选）
-    setNameFilterConceptSectors([]);
-    setNameFilterConceptInvert(false);
+    // 重置名称筛选面板的概念分组（与顶部「概念」筛选彼此独立，默认排除啤酒概念 / 酿酒概念 / 白酒）
+    setNameFilterConceptSectors([...OPPORTUNITY_DEFAULT_CONCEPT_GROUP_FILTER.selectedSectorCodes]);
+    setNameFilterConceptInvert(OPPORTUNITY_DEFAULT_CONCEPT_GROUP_FILTER.invertEnabled);
     // 重置名称过滤
     // 名称筛选重置
     setEnableNameKeywordFilter(true);
@@ -1955,7 +1972,7 @@ export function OpportunityPage() {
             setNameFilterConceptSectors={setNameFilterConceptSectors}
             nameFilterConceptInvert={nameFilterConceptInvert}
             setNameFilterConceptInvert={setNameFilterConceptInvert}
-            conceptSectorOptions={conceptSectorOptions}
+            conceptSectorOptions={conceptGroupSectorOptions}
             // 名称过滤
             // 名称筛选
             enableNameKeywordFilter={enableNameKeywordFilter}

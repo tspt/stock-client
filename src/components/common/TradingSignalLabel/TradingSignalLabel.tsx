@@ -14,14 +14,14 @@ import { resolveTradingSignalMeta } from '@/utils/config/tradingSignalMeta';
 import styles from './TradingSignalLabel.module.css';
 
 export interface TradingSignalLabelProps {
-  /** 交易信号；缺省或类型未知时按「观望」展示 */
+  /** 交易信号；缺省、类型未知、或 HOLD 且无命中理由时按「无明显信号」展示 */
   signal?: TradingSignal;
   /** 文案字号（表格 12 / 抽屉 14），默认 12 */
   fontSize?: number;
 }
 
 export function TradingSignalLabel({ signal, fontSize = 12 }: TradingSignalLabelProps) {
-  const meta = resolveTradingSignalMeta(signal?.type);
+  const meta = resolveTradingSignalMeta(signal);
 
   return (
     <span className={styles.label}>

@@ -152,6 +152,55 @@ export const OpportunityTable = memo(function OpportunityTable({
       );
     }
 
+    /**
+     * 嵌套字段列：值不在 record[key] 上，必须在下方 value 守卫之前处理。
+     *
+     * 否则 dataIndex 取到的 value 为 undefined，会被守卫直接返回 ''，
+     * 导致整列显示为空（单日异动 / 量价回踩 / AI综合评分 三列均曾因此为空）。
+     * 参照 consolidationTypes / trendLineReason 的既有写法。
+     */
+    if (key === 'sharpMoveLabels') {
+      const labels = record?.sharpMovePatterns?.labels;
+      if (!labels || labels.length === 0) return '';
+      return (
+        <div className={styles.consolidationTypes}>
+          {labels.map((label) => (
+            <StockFeatureTag key={label} text={label} />
+          ))}
+        </div>
+      );
+    }
+
+    if (key === 'pullbackLabels') {
+      const pullback = record?.pullbackPattern;
+      if (!pullback?.labels?.length) {
+        return '';
+      }
+      return (
+        <div
+          className={styles.consolidationTypes}
+          title={pullback.reasonText || undefined}
+        >
+          {pullback.labels.map((label) => (
+            <StockFeatureTag key={label} text={label} />
+          ))}
+        </div>
+      );
+    }
+
+    if (key === 'aiRecommendScore') {
+      const score = record?.aiAnalysis?.recommendation?.totalScore;
+      if (score == null) return '';
+      return (
+        <span
+          className={score >= 60 ? styles.positiveValue : undefined}
+          title={`AI 综合评分 ${score}（含形态/趋势反向计分）`}
+        >
+          {score}
+        </span>
+      );
+    }
+
     if (value === null || value === undefined || value === '') {
       return '';
     }
@@ -194,33 +243,6 @@ export const OpportunityTable = memo(function OpportunityTable({
       case 'ma240':
       case 'ma360':
         return value !== undefined && value !== null ? `${Number(value).toFixed(2)}%` : '';
-      case 'sharpMoveLabels': {
-        const labels = record?.sharpMovePatterns?.labels;
-        if (!labels || labels.length === 0) return '';
-        return (
-          <div className={styles.consolidationTypes}>
-            {labels.map((label) => (
-              <StockFeatureTag key={label} text={label} />
-            ))}
-          </div>
-        );
-      }
-      case 'pullbackLabels': {
-        const pullback = record?.pullbackPattern;
-        if (!pullback?.labels?.length) {
-          return '';
-        }
-        return (
-          <div
-            className={styles.consolidationTypes}
-            title={pullback.reasonText || undefined}
-          >
-            {pullback.labels.map((label) => (
-              <StockFeatureTag key={label} text={label} />
-            ))}
-          </div>
-        );
-      }
       case 'industry': {
         const industryName = record?.industry?.name;
         if (!industryName) return '';

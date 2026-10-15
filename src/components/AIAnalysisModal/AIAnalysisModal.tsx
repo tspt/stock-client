@@ -3,7 +3,7 @@
  */
 
 import React from 'react';
-import { Modal, Card, Progress, Tag, Space, Divider } from 'antd';
+import { Modal, Card, Progress, Tag, Space, Divider, Alert } from 'antd';
 import {
   RiseOutlined,
   FallOutlined,
@@ -193,6 +193,14 @@ export const AIAnalysisModal: React.FC<AIAnalysisModalProps> = ({
                   />
                 </div>
               </div>
+
+              <Alert
+                type="info"
+                showIcon
+                className={styles.invertNotice}
+                message="形态 / 趋势为反向指标"
+                description="回测发现：形态分、趋势分越高的股票，后续 1~6 日表现反而越差（RankIC 约 −0.015 / −0.019）。因此这两项分数越高，对综合评分的贡献越低。分项分数本身仍按原口径计算。"
+              />
 
               {analysis.recommendation.reasons.length > 0 && (
                 <div className={styles.reasonsSection}>

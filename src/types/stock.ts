@@ -318,6 +318,18 @@ export interface TrendLineAnalysis {
 export type TradingSignalType = 'STRONG_BUY' | 'BUY' | 'HOLD' | 'SELL' | 'STRONG_SELL';
 
 /**
+ * 交易信号筛选取值：在 TradingSignalType 之外额外支持「无明显信号」。
+ *
+ * 「无明显信号」不是一种信号类型，而是两种状态的统称：
+ * 1. `detectTradingSignal` 对无任何命中理由的个股返回的 HOLD（reason 为「无明显信号」）；
+ * 2. K 线不足 60 根时压根没有信号对象。
+ *
+ * 把它单列出来，用户才能在筛选里把这类股票与真正的「观望」分开、并单独过滤掉。
+ * 判定口径见 `utils/config/tradingSignalMeta.ts` 的 `isNoSignalTradingSignal`。
+ */
+export type TradingSignalFilterValue = TradingSignalType | 'NO_SIGNAL';
+
+/**
  * 交易信号详情
  */
 export interface TradingSignal {

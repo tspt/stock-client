@@ -3,7 +3,11 @@
  * 与 IndexedDB 中的分析结果 + K 线缓存配合，实现纯前端筛选与二次访问还原。
  */
 
-import type { ConsolidationType, KLinePeriod, TradingSignalType } from '@/types/stock';
+import type {
+  ConsolidationType,
+  KLinePeriod,
+  TradingSignalFilterValue,
+} from '@/types/stock';
 import {
   OPPORTUNITY_DEFAULT_CONSOLIDATION,
   OPPORTUNITY_DEFAULT_SHARP_MOVE,
@@ -15,6 +19,7 @@ import {
   OPPORTUNITY_DEFAULT_VOLUME_PULLBACK,
   OPPORTUNITY_INDUSTRY_GROUPS,
   OPPORTUNITY_DEFAULT_INDUSTRY_GROUP_FILTER,
+  OPPORTUNITY_DEFAULT_CONCEPT_GROUP_FILTER,
   OPPORTUNITY_DEFAULT_FINANCE_FILTERS,
 } from '@/utils/config/opportunityAnalysisDefaults';
 import { logger } from '../business/logger';
@@ -104,11 +109,15 @@ export function visibilityFromActiveFilterPanelKey(
 
 const VALID_PERIODS: KLinePeriod[] = ['day', 'week', 'month', 'year'];
 const VALID_CONSOLIDATION_TYPES: ConsolidationType[] = ['low_stable', 'high_stable', 'box'];
-/** 交易信号类型（用于校验持久化数据） */
-const VALID_TRADING_SIGNAL_TYPES: TradingSignalType[] = [
+/**
+ * 交易信号筛选取值（用于校验持久化数据）。
+ * 'NO_SIGNAL' 不是信号类型，而是「无明显信号」这一类（无信号对象 / HOLD 且无命中理由）的统称。
+ */
+const VALID_TRADING_SIGNAL_TYPES: TradingSignalFilterValue[] = [
   'STRONG_BUY',
   'BUY',
   'HOLD',
+  'NO_SIGNAL',
   'SELL',
   'STRONG_SELL',
 ];
@@ -217,7 +226,7 @@ export interface OpportunityFilterPrefs {
   /** RSI周期 */
   rsiPeriod: number;
   /** 交易信号筛选（空数组＝不筛选） */
-  tradingSignalTypes: TradingSignalType[];
+  tradingSignalTypes: TradingSignalFilterValue[];
   /** AI分析筛选 */
   aiAnalysisEnabled: boolean;
   aiTrendUp: boolean;
@@ -288,12 +297,15 @@ function parseConsolidationTypes(v: unknown): ConsolidationType[] {
 }
 
 /** 解析交易信号筛选（非法值丢弃；缺省为空数组＝不筛选） */
-function parseTradingSignalTypes(v: unknown): TradingSignalType[] {
+function parseTradingSignalTypes(v: unknown): TradingSignalFilterValue[] {
   if (!Array.isArray(v)) return [];
-  const out: TradingSignalType[] = [];
+  const out: TradingSignalFilterValue[] = [];
   for (const item of v) {
-    if (typeof item === 'string' && VALID_TRADING_SIGNAL_TYPES.includes(item as TradingSignalType)) {
-      out.push(item as TradingSignalType);
+    if (
+      typeof item === 'string' &&
+      VALID_TRADING_SIGNAL_TYPES.includes(item as TradingSignalFilterValue)
+    ) {
+      out.push(item as TradingSignalFilterValue);
     }
   }
   return out;
@@ -544,8 +556,8 @@ export function getDefaultFilterPrefsFields(): Omit<
     // 新增技术指标筛选默认值
     rsiRange: {},
     rsiPeriod: 6,
-    // 交易信号筛选默认值（不筛选）
-    tradingSignalTypes: [],
+    // 交易信号筛选默认值：强烈买入 / 建议买入 / 观望（不含卖出类）
+    tradingSignalTypes: ['STRONG_BUY', 'BUY', 'HOLD'],
     // AI分析筛选默认值
     aiAnalysisEnabled: false,
     aiTrendUp: false,
@@ -564,9 +576,9 @@ export function getDefaultFilterPrefsFields(): Omit<
     // 名称筛选：行业分组（独立于顶部「行业」筛选）
     nameFilterIndustryGroups: [...OPPORTUNITY_DEFAULT_INDUSTRY_GROUP_FILTER.selectedGroups],
     nameFilterIndustryInvert: OPPORTUNITY_DEFAULT_INDUSTRY_GROUP_FILTER.invertEnabled,
-    // 名称筛选：概念板块（默认不选，即不参与筛选）
-    nameFilterConceptSectors: [],
-    nameFilterConceptInvert: false,
+    // 名称筛选：概念板块（默认排除啤酒概念 / 酿酒概念 / 白酒）
+    nameFilterConceptSectors: [...OPPORTUNITY_DEFAULT_CONCEPT_GROUP_FILTER.selectedSectorCodes],
+    nameFilterConceptInvert: OPPORTUNITY_DEFAULT_CONCEPT_GROUP_FILTER.invertEnabled,
     nameFilterVisible: true,
   };
 }
@@ -662,7 +674,7 @@ export interface OpportunityFilterPrefsApplyActions {
   setRsiRange: (v: { min?: number; max?: number }) => void;
   setRsiPeriod: (v: number) => void;
   // 交易信号筛选 actions
-  setTradingSignalTypes: (v: TradingSignalType[]) => void;
+  setTradingSignalTypes: (v: TradingSignalFilterValue[]) => void;
   // AI分析筛选 actions
   setAiAnalysisEnabled: (v: boolean) => void;
   setAiTrendUp: (v: boolean) => void;

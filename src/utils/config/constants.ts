@@ -276,8 +276,15 @@ export const ALERT_TIME_PERIODS = [
 /** 机会分析相关常量 */
 /** IndexedDB 数据库名 */
 export const OPPORTUNITY_DB_NAME = 'StockOpportunityDB';
-/** IndexedDB 版本（v9：新增财务指标存储） */
-export const OPPORTUNITY_DB_VERSION = 9;
+/**
+ * IndexedDB 版本。
+ *
+ * ⚠️ v10 曾短暂加入 `backtestKlineCache` 存储，后因实测影响面仅 0.37%、
+ * 改用「缺口过滤」而撤回存储创建。**版本号保持 10 不回退**：
+ * IndexedDB 无法用更低的版本号打开已升级的库，回退会直接打开失败。
+ * 已存在的空 `backtestKlineCache` 表不再使用，残留无害。
+ */
+export const OPPORTUNITY_DB_VERSION = 10;
 /** 对象存储名称 */
 export const OPPORTUNITY_STORE_NAME = 'opportunityData';
 /** 股票历史数据存储名称（机会分析 K 线的唯一来源，日线经此表旁路写入） */
@@ -355,6 +362,7 @@ export const OPPORTUNITY_DEFAULT_COLUMNS = [
   { key: 'trendLineReason', title: '趋势线说明', visible: true, width: 220 },
   { key: 'sharpMoveLabels', title: '单日异动', visible: true, width: 220 },
   { key: 'pullbackLabels', title: '量价回踩', visible: true, width: 260 },
+  { key: 'aiRecommendScore', title: 'AI综合评分', visible: true, width: 100 },
   { key: 'ma5', title: 'MA-5涨跌幅', visible: false },
   { key: 'ma10', title: 'MA-10涨跌幅', visible: false },
   { key: 'ma20', title: 'MA-20涨跌幅', visible: false },
