@@ -315,16 +315,16 @@ export const OPPORTUNITY_DEFAULT_AI_ANALYSIS = {
    * 分数越高后续反而越差，因此这两个维度已在 `ai-v5.0.ts` 的 `SCORE_DIMENSION_INVERT` 中反号。
    * 若仍按原始分设 50 分门槛，等于「专挑回测里表现最差的那批」，比不筛更糟，故改为不限。
    */
-  patternScoreMin: undefined,
+  patternScoreMin: 50,
   /** AI趋势评分最小值（同上，反号后不再设门槛） */
-  trendScoreMin: undefined,
+  trendScoreMin: 50,
   /**
    * AI置信度最小值（%）。
    *
    * 回测显示置信度的 RankIC 在 3 个时间窗口上符号翻转（+0.014 / −0.005 / −0.015），
    * 与未来收益无可辨别的稳定关系，设门槛缺乏依据，故改为不限。
    */
-  confidenceMin: undefined,
+  confidenceMin: 50,
   /** AI安全评分最小值 */
   riskScoreMin: undefined,
   consolidation: {
