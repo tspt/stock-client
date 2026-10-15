@@ -12,10 +12,18 @@ import {
   matchOptionalRangeWithScale,
 } from '@/utils/analysis/rangeFilter';
 import { isNoSignalTradingSignal } from '@/utils/config/tradingSignalMeta';
+import {
+  getFreeHolderNames,
+  matchFreeHolderKeywords,
+  type FreeHolderNamesByCode,
+} from '@/utils/analysis/freeHolderMatch';
 import type { OpportunityFilterWorkerOutboundMessage } from '@/workers/opportunityFilterWorkerTypes';
 
 /** 对外暴露 signalMap 时用于替代 null 的空映射（保持引用稳定） */
 const EMPTY_SIGNAL_MAP: Map<string, TradingSignal> = new Map();
+
+/** 未接入 F10 缓存数据时的空映射（保持引用稳定，避免筛选任务反复重建） */
+const EMPTY_FREE_HOLDER_NAMES: FreeHolderNamesByCode = new Map();
 
 export interface AIRecomputeProgress {
   completed: number;
@@ -29,7 +37,11 @@ export interface AIRecomputeResult {
   skippedCount: number;
 }
 
-function passLightFilters(item: StockOpportunityData, filters: OpportunityFilterSnapshot): boolean {
+function passLightFilters(
+  item: StockOpportunityData,
+  filters: OpportunityFilterSnapshot,
+  holderNamesByCode: FreeHolderNamesByCode
+): boolean {
   const nameType = filters.nameType ?? 'all';
   if (nameType === 'st' || nameType === 'non_st') {
     const isST = (item.name || '').includes('ST');
@@ -70,6 +82,14 @@ function passLightFilters(item: StockOpportunityData, filters: OpportunityFilter
     return false;
   }
 
+  // 十大流通股东筛选：按股东名称模糊匹配，命中任一关键词即通过；
+  // 本地 F10 缓存里没有该股票的股东数据时同样通过（照常展示，避免漏掉未取数的标的）
+  const tenHolderKeywords = filters.tenHolderKeywords ?? [];
+  if (filters.enableTenHolderFilter !== false && tenHolderKeywords.length > 0) {
+    const holderNames = getFreeHolderNames(holderNamesByCode, item.code);
+    if (!matchFreeHolderKeywords(holderNames, tenHolderKeywords)) return false;
+  }
+
   return true;
 }
 
@@ -83,6 +103,8 @@ interface UseOpportunityFilterEngineArgs {
   conceptSectorInvert?: boolean; // 概念板块反选
   /** 需要检测交易信号的股票代码；K 线已在 Worker 内，主线程只传代码 */
   signalCodes?: string[];
+  /** 十大流通股东筛选数据：纯数字代码 → 股东名称列表（来自本地 F10 缓存） */
+  holderNamesByCode?: FreeHolderNamesByCode;
 }
 
 interface UseOpportunityFilterEngineResult {
@@ -106,6 +128,7 @@ export function useOpportunityFilterEngine({
   klineDataCache,
   filters,
   signalCodes,
+  holderNamesByCode = EMPTY_FREE_HOLDER_NAMES,
 }: UseOpportunityFilterEngineArgs): UseOpportunityFilterEngineResult {
   // Worker 返回的原始筛选结果；最终对外暴露的 filteredData 会再合并交易信号
   const [filteredRawData, setFilteredRawData] = useState<StockOpportunityData[]>([]);
@@ -122,6 +145,8 @@ export function useOpportunityFilterEngine({
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const pendingFiltersRef = useRef<OpportunityFilterSnapshot | null>(null);
   const pendingAnalysisDataRef = useRef<StockOpportunityData[] | null>(null);
+  /** 十大流通股东筛选数据：筛选任务由 ref 读取，避免把大映射塞进 Worker 消息 */
+  const holderNamesRef = useRef<FreeHolderNamesByCode>(holderNamesByCode);
   /** Worker 创建前暂存的最新 K 线数据，创建后立刻补发 */
   const pendingKlineEntriesRef = useRef<Array<[string, KLineData[]]> | null>(null);
   /** 进行中的 AI 重算任务（按 requestId 匹配回包） */
@@ -393,7 +418,7 @@ export function useOpportunityFilterEngine({
     }
 
     const lightFiltered = currentAnalysisData.filter((item) => {
-      if (!passLightFilters(item, currentFilters)) return false;
+      if (!passLightFilters(item, currentFilters, holderNamesRef.current)) return false;
 
       // 注意：行业板块和概念板块筛选已移至工作线程中执行
       // 此处不再重复执行，避免双重过滤导致的问题
@@ -445,6 +470,7 @@ export function useOpportunityFilterEngine({
     // 更新待处理的筛选参数
     pendingFiltersRef.current = filters;
     pendingAnalysisDataRef.current = analysisData;
+    holderNamesRef.current = holderNamesByCode;
 
     // 触发防抖筛选
     triggerDebouncedFilter();
@@ -455,7 +481,7 @@ export function useOpportunityFilterEngine({
         clearTimeout(debounceTimerRef.current);
       }
     };
-  }, [analysisData, filters, dataVersion, triggerDebouncedFilter]);
+  }, [analysisData, filters, dataVersion, holderNamesByCode, triggerDebouncedFilter]);
 
   const clearAICache = useCallback(() => {
     const worker = workerRef.current;

@@ -140,6 +140,13 @@ export interface OpportunityFilterSnapshot {
   enableShortTermNameFilter?: boolean;
   /** 短期排除股票名称列表 */
   excludedShortTermNames?: string[];
+  /** 十大流通股东筛选 - 是否启用 */
+  enableTenHolderFilter?: boolean;
+  /**
+   * 十大流通股东筛选关键词（模糊匹配股东名称，命中任一即入选）。
+   * 数据来自本地 F10 缓存；没有该股票十大流通股东数据时不参与过滤、照常展示。
+   */
+  tenHolderKeywords?: string[];
 }
 
 export interface FilterSkippedItem {

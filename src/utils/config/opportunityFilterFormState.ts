@@ -105,6 +105,10 @@ export interface OpportunityFilterFormState {
   excludedNameKeywords: string[];
   enableShortTermNameFilter: boolean;
   excludedShortTermNames: string[];
+
+  // 十大流通股东筛选（数据来自本地 F10 缓存，无数据时放行）
+  enableTenHolderFilter: boolean;
+  tenHolderKeywords: string[];
 }
 
 /** 持久化偏好中不参与筛选引擎的顶部查询条字段 */
@@ -215,6 +219,9 @@ export function buildOpportunityFilterPrefs(
     excludedNameKeywords: [...form.excludedNameKeywords],
     enableShortTermNameFilter: form.enableShortTermNameFilter,
     excludedShortTermNames: [...form.excludedShortTermNames],
+
+    enableTenHolderFilter: form.enableTenHolderFilter,
+    tenHolderKeywords: [...form.tenHolderKeywords],
 
     nameFilterIndustryGroups: [...extras.nameFilterIndustryGroups],
     nameFilterIndustryInvert: extras.nameFilterIndustryInvert,

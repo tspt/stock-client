@@ -47,6 +47,7 @@ import { useAllStocks } from '@/hooks/useAllStocks';
 import { sortOpportunityData } from '@/utils/sort/tableSort';
 import { logger } from '@/utils/business/logger';
 import { useOpportunityFilterEngine } from '@/hooks/useOpportunityFilterEngine';
+import { useFreeHolderNames } from '@/hooks/useFreeHolderNames';
 import {
   DEFAULT_FILTER_PANEL_ACTIVE_KEYS,
   applyOpportunityFilterPrefsToState,
@@ -493,6 +494,16 @@ export function OpportunityPage() {
   const [excludedShortTermNames, setExcludedShortTermNames] = useState<string[]>(
     [...OPPORTUNITY_DEFAULT_NAME_FILTERS.excludedShortTermNames]
   );
+  /**
+   * 十大流通股东筛选：按股东名称模糊匹配，数据来自本地 F10 缓存（未缓存的股票放行）。
+   * 默认关键词「高盛」，见 OPPORTUNITY_DEFAULT_NAME_FILTERS。
+   */
+  const [enableTenHolderFilter, setEnableTenHolderFilter] = useState<boolean>(true);
+  const [tenHolderKeywords, setTenHolderKeywords] = useState<string[]>([
+    ...INITIAL_FILTER_STATE.tenHolderKeywords,
+  ]);
+  /** 本地 F10 缓存中的十大流通股东名称：缓存变更（抽屉加载数据）后自动重算 */
+  const freeHolderNamesByCode = useFreeHolderNames();
 
   // 行业板块筛选状态
   const [industrySectors, setIndustrySectors] = useState<string[]>([...OPPORTUNITY_DEFAULT_INDUSTRY_SECTORS.excludedIndustries]);
@@ -659,6 +670,9 @@ export function OpportunityPage() {
           setExcludedNameKeywords,
           setEnableShortTermNameFilter,
           setExcludedShortTermNames,
+          // 十大流通股东筛选 actions
+          setEnableTenHolderFilter,
+          setTenHolderKeywords,
           // 名称筛选面板：行业分组 actions（独立于顶部「行业」筛选）
           setNameFilterIndustryGroups,
           setNameFilterIndustryInvert,
@@ -781,6 +795,8 @@ export function OpportunityPage() {
       excludedNameKeywords,
       enableShortTermNameFilter,
       excludedShortTermNames,
+      enableTenHolderFilter,
+      tenHolderKeywords,
     }),
     [
       priceRange, marketCapRange, totalSharesRange, turnoverRateRange, peRatioRange, kdjJRange,
@@ -803,6 +819,7 @@ export function OpportunityPage() {
       aiConfidenceRange, aiRecommendScoreRange, aiTechnicalScoreRange,
       aiPatternScoreRange, aiTrendScoreRange, aiRiskScoreRange,
       enableNameKeywordFilter, excludedNameKeywords, enableShortTermNameFilter, excludedShortTermNames,
+      enableTenHolderFilter, tenHolderKeywords,
     ]
   );
 
@@ -1007,6 +1024,7 @@ export function OpportunityPage() {
       industrySectorInvert,
       conceptSectorInvert,
       signalCodes,
+      holderNamesByCode: freeHolderNamesByCode,
     });
 
   // 表格层面的股票名称/代码模糊过滤（复用 getPureCode 归一，见 utils/format/textMatch）
@@ -1233,6 +1251,9 @@ export function OpportunityPage() {
     setExcludedNameKeywords([...OPPORTUNITY_DEFAULT_NAME_FILTERS.excludedNameKeywords]);
     setEnableShortTermNameFilter(true);
     setExcludedShortTermNames([...OPPORTUNITY_DEFAULT_NAME_FILTERS.excludedShortTermNames]);
+    // 重置十大流通股东筛选（默认关键词「高盛」）
+    setEnableTenHolderFilter(true);
+    setTenHolderKeywords([...OPPORTUNITY_DEFAULT_NAME_FILTERS.tenHolderKeywords]);
     setTableSearchKeyword('');
     patchSavedPrefsFiltersToDefaults();
     message.info('已恢复默认筛选条件');
@@ -1984,6 +2005,11 @@ export function OpportunityPage() {
             setEnableShortTermNameFilter={setEnableShortTermNameFilter}
             excludedShortTermNames={excludedShortTermNames}
             setExcludedShortTermNames={setExcludedShortTermNames}
+            // 十大流通股东筛选（模糊匹配股东名称，数据来自本地 F10 缓存）
+            enableTenHolderFilter={enableTenHolderFilter}
+            setEnableTenHolderFilter={setEnableTenHolderFilter}
+            tenHolderKeywords={tenHolderKeywords}
+            setTenHolderKeywords={setTenHolderKeywords}
             // 重置筛选按钮
             resetFilterButton={resetFilterButtonNode}
             // 外部控制抽屉状态

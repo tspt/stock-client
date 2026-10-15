@@ -136,6 +136,8 @@ export function buildOpportunityFilterSummary(p: {
   // 名称过滤
   excludedNameKeywords?: string[];
   excludedShortTermNames?: string[];
+  // 十大流通股东筛选（关键词，来自本地 F10 缓存）
+  tenHolderKeywords?: string[];
 }): string {
   const parts: string[] = [];
   pushRange(parts, '价', p.priceRange);
@@ -284,6 +286,10 @@ export function buildOpportunityFilterSummary(p: {
   }
   if (p.excludedShortTermNames && p.excludedShortTermNames.length > 0) {
     parts.push(`短期排除[${p.excludedShortTermNames.length}个]`);
+  }
+  // 十大流通股东：关键词数量有限，直接列出便于确认
+  if (p.tenHolderKeywords && p.tenHolderKeywords.length > 0) {
+    parts.push(`十大流通股东[${p.tenHolderKeywords.join('/')}]`);
   }
 
   return parts.join(' · ');
@@ -448,6 +454,11 @@ export interface OpportunityFiltersPanelProps {
   setEnableShortTermNameFilter?: (v: boolean) => void;
   excludedShortTermNames?: string[];
   setExcludedShortTermNames?: (v: string[]) => void;
+  // 十大流通股东筛选（按股东名称模糊匹配，数据来自本地 F10 缓存）
+  enableTenHolderFilter?: boolean;
+  setEnableTenHolderFilter?: (v: boolean) => void;
+  tenHolderKeywords?: string[];
+  setTenHolderKeywords?: (v: string[]) => void;
   // 重置筛选按钮
   resetFilterButton?: React.ReactNode;
   // 外部控制的抽屉状态
@@ -611,6 +622,11 @@ function OpportunityFiltersPanelComponent({
   setEnableShortTermNameFilter = () => { },
   excludedShortTermNames = [],
   setExcludedShortTermNames = () => { },
+  // 十大流通股东筛选
+  enableTenHolderFilter = true,
+  setEnableTenHolderFilter = () => { },
+  tenHolderKeywords = [],
+  setTenHolderKeywords = () => { },
   // 重置筛选按钮
   resetFilterButton,
   // 外部控制的抽屉状态
@@ -694,6 +710,7 @@ function OpportunityFiltersPanelComponent({
         nameFilterConceptInvert,
         excludedNameKeywords,
         excludedShortTermNames,
+        tenHolderKeywords,
       }),
     [
       priceRange,
@@ -764,6 +781,7 @@ function OpportunityFiltersPanelComponent({
       nameFilterConceptInvert,
       excludedNameKeywords,
       excludedShortTermNames,
+      tenHolderKeywords,
     ]
   );
 
@@ -1442,6 +1460,32 @@ function OpportunityFiltersPanelComponent({
                           maxTagCount="responsive"
                           disabled={!enableShortTermNameFilter}
                         />
+                      </div>
+                    </div>
+                    <div className={styles.filterRow} style={{ marginTop: 16, alignItems: 'flex-start' }}>
+                      <div className={styles.filterItem} style={{ flex: '0 0 160px', justifyContent: 'flex-start' }}>
+                        <Checkbox
+                          checked={enableTenHolderFilter}
+                          onChange={(e) => setEnableTenHolderFilter(e.target.checked)}
+                        >
+                          <span className={styles.filterLabel} style={{ whiteSpace: 'nowrap' }}>十大流通股东：</span>
+                        </Checkbox>
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <Select
+                          mode="tags"
+                          value={tenHolderKeywords}
+                          onChange={(values) => setTenHolderKeywords(normalizeStockNameList(values as string[]))}
+                          style={{ flex: 1, minWidth: 0 }}
+                          placeholder="输入股东名称关键词，按回车添加"
+                          options={[]}
+                          allowClear
+                          maxTagCount="responsive"
+                          disabled={!enableTenHolderFilter}
+                        />
+                        <span style={{ color: 'var(--ant-color-text-secondary)', fontSize: 12, whiteSpace: 'nowrap' }}>
+                          模糊匹配股东名称；本地无股东数据的股票照常展示
+                        </span>
                       </div>
                     </div>
                   </div>

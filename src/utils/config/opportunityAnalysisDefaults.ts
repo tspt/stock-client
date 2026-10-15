@@ -315,16 +315,16 @@ export const OPPORTUNITY_DEFAULT_AI_ANALYSIS = {
    * 分数越高后续反而越差，因此这两个维度已在 `ai-v5.0.ts` 的 `SCORE_DIMENSION_INVERT` 中反号。
    * 若仍按原始分设 50 分门槛，等于「专挑回测里表现最差的那批」，比不筛更糟，故改为不限。
    */
-  patternScoreMin: 50,
+  patternScoreMin: undefined,
   /** AI趋势评分最小值（同上，反号后不再设门槛） */
-  trendScoreMin: 50,
+  trendScoreMin: undefined,
   /**
    * AI置信度最小值（%）。
    *
    * 回测显示置信度的 RankIC 在 3 个时间窗口上符号翻转（+0.014 / −0.005 / −0.015），
    * 与未来收益无可辨别的稳定关系，设门槛缺乏依据，故改为不限。
    */
-  confidenceMin: 50,
+  confidenceMin: undefined,
   /** AI安全评分最小值 */
   riskScoreMin: undefined,
   consolidation: {
@@ -434,6 +434,11 @@ export const OPPORTUNITY_DEFAULT_NAME_FILTERS = {
   excludedNameKeywords: [
     // '药业', '中国', '矿业', '水务', '纸业', '环保', '期货'
   ],
+  /**
+   * 十大流通股东筛选默认关键词（模糊匹配股东名称）。
+   * 数据来自本地 F10 缓存，未缓存该股票股东数据的按「无数据」放行。
+   */
+  tenHolderKeywords: ['高盛'],
   /** 短期排除股票名称 */
   excludedShortTermNames: [
     // '晋亿实业',
@@ -748,6 +753,8 @@ export const INITIAL_FILTER_STATE = {
 
   // 名称过滤
   excludedNameKeywords: [...OPPORTUNITY_DEFAULT_NAME_FILTERS.excludedNameKeywords],
+  // 十大流通股东筛选（默认关键词「高盛」；无缓存数据的股票照常展示）
+  tenHolderKeywords: [...OPPORTUNITY_DEFAULT_NAME_FILTERS.tenHolderKeywords],
 };
 
 /** 与 opportunityStore 初始值一致，用于「重置」恢复 K 线数量 */

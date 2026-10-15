@@ -244,6 +244,10 @@ export interface OpportunityFilterPrefs {
   /** 短期排除股票名称 */
   enableShortTermNameFilter: boolean;
   excludedShortTermNames: string[];
+  /** 十大流通股东筛选：是否启用 */
+  enableTenHolderFilter: boolean;
+  /** 十大流通股东筛选：模糊匹配股东名称的关键词（来自本地 F10 缓存） */
+  tenHolderKeywords: string[];
   /** 名称筛选：行业分组标签（独立于顶部「行业」筛选，单独控制） */
   nameFilterIndustryGroups: string[];
   /** 名称筛选：行业分组反选 */
@@ -461,6 +465,10 @@ export function loadOpportunityFilterPrefs(): OpportunityFilterPrefs | null {
       excludedShortTermNames: Array.isArray(p.excludedShortTermNames)
         ? normalizeStockNameList(p.excludedShortTermNames.filter((item: any) => typeof item === 'string'))
         : [...OPPORTUNITY_DEFAULT_NAME_FILTERS.excludedShortTermNames],
+      enableTenHolderFilter: p.enableTenHolderFilter === false ? false : true,
+      tenHolderKeywords: Array.isArray(p.tenHolderKeywords)
+        ? normalizeStockNameList(p.tenHolderKeywords.filter((item: any) => typeof item === 'string'))
+        : [...OPPORTUNITY_DEFAULT_NAME_FILTERS.tenHolderKeywords],
       nameFilterIndustryGroups: parseIndustryGroupLabels(p.nameFilterIndustryGroups),
       nameFilterIndustryInvert: p.nameFilterIndustryInvert === true,
       nameFilterConceptSectors: parseConceptSectorCodes(p.nameFilterConceptSectors),
@@ -573,6 +581,9 @@ export function getDefaultFilterPrefsFields(): Omit<
     excludedNameKeywords: [...OPPORTUNITY_DEFAULT_NAME_FILTERS.excludedNameKeywords],
     enableShortTermNameFilter: true,
     excludedShortTermNames: [...OPPORTUNITY_DEFAULT_NAME_FILTERS.excludedShortTermNames],
+    // 十大流通股东筛选（默认关键词「高盛」，无缓存数据的股票照常展示）
+    enableTenHolderFilter: true,
+    tenHolderKeywords: [...OPPORTUNITY_DEFAULT_NAME_FILTERS.tenHolderKeywords],
     // 名称筛选：行业分组（独立于顶部「行业」筛选）
     nameFilterIndustryGroups: [...OPPORTUNITY_DEFAULT_INDUSTRY_GROUP_FILTER.selectedGroups],
     nameFilterIndustryInvert: OPPORTUNITY_DEFAULT_INDUSTRY_GROUP_FILTER.invertEnabled,
@@ -692,6 +703,9 @@ export interface OpportunityFilterPrefsApplyActions {
   /** 短期排除股票名称 actions */
   setEnableShortTermNameFilter: (v: boolean) => void;
   setExcludedShortTermNames: (v: string[]) => void;
+  /** 十大流通股东筛选 actions */
+  setEnableTenHolderFilter: (v: boolean) => void;
+  setTenHolderKeywords: (v: string[]) => void;
   /** 名称筛选面板：行业分组 actions（独立于顶部「行业」筛选） */
   setNameFilterIndustryGroups: (v: string[]) => void;
   setNameFilterIndustryInvert: (v: boolean) => void;
@@ -781,6 +795,9 @@ export function applyOpportunityFilterPrefsToState(
   // 应用短期排除股票名称
   actions.setEnableShortTermNameFilter(prefs.enableShortTermNameFilter);
   actions.setExcludedShortTermNames([...prefs.excludedShortTermNames]);
+  // 应用十大流通股东筛选
+  actions.setEnableTenHolderFilter(prefs.enableTenHolderFilter);
+  actions.setTenHolderKeywords([...prefs.tenHolderKeywords]);
   // 应用名称筛选面板的行业分组（独立于顶部「行业」筛选）
   actions.setNameFilterIndustryGroups([...prefs.nameFilterIndustryGroups]);
   actions.setNameFilterIndustryInvert(prefs.nameFilterIndustryInvert);

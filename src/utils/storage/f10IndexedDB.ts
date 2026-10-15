@@ -20,6 +20,32 @@ import type { F10CacheRecord, F10SectionKey } from '@/types/f10';
 
 let dbInstance: IDBDatabase | null = null;
 
+/** 缓存变更监听器集合（供机会分析等页面刷新基于 F10 缓存的派生数据） */
+type F10CacheChangeListener = () => void;
+const changeListeners = new Set<F10CacheChangeListener>();
+
+/** 通知所有订阅者缓存已变更；单个监听器异常不影响其余监听器 */
+function notifyF10CacheChange(): void {
+  changeListeners.forEach((listener) => {
+    try {
+      listener();
+    } catch (error) {
+      logger.error('[F10Cache] 缓存变更回调异常:', error);
+    }
+  });
+}
+
+/**
+ * 订阅 F10 缓存变更（写入 / 删除 / 清空后触发）。
+ * @returns 取消订阅函数
+ */
+export function subscribeF10CacheChange(listener: F10CacheChangeListener): () => void {
+  changeListeners.add(listener);
+  return () => {
+    changeListeners.delete(listener);
+  };
+}
+
 /** 打开（或复用）F10 缓存数据库 */
 async function initDB(): Promise<IDBDatabase> {
   if (dbInstance) {
@@ -126,6 +152,7 @@ export async function saveF10Section<K extends F10SectionKey>(
       request.onerror = () => reject(new Error(`保存 F10 缓存失败: ${code}/${section}`));
     });
     logger.info(`[F10Cache] 保存成功: ${code}/${section}`);
+    notifyF10CacheChange();
   } catch (error) {
     logger.error('[F10Cache] 保存缓存异常:', error);
   }
@@ -174,9 +201,13 @@ export async function saveF10Records(
   const store = transaction.objectStore(F10_CACHE_STORE_NAME);
 
   return new Promise((resolve, reject) => {
+    const finish = () => {
+      resolve();
+      notifyF10CacheChange();
+    };
     const writeAll = () => {
       if (records.length === 0) {
-        resolve();
+        finish();
         return;
       }
       let completed = 0;
@@ -189,7 +220,7 @@ export async function saveF10Records(
         request.onsuccess = () => {
           completed++;
           if (completed === records.length) {
-            resolve();
+            finish();
           }
         };
         request.onerror = () => reject(new Error(`保存 F10 缓存失败: ${record.code}`));
@@ -220,6 +251,7 @@ export async function clearAllF10Cache(): Promise<void> {
       request.onerror = () => reject(new Error('清空 F10 缓存失败'));
     });
     logger.info('[F10Cache] 已清空全部缓存');
+    notifyF10CacheChange();
   } catch (error) {
     logger.error('[F10Cache] 清空全部缓存异常:', error);
     throw error instanceof Error ? error : new Error('清空 F10 缓存失败');
@@ -242,6 +274,7 @@ export async function clearF10Cache(code: string): Promise<void> {
       request.onerror = () => reject(new Error(`清除 F10 缓存失败: ${code}`));
     });
     logger.info(`[F10Cache] 清除成功: ${code}`);
+    notifyF10CacheChange();
   } catch (error) {
     logger.error('[F10Cache] 清除缓存异常:', error);
   }
